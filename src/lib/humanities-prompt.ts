@@ -44,7 +44,8 @@ export function buildHumanitiesPayload(ctx: QuestionInContext, answer: string): 
     question: q.question,
     sources: ctx.inView.map(x => ({ id: x.id, provenance: x.provenance, text: x.text })),
     scheme: { label: ctx.scheme.label, levels: ctx.scheme.levels, note: ctx.scheme.note ?? null, slips: ctx.scheme.slips, lifts: ctx.scheme.lifts },
-    rules: rulesFor(q.skill), tags: tagsFor(q.skill),
+    // A question's own rules join its type's (a school question whose figure was read off a photo — lib/humanities-own).
+    rules: [...rulesFor(q.skill), ...(q.rules ?? [])], tags: tagsFor(q.skill),
   };
 }
 

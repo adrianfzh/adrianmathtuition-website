@@ -3,6 +3,7 @@
 // filled from photos by /api/portal/humanities/transcribe, then POST /api/portal/humanities/own.
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PaperBox from './paper-box';
 import { fileToJpegDataUrl } from '@/app/app/practice/image-downscale';
 import { guessSkill, mentionsSources, OWN_SOURCE_SKILLS } from '@/lib/humanities-own-guess';
 import type { OwnQuestion } from '@/lib/humanities-own';
@@ -57,6 +58,8 @@ export default function OwnForm({ initialSubject, initialPure, choices: savedCho
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkNote, setCheckNote] = useState<Mode | null>(null);
+  // One question, or a whole paper at once (17 Oct 2026).
+  const [whole, setWhole] = useState(false);
 
   // A tick follows the school's rules: one elective at most, never a subject as both elective and pure.
   function toggle(c: HumanitiesChoice) {
@@ -170,6 +173,15 @@ export default function OwnForm({ initialSubject, initialPure, choices: savedCho
         <button type="button" onClick={() => { setDraft(choices); setChoosing(true); }} className="text-[12px] text-gray-500 underline underline-offset-2">Change subjects</button>
       )}
 
+      <div className="flex gap-1 bg-black/5 rounded-2xl p-1" role="tablist" aria-label="One question or a whole paper">
+        {[{ k: false, l: 'One question' }, { k: true, l: 'Whole paper' }].map(o => (
+          <button key={o.l} type="button" role="tab" aria-selected={whole === o.k} onClick={() => setWhole(o.k)}
+            className={`flex-1 text-center text-[13px] font-semibold rounded-xl py-1.5 transition ${whole === o.k ? 'bg-white text-navy shadow-sm' : 'text-gray-500'}`}>
+            {o.l}
+          </button>
+        ))}
+      </div>
+      {whole ? <PaperBox subject={subject} pure={pure} /> : (<>
       <div className={box}>
         <div className="flex items-center justify-between gap-2">
           {head(1, 'The question')}
@@ -218,6 +230,7 @@ export default function OwnForm({ initialSubject, initialPure, choices: savedCho
         {busy ? 'Handing in…' : 'Get feedback'}
       </button>
       {gaps && !reading && <p className="text-[12px] text-gray-500 text-center">Type in each [?] first.</p>}
+      </>)}
     </div>
   );
 }

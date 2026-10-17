@@ -26,6 +26,7 @@ export default async function HumanitiesGroupPage({ params }: { params: Promise<
   const scores = parts.map(partScore);
   const total = groupTotal(scores);
   const unanswered = parts[0].own_part?.unanswered ?? [];
+  const paper = !!parts[0].own_part?.paper;
   const busy = parts.some(r => r.status === 'queued' || r.status === 'marking') || parts.some((r, i) => r.status === 'marked' && scores[i].got == null);
 
   return (
@@ -33,18 +34,18 @@ export default async function HumanitiesGroupPage({ params }: { params: Promise<
       <RunPoll active={busy} />
       <Link href="/app/humanities/answers" className="text-[12px] text-gray-500 hover:text-navy">‹ Your answers</Link>
       <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">This question, all parts</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">{paper ? 'Your paper' : 'This question, all parts'}</p>
         <p className="text-2xl font-bold text-navy">{total ? `${total[0]} out of ${total[1]} marks` : busy ? 'Being marked…' : 'See each part below'}</p>
-        <p className="text-[13px] text-gray-500">{parts.length} {parts.length === 1 ? 'part' : 'parts'} marked. Tap a part for its feedback and sample answer.</p>
+        <p className="text-[13px] text-gray-500">{parts.length} {paper ? (parts.length === 1 ? 'answer' : 'answers') : (parts.length === 1 ? 'part' : 'parts')} marked. Tap one for its feedback and sample answer.</p>
       </div>
       {parts.map(r => (
         <div key={r.id} className="space-y-1">
-          <p className="text-[13px] font-semibold text-navy px-1">Part ({r.own_part?.label ?? '?'})</p>
+          <p className="text-[13px] font-semibold text-navy px-1">{paper ? `Question ${r.own_part?.label ?? '?'}` : `Part (${r.own_part?.label ?? '?'})`}</p>
           <AnswerCard row={r} />
         </div>
       ))}
       {unanswered.length > 0 && (
-        <p className="text-[13px] text-gray-500 px-1">Not answered: {unanswered.map(l => `(${l})`).join(', ')}.</p>
+        <p className="text-[13px] text-gray-500 px-1">Not answered: {unanswered.map(l => (paper ? l : `(${l})`)).join(', ')}.</p>
       )}
     </div>
   );

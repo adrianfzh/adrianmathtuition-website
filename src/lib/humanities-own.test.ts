@@ -101,3 +101,13 @@ describe('Pure or Elective', () => {
     expect(checkOwn({ subject: 'social-studies', skill: 'sr_explain', question: 'Explain two ways citizens can take part.', pure: true }).ok && true).toBe(true);
   });
 });
+
+describe('a figure read off a photo', () => {
+  it('gives the marker a small reading margin', () => {
+    const own = { subject: 'geography' as const, skill: 'geo_describe' as const, question: 'Describe the trend in Fig. 1. [3]', sources: 'Fig. 1 [Picture: a line graph] [Data read from Fig. 1: 2015 4.2; 2016 ~4.6]', marks: 3, points: [{ id: 'a', text: 'It rose.' }, { id: 'b', text: 'Then fell.' }] };
+    const p = buildHumanitiesPayload(ownContext('own-g', own)!, 'It rose from 4.2 to 4.6 million.');
+    expect(p.points?.rules.join(' ')).toMatch(/within about one small grid square/);
+    const plain = buildHumanitiesPayload(ownContext('own-h', { ...own, sources: 'Table 1: 2015 4.2' })!, 'x y z');
+    expect(plain.points?.rules.join(' ') ?? '').not.toMatch(/grid square/);
+  });
+});

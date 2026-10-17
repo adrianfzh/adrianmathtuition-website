@@ -46,7 +46,7 @@ export interface HumanitiesRunRow {
   model_answer?: ModelState | null;
   /** The parts of one multi-part question share it (lib/humanities-parts); the part's label, every label, the unanswered ones. */
   group_id?: string | null;
-  own_part?: { label: string; of: string[]; unanswered: string[] } | null;
+  own_part?: { label: string; of: string[]; unanswered: string[]; paper?: boolean; cut?: string } | null;
   own_marks?: number | null;
   /** The list's copy of report.mark (the exact mark inside the level). */
   report_mark?: number | null;

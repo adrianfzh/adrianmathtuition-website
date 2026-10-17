@@ -45,3 +45,10 @@ describe('the whole question from photos', () => {
     expect(transcribePrompt(3, '', 'question')).toContain('"material"');
   });
 });
+
+describe('a whole paper', () => {
+  it('a later batch is told which question the pages before ended on', () => {
+    expect(transcribePrompt(1, '', 'paper', '2')).toContain('ended with question 2');
+    expect(transcribePrompt(3, '', 'paper')).not.toContain('ended with question');
+  });
+});

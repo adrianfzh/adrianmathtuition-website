@@ -18,7 +18,7 @@ export interface OwnQuestion {
   sources: string;
   marks?: number | null;
   /** One part of a question with parts (lib/humanities-parts): its label, every label, and the ones left unanswered. */
-  part?: { label: string; of: string[]; unanswered: string[] };
+  part?: { label: string; of: string[]; unanswered: string[]; paper?: boolean; cut?: string };
   /** Pure Geography / Pure History, not the Combined Humanities elective (17 Oct 2026). */
   pure?: boolean;
   /** Geography short questions (point-marked): the school's answer scheme if the student gave one. */
@@ -39,6 +39,7 @@ export const OWN_MAX_SOURCES = 12000;
 
 import { OWN_SKILLS, OWN_SOURCE_SKILLS as SOURCE } from './humanities-own-guess';
 import { printedMarks } from './humanities-marks';
+import { hasReadOffData, READ_OFF_PHOTO_RULE } from './humanities-photo';
 export { OWN_SKILLS, guessSkill, mentionsSources } from './humanities-own-guess';
 
 export type OwnCheck = { ok: true; own: OwnQuestion } | { ok: false; error: string };
@@ -86,7 +87,9 @@ export function ownContext(id: string, own: OwnQuestion): QuestionInContext | nu
     sources,
     questions: [{
       id, skill: own.skill, sources: sources.map(s => s.id), question: own.question, ...(own.marks ? { marks: own.marks } : {}),
-      ...(points ? { points: own.points, command: own.command ?? 'explain', develop: !!own.develop, rules: own.rules ?? [] } : {}),
+      ...(points ? { points: own.points, command: own.command ?? 'explain', develop: !!own.develop } : {}),
+      // A figure's numbers read off a photo: a small reading margin (lib/humanities-photo, 17 Oct 2026).
+      rules: [...(own.rules ?? []), ...(hasReadOffData(own.sources ?? '') ? [READ_OFF_PHOTO_RULE] : [])],
     }],
   };
   return { set, question: set.questions[0], sources, inView: sources, scheme };

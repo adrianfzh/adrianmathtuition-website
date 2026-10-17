@@ -9,10 +9,10 @@ import { placeBand } from '@/lib/humanities-place';
 import { skillLabel } from './skills';
 
 // One part of a question with parts: its own words, not the opening line every part shares (lib/humanities-parts).
-function partTitle(title: string | null | undefined, label: string | undefined): string | null {
+function partTitle(title: string | null | undefined, cut: string | undefined): string | null {
   if (!title) return null;
-  if (!label) return title;
-  const at = title.indexOf(`(${label})`);
+  if (!cut || cut === '(undefined)') return title;
+  const at = title.indexOf(cut);
   return at > 0 ? title.slice(at) : title;
 }
 
@@ -43,7 +43,7 @@ export function AnswerCard({ row }: { row: HumanitiesListRow }) {
         <span className="text-sm font-semibold text-navy">{skillLabel(row.skill)}</span>
         <span className="text-[12px] text-gray-500 shrink-0">{when(row.created_at)}</span>
       </div>
-      <p className="text-[13px] text-gray-600 mt-0.5 line-clamp-2">{ctx?.question.question ?? partTitle(row.own_title, row.own_part?.label) ?? row.question_id}</p>
+      <p className="text-[13px] text-gray-600 mt-0.5 line-clamp-2">{ctx?.question.question ?? partTitle(row.own_title, row.own_part?.cut ?? (row.own_part?.paper ? undefined : `(${row.own_part?.label})`)) ?? row.question_id}</p>
       <p className={`text-[13px] font-semibold mt-1 ${read ? 'text-amber-800' : 'text-gray-500'}`}>{state}</p>
     </Link>
   );
