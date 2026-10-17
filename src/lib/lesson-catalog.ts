@@ -148,7 +148,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Linear Law',
     title: 'Linear Law with logs',
-    minutes: 1,
+    minutes: 2,
   },
   {
     slug: 'growth-and-decay-am',
