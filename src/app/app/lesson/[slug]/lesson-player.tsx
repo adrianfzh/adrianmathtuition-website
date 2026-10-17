@@ -574,6 +574,11 @@ function scrollClipBoard(cont: HTMLElement) {
     boardEl.style.flex = 'none';   // .lsn-board is flex: 1 — a flex-basis would let it grow with its lines
   }
   boardEl.style.overflow = 'hidden';
+  // The board clips what scrolls off it — but a mark drawn round a token at the left edge (the answer's
+  // box) reaches a little past the working (Adrian, 17 Oct 2026: "pink box seems partially covered on
+  // the left"). The clip edge sits 16 px out into the card's own margin; the working stays put.
+  boardEl.style.marginInline = '-16px';
+  boardEl.style.paddingInline = '16px';
   // How far down the board's newest writing reaches, in the board's own (unslid) frame.
   const zr = zoom.getBoundingClientRect();
   let low = 0;
