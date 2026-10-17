@@ -47,7 +47,8 @@
           "tokens": [
             { "tex": "x\\lg 7", "id": "ex7x" },
             { "tex": "-\\lg 7", "id": "ex7n" },
-            { "tex": "=\\,x\\lg 5", "id": "ex5x" },
+            { "tex": "=", "id": "eqE" },
+            { "tex": "x\\lg 5", "id": "ex5x" },
             { "tex": "-3\\lg 5", "id": "ex5n" }
           ]
         },
