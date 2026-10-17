@@ -77,6 +77,36 @@ export interface EquationStep {
   /** A section heading written above this line, with it ("Step 2: join the logs, then compare") —
    *  a scrolling board's stand-in for a new board's heading. */
   heading?: string;
+  /** A sketch drawn on the board under this line when it is written (Adrian, 17 Oct 2026: "if you
+   *  need to include diagrams in the clips, please do so"): any curve y = fn(x), its asymptote and
+   *  labelled points, in chalk. */
+  graph?: StepGraph;
+}
+
+/** A curve sketch on a clip board. `fn` is plain maths in x: + − * / ^ ( ) and ln, log (base 10),
+ *  exp, sqrt, abs, e — e.g. "ln(2 - x)". */
+export interface StepGraph {
+  fn: string;
+  xMin: number; xMax: number; yMin: number; yMax: number;
+  /** A vertical (x = …) and/or horizontal (y = …) asymptote, dashed, with its label. */
+  asymptote?: { x?: number; y?: number; label?: string };
+  /** Points to mark and label ("(1, 0)"). */
+  points?: { x: number; y: number; label: string }[];
+}
+
+const GRAPH_FN = /^(?:[0-9x+\-*/().^ ,]|ln|log|exp|sqrt|abs|e)*$/;
+/** The curve as a function of x, or null when `fn` is not plain maths in x. */
+export function graphFn(fn: string): ((x: number) => number) | null {
+  if (typeof fn !== 'string' || !GRAPH_FN.test(fn)) return null;
+  const js = fn
+    .replace(/\bln\b/g, 'Math.log').replace(/\blog\b/g, 'Math.log10').replace(/\bexp\b/g, 'Math.exp')
+    .replace(/\bsqrt\b/g, 'Math.sqrt').replace(/\babs\b/g, 'Math.abs').replace(/\be\b/g, 'Math.E')
+    .replace(/\^/g, '**');
+  try {
+    const f = new Function('x', `return (${js});`) as (x: number) => number;
+    f(0.5);
+    return f;
+  } catch { return null; }
 }
 
 /** One labelled state of a graph morph: y = Σ coeffs[i]·x^i (constant first). */
@@ -810,6 +840,12 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           errors.push(`${sAt}: note must be a non-empty string when present`);
         }
         if (step.heading !== undefined && !nonEmptyString(step.heading)) errors.push(`${sAt}: heading must be a non-empty string when present`);
+        if (step.graph !== undefined) {
+          const g = step.graph as Record<string, unknown>;
+          const nums = ['xMin', 'xMax', 'yMin', 'yMax'].every(k => typeof g?.[k] === 'number' && Number.isFinite(g[k] as number));
+          if (!isRecord(g) || !nonEmptyString(g.fn) || !graphFn(g.fn as string)) errors.push(`${sAt}: graph.fn must be plain maths in x (ln, log, exp, sqrt, abs, e, + - * / ^)`);
+          else if (!nums || (g.xMin as number) >= (g.xMax as number) || (g.yMin as number) >= (g.yMax as number)) errors.push(`${sAt}: graph needs xMin < xMax and yMin < yMax`);
+        }
       });
       scope.tokenIds = sceneIds;
       break;

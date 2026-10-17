@@ -1,8 +1,7 @@
 {
   "slug": "log-scales-am",
   "title": "Log scales: decibels",
-  "heading": "Log scales: decibels",
-  "intro": "$N = 10\\lg\\tfrac{I}{k}$. Dishwasher $62$ dB, pump $50$ dB. How many times as intense is the dishwasher?",
+  "intro": null,
   "level": "AM",
   "topic": "Logarithms",
   "subgroup": {
@@ -24,18 +23,86 @@
     "facts": [
       "Id/Ip = 10**(6/5)"
     ],
-    "display": "15.8"
+    "display": "15.8 (3 s.f.)"
   },
   "lines": [
     {
+      "board": 0,
+      "heading": "Step 1: put in both readings",
+      "tokens": [
+        {
+          "tex": "N=10\\lg\\dfrac{I}{k}",
+          "id": "q0"
+        }
+      ],
+      "checks": [
+        {
+          "form": "N = 10*lg(I/k): the formula from the question"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\text{readings}\\;\\to\\;\\text{subtract}\\;\\to\\;\\text{un-log}",
+          "id": "p1",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: put in both readings, subtract, un-log"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "62",
+          "id": "n62"
+        },
+        {
+          "tex": "=10\\lg\\dfrac{I_d}{k}",
+          "id": "r62"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the dishwasher: N = 62 and I = Id in the formula"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "50",
+          "id": "n50"
+        },
+        {
+          "tex": "=10\\lg\\dfrac{I_p}{k}",
+          "id": "r50"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the pump: N = 50 and I = Ip in the formula"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "heading": "Step 2: subtract",
       "tokens": [
         {
           "tex": "62-50",
-          "id": "diff"
+          "id": "m"
         },
         {
-          "tex": "=10\\lg\\tfrac{I_d}{k}-10\\lg\\tfrac{I_p}{k}",
-          "id": "two"
+          "tex": "=10\\lg\\dfrac{I_d}{k}-10\\lg\\dfrac{I_p}{k}",
+          "id": "rhs"
         }
       ],
       "checks": [
@@ -46,31 +113,48 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
           "tex": "12",
-          "id": "twelve"
+          "id": "f12"
         },
         {
-          "tex": "=10\\lg\\tfrac{I_d}{I_p}",
-          "id": "one",
-          "hl": "amber"
+          "tex": "=10\\lg\\left(\\dfrac{I_d}{k}\\div\\dfrac{I_p}{k}\\right)",
+          "id": "l5r"
         }
       ],
       "checks": [
         {
-          "identity": "10*log(a/q,10) - 10*log(b/q,10) = 10*log(a/b,10)"
+          "identity": "10*log(a/q,10) - 10*log(b/q,10) = 10*log((a/q)/(b/q),10)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "12",
+          "id": "d12"
         },
+        {
+          "tex": "=10\\lg\\dfrac{I_d}{I_p}",
+          "id": "l6r"
+        }
+      ],
+      "checks": [
         {
           "step": "12 = 10*log(Id/Ip,10)"
         }
       ]
     },
     {
+      "board": 0,
+      "heading": "Step 3: un-log",
       "tokens": [
         {
-          "tex": "\\lg\\tfrac{I_d}{I_p}=1.2",
-          "id": "div"
+          "tex": "\\lg\\dfrac{I_d}{I_p}=1.2",
+          "id": "l7"
         }
       ],
       "checks": [
@@ -80,21 +164,29 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
-          "tex": "\\tfrac{I_d}{I_p}=10^{1.2}",
-          "id": "unlog"
-        },
-        {
-          "tex": "\\approx 15.8",
-          "id": "ans",
-          "hl": "emerald"
+          "tex": "\\dfrac{I_d}{I_p}=10^{1.2}",
+          "id": "l8"
         }
       ],
       "checks": [
         {
           "step": "Id/Ip = 10**1.2"
-        },
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "=15.8\\;\\text{(3 s.f.)}",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
         {
           "approx": 15.8,
           "sf": 3
@@ -103,12 +195,15 @@
     }
   ],
   "outline": [
-    "Read the question. Compare two readings: subtract them (write diff, two).",
-    "Minus Power: one log of the ratio; the k cancels (write twelve, one).",
-    "Divide by 10 (write div).",
-    "Un-log: 10 to the power 1.2 (write unlog).",
-    "About 15.8 times as intense (write ans, box).",
-    "Trap: the answer is not 12 — 12 is the difference in decibels; the question asks how many times."
+    "Rebuilt 17 Oct 2026 to the house rules: one scrolling board; each reading in the formula on its own line; subtract; Minus Power lit then applied; k cancels on its own line; divide by 10; un-log with 10 to the power; 15.8 (3 s.f.); one Watch out (not 12)."
   ],
-  "question": "The noise rating $N$ decibels and the intensity $I$ are connected by $N = 10\\lg\\dfrac{I}{k}$, where $k$ is a constant. A hot water pump is rated $50$ dB and a dishwasher $62$ dB. Find $\\dfrac{\\text{intensity of the dishwasher}}{\\text{intensity of the pump}}$."
+  "question": "The noise rating $N$ decibels and the intensity $I$ are connected by $N = 10\\lg\\dfrac{I}{k}$, where $k$ is a constant. A hot water pump is rated $50$ dB and a dishwasher $62$ dB. Find how many times as intense the dishwasher is as the pump, correct to 3 significant figures.",
+  "boards": [
+    {
+      "heading": null,
+      "intro": null,
+      "scroll": true
+    }
+  ],
+  "minutes": 2
 }

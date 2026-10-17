@@ -78,7 +78,7 @@ import ClipAskPanel, { type ClipAskStep } from './clip-ask-panel';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
-  type GraphMorphScene, type GraphPiece, type MotionGraphScene, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
+  type GraphMorphScene, type GraphPiece, type MotionGraphScene, type StepGraph, graphFn, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
   type ResolvedCheckScene, type StepToken, type TitleScene,
 } from '@/lib/lesson-script';
 import {
@@ -541,6 +541,61 @@ function attachBoardLook(cont: HTMLElement): () => void {
   };
 }
 
+/**
+ * A curve sketch drawn in chalk under its line (StepGraph): axes, a dashed asymptote, the curve drawn
+ * on as the line is written, then the labelled points (Adrian, 17 Oct 2026: "if you need to include
+ * diagrams in the clips, please do so").
+ */
+function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
+  const W = 300, H = 190, P = 14;
+  const sx = (x: number) => P + ((x - g.xMin) / (g.xMax - g.xMin)) * (W - 2 * P);
+  const sy = (y: number) => H - P - ((y - g.yMin) / (g.yMax - g.yMin)) * (H - 2 * P);
+  const d = useMemo(() => {
+    const f = graphFn(g.fn);
+    if (!f) return '';
+    let path = '', pen = false;
+    const N = 240;
+    for (let i = 0; i <= N; i++) {
+      const x = g.xMin + ((g.xMax - g.xMin) * i) / N;
+      const y = f(x);
+      if (!Number.isFinite(y) || y < g.yMin - 0.5 || y > g.yMax + 0.5) { pen = false; continue; }
+      path += `${pen ? 'L' : 'M'}${sx(x).toFixed(1)} ${sy(Math.max(g.yMin, Math.min(g.yMax, y))).toFixed(1)} `;
+      pen = true;
+    }
+    return path;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [g.fn, g.xMin, g.xMax, g.yMin, g.yMax]);
+  const x0 = g.xMin <= 0 && g.xMax >= 0 ? sx(0) : null;
+  const y0 = g.yMin <= 0 && g.yMax >= 0 ? sy(0) : null;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className={`lsn-graph ${on ? 'on' : ''}`} aria-hidden>
+      {y0 !== null && <line x1={P - 6} y1={y0} x2={W - P + 6} y2={y0} className="lsn-graph-axis" />}
+      {x0 !== null && <line x1={x0} y1={H - P + 6} x2={x0} y2={P - 6} className="lsn-graph-axis" />}
+      {y0 !== null && <text x={W - P + 4} y={y0 - 5} className="lsn-graph-lab">x</text>}
+      {x0 !== null && <text x={x0 + 5} y={P} className="lsn-graph-lab">y</text>}
+      {g.asymptote?.x !== undefined && (
+        <g className="lsn-graph-asy">
+          <line x1={sx(g.asymptote.x)} y1={P - 4} x2={sx(g.asymptote.x)} y2={H - P + 4} />
+          {g.asymptote.label && <text x={sx(g.asymptote.x) + 5} y={P + 10} className="lsn-graph-lab">{g.asymptote.label}</text>}
+        </g>
+      )}
+      {g.asymptote?.y !== undefined && (
+        <g className="lsn-graph-asy">
+          <line x1={P - 4} y1={sy(g.asymptote.y)} x2={W - P + 4} y2={sy(g.asymptote.y)} />
+          {g.asymptote.label && <text x={P + 2} y={sy(g.asymptote.y) - 5} className="lsn-graph-lab">{g.asymptote.label}</text>}
+        </g>
+      )}
+      <path d={d} pathLength={1} className="lsn-graph-curve" />
+      {(g.points ?? []).map((pt, i) => (
+        <g key={i} className="lsn-graph-pt">
+          <circle cx={sx(pt.x)} cy={sy(pt.y)} r={3.6} />
+          <text x={sx(pt.x) + (sx(pt.x) > W * 0.7 ? -8 : 7)} y={sy(pt.y) + (pt.y >= 0 ? -7 : 15)} textAnchor={sx(pt.x) > W * 0.7 ? 'end' : 'start'} className="lsn-graph-lab">{pt.label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 /** Board elements a scrolling board has already seen written (so only a NEW one pulls it into view). */
 const seenOnBoard = new WeakSet<Element>();
 
@@ -908,6 +963,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               {/* The note is the prose the voice reads for this line; the
                   tokens above it arrive per step and are never walked word by
                   word. The intro (the question) stays at full ink throughout. */}
+              {s.graph && <ClipGraph g={s.graph} on={on} />}
               {s.note && (
                 <p data-fit className="lsn-step-note mt-1.5 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug"><Prose text={s.note} group={ng.group} from={ng.from} timed={timed} /></p>
               )}
@@ -3013,6 +3069,16 @@ const PLAYER_CSS = `
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
+.lsn-graph { display: block; width: min(100%, 340px); height: auto; margin: 6px 0 2px; overflow: visible; }
+.lsn-graph-axis { stroke: rgba(248,250,252,0.55); stroke-width: 1.4; }
+.lsn-graph-lab { fill: rgba(248,250,252,0.85); font: italic 12px Georgia, 'Times New Roman', serif; }
+.lsn-graph-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.lsn-graph.on .lsn-graph-curve { stroke-dashoffset: 0; transition: stroke-dashoffset 1.8s ease-in-out 0.3s; }
+.lsn-graph-asy line { stroke: #a8ecfb; stroke-width: 1.4; stroke-dasharray: 5 4; }
+.lsn-graph-asy, .lsn-graph-pt { opacity: 0; }
+.lsn-graph.on .lsn-graph-asy { opacity: 1; transition: opacity 0.5s ease 0s; }
+.lsn-graph.on .lsn-graph-pt { opacity: 1; transition: opacity 0.5s ease 2.1s; }
+.lsn-graph-pt circle { fill: #f9a8d4; }
 .lsn-back-now { position: absolute; right: 10px; bottom: 12px; z-index: 30; border-radius: 999px; padding: 6px 14px; font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: hsl(220, 60%, 20%); background: hsl(45, 100%, 92%); box-shadow: 0 4px 14px -4px rgba(0,0,0,0.45); }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }

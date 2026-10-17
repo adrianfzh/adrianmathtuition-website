@@ -1,0 +1,187 @@
+{
+ "slug": "log-scales-am",
+ "draft": "R1",
+ "by": "session, 17 Oct 2026: rebuilt to the house rules",
+ "beats": [
+  {
+   "say": "N equals ten log of I over K. The dishwasher is sixty-two decibels, and the pump is fifty.",
+   "asks": [
+    "What is a decibel?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "We want how many times as intense: a ratio. Plan: put in both readings, subtract, then un-log.",
+   "asks": [
+    "Why is it a ratio?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "Plan: put in both readings"
+    }
+   ]
+  },
+  {
+   "say": "Put in the dishwasher: sixty-two equals ten log of I D over K.",
+   "asks": [
+    "What is I D?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "sixty-two equals ten log"
+    }
+   ]
+  },
+  {
+   "say": "And the pump: fifty equals ten log of I P over K.",
+   "asks": [
+    "Why subtract the two?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "fifty equals ten log"
+    }
+   ]
+  },
+  {
+   "say": "Subtract the two readings. Sixty-two minus fifty equals the difference of the two logs.",
+   "asks": [
+    "Why subtract, not divide?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "Sixty-two minus fifty"
+    }
+   ]
+  },
+  {
+   "say": "Both logs have the same base, ten. Minus Power joins them into one log of a division.",
+   "asks": [
+    "What is Minus Power?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "rhs",
+     "on": "Both logs have"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\lg M - \\lg N = \\lg\\tfrac{M}{N}$",
+     "near": "rhs",
+     "on": "Minus Power joins them"
+    }
+   ]
+  },
+  {
+   "say": "So twelve equals ten log of I D over K, divided by I P over K.",
+   "asks": [
+    "Where did twelve come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "So twelve equals"
+    }
+   ]
+  },
+  {
+   "say": "The K cancels. Twelve equals ten log of I D over I P.",
+   "asks": [
+    "Why does K cancel?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 6,
+     "on": "Twelve equals ten log"
+    }
+   ]
+  },
+  {
+   "say": "Divide both sides by ten. Log of the ratio is one point two.",
+   "asks": [
+    "Why divide by ten?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 7,
+     "on": "Log of the ratio"
+    }
+   ]
+  },
+  {
+   "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
+   "asks": [
+    "How do I un-log?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 8,
+     "on": "un-log with ten"
+    },
+    {
+     "do": "note",
+     "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^c$",
+     "near": "l8",
+     "on": "The ratio is ten"
+    }
+   ]
+  },
+  {
+   "say": "So the dishwasher is fifteen point eight times as intense, correct to three significant figures.",
+   "asks": [
+    "How do I key 10 to the 1.2?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 9,
+     "on": "fifteen point eight times"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "correct to three significant"
+    }
+   ]
+  },
+  {
+   "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
+   "asks": [
+    "Why is the answer not 12?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "d12",
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: not $12$ — that is the dB difference",
+     "near": "d12",
+     "on": "difference in decibels"
+    }
+   ]
+  }
+ ]
+}

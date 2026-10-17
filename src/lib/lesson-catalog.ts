@@ -169,7 +169,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Logarithms',
     title: 'Log scales: decibels',
-    minutes: 1,
+    minutes: 2,
   },
   {
     slug: 'log-of-negative-undefined-am',

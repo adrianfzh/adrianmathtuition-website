@@ -1,6 +1,6 @@
 {
  "slug": "log-scales-am",
- "at": "2026-10-15T09:15:56.008Z",
+ "at": "2026-10-17T15:41:36.804Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,19 +8,15 @@
   },
   "maths": {
    "ok": true,
-   "detail": "8/8 line checks"
+   "detail": "13/13 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "4 lines = the checked plan"
+   "detail": "10 lines = the checked plan"
   },
   "read": {
    "ok": true,
-   "detail": "pick B · lowest score 4 · pass"
-  },
-  "voice": {
-   "ok": true,
-   "detail": "8/8 beats voiced + timed · speech round trip worst 86 %"
+   "detail": "pick R1 · lowest score 4 · pass"
   },
   "look": {
    "ok": true,
