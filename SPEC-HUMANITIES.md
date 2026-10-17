@@ -271,19 +271,29 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   through the live reader.
 
 > **R — GRAPH NUMBERS AND A WHOLE PAPER AT ONCE, 17 Oct 2026.** Adrian: "do the next two (just don't do literature)".
-> - **Graph numbers.** The photo reader now writes every graph or chart ALSO as its numbers — `[Data read from Fig. N: label
+> - **Graph numbers** (read **as accurately as possible** — Adrian, 17 Oct 2026: *"when reading graphs, system should aim to read as
+>   accurate as possible"*: a printed value copied exactly, otherwise lined up against the scale and gridlines to at least a
+>   tenth of a major division, every value read twice). The photo reader now writes every graph or chart ALSO as its numbers — `[Data read from Fig. N: label
 >   value; …]`, read to half the smallest grid division, `~` for an estimate — and a printed question with its figures is read
 >   by the large model (`PHOTO_FIGURE_MODEL`, Opus; handwriting stays on Sonnet 5.5). When a question's material carries
 >   read-off numbers, the marker gets one more rule (`READ_OFF_PHOTO_RULE`): accept a figure within about one small grid
 >   square; never take a mark for that difference alone (`ownContext` → `q.rules`, which the level prompt now also passes).
 >   Checked 17 Oct: a drawn bar chart (5.9 · 1.1 · 0.8 · 3.0 · 5.2 million) was read back exactly.
-> - **A whole paper — built, then REMOVED the same day.** Adrian, 17 Oct 2026: *"how large is a whole paper? should just
->   allow them to send one question at a time - not meant to mark a script"*. The Whole-paper door, `own-paper` route,
->   page-batch reading and merge were deleted; "Check my answer" takes ONE question at a time (with its parts). Do not
->   rebuild script marking here without his word.
-> - **Graphs read as accurately as possible** (Adrian, same day: *"when reading graphs, system should aim to read as accurate
->   as possible"*): a printed value is copied exactly; otherwise each point is lined up against the scale and gridlines and
->   interpolated to at least a tenth of a major division, `~` before an interpolated value, every value read twice.
+> - **A whole paper — CLOSED TO STUDENTS** (`HUMANITIES_WHOLE_PAPER_OPEN_TO_STUDENTS = false`; Adrian, 17 Oct 2026: *"should
+>   just allow them to send one question at a time - not meant to mark a script"* → *"you don't have to delete it, you can just
+>   gatekeep it from students. we can turn it on later, just not now"*). Adrian's admin cookie and the preview student see it;
+>   the `own-paper` route and `transcribe` mode `paper` refuse students. When open: "Check my answer" has **One question | Whole paper**. Whole paper: add photos of every page (up to 30,
+>   in order, questions and answers) → **Read my paper** sends them 3 at a time to `transcribe` mode `paper` (each later
+>   batch is told the question the pages before ended on, so an answer running onto the next page joins it) and merges the
+>   items by question number (`lib/humanities-paper-merge.ts`) → a list "Questions we found" (Q-number, question, answer
+>   word count, Leave out) → **Mark my paper** → `POST /api/portal/humanities/own-paper`: each question — split into its
+>   parts when it has them — is prepared (`lib/humanities-own-prepare.ts`, shared with the one-question door) and handed in
+>   under one `group_id` with `own_question.part.paper = true` → `/app/humanities/group/<id>` headed **"Your paper — 7 out
+>   of 16 marks"**, one card per answer ("Question 1(a)"). Each answer counts against the day's 20; a paper over the
+>   allowance is refused with the count.
+> - Checked 17 Oct as the demo student: a 4-page Geography paper (Q1 with a bar chart and parts (a) [3], (b) [4]; Q2 a 9-mark
+>   "to what extent" whose answer runs onto page 4) → read in 8–10 s, both questions found with the whole of each answer,
+>   handed in 21 s, marked 3/3 · 2/4 · 2/9 → **7 out of 16** about 2 minutes later.
 
 > **Q — QUESTIONS WITH PARTS, MARKED PART BY PART, 17 Oct 2026.** Adrian: "does this check my answer cover all aspects of
 > their papers?" → "yes" (to fixing multi-part questions first).

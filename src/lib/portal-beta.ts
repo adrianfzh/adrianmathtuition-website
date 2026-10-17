@@ -314,6 +314,14 @@ export const HUMANITIES_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_
 // question, sources and answer, typed or by photo) plus their answers and feedback. Our own questions, the
 // timed paper and practice stay behind HUMANITIES_OPEN_TO_STUDENTS. Flip to false to hide it again.
 export const HUMANITIES_OWN_OPEN_TO_STUDENTS = true;
+// 📄 "Check my answer" → Whole paper (17 Oct 2026): photos of every page, each question marked, one total. CLOSED —
+// Adrian: "should just allow them to send one question at a time - not meant to mark a script" → "you don't have to
+// delete it, you can just gatekeep it from students. we can turn it on later, just not now". Adrian's admin cookie and
+// the preview student see it. Flip to true to show students the One question | Whole paper choice.
+export const HUMANITIES_WHOLE_PAPER_OPEN_TO_STUDENTS = false;
+export async function humanitiesWholePaperOpen(): Promise<boolean> {
+  return HUMANITIES_WHOLE_PAPER_OPEN_TO_STUDENTS || (await humanitiesOpen());
+}
 /** The "question from school" part: open to everyone when its switch is on, else as humanitiesOpen. */
 export async function humanitiesOwnOpen(): Promise<boolean> {
   return HUMANITIES_OWN_OPEN_TO_STUDENTS || (await humanitiesOpen());

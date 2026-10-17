@@ -20,8 +20,8 @@ export const hasReadOffData = (material: string): boolean => /\[Data read from/i
 
 export const UNREADABLE = 'UNREADABLE';
 
-export type PhotoMode = 'answer' | 'question' | 'sources';
-export const isPhotoMode = (m: unknown): m is PhotoMode => m === 'answer' || m === 'question' || m === 'sources';
+export type PhotoMode = 'answer' | 'question' | 'sources' | 'paper';
+export const isPhotoMode = (m: unknown): m is PhotoMode => m === 'answer' || m === 'question' || m === 'sources' || m === 'paper';
 
 /** A printed question or its sources (a question brought from school, lib/humanities-own). */
 function printedPrompt(pages: number, mode: 'question' | 'sources'): string {
@@ -72,7 +72,44 @@ export function parseWholeQuestion(reply: string): { question: string; material:
   } catch { return null; }
 }
 
-export function transcribePrompt(pages: number, question: string, mode: PhotoMode = 'answer'): string {
+/**
+ * Pages of a whole paper (17 Oct 2026, Adrian: "do the next two" — a whole paper at once): the printed questions,
+ * what they use, and the student's handwritten answers, question by question. A batch of pages may start or end
+ * part-way through a question; the page sends batches and merges them by question number (lib/humanities-paper).
+ */
+function paperPrompt(pages: number, after: string): string {
+  return [
+    `The ${pages === 1 ? 'photo is a page' : `${pages} photos are pages`}, in order, of a student's secondary-school Humanities exam paper: the printed questions and the student's handwritten answers (on the paper or on separate writing paper).`,
+    ...(after ? [`The pages before these ended with question ${after}. Writing at the top of these pages that shows no new question number goes on with the answer to question ${after}: give it as an item with number "${after}" and question "".`] : []),
+    '',
+    'For every question on these pages, give one item:',
+    '- "number": the question number as printed ("1", "2", "3" …) — the main number only; parts (a), (b) stay inside the question and the answer.',
+    '- "question": the question exactly as printed — every part with its label and marks, e.g. "(a) Describe … [3]". "" if the question itself is not on these pages (only the answer is).',
+    '- "material": everything the question uses, exactly as printed — background information, sources, extracts, figures, tables, each with its label and the line saying where it comes from. When one set of sources serves several questions (a source-based case study), give the whole set with EACH of those questions. A picture is [Picture: …] with everything shown and every word in it. ' + "A graph or chart is ALSO given as its numbers: [Data read from Fig. N: label value; …], every plotted value read as accurately as possible (a printed value copied exactly; otherwise against the scale and gridlines to at least a tenth of a major division), ~ for an interpolated value.",
+    '- "answer": the student\'s handwritten answer to that question, copied EXACTLY, word for word, with their own part labels. A word you cannot read is [?]. Crossed-out words are left out. "" if no answer is on these pages.',
+    '- Leave out covers, instructions, page numbers and anything a teacher wrote.',
+    '',
+    'Reply with one JSON object only: {"items": [{"number": "1", "question": "…", "material": "…", "answer": "…"}]}',
+  ].join('\n');
+}
+
+export interface PaperItem { number: string; question: string; material: string; answer: string }
+
+/** The reply → the items on these pages (possibly none), or null when it is not readable. */
+export function parsePaperItems(reply: string): PaperItem[] | null {
+  const m = String(reply ?? '').match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const j = JSON.parse(m[0]) as { items?: unknown };
+    if (!Array.isArray(j.items)) return null;
+    return (j.items as Record<string, unknown>[])
+      .map(i => ({ number: String(i.number ?? '').replace(/^\s*(q(uestion)?\.?\s*)/i, '').trim(), question: String(i.question ?? '').trim(), material: String(i.material ?? '').trim(), answer: String(i.answer ?? '').trim() }))
+      .filter(i => i.number && (i.question || i.answer));
+  } catch { return null; }
+}
+
+export function transcribePrompt(pages: number, question: string, mode: PhotoMode = 'answer', after = ''): string {
+  if (mode === 'paper') return paperPrompt(pages, after);
   if (mode === 'question') return wholeQuestionPrompt(pages);
   if (mode !== 'answer') return printedPrompt(pages, mode);
   return [
