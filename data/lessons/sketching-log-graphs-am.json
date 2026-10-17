@@ -3,67 +3,32 @@
   "title": "Sketching a log graph",
   "level": "AM",
   "topic": "Logarithms",
-  "minutes": 2,
+  "minutes": 1,
   "kind": "clip",
   "theme": "chalk",
   "question": "Sketch the graph of $y = \\ln(2 - x)$, labelling the asymptote and any intercepts.",
   "scenes": [
     {
       "type": "equation-steps",
-      "scroll": true,
+      "heading": "Sketching a log graph",
       "steps": [
         {
-          "heading": "Step 1: the asymptote",
           "tokens": [
             { "tex": "y=\\ln(2-x)", "id": "eqn" }
           ]
         },
         {
           "tokens": [
-            { "tex": "\\text{1. asymptote}\\;\\to\\;\\text{2. shape}", "id": "p1", "hl": "sky" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "\\to\\;\\text{3. draw}\\;\\to\\;\\text{4. intercepts}", "id": "p2", "hl": "sky" }
-          ]
-        },
-        {
-          "tokens": [
             { "tex": "2-x=0", "id": "in0" },
-            { "tex": "\\Rightarrow\\;x=2", "id": "asy" }
+            { "tex": "\\Rightarrow\\;x=2", "id": "asy", "hl": "sky" }
           ]
         },
         {
-          "heading": "Step 2: the shape",
           "tokens": [
-            { "tex": "\\text{shape of }y=\\ln(-x)", "id": "shape" }
-          ],
-          "graph": {
-            "fn": "ln(-x)",
-            "xMin": -5,
-            "xMax": 2,
-            "yMin": -2.6,
-            "yMax": 2.6,
-            "asymptote": { "x": 0 }
-          }
+            { "tex": "\\text{shape of}\\;\\; y=\\ln(-x)", "id": "shape", "hl": "amber" }
+          ]
         },
         {
-          "heading": "Step 3: draw it against x = 2",
-          "tokens": [
-            { "tex": "y=\\ln(2-x)", "id": "drw" }
-          ],
-          "graph": {
-            "fn": "ln(2 - x)",
-            "xMin": -5,
-            "xMax": 3.5,
-            "yMin": -2.6,
-            "yMax": 2.6,
-            "asymptote": { "x": 2, "label": "x = 2" }
-          }
-        },
-        {
-          "heading": "Step 4: the intercepts",
           "tokens": [
             { "tex": "x=0:", "id": "x0" },
             { "tex": "y=\\ln 2\\approx 0.693", "id": "yint" }
@@ -77,146 +42,104 @@
         },
         {
           "tokens": [
-            { "tex": "x=1", "id": "xi" }
+            { "tex": "x=1", "id": "ans", "hl": "emerald" }
           ]
-        },
-        {
-          "tokens": [
-            { "tex": "x=2,\\;(0,\\,\\ln 2),\\;(1,\\,0)", "id": "ans", "hl": "emerald" }
-          ],
-          "graph": {
-            "fn": "ln(2 - x)",
-            "xMin": -5,
-            "xMax": 3.5,
-            "yMin": -2.6,
-            "yMax": 2.6,
-            "asymptote": { "x": 2, "label": "x = 2" },
-            "points": [
-              { "x": 0, "y": 0.693, "label": "(0, ln 2)" },
-              { "x": 1, "y": 0, "label": "(1, 0)" }
-            ]
-          }
         }
       ],
       "beats": [
         {
-          "say": "Sketch Y equals L N of two minus X, and label the asymptote and the intercepts.",
-          "asks": ["What is an asymptote?"],
+          "say": "Sketch Y equals L N of two minus X. Four steps: asymptote, shape, draw, intercepts.",
           "do": [
             { "do": "write", "step": 0 }
           ],
+          "asks": ["What is an asymptote?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b1.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Here is the plan, four steps: the asymptote, the shape, draw it, then the intercepts.",
-          "asks": ["Why these four steps?"],
+          "say": "Step one, the asymptote. Let the inside of the log equal zero.",
           "do": [
-            { "do": "write", "token": "p1", "on": "the asymptote, the shape" },
-            { "do": "write", "token": "p2", "on": "draw it, then the intercepts" }
+            { "do": "write", "token": "in0", "on": "inside of the log" }
           ],
+          "asks": ["Why let the inside equal zero?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b2.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Step one, the asymptote. A log needs a positive inside, so the curve only gets close to where the inside is zero.",
-          "asks": ["Why must the inside be positive?"],
+          "say": "Two minus X equals zero, so the asymptote is X equals two.",
           "do": [
-            { "do": "write", "token": "in0", "on": "where the inside is zero" }
+            { "do": "note", "text": "← Asymptote: inside equals zero", "near": "in0" },
+            { "do": "write", "token": "asy", "on": "X equals two" }
           ],
+          "asks": ["Why is the asymptote x = 2?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b3.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Two minus X equals zero, so the asymptote is X equals two.",
-          "asks": ["What does the asymptote do?"],
+          "say": "Step two, the shape. Minus in front of X flips the graph in the Y axis.",
           "do": [
-            { "do": "write", "token": "asy", "on": "the asymptote is" },
-            { "do": "note", "text": "Asymptote: the inside $= 0$", "near": "in0", "on": "X equals two" }
+            { "do": "highlight", "token": "eqn", "on": "Minus in front" }
           ],
+          "asks": ["Why does −x flip the graph?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b4.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b4.timing.json"
         },
         {
-          "say": "Step two, the shape. The minus in front of X flips L N X in the Y axis.",
-          "asks": ["Why does minus x flip the graph?"],
+          "say": "So the curve has the shape of L N of minus X.",
           "do": [
-            { "do": "highlight", "token": "eqn", "on": "The minus in front" }
+            { "do": "write", "step": 2, "on": "shape of L N" }
           ],
+          "asks": ["What does y = ln(−x) look like?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b5.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b5.timing.json"
         },
         {
-          "say": "So it has the shape of L N of minus X: it rises to the left, and dives down beside the Y axis.",
-          "asks": ["What does ln of minus x look like?"],
+          "say": "Step three. Draw that shape on your paper, hugging X equals two. The inside must be positive, so the curve stays left of it.",
           "do": [
-            { "do": "write", "step": 4, "on": "So it has the shape" }
+            { "do": "highlight", "token": "asy", "on": "X equals two" }
           ],
+          "asks": ["Why must the inside be positive?", "Which side of x = 2 is the curve?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b6.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Step three: draw that shape against the asymptote X equals two. X must be less than two, so the curve stays left of it.",
-          "asks": ["Why does the curve stay on the left?"],
-          "do": [
-            { "do": "write", "step": 5, "on": "Step three: draw that shape" }
-          ],
-          "audio": "/lessons/sketching-log-graphs-am/scene-01-b7.mp3",
-          "timing": "/lessons/sketching-log-graphs-am/scene-01-b7.timing.json"
-        },
-        {
           "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
-          "asks": ["How do I find the y intercept?"],
           "do": [
             { "do": "write", "token": "x0", "on": "When X is zero" },
             { "do": "write", "token": "yint", "on": "Y is L N two" }
           ],
+          "asks": ["Why is y = ln 2 when x = 0?"],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b7.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "When Y is zero, the inside equals E to the power zero, which is one.",
+          "do": [
+            { "do": "write", "token": "y0", "on": "When Y is zero" },
+            { "do": "write", "token": "xin", "on": "the inside equals" }
+          ],
+          "asks": ["Why is the inside 1 when y = 0?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b8.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b8.timing.json"
         },
         {
-          "say": "When Y is zero, L N of two minus X is zero, so two minus X is E to the power zero, one.",
-          "asks": ["Why is the inside one?"],
+          "say": "The asymptote uses inside equals zero. The intercept uses inside equals one.",
           "do": [
-            { "do": "write", "token": "y0", "on": "When Y is zero" },
-            { "do": "write", "token": "xin", "on": "so two minus X is" }
+            { "do": "mark", "kind": "circle", "token": "xin", "on": "inside equals one" }
           ],
+          "asks": ["When is it inside = 0, when inside = 1?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b9.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b9.timing.json"
         },
         {
           "say": "So two minus X is one, and the X intercept is X equals one.",
-          "asks": ["How do I solve 2 minus x equals 1?"],
           "do": [
-            { "do": "write", "step": 8, "on": "the X intercept is" }
+            { "do": "write", "token": "ans", "on": "two minus X" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals one" }
           ],
+          "asks": ["How do I label the intercepts?"],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b10.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b10.timing.json"
-        },
-        {
-          "say": "Here is the sketch: the asymptote X equals two, and the curve through zero, L N two, and one, zero.",
-          "asks": ["Do I need to show the asymptote dashed?"],
-          "do": [
-            { "do": "write", "step": 9, "on": "Here is the sketch" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "and the curve through" }
-          ],
-          "audio": "/lessons/sketching-log-graphs-am/scene-01-b11.mp3",
-          "timing": "/lessons/sketching-log-graphs-am/scene-01-b11.timing.json"
-        },
-        {
-          "say": "Watch out: the asymptote is where the inside is zero. The X intercept is where the inside is one.",
-          "asks": ["Why are they different?"],
-          "do": [
-            { "do": "mark", "kind": "circle", "token": "xin", "on": "Watch out" },
-            {
-              "do": "note",
-              "text": "✗ Watch out: inside $= 1$ for $y = 0$, not inside $= 0$",
-              "near": "xin",
-              "on": "The X intercept is"
-            }
-          ],
-          "audio": "/lessons/sketching-log-graphs-am/scene-01-b12.mp3",
-          "timing": "/lessons/sketching-log-graphs-am/scene-01-b12.timing.json"
         }
       ]
     }

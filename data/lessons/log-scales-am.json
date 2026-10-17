@@ -3,196 +3,121 @@
   "title": "Log scales: decibels",
   "level": "AM",
   "topic": "Logarithms",
-  "minutes": 2,
+  "minutes": 1,
   "kind": "clip",
   "theme": "chalk",
-  "question": "The noise rating $N$ decibels and the intensity $I$ are connected by $N = 10\\lg\\dfrac{I}{k}$, where $k$ is a constant. A hot water pump is rated $50$ dB and a dishwasher $62$ dB. Find how many times as intense the dishwasher is as the pump, correct to 3 significant figures.",
+  "question": "The noise rating $N$ decibels and the intensity $I$ are connected by $N = 10\\lg\\dfrac{I}{k}$, where $k$ is a constant. A hot water pump is rated $50$ dB and a dishwasher $62$ dB. Find $\\dfrac{\\text{intensity of the dishwasher}}{\\text{intensity of the pump}}$.",
   "scenes": [
     {
       "type": "equation-steps",
-      "scroll": true,
+      "heading": "Log scales: decibels",
+      "intro": "$N = 10\\lg\\tfrac{I}{k}$. Dishwasher $62$ dB, pump $50$ dB. How many times as intense is the dishwasher?",
       "steps": [
         {
-          "heading": "Step 1: put in both readings",
           "tokens": [
-            { "tex": "N=10\\lg\\dfrac{I}{k}", "id": "q0" }
+            { "tex": "62-50", "id": "diff" },
+            { "tex": "=10\\lg\\tfrac{I_d}{k}-10\\lg\\tfrac{I_p}{k}", "id": "two" }
           ]
         },
         {
           "tokens": [
-            { "tex": "\\text{readings}\\;\\to\\;\\text{subtract}\\;\\to\\;\\text{un-log}", "id": "p1", "hl": "sky" }
+            { "tex": "12", "id": "twelve" },
+            { "tex": "=10\\lg\\tfrac{I_d}{I_p}", "id": "one", "hl": "amber" }
           ]
         },
         {
           "tokens": [
-            { "tex": "62", "id": "n62" },
-            { "tex": "=10\\lg\\dfrac{I_d}{k}", "id": "r62" }
+            { "tex": "\\lg\\tfrac{I_d}{I_p}=1.2", "id": "div" }
           ]
         },
         {
           "tokens": [
-            { "tex": "50", "id": "n50" },
-            { "tex": "=10\\lg\\dfrac{I_p}{k}", "id": "r50" }
-          ]
-        },
-        {
-          "heading": "Step 2: subtract",
-          "tokens": [
-            { "tex": "62-50", "id": "m" },
-            { "tex": "=10\\lg\\dfrac{I_d}{k}-10\\lg\\dfrac{I_p}{k}", "id": "rhs" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "12", "id": "f12" },
-            { "tex": "=10\\lg\\left(\\dfrac{I_d}{k}\\div\\dfrac{I_p}{k}\\right)", "id": "l5r" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "12", "id": "d12" },
-            { "tex": "=10\\lg\\dfrac{I_d}{I_p}", "id": "l6r" }
-          ]
-        },
-        {
-          "heading": "Step 3: un-log",
-          "tokens": [
-            { "tex": "\\lg\\dfrac{I_d}{I_p}=1.2", "id": "l7" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "\\dfrac{I_d}{I_p}=10^{1.2}", "id": "l8" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "=15.8\\;\\text{(3 s.f.)}", "id": "ans", "hl": "emerald" }
+            { "tex": "\\tfrac{I_d}{I_p}=10^{1.2}", "id": "unlog" },
+            { "tex": "\\approx 15.8", "id": "ans", "hl": "emerald" }
           ]
         }
       ],
       "beats": [
         {
-          "say": "N equals ten log of I over K. The dishwasher is sixty-two decibels, and the pump is fifty.",
-          "asks": ["What is a decibel?"],
+          "say": "Dishwasher sixty-two decibels, pump fifty. Find how many times as intense. Subtract the two readings, each ten log I over K.",
+          "asks": ["Why subtract the two readings?", "What is a decibel?"],
           "do": [
-            { "do": "write", "step": 0 }
+            { "do": "write", "step": 0, "on": "Subtract the two readings" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b1.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b1.timing.json"
         },
         {
-          "say": "We want how many times as intense: a ratio. Plan: put in both readings, subtract, then un-log.",
-          "asks": ["Why is it a ratio?"],
+          "say": "Sixty-two minus fifty is twelve.",
+          "asks": ["Why work out 62 − 50 first?"],
           "do": [
-            { "do": "write", "token": "p1", "on": "Plan: put in both readings" }
+            { "do": "write", "token": "twelve", "on": "is twelve" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b2.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Put in the dishwasher: sixty-two equals ten log of I D over K.",
-          "asks": ["What is I D?"],
+          "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+          "asks": ["What is the Minus Power law?", "Why does k cancel?"],
           "do": [
-            { "do": "write", "step": 2, "on": "sixty-two equals ten log" }
+            { "do": "highlight", "token": "two", "on": "Minus Power" },
+            { "do": "write", "token": "one", "on": "one log of the ratio" },
+            { "do": "note", "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$", "near": "one", "on": "K cancels" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b3.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b3.timing.json"
         },
         {
-          "say": "And the pump: fifty equals ten log of I P over K.",
-          "asks": ["Why subtract the two?"],
+          "say": "Divide both sides by ten. Log of the ratio is one point two.",
+          "asks": ["Why divide both sides by 10?"],
           "do": [
-            { "do": "write", "step": 3, "on": "fifty equals ten log" }
+            { "do": "write", "step": 2, "on": "Log of the ratio" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b4.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b4.timing.json"
         },
         {
-          "say": "Subtract the two readings, so Minus Power can join the logs. Sixty-two minus fifty equals the difference of the two logs.",
-          "asks": ["Why subtract, not divide?"],
+          "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
+          "asks": ["What does un-log mean?", "Why 10 to the power?"],
           "do": [
-            { "do": "write", "step": 4, "on": "Sixty-two minus fifty" }
+            { "do": "write", "token": "unlog", "on": "The ratio is ten" },
+            { "do": "note", "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^{c}$", "near": "unlog", "on": "one point two" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b5.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Both logs have the same base, ten. Minus Power joins them into one log of a division.",
-          "asks": ["What is Minus Power?"],
+          "say": "Ten to the power one point two is about fifteen point eight.",
+          "asks": ["How do I key this in?"],
           "do": [
-            { "do": "highlight", "token": "rhs", "on": "Both logs have" },
-            {
-              "do": "note",
-              "text": "Minus Power: $\\lg M - \\lg N = \\lg\\tfrac{M}{N}$",
-              "near": "rhs",
-              "on": "Minus Power joins them"
-            }
+            { "do": "write", "token": "ans", "on": "about fifteen point eight" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
         },
         {
-          "say": "So twelve equals ten log of I D over K, divided by I P over K.",
-          "asks": ["Where did twelve come from?"],
+          "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
+          "asks": ["What does 'times as intense' mean?"],
           "do": [
-            { "do": "write", "step": 5, "on": "So twelve equals" }
+            { "do": "mark", "kind": "box", "token": "ans", "on": "fifteen point eight times" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
         },
         {
-          "say": "The K on top and the K below cancel, so K drops out. Twelve equals ten log of I D over I P.",
-          "asks": ["Why does K cancel?"],
-          "do": [
-            { "do": "write", "step": 6, "on": "Twelve equals ten log" }
-          ],
-          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
-        },
-        {
-          "say": "Divide both sides by ten. Log of the ratio is one point two.",
-          "asks": ["Why divide by ten?"],
-          "do": [
-            { "do": "write", "step": 7, "on": "Log of the ratio" }
-          ],
-          "audio": "/lessons/log-scales-am/scene-01-b9.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b9.timing.json"
-        },
-        {
-          "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
-          "asks": ["How do I un-log?"],
-          "do": [
-            { "do": "write", "step": 8, "on": "un-log with ten" },
-            { "do": "note", "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^c$", "near": "l8", "on": "The ratio is ten" }
-          ],
-          "audio": "/lessons/log-scales-am/scene-01-b10.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b10.timing.json"
-        },
-        {
-          "say": "So the dishwasher is fifteen point eight times as intense, correct to three significant figures.",
-          "asks": ["How do I key 10 to the 1.2?"],
-          "do": [
-            { "do": "write", "step": 9, "on": "fifteen point eight times" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "correct to three significant" }
-          ],
-          "audio": "/lessons/log-scales-am/scene-01-b11.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b11.timing.json"
-        },
-        {
           "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
           "asks": ["Why is the answer not 12?"],
           "do": [
-            { "do": "mark", "kind": "circle", "token": "d12", "on": "Watch out" },
+            { "do": "mark", "kind": "circle", "token": "twelve", "on": "Watch out" },
             {
               "do": "note",
-              "text": "✗ Watch out: not $12$ — that is the dB difference",
-              "near": "d12",
+              "text": "✗ Watch out: not $12$: that is the dB difference",
+              "near": "twelve",
               "on": "difference in decibels"
             }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b12.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b12.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
         }
       ]
     }

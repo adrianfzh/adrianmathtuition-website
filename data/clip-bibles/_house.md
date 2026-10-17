@@ -22,6 +22,14 @@ reads — on every Claude account, because it lives in the repo.
   longer than a phone screen (more than about 7 lines); `assemble.mjs` scrolls only then. Never point
   the voice back up at an old line while the board is scrolled — write the step again on a new line
   below instead, so the eye only ever moves DOWN.
+- **Explain the method, never just the shortcut** (18 Oct 2026: "explanation of concepts or how to use or
+  methods must be clear. A lot of the explanations seems to give shortcuts but doesn't explain
+  clearly"). Each step says WHAT we do, HOW the rule is used here (which part is which), and WHY it is
+  allowed — never "X cancels", "just un-log", "bring it across" without the reason. "Fast" is only for
+  algebra the level already knows; every concept and every law is explained in full.
+- **The whole question is shown** above the clip (never cut off), and on a scrolling board the maths is
+  smaller (fit 0.74) so the lines before stay in view ("font is too large, so when narration goes to the
+  next part, previous parts can't be seen").
 - **An approved clip is changed only where Adrian asks.** Don't rebuild a clip he passed into a busier
   one; apply his named change and keep everything else.
 - **ONE scrolling board** (`"scroll": true` on the one `equation-steps` scene; Adrian, 16 Oct 2026:

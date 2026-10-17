@@ -1,7 +1,7 @@
 {
  "slug": "growth-and-decay-am",
- "pick": "R1",
- "why": "Only draft (R1, rebuilt 17 Oct 2026 to the house rules); scored as fixed.",
+ "pick": "W1",
+ "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
  "scores": {
   "clear": 5,
   "one_idea": 4,
@@ -11,61 +11,50 @@
   "level": 5
  },
  "notes": [
-  "Beat 1 'Find K, for P equals P nought E to the power K T.' left out the doubling and the start of one hundred, so the student hears the question only in part. Fixed: the question read in full, starting on the first word of the maths.",
-  "Beat 8 'Divide both sides by one hundred.' gave no reason. Fixed: 'to get the E part alone' (kept fast, it is routine).",
-  "Beat 10 brings the power down with no law beside the step (house rules: the law under the line, then the law applied as its own line). Fixed in beat 9: the 7.5K power is lit and the power law is noted under line 'ln e^{7.5k} = ln 2' before beat 10 applies it.",
-  "The working runs start → doubling → model → divide → ln → power down → ln e = 1 → k, no stop for a mistake; the answer is boxed on 'correct to three significant'; the one Watch out (P is 200, not 2) is a trap the topic bible names and comes last, circled with a red ✗ note.",
-  "Routine steps (divide by 100, divide by 7.5) stay short; the new idea (take ln because e is involved, the power comes down, ln e = 1) gets a reason each."
+  "Working flows t = 0 → doubling → isolate e → ln both sides → k, no stop for a mistake; k ≈ 0.0924 boxed in beat 8; beat 9 opens 'Watch out:', circles 200, red ✗ note.",
+  "Beat 7 'L N E is one, so the power comes down' mixes two laws while the note shows ln eˣ = x, and the note had no cue. Fixed: 'L N cancels E, leaving the power.' with the note on those words.",
+  "Beat 9 wrote the ✗ note before the circle, uncued. Fixed: circle on 'Watch out', ✗ note on 'not two'.",
+  "The plan ('get the E part alone, then take L N') comes in beat 4, before the first solving move, not in beat 2 — acceptable since beats 2–3 only read the facts."
  ],
  "fixed_beats": {
-  "1": {
-   "say": "P equals P nought E to the power K T. It doubles every seven point five hours, from one hundred. Find K.",
-   "asks": [
-    "What is P nought?"
-   ],
+  "7": {
+   "say": "L N cancels E, leaving the power. Seven point five K equals L N two.",
    "do": [
     {
-     "do": "write",
-     "step": 0
-    }
-   ]
-  },
-  "8": {
-   "say": "Divide both sides by one hundred, to get the E part alone. E to the power seven point five K equals two.",
-   "asks": [
-    "Why divide by 100?"
-   ],
-   "do": [
+     "do": "note",
+     "text": "Take ln: $\\ln e^{x} = x$",
+     "near": "lnboth",
+     "on": "L N cancels E"
+    },
     {
      "do": "write",
-     "step": 5,
-     "on": "E to the power seven"
+     "token": "ln",
+     "on": "Seven point five K"
     }
+   ],
+   "asks": [
+    "Why is ln e = 1?",
+    "How does the power come down?"
    ]
   },
   "9": {
-   "say": "E is involved, so take L N of both sides. Now the power can come down.",
-   "asks": [
-    "Why take L N and not log?",
-    "Which law brings the power down?"
-   ],
+   "say": "Watch out: P is two hundred, not two. Doubling one hundred gives two hundred.",
    "do": [
     {
-     "do": "write",
-     "step": 6,
-     "on": "take L N of both sides"
-    },
-    {
-     "do": "highlight",
-     "token": "pw6",
-     "on": "Now the power"
+     "do": "mark",
+     "kind": "circle",
+     "token": "dbl",
+     "on": "Watch out"
     },
     {
      "do": "note",
-     "text": "Bring down power: $\\ln M^{n} = n\\ln M$",
-     "near": "pw6",
-     "on": "can come down"
+     "text": "✗ Watch out: $P = 2$ (doubling $100$ gives $200$)",
+     "near": "dbl",
+     "on": "not two"
     }
+   ],
+   "asks": [
+    "Why is P 200 and not 2?"
    ]
   }
  },

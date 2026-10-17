@@ -286,6 +286,11 @@ New in the player: a clip board that would run below the screen scales its maths
   the plan as maths (+ → ×, − → ÷), bases lit, each law first, 5 and 6 then 30 and 10 move into one log
   (M orange, N blue), log₃3 = 1 with its reason, one Watch out on the × sign. Maths 10/10, blind read
   pass (6 beats fixed), voice 16/16 ≥ 89 %. **REVERTED the same night** (Adrian: "badly redone. Before redo is better … screen keep shifting up and down") — the approved first cut is back; a short clip stays one fixed board.
+- **18 Oct 2026, after Adrian's watch:** Laws, Growth and decay, Log scales and Sketching are BACK to their
+  approved first cuts ("badly redone. Before redo is better … Likewise for clips 5, 6 and 7"). The new-style
+  rebuilds stay in git history (and the sketch feature, StepGraph, stays in the player for later). Kept in
+  the new style: Solving log equations, Solving exponential equations, Linear Law. The question card now
+  shows the whole question; scrolling boards draw the maths smaller.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

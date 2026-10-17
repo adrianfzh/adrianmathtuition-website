@@ -1,25 +1,80 @@
 {
  "slug": "log-scales-am",
- "pick": "R1",
- "why": "Only draft (R1, rebuilt 17 Oct 2026 to the house rules); scored as fixed.",
- "scores": { "clear": 5, "one_idea": 4, "voice_board": 5, "why": 4, "trap": 5, "level": 5 },
+ "pick": "W1",
+ "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
+ "scores": {
+  "clear": 5,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 5,
+  "level": 5
+ },
  "notes": [
-  "Board and order follow the house rules: plan shown as maths in beat 2, each reading on its own line, Minus Power lit then written under the line, k cancels on its own line, un-log note, 15.8 (3 s.f.) boxed, one Watch out at the end (not 12 — the bible's own trap, a common mistake).",
-  "Beat 5 'Subtract the two readings' gave no reason, though beat 4's ask is 'Why subtract the two?'. Fixed: 'Subtract the two readings, so Minus Power can join the logs.'",
-  "Beat 8 'The K cancels' said what, not why, and never said K drops out. Fixed: 'The K on top and the K below cancel, so K drops out.'",
-  "Beat 7 'So twelve equals …' leaves 62 − 50 = 12 unsaid; routine at AM level, left as it is.",
-  "one_idea 4: beat 6 lights the right side and writes the law in one beat; allowed (highlight does not count), but it is the busiest beat."
+  "Working flows subtract → Minus Power → divide by 10 → un-log, no stop for a mistake; 15.8 boxed in beat 7; beat 8 opens 'Watch out:', circles 12, red ✗ note.",
+  "Beat 1 never said what is asked ('how many times as intense') or that each reading is ten log I over K, though the line writes both. Fixed: 'Dishwasher sixty-two decibels, pump fifty. Find how many times as intense. Subtract the two readings, each ten log I over K.'",
+  "Beat 3 wrote the law with nothing lit; §1b wants the terms lit first. Fixed: the right side lights on 'Minus Power'.",
+  "Beat 8 wrote the ✗ note before the circle, uncued. Fixed: circle on 'Watch out', ✗ note on 'difference in decibels'."
  ],
  "fixed_beats": {
-  "5": {
-   "say": "Subtract the two readings, so Minus Power can join the logs. Sixty-two minus fifty equals the difference of the two logs.",
-   "asks": ["Why subtract, not divide?"],
-   "do": [ { "do": "write", "step": 4, "on": "Sixty-two minus fifty" } ]
+  "1": {
+   "say": "Dishwasher sixty-two decibels, pump fifty. Find how many times as intense. Subtract the two readings, each ten log I over K.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0,
+     "on": "Subtract the two readings"
+    }
+   ],
+   "asks": [
+    "Why subtract the two readings?",
+    "What is a decibel?"
+   ]
+  },
+  "3": {
+   "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "two",
+     "on": "Minus Power"
+    },
+    {
+     "do": "write",
+     "token": "one",
+     "on": "one log of the ratio"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$",
+     "near": "one",
+     "on": "K cancels"
+    }
+   ],
+   "asks": [
+    "What is the Minus Power law?",
+    "Why does k cancel?"
+   ]
   },
   "8": {
-   "say": "The K on top and the K below cancel, so K drops out. Twelve equals ten log of I D over I P.",
-   "asks": ["Why does K cancel?"],
-   "do": [ { "do": "write", "step": 6, "on": "Twelve equals ten log" } ]
+   "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "twelve",
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: not $12$: that is the dB difference",
+     "near": "twelve",
+     "on": "difference in decibels"
+    }
+   ],
+   "asks": [
+    "Why is the answer not 12?"
+   ]
   }
  },
  "verdict": "pass"

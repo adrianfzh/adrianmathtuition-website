@@ -1,92 +1,61 @@
 {
  "slug": "growth-and-decay-am",
- "worst": 0.86,
+ "worst": 0.88,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.91,
-   "score": 0.91,
-   "heard": null
+   "bag": 0.83,
+   "score": 1,
+   "heard": "P equals P not E to the power KT. It starts at 100 and doubles every 7.5 hours. Find K.",
+   "said": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K."
   },
   {
    "beat": 2,
-   "bag": 0.84,
-   "score": 1,
-   "heard": "Here is the plan. Use the start to find P not, then use the doubling, then take LN.",
-   "said": "Here is the plan: use the start to find P nought, then use the doubling, then take L N."
-  },
-  {
-   "beat": 3,
-   "bag": 0.95,
-   "score": 0.95,
-   "heard": null
-  },
-  {
-   "beat": 4,
-   "bag": 0.91,
-   "score": 0.91,
-   "heard": null
-  },
-  {
-   "beat": 5,
-   "bag": 0.9,
-   "score": 0.9,
-   "heard": null
-  },
-  {
-   "beat": 6,
    "bag": 0.93,
    "score": 0.93,
    "heard": null
   },
   {
-   "beat": 7,
-   "bag": 0.89,
-   "score": 0.89,
+   "beat": 3,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
-   "beat": 8,
+   "beat": 4,
+   "bag": 0.88,
+   "score": 0.88,
+   "heard": null
+  },
+  {
+   "beat": 5,
    "bag": 0.95,
    "score": 0.95,
    "heard": null
   },
   {
+   "beat": 6,
+   "bag": 0.7,
+   "score": 0.968,
+   "heard": "He is involved. So take LN of both sides.",
+   "said": "E is involved, so take L N of both sides."
+  },
+  {
+   "beat": 7,
+   "bag": 0.67,
+   "score": 1,
+   "heard": "LN cancels E leaving the power. 7.5k equals LN2.",
+   "said": "L N cancels E, leaving the power. Seven point five K equals L N two."
+  },
+  {
+   "beat": 8,
+   "bag": 0.65,
+   "score": 1,
+   "heard": "So K equals ln2 over 7.5 about 0.0924.",
+   "said": "So K equals L N two over seven point five, about zero point zero nine two four."
+  },
+  {
    "beat": 9,
-   "bag": 0.81,
-   "score": 0.981,
-   "heard": "He is involved, so take ln of both sides. Now the power can come down.",
-   "said": "E is involved, so take L N of both sides. Now the power can come down."
-  },
-  {
-   "beat": 10,
-   "bag": 0.75,
-   "score": 1,
-   "heard": "Bring the power down 7.5k comes down in front of LNE.",
-   "said": "Bring the power down: seven point five K comes down in front of L N E."
-  },
-  {
-   "beat": 11,
-   "bag": 0.77,
-   "score": 1,
-   "heard": "LN E is 1 because E to the power 1 is E. So 7.5K equals LN2.",
-   "said": "L N E is one, because E to the power one is E. So seven point five K equals L N two."
-  },
-  {
-   "beat": 12,
-   "bag": 0.86,
-   "score": 0.86,
-   "heard": null
-  },
-  {
-   "beat": 13,
-   "bag": 0.79,
-   "score": 1,
-   "heard": "So K is 0.0924 correct to three significant figures.",
-   "said": "So K is zero point zero nine two four, correct to three significant figures."
-  },
-  {
-   "beat": 14,
    "bag": 1,
    "score": 1,
    "heard": null

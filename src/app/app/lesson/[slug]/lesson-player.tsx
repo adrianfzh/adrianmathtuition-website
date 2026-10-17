@@ -629,6 +629,12 @@ function scrollClipBoard(cont: HTMLElement) {
     boardEl.style.flex = 'none';   // .lsn-board is flex: 1 — a flex-basis would let it grow with its lines
   }
   boardEl.style.overflow = 'hidden';
+  // Smaller maths on a scrolling board, so the lines before stay in view (Adrian, 18 Oct 2026: "font
+  // is too large, so when narration goes to the next part, previous parts can't be seen").
+  if (!stage.closest('[data-chat-sheet]')) {
+    stage.style.setProperty('--lsn-clip-fit', '0.74');
+    stage.style.setProperty('--lsn-gap-fit', '0.6');
+  }
   // The board clips what scrolls off it — but a mark drawn round a token at the left edge (the answer's
   // box) reaches a little past the working (Adrian, 17 Oct 2026: "pink box seems partially covered on
   // the left"). The clip edge sits 16 px out into the card's own margin; the working stays put.
@@ -2660,8 +2666,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           className="lsn-qstrip relative block w-full text-left mt-3 mb-2.5 rounded-2xl bg-white ring-1 ring-slate-200 px-3.5 pt-3.5 pb-2.5 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.4)] active:scale-[0.99] motion-safe:transition-transform">
           {/* Design B (Adrian picked it, 17 Oct 2026): an amber tag floats on the card's top edge. */}
           <span className="absolute -top-2.5 left-3 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-semibold text-amber-950 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">Question</span>
-          {question.length > 110 && <span className="absolute -top-2 right-3 rounded-full bg-white px-2 text-[10.5px] font-medium text-slate-400 ring-1 ring-slate-200">Tap to read all</span>}
-          <span className="line-clamp-3 text-[15px] leading-snug text-navy" style={{ display: '-webkit-box' }}><MathText text={question} /></span>
+          {/* The WHOLE question, always (Adrian, 18 Oct 2026: "the question itself is only partially shown"). */}
+          <span className={`block ${question.length > 140 ? 'text-[13.5px]' : 'text-[15px]'} leading-snug text-navy`}><MathText text={question} /></span>
         </button>
       )}
       {done ? (

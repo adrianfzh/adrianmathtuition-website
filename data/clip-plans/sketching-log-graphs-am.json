@@ -1,6 +1,7 @@
 {
   "slug": "sketching-log-graphs-am",
   "title": "Sketching a log graph",
+  "heading": "Sketching a log graph",
   "intro": null,
   "level": "AM",
   "topic": "Logarithms",
@@ -22,12 +23,10 @@
       "yi = log(2)",
       "xi = 1"
     ],
-    "display": "x = 2, (0, ln 2), (1, 0)"
+    "display": "x = 1"
   },
   "lines": [
     {
-      "board": 0,
-      "heading": "Step 1: the asymptote",
       "tokens": [
         {
           "tex": "y=\\ln(2-x)",
@@ -43,37 +42,6 @@
       ]
     },
     {
-      "board": 0,
-      "tokens": [
-        {
-          "tex": "\\text{1. asymptote}\\;\\to\\;\\text{2. shape}",
-          "id": "p1",
-          "hl": "sky"
-        }
-      ],
-      "checks": [
-        {
-          "form": "the plan: the four steps for a log graph"
-        }
-      ]
-    },
-    {
-      "board": 0,
-      "tokens": [
-        {
-          "tex": "\\to\\;\\text{3. draw}\\;\\to\\;\\text{4. intercepts}",
-          "id": "p2",
-          "hl": "sky"
-        }
-      ],
-      "checks": [
-        {
-          "form": "the plan, continued: draw, then the intercepts"
-        }
-      ]
-    },
-    {
-      "board": 0,
       "tokens": [
         {
           "tex": "2-x=0",
@@ -81,7 +49,8 @@
         },
         {
           "tex": "\\Rightarrow\\;x=2",
-          "id": "asy"
+          "id": "asy",
+          "hl": "sky"
         }
       ],
       "checks": [
@@ -96,12 +65,11 @@
       ]
     },
     {
-      "board": 0,
-      "heading": "Step 2: the shape",
       "tokens": [
         {
-          "tex": "\\text{shape of }y=\\ln(-x)",
-          "id": "shape"
+          "tex": "\\text{shape of}\\;\\; y=\\ln(-x)",
+          "id": "shape",
+          "hl": "amber"
         }
       ],
       "checks": [
@@ -109,47 +77,9 @@
           "shape": "log(2 - x)",
           "family": "ln(-x)"
         }
-      ],
-      "graph": {
-        "fn": "ln(-x)",
-        "xMin": -5,
-        "xMax": 2,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "asymptote": {
-          "x": 0
-        }
-      }
+      ]
     },
     {
-      "board": 0,
-      "heading": "Step 3: draw it against x = 2",
-      "tokens": [
-        {
-          "tex": "y=\\ln(2-x)",
-          "id": "drw"
-        }
-      ],
-      "checks": [
-        {
-          "form": "the shape of ln(-x) drawn against the asymptote x = 2"
-        }
-      ],
-      "graph": {
-        "fn": "ln(2 - x)",
-        "xMin": -5,
-        "xMax": 3.5,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "asymptote": {
-          "x": 2,
-          "label": "x = 2"
-        }
-      }
-    },
-    {
-      "board": 0,
-      "heading": "Step 4: the intercepts",
       "tokens": [
         {
           "tex": "x=0:",
@@ -172,7 +102,6 @@
       ]
     },
     {
-      "board": 0,
       "tokens": [
         {
           "tex": "y=0:",
@@ -193,11 +122,11 @@
       ]
     },
     {
-      "board": 0,
       "tokens": [
         {
           "tex": "x=1",
-          "id": "xi"
+          "id": "ans",
+          "hl": "emerald"
         }
       ],
       "checks": [
@@ -207,62 +136,16 @@
           "gives": 1
         }
       ]
-    },
-    {
-      "board": 0,
-      "tokens": [
-        {
-          "tex": "x=2,\\;(0,\\,\\ln 2),\\;(1,\\,0)",
-          "id": "ans",
-          "hl": "emerald"
-        }
-      ],
-      "checks": [
-        {
-          "fact": "xa = 2"
-        },
-        {
-          "fact": "yi = log(2)"
-        },
-        {
-          "fact": "xi = 1"
-        }
-      ],
-      "graph": {
-        "fn": "ln(2 - x)",
-        "xMin": -5,
-        "xMax": 3.5,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "asymptote": {
-          "x": 2,
-          "label": "x = 2"
-        },
-        "points": [
-          {
-            "x": 0,
-            "y": 0.693,
-            "label": "(0, ln 2)"
-          },
-          {
-            "x": 1,
-            "y": 0,
-            "label": "(1, 0)"
-          }
-        ]
-      }
     }
   ],
   "outline": [
-    "Rebuilt 17 Oct 2026 to the house rules, with sketches on the board: one scrolling board; the plan as four steps; asymptote (inside = 0); the shape of ln(-x) drawn; the curve drawn against x = 2; the intercepts; the finished sketch with its labels; one Watch out (inside = 0 vs inside = 1)."
+    "Write the question (line 0). Four steps: asymptote, shape, draw, intercepts.",
+    "Step one, asymptote: let the inside of the log equal zero (write in0, asy; note '← asymptote').",
+    "Step two, shape: minus in front of x flips in the y-axis — the shape of ln(-x); the curve lives to the left of x = 2 (write shape).",
+    "Step three: draw that shape against x = 2 (say only).",
+    "Step four, intercepts: x = 0 gives y = ln 2 (write x0, yint).",
+    "y = 0: the inside equals e to the 0, which is 1, so x = 1 (write y0, xin, ans).",
+    "Trap: asymptote — inside equals 0; x-intercept — inside equals 1. Two different equations (circle in0 or xin)."
   ],
-  "question": "Sketch the graph of $y = \\ln(2 - x)$, labelling the asymptote and any intercepts.",
-  "boards": [
-    {
-      "heading": null,
-      "intro": null,
-      "scroll": true
-    }
-  ],
-  "minutes": 2
+  "question": "Sketch the graph of $y = \\ln(2 - x)$, labelling the asymptote and any intercepts."
 }
