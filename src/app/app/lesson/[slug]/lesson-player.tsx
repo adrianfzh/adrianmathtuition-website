@@ -925,7 +925,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
           headline: it is the thing being worked on, and it has to sit on one or
           two lines of a phone board. `data-fit` is the last-resort guard. */}
       {scene.intro && (
-        <p data-key={intro?.key} data-prose={board ? '1' : undefined} data-fit
+        <p data-key={intro?.key} data-prose={board ? '1' : undefined} data-fit data-board-intro
           className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-4 ${elCls(intro)}`}><MathText text={scene.intro} /></p>
       )}
       {/* relative: FLIP clones are positioned against this box. Every line is
@@ -2558,7 +2558,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 
   return (
     <>
-    <div ref={rootRef} className={`${qSide ? 'max-w-4xl' : 'max-w-lg'} mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${chatOpen && wide ? '-translate-x-[200px]' : ''}`} data-chat-sheet={sheet ? '' : undefined} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
+    <div ref={rootRef} className={`${qSide ? 'max-w-4xl' : 'max-w-lg'} mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${chatOpen && wide ? '-translate-x-[200px]' : ''}`} data-chat-sheet={sheet ? '' : undefined} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined} data-qcard={clip && question && !wide ? '' : undefined}
       data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined}
       // The phone chat sheet covers the bottom half: the page needs that much more room to scroll the clip up.
       style={sheet ? { ...themeStyle, paddingBottom: '42dvh' } : themeStyle}>
@@ -3075,6 +3075,8 @@ const PLAYER_CSS = `
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
+/* The whole question sits in the card above the clip: the board's own short copy would say it twice. */
+[data-qcard] [data-board-intro] { display: none !important; }
 .lsn-graph { display: block; width: min(100%, 300px); height: auto; margin: 6px 0 2px; overflow: visible; }
 .lsn-graph-axis { stroke: rgba(248,250,252,0.55); stroke-width: 1.4; }
 .lsn-graph-lab { fill: rgba(248,250,252,0.85); font: italic 12px Georgia, 'Times New Roman', serif; }
