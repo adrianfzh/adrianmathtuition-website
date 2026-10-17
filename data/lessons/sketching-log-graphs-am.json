@@ -20,11 +20,12 @@
         },
         {
           "tokens": [
-            {
-              "tex": "\\text{asymptote}\\;\\to\\;\\text{shape}\\;\\to\\;\\text{draw}\\;\\to\\;\\text{intercepts}",
-              "id": "p1",
-              "hl": "sky"
-            }
+            { "tex": "\\text{1. asymptote}\\;\\to\\;\\text{2. shape}", "id": "p1", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\to\\;\\text{3. draw}\\;\\to\\;\\text{4. intercepts}", "id": "p2", "hl": "sky" }
           ]
         },
         {
@@ -111,7 +112,8 @@
           "say": "Here is the plan, four steps: the asymptote, the shape, draw it, then the intercepts.",
           "asks": ["Why these four steps?"],
           "do": [
-            { "do": "write", "token": "p1", "on": "Here is the plan" }
+            { "do": "write", "token": "p1", "on": "the asymptote, the shape" },
+            { "do": "write", "token": "p2", "on": "draw it, then the intercepts" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b2.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b2.timing.json"
@@ -148,7 +150,7 @@
           "say": "So it has the shape of L N of minus X: it rises to the left, and dives down beside the Y axis.",
           "asks": ["What does ln of minus x look like?"],
           "do": [
-            { "do": "write", "step": 3, "on": "So it has the shape" }
+            { "do": "write", "step": 4, "on": "So it has the shape" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b6.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b6.timing.json"
@@ -157,7 +159,7 @@
           "say": "Step three: draw that shape against the asymptote X equals two. X must be less than two, so the curve stays left of it.",
           "asks": ["Why does the curve stay on the left?"],
           "do": [
-            { "do": "write", "step": 4, "on": "Step three: draw that shape" }
+            { "do": "write", "step": 5, "on": "Step three: draw that shape" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b7.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b7.timing.json"
@@ -186,7 +188,7 @@
           "say": "So two minus X is one, and the X intercept is X equals one.",
           "asks": ["How do I solve 2 minus x equals 1?"],
           "do": [
-            { "do": "write", "step": 7, "on": "the X intercept is" }
+            { "do": "write", "step": 8, "on": "the X intercept is" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b10.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b10.timing.json"
@@ -195,7 +197,7 @@
           "say": "Here is the sketch: the asymptote X equals two, and the curve through zero, L N two, and one, zero.",
           "asks": ["Do I need to show the asymptote dashed?"],
           "do": [
-            { "do": "write", "step": 8, "on": "Here is the sketch" },
+            { "do": "write", "step": 9, "on": "Here is the sketch" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "and the curve through" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b11.mp3",

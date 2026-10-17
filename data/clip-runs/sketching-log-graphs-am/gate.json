@@ -1,6 +1,6 @@
 {
  "slug": "sketching-log-graphs-am",
- "at": "2026-10-17T15:45:34.170Z",
+ "at": "2026-10-17T15:53:59.014Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,20 +8,20 @@
   },
   "maths": {
    "ok": true,
-   "detail": "22/22 line checks"
+   "detail": "23/23 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "9 lines = the checked plan"
+   "detail": "10 lines = the checked plan"
   },
   "read": {
    "ok": true,
    "detail": "pick R1 · lowest score 4 · pass"
   },
   "look": {
-   "ok": true,
-   "detail": "14/14 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "ok": false,
+   "detail": "17/17 actions on the voice · cues worst 0.17 s (gate 0.3 s) · look problems 6"
   }
  },
- "pass": true
+ "pass": false
 }

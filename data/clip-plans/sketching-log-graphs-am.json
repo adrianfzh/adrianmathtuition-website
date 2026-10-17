@@ -46,7 +46,7 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "\\text{asymptote}\\;\\to\\;\\text{shape}\\;\\to\\;\\text{draw}\\;\\to\\;\\text{intercepts}",
+          "tex": "\\text{1. asymptote}\\;\\to\\;\\text{2. shape}",
           "id": "p1",
           "hl": "sky"
         }
@@ -54,6 +54,21 @@
       "checks": [
         {
           "form": "the plan: the four steps for a log graph"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\to\\;\\text{3. draw}\\;\\to\\;\\text{4. intercepts}",
+          "id": "p2",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan, continued: draw, then the intercepts"
         }
       ]
     },

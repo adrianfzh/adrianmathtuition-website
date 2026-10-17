@@ -547,7 +547,7 @@ function attachBoardLook(cont: HTMLElement): () => void {
  * diagrams in the clips, please do so").
  */
 function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
-  const W = 300, H = 190, P = 14;
+  const W = 300, H = 165, P = 14;
   const sx = (x: number) => P + ((x - g.xMin) / (g.xMax - g.xMin)) * (W - 2 * P);
   const sy = (y: number) => H - P - ((y - g.yMin) / (g.yMax - g.yMin)) * (H - 2 * P);
   const d = useMemo(() => {
@@ -3069,7 +3069,7 @@ const PLAYER_CSS = `
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
-.lsn-graph { display: block; width: min(100%, 340px); height: auto; margin: 6px 0 2px; overflow: visible; }
+.lsn-graph { display: block; width: min(100%, 300px); height: auto; margin: 6px 0 2px; overflow: visible; }
 .lsn-graph-axis { stroke: rgba(248,250,252,0.55); stroke-width: 1.4; }
 .lsn-graph-lab { fill: rgba(248,250,252,0.85); font: italic 12px Georgia, 'Times New Roman', serif; }
 .lsn-graph-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }

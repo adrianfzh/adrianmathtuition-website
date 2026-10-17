@@ -2,7 +2,14 @@
  "slug": "sketching-log-graphs-am",
  "pick": "R1",
  "why": "The only draft: it follows the bible's four steps in order, shows the plan as a line, and the two sketches (the shape of ln(-x), then the curve against x = 2 with its labelled points) are drawn on the words that describe them.",
- "scores": { "clear": 4, "one_idea": 4, "voice_board": 4, "why": 4, "trap": 5, "level": 5 },
+ "scores": {
+  "clear": 4,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 5,
+  "level": 5
+ },
  "notes": [
   "Scores are for R1 with fixed_beats applied.",
   "Beat 3 said 'the curve stops where the inside is zero' — a curve never stops at an asymptote, it gets close and never reaches it. Fixed: 'only gets close to where the inside is zero', and the beat names its step ('Step one, the asymptote').",
@@ -15,25 +22,59 @@
  "fixed_beats": {
   "3": {
    "say": "Step one, the asymptote. A log needs a positive inside, so the curve only gets close to where the inside is zero.",
-   "asks": ["Why must the inside be positive?"],
-   "do": [ { "do": "write", "token": "in0", "on": "where the inside is zero" } ]
+   "asks": [
+    "Why must the inside be positive?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "in0",
+     "on": "where the inside is zero"
+    }
+   ]
   },
   "6": {
    "say": "So it has the shape of L N of minus X: it rises to the left, and dives down beside the Y axis.",
-   "asks": ["What does ln of minus x look like?"],
-   "do": [ { "do": "write", "step": 3, "on": "So it has the shape" } ]
+   "asks": [
+    "What does ln of minus x look like?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "So it has the shape"
+    }
+   ]
   },
   "7": {
    "say": "Step three: draw that shape against the asymptote X equals two. X must be less than two, so the curve stays left of it.",
-   "asks": ["Why does the curve stay on the left?"],
-   "do": [ { "do": "write", "step": 4, "on": "Step three: draw that shape" } ]
+   "asks": [
+    "Why does the curve stay on the left?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "Step three: draw that shape"
+    }
+   ]
   },
   "9": {
    "say": "When Y is zero, L N of two minus X is zero, so two minus X is E to the power zero, one.",
-   "asks": ["Why is the inside one?"],
+   "asks": [
+    "Why is the inside one?"
+   ],
    "do": [
-    { "do": "write", "token": "y0", "on": "When Y is zero" },
-    { "do": "write", "token": "xin", "on": "so two minus X is" }
+    {
+     "do": "write",
+     "token": "y0",
+     "on": "When Y is zero"
+    },
+    {
+     "do": "write",
+     "token": "xin",
+     "on": "so two minus X is"
+    }
    ]
   }
  },

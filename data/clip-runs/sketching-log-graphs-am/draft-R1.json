@@ -24,7 +24,12 @@
     {
      "do": "write",
      "token": "p1",
-     "on": "Here is the plan"
+     "on": "the asymptote, the shape"
+    },
+    {
+     "do": "write",
+     "token": "p2",
+     "on": "draw it, then the intercepts"
     }
    ]
   },
@@ -81,7 +86,7 @@
    "do": [
     {
      "do": "write",
-     "step": 3,
+     "step": 4,
      "on": "So it has the shape"
     }
    ]
@@ -94,7 +99,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 5,
      "on": "Step three: draw that shape"
     }
    ]
@@ -143,7 +148,7 @@
    "do": [
     {
      "do": "write",
-     "step": 7,
+     "step": 8,
      "on": "the X intercept is"
     }
    ]
@@ -156,7 +161,7 @@
    "do": [
     {
      "do": "write",
-     "step": 8,
+     "step": 9,
      "on": "Here is the sketch"
     },
     {
