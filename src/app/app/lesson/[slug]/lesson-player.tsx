@@ -2559,9 +2559,12 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           top (but not in the clip?)"). Two lines at most; a long one opens whole on a tap. */}
       {clip && question && !wide && !done && (
         <button type="button" onClick={() => setQOpen(o => !o)} data-question-strip
-          className="lsn-qstrip block w-full text-left mb-2.5 rounded-2xl bg-white border border-slate-200 border-l-4 border-l-amber-400 px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
-          <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-amber-600 mb-0.5">Question</span>
-          <span className="line-clamp-2 block text-[15px] leading-snug text-navy"><MathText text={question} /></span>
+          className="lsn-qstrip flex w-full items-start gap-3 text-left mb-2.5 rounded-2xl px-3.5 py-3 bg-gradient-to-br from-[hsl(45,100%,96%)] to-white ring-1 ring-amber-200/80 shadow-[0_6px_18px_-12px_rgba(180,120,20,0.45)] active:scale-[0.99] motion-safe:transition-transform">
+          <span aria-hidden className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-navy text-amber-300 grid place-items-center font-bold text-[15px] shadow-[0_2px_6px_-2px_rgba(15,23,42,0.5)]">Q</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700/90 mb-0.5">Question</span>
+            <span className="line-clamp-2 block text-[15px] leading-snug font-medium text-navy"><MathText text={question} /></span>
+          </span>
         </button>
       )}
       {done ? (
