@@ -1,6 +1,6 @@
 {
  "slug": "solving-exponential-equations-am",
- "worst": 0.88,
+ "worst": 0.89,
  "lines": [
   {
    "beat": 1,
@@ -28,8 +28,8 @@
   },
   {
    "beat": 5,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -71,16 +71,10 @@
   },
   {
    "beat": 12,
-   "bag": 0.73,
+   "bag": 0.8,
    "score": 1,
-   "heard": "Press the calculator. X is about -8.57.",
-   "said": "Press the calculator. X is about negative eight point five seven."
-  },
-  {
-   "beat": 13,
-   "bag": 0.88,
-   "score": 0.88,
-   "heard": null
+   "heard": "Press the calculator. X = -8.57, correct to three significant figures.",
+   "said": "Press the calculator. X equals negative eight point five seven, correct to three significant figures."
   }
  ]
 }

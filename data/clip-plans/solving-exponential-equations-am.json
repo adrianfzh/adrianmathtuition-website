@@ -20,7 +20,7 @@
     "facts": [
       "x = (log(7,10) - 3*log(5,10))/(log(7,10) - log(5,10))"
     ],
-    "display": "-8.57"
+    "display": "x = -8.57 (3 s.f.)"
   },
   "lines": [
     {
@@ -200,7 +200,7 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "x\\approx -8.57",
+          "tex": "x=-8.57\\;\\text{(3 s.f.)}",
           "id": "ans",
           "hl": "emerald"
         }

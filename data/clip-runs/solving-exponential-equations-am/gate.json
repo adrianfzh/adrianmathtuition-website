@@ -1,6 +1,6 @@
 {
  "slug": "solving-exponential-equations-am",
- "at": "2026-10-17T11:28:27.898Z",
+ "at": "2026-10-17T12:20:33.249Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,7 +8,7 @@
   },
   "maths": {
    "ok": true,
-   "detail": "11/11 line checks"
+   "detail": "12/12 line checks"
   },
   "board": {
    "ok": true,

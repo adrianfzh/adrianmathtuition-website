@@ -1,10 +1,10 @@
-Verifying 13 clip(s) of solving-exponential-equations-am by transcription (gemini-2.5-flash)…
+Verifying 12 clip(s) of solving-exponential-equations-am by transcription (gemini-2.5-flash)…
 
   scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 89% of narration words heard
   scene-01-b4: 100% of narration words heard
-  scene-01-b5: 95% of narration words heard
+  scene-01-b5: 100% of narration words heard
   scene-01-b6: 100% of narration words heard
   scene-01-b7: 91% of narration words heard
   scene-01-b8: 100% of narration words heard
@@ -12,8 +12,7 @@ Verifying 13 clip(s) of solving-exponential-equations-am by transcription (gemin
   scene-01-b10: 80% of narration words heard  ⚠ LOW
       heard: Now, factorize out the X.
   scene-01-b11: 100% of narration words heard
-  scene-01-b12: 73% of narration words heard  ⚠ LOW
-      heard: Press the calculator. X is about -8.57.
-  scene-01-b13: 88% of narration words heard
+  scene-01-b12: 80% of narration words heard  ⚠ LOW
+      heard: Press the calculator. X = -8.57, correct to three significant figures.
 
 2 clip(s) below 85% — listen to those.

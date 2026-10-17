@@ -70,7 +70,7 @@
         },
         {
           "tokens": [
-            { "tex": "x\\approx -8.57", "id": "ans", "hl": "emerald" }
+            { "tex": "x=-8.57\\;\\text{(3 s.f.)}", "id": "ans", "hl": "emerald" }
           ]
         }
       ],
@@ -186,11 +186,11 @@
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b11.timing.json"
         },
         {
-          "say": "Press the calculator. X is about negative eight point five seven.",
+          "say": "Press the calculator. X equals negative eight point five seven, correct to three significant figures.",
           "asks": ["How do I key this into the calculator?"],
           "do": [
-            { "do": "write", "step": 8, "on": "X is about" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "negative eight point" }
+            { "do": "write", "step": 8, "on": "X equals negative" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "correct to three significant" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b12.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b12.timing.json"

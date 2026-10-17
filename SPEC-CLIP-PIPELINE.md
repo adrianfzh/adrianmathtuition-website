@@ -257,9 +257,7 @@ New in the player: a clip board that would run below the screen scales its maths
   line, the rounding mistake as the last Watch out. Maths 11/11, blind read pass (6 beats fixed),
   voice 13/13 ≥ 88 %, look 19/19 on the voice, 0 problems. Next to rebuild: Linear Law with logs,
   Growth and decay, Log scales.
-- **Waiting (17 Oct 2026):** the exponential clip's last line as `x = −8.57 (3 s.f.)` + "correct to three
-  significant figures" is ready (`data/clip-runs/solving-exponential-equations-am/draft-R3.json`; the plan's `ans` tex becomes `x=-8.57\;\text{(3 s.f.)}`) but NOT recorded — MiniMax answered 1008 (balance
-  empty). After a top-up: set the plan's `ans` tex, `assemble.mjs --draft R3`, record that one line, align, check.
+- 17 Oct 2026: the exponential clip ends `x = −8.57 (3 s.f.)`, said "correct to three significant figures" (draft R3, recorded after the voice top-up).
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
