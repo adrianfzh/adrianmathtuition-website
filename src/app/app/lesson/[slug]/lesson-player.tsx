@@ -2201,6 +2201,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const [seekEpoch, setSeekEpoch] = useState(0);
   const scrubRef = useRef<HTMLInputElement>(null);
   const scrubDrag = useRef(false);
+  const scrubWasPlaying = useRef(false);
+  const scrubAt = useRef(0);
   const scrubLabel = useRef<HTMLSpanElement>(null);
   // The side clip open in the popup (null = none). The main clip pauses under it and goes on after.
   const [side, setSide] = useState<string | null>(null);
@@ -2559,11 +2561,12 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           top (but not in the clip?)"). Two lines at most; a long one opens whole on a tap. */}
       {clip && question && !wide && !done && (
         <button type="button" onClick={() => setQOpen(o => !o)} data-question-strip
-          className="lsn-qstrip flex w-full items-start gap-3 text-left mb-2.5 rounded-2xl px-3.5 py-3 bg-gradient-to-br from-[hsl(45,100%,96%)] to-white ring-1 ring-amber-200/80 shadow-[0_6px_18px_-12px_rgba(180,120,20,0.45)] active:scale-[0.99] motion-safe:transition-transform">
-          <span aria-hidden className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-navy text-amber-300 grid place-items-center font-bold text-[15px] shadow-[0_2px_6px_-2px_rgba(15,23,42,0.5)]">Q</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700/90 mb-0.5">Question</span>
-            <span className="line-clamp-2 block text-[15px] leading-snug font-medium text-navy"><MathText text={question} /></span>
+          className="lsn-qstrip block w-full text-left mb-2.5 rounded-2xl overflow-hidden bg-white ring-1 ring-slate-200 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.45)] active:scale-[0.99] motion-safe:transition-transform">
+          <span className="flex items-center gap-1.5 bg-navy px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-300">
+            <span aria-hidden>📝</span> Question
+          </span>
+          <span className="line-clamp-3 block px-3.5 py-2.5 text-[15.5px] leading-snug text-navy [font-family:Georgia,'Times_New_Roman',serif]">
+            <MathText text={question} />
           </span>
         </button>
       )}
@@ -2717,38 +2720,55 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           el.style.setProperty('--lsn-scrub', `${(v / Math.max(1, n)) * 100}%`);
           if (scrubLabel.current) scrubLabel.current.textContent = `${Math.min(n, Math.floor(v) + 1)}/${n}`;
         };
+        // Where the board is (or is about to be, mid-drag): many pointer moves land before React
+        // renders, so compare with this, not with the render's `at` — one seek per part crossed.
+        scrubAt.current = scrubDrag.current ? scrubAt.current : at;
         const seekTo = (to: number) => {
           to = Math.min(n - 1, Math.max(0, to));
-          if (to === at && !done) return;
+          const from = scrubAt.current;
+          if (to === from && !done) return;
           const [si, k] = stops[to] ?? stops[0];
-          if (to < at) setSeekEpoch(x => x + 1);
+          if (to < from) setSeekEpoch(x => x + 1);
+          scrubAt.current = to;
           setDone(false); setSceneIdx(si); setStep(k);
         };
         return (
           <div className="lsn-scrub mt-2 px-0.5 flex items-center gap-1.5">
-            <button type="button" onClick={() => seekTo(jumpSeconds(-10))} aria-label="Back 10 seconds"
-              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">⏪ 10</button>
+            <button type="button" onClick={() => seekTo(jumpSeconds(-5))} aria-label="Back 5 seconds"
+              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">⏪ 5</button>
             <div className="relative flex-1 flex items-center touch-none"
               onPointerDown={e => {
                 if (e.button !== 0) return;
                 e.currentTarget.setPointerCapture(e.pointerId);
                 scrubDrag.current = true;
-                paint(valueAt(e.clientX));
+                // The voice holds while the finger drags (the board follows it), and goes on after.
+                scrubWasPlaying.current = !paused;
+                if (!paused) setPaused(true);
+                const v = valueAt(e.clientX);
+                paint(v);
+                seekTo(Math.floor(v));
               }}
-              onPointerMove={e => { if (scrubDrag.current) paint(valueAt(e.clientX)); }}
+              onPointerMove={e => {
+                if (!scrubDrag.current) return;
+                const v = valueAt(e.clientX);
+                paint(v);
+                // Like a video bar: the board moves to the part under the finger as it drags.
+                seekTo(Math.floor(v));
+              }}
               onPointerUp={e => {
                 if (!scrubDrag.current) return;
                 scrubDrag.current = false;
                 seekTo(Math.floor(valueAt(e.clientX)));
+                if (scrubWasPlaying.current) setPaused(false);
               }}
-              onPointerCancel={() => { scrubDrag.current = false; }}>
+              onPointerCancel={() => { scrubDrag.current = false; if (scrubWasPlaying.current) setPaused(false); }}>
               <input ref={scrubRef} type="range" min={0} max={Math.max(1, n)} step="any" defaultValue={at}
                 aria-label="Go to a part of the clip"
                 onChange={e => { paint(Number(e.target.value)); seekTo(Math.floor(Number(e.target.value))); }}
                 className="lsn-scrub-range flex-1 pointer-events-none" />
             </div>
-            <button type="button" onClick={() => seekTo(jumpSeconds(10))} aria-label="Forward 10 seconds"
-              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">10 ⏩</button>
+            <button type="button" onClick={() => seekTo(jumpSeconds(5))} aria-label="Forward 5 seconds"
+              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">5 ⏩</button>
             <span ref={scrubLabel} className="text-[11px] tabular-nums text-slate-400 w-9 text-right" />
           </div>
         );
