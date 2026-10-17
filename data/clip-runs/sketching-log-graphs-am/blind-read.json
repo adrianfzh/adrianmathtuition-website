@@ -1,41 +1,39 @@
 {
  "slug": "sketching-log-graphs-am",
- "pick": "B",
- "why": "B reveals each intercept token as it is said, its margin note states the rule ('Asymptote: inside equals zero') instead of a bare label, its trap is two full sentences, and its last beat finishes the working ('two minus X is one'); A's trap is clipped fragments and its y-intercept line appears before it is said.",
- "scores": {
-  "clear": 4,
-  "one_idea": 4,
-  "voice_board": 4,
-  "why": 4,
-  "trap": 5,
-  "level": 4
- },
+ "pick": "R1",
+ "why": "The only draft: it follows the bible's four steps in order, shows the plan as a line, and the two sketches (the shape of ln(-x), then the curve against x = 2 with its labelled points) are drawn on the words that describe them.",
+ "scores": { "clear": 4, "one_idea": 4, "voice_board": 4, "why": 4, "trap": 5, "level": 5 },
  "notes": [
-  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
-  "Beat 5 'It lives to the left of X equals two' gave no reason. Fixed: the reason ('The inside must be positive') moved into the step-three beat, so beat 5 is only the shape.",
-  "Step three says 'Draw that shape' but nothing is drawn — the board has no log curve yet (bible §3.6). The highlight on X = 2 is the best this board can do; a student may still wonder where the drawing is. Revisit when the live graph is built.",
-  "Beat 4 highlights the whole equation on 'Minus in front'; the minus is not its own token, so the gesture is broad but fine.",
-  "Session edit after the read: beat 6 says 'draw that shape on your paper' — the board cannot draw a log curve yet, so the student draws it."
+  "Scores are for R1 with fixed_beats applied.",
+  "Beat 3 said 'the curve stops where the inside is zero' — a curve never stops at an asymptote, it gets close and never reaches it. Fixed: 'only gets close to where the inside is zero', and the beat names its step ('Step one, the asymptote').",
+  "Beat 6 said only 'it rises as X goes to the left' while the sketch also draws the curve diving down beside its dashed asymptote (the Y axis). Fixed: the voice now names both parts of the shape the sketch draws.",
+  "Beat 7 said 'The curve stays to the left of it' with no reason. Fixed: 'X must be less than two, so the curve stays left of it'.",
+  "Beat 9 said 'the inside' while the board writes 2 − x = e⁰ = 1. Fixed: the voice says 'two minus X', so the student hears what appears.",
+  "Beat 5 highlights the whole equation on 'The minus in front' — the −x is not its own token, so the gesture is broad; acceptable.",
+  "Sketches: the step-two sketch has its dashed asymptote on the Y axis and the step-three sketch moves it to the labelled x = 2; together with the voice they teach the four steps clearly. The finished sketch carries both intercepts as labelled points."
  ],
  "fixed_beats": {
-  "5": {
-   "say": "So the curve has the shape of L N of minus X.",
-   "do": [
-    {
-     "do": "write",
-     "step": 2,
-     "on": "shape of L N"
-    }
-   ]
+  "3": {
+   "say": "Step one, the asymptote. A log needs a positive inside, so the curve only gets close to where the inside is zero.",
+   "asks": ["Why must the inside be positive?"],
+   "do": [ { "do": "write", "token": "in0", "on": "where the inside is zero" } ]
   },
   "6": {
-   "say": "Step three. Draw that shape on your paper, hugging X equals two. The inside must be positive, so the curve stays left of it.",
+   "say": "So it has the shape of L N of minus X: it rises to the left, and dives down beside the Y axis.",
+   "asks": ["What does ln of minus x look like?"],
+   "do": [ { "do": "write", "step": 3, "on": "So it has the shape" } ]
+  },
+  "7": {
+   "say": "Step three: draw that shape against the asymptote X equals two. X must be less than two, so the curve stays left of it.",
+   "asks": ["Why does the curve stay on the left?"],
+   "do": [ { "do": "write", "step": 4, "on": "Step three: draw that shape" } ]
+  },
+  "9": {
+   "say": "When Y is zero, L N of two minus X is zero, so two minus X is E to the power zero, one.",
+   "asks": ["Why is the inside one?"],
    "do": [
-    {
-     "do": "highlight",
-     "token": "asy",
-     "on": "X equals two"
-    }
+    { "do": "write", "token": "y0", "on": "When Y is zero" },
+    { "do": "write", "token": "xin", "on": "so two minus X is" }
    ]
   }
  },

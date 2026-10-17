@@ -102,6 +102,10 @@ the history.
   that LOOKS BACK at it first ("Look back at the question…", highlight it) — the board scrolls up to
   it, then glides back down as the piece comes down. The look check fails a talked-about piece under
   the fade.
+- **Draw it when a picture teaches it** (17 Oct 2026: "if you need to include diagrams in the clips,
+  please do so"): a graph question gets real sketches on the board — give the line a `graph`
+  (curve, dashed asymptote, labelled points); show the shape, then the curve against its asymptote,
+  then the finished sketch with every label the question asks for.
 - **The base in its own colour** when the voice talks about the base (`"part": "sub"`).
 - **Highlight the parts a law acts on**, colour-matched to the law (M orange, N blue), and keep those
   colours in the result line.

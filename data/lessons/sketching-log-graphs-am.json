@@ -103,21 +103,27 @@
           "asks": ["What is an asymptote?"],
           "do": [
             { "do": "write", "step": 0 }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b1.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b1.timing.json"
         },
         {
           "say": "Here is the plan, four steps: the asymptote, the shape, draw it, then the intercepts.",
           "asks": ["Why these four steps?"],
           "do": [
             { "do": "write", "token": "p1", "on": "Here is the plan" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b2.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Step one. A log only takes a positive inside, so the curve stops where the inside is zero.",
+          "say": "Step one, the asymptote. A log needs a positive inside, so the curve only gets close to where the inside is zero.",
           "asks": ["Why must the inside be positive?"],
           "do": [
             { "do": "write", "token": "in0", "on": "where the inside is zero" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b3.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b3.timing.json"
         },
         {
           "say": "Two minus X equals zero, so the asymptote is X equals two.",
@@ -125,28 +131,36 @@
           "do": [
             { "do": "write", "token": "asy", "on": "the asymptote is" },
             { "do": "note", "text": "Asymptote: the inside $= 0$", "near": "in0", "on": "X equals two" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b4.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b4.timing.json"
         },
         {
           "say": "Step two, the shape. The minus in front of X flips L N X in the Y axis.",
           "asks": ["Why does minus x flip the graph?"],
           "do": [
             { "do": "highlight", "token": "eqn", "on": "The minus in front" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b5.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b5.timing.json"
         },
         {
-          "say": "So it has the shape of L N of minus X: it rises as X goes to the left.",
+          "say": "So it has the shape of L N of minus X: it rises to the left, and dives down beside the Y axis.",
           "asks": ["What does ln of minus x look like?"],
           "do": [
             { "do": "write", "step": 3, "on": "So it has the shape" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b6.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Step three: draw that shape against the asymptote X equals two. The curve stays to the left of it.",
+          "say": "Step three: draw that shape against the asymptote X equals two. X must be less than two, so the curve stays left of it.",
           "asks": ["Why does the curve stay on the left?"],
           "do": [
             { "do": "write", "step": 4, "on": "Step three: draw that shape" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b7.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b7.timing.json"
         },
         {
           "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
@@ -154,15 +168,19 @@
           "do": [
             { "do": "write", "token": "x0", "on": "When X is zero" },
             { "do": "write", "token": "yint", "on": "Y is L N two" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b8.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b8.timing.json"
         },
         {
-          "say": "When Y is zero, L N of the inside is zero, so the inside is E to the power zero, one.",
+          "say": "When Y is zero, L N of two minus X is zero, so two minus X is E to the power zero, one.",
           "asks": ["Why is the inside one?"],
           "do": [
             { "do": "write", "token": "y0", "on": "When Y is zero" },
-            { "do": "write", "token": "xin", "on": "so the inside is" }
-          ]
+            { "do": "write", "token": "xin", "on": "so two minus X is" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b9.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b9.timing.json"
         },
         {
           "say": "So two minus X is one, and the X intercept is X equals one.",
@@ -179,7 +197,9 @@
           "do": [
             { "do": "write", "step": 8, "on": "Here is the sketch" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "and the curve through" }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b11.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b11.timing.json"
         },
         {
           "say": "Watch out: the asymptote is where the inside is zero. The X intercept is where the inside is one.",
@@ -192,7 +212,9 @@
               "near": "xin",
               "on": "The X intercept is"
             }
-          ]
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b12.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b12.timing.json"
         }
       ]
     }

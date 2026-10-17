@@ -275,6 +275,13 @@ New in the player: a clip board that would run below the screen scales its maths
   ~1.4 min of voice: the start (t = 0, e⁰ = 1, P₀ = 100), the doubling (P = 200), 200 and 100 move into
   the model, divide, take ln (law first), 7.5k comes down in front of ln e, ln e = 1, k = 0.0924 (3 s.f.),
   one Watch out (P is 200, not 2). Maths 15/15, blind read pass (3 beats fixed), voice 14/14 ≥ 86 %.
+- **Rebuilt to the house rules (17 Oct 2026): Log scales** (10 lines, 12 beats, maths 13/13, blind read pass,
+  voice 12/12) and **Sketching a log graph** — the first clip with SKETCHES: a line can carry a `graph`
+  (`StepGraph` in lesson-script.ts: `fn` in plain maths, bounds, dashed asymptote, labelled points; the
+  player's `ClipGraph` draws the curve on in chalk when the line is written). Sketching: 9 lines with 3
+  sketches (the shape of ln(−x), the curve against x = 2, the finished sketch with (0, ln 2) and (1, 0)),
+  12 beats, maths 22/22, blind read pass (4 beats fixed — "the curve stops at the asymptote" was wrong:
+  it only gets close), voice 12/12.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
