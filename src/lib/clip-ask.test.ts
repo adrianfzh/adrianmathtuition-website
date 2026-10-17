@@ -11,13 +11,21 @@ const scene = growth.scenes[0] as PlayScene;
 
 describe('clip-ask', () => {
   it('the "take ln" beat of Growth and decay: board so far + its ready questions', () => {
-    // beat 5 = "E is involved, so take L N of both sides." — writes line 3.
-    expect(boardTexAt(scene, 5)).toEqual(['t=0: P_0=100', '200 =100e^{7.5k}', 'e^{7.5k}=2', '\\ln e^{7.5k}=\\ln 2']);
-    expect(readyAsks(scene, 5)[0]).toBe('Why is ln used when e is involved?');
+    // beat 9 (index 8) = "E is involved, so take L N of both sides." — writes the take-ln line (rebuilt 17 Oct 2026).
+    expect(boardTexAt(scene, 8)).toEqual([
+      'P=P_0e^{kt}',
+      '\\text{start}\\;\\to\\;\\text{double}\\;\\to\\;\\text{take }\\ln',
+      't=0:\\;P=P_0e^{0}=P_0 = 100',
+      't=7.5:\\;P=2\\times 100= 200',
+      '200 = 100 e^{7.5k}',
+      'e^{7.5k}=2',
+      '\\ln e {}^{7.5k} =\\ln 2',
+    ]);
+    expect(readyAsks(scene, 8)[0]).toBe('Why take L N and not log?');
   });
 
-  it('only what is written: the first beat has an empty board', () => {
-    expect(boardTexAt(scene, 0)).toEqual([]);
+  it('only what is written: the first beat shows just the question line it writes', () => {
+    expect(boardTexAt(scene, 0)).toEqual(['P=P_0e^{kt}']);
   });
 
   it('a beat without asks gets the two plain questions', () => {
