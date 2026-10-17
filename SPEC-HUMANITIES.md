@@ -279,8 +279,9 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Stored in `humanities_runs.model_answer` {state writing → checking → ready | dropped} (migration
 >   `humanities_runs_model_answer.sql`); steps in `lib/humanities-settle-run.ts settleModel`, picked up when the page is
 >   opened (`loadHumanitiesRun`). Already-full-marks answers get none.
-> - The feedback page: **"Model answer"** — "Built from your answer. The highlighted parts are what it adds." — after
->   "What a top answer does"; "Writing a model answer from yours…" while it is on its way (the page refreshes itself).
+> - The feedback page: **"Sample answer"** (17 Oct 2026, Adrian: "yes" — the name ~75 of the banked school schemes use, ahead of
+>   "Suggested answer" 22 and "Model answer" 6) — "Built from your answer. The parts in green are what it adds." — after
+>   "What a top answer does"; "Writing a sample answer from yours…" while it is on its way (the page refreshes itself).
 > - Checked 17 Oct as the demo student: a 6-mark comparison answer at 3 → model shown about 1½–2 minutes after hand-in,
 >   re-marked at Level 4, the student's sentences kept, the difference and the tone/purpose comparison highlighted.
 

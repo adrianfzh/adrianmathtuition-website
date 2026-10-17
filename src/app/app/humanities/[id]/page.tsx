@@ -207,8 +207,8 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
           a check read put it at full marks; the added pieces are highlighted. */}
       {report && built?.state === 'ready' && (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">Model answer</p>
-          <p className="text-[13px] text-gray-500 mt-0.5 mb-3">Built from your answer. The highlighted parts are what it adds.</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">Sample answer</p>
+          <p className="text-[13px] text-gray-500 mt-0.5 mb-3">Built from your answer. The parts in green are what it adds.</p>
           <p className="text-[15px] text-gray-800 leading-loose whitespace-pre-line">
             {built.segments.map((seg, i) => seg.added
               ? <mark key={i} className="bg-emerald-100 text-inherit rounded px-0.5">{seg.text}</mark>
@@ -217,7 +217,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
         </div>
       )}
       {report && modelPending && (
-        <p className="text-[13px] text-gray-500 px-1">Writing a model answer from yours…</p>
+        <p className="text-[13px] text-gray-500 px-1">Writing a sample answer from yours…</p>
       )}
 
       {report && !points && (
