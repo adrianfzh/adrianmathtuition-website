@@ -116,7 +116,7 @@ the first only after the move has been shown in worked steps, never two in a row
 - Plain-text fields (lesson `title`, scene `title`, every `heading`,
   `placeholder`, axis labels) render literally — no `$` there.
 - `level` = bank level (AM/EM/JC/S1/S2); `topic` = the EXACT canonical string
-  from `lib/canonical-topics.ts`; `slug` = `<topic-kebab>-<level>`.
+  from `src/lib/canonical-topics.ts`; `slug` = `<topic-kebab>-<level>`.
 
 ## 3b. The voice says the step plainly (Adrian, 8 Oct 2026)
 

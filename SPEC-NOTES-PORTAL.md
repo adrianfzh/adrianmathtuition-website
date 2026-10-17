@@ -1,5 +1,7 @@
 # SPEC — Student Notes Portal (Fumadocs shell)
 
+> **Status: Phase 1 BUILT (57f4df1a); the hand-off note below is history.**
+>
 > Written 2026-08-04 for hand-off to an **Opus 5 session**. Read this whole file,
 > then build **Phase 1 only** and stop for Adrian's review. Repo policies
 > (auto-push to dev, alias, tests) are in `CLAUDE.md` and apply as usual.

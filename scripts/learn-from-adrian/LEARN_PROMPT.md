@@ -208,7 +208,7 @@ Now: written down on 15 Oct. Tap Drop to clear it.
 
 `buttons.json` — the slugs of the numbered items, **in the same order**:
 `["say-it-once-write-it-down", "say-where-to-see-it", "plain-words-to-adrian", "twins-per-subskill"]`.
-The wrapper puts "✅ Apply N" and "🗑 Drop N" under the message for each; a tap is
+The wrapper puts "✅ Apply <title>" and "✏️ Change" / "🗑 Drop" under the message for each, and a footer saying what each button does; a tap is
 carried out on this Mac by `apply.sh` (docs/LEARN-FROM-ADRIAN.md). Every slug listed
 must have its `proposals/<slug>.md`.
 

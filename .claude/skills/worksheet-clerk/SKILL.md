@@ -92,7 +92,7 @@ Poll every ~30s (each question passes 4 verification gates; expect ~30–60s per
 SELECT status, generated_ids, error FROM generation_requests WHERE id = '<id>';
 ```
 
-When `status = 'completed'`, fetch the new rows from `practice_questions` by `generated_ids` and add them to the pick list. If `'failed'`, show `error` and offer to re-enqueue.
+When `status = 'done'`, fetch the new rows from `questions` by `generated_ids` (`WHERE id = ANY(...)`) and add them to the pick list. If `'failed'`, show `error` and offer to re-enqueue.
 
 ## Step 4 — Present the pick list
 

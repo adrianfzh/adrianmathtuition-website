@@ -49,16 +49,16 @@ emojis"*, *"i do not like brain emojis"*, and Staff, not the DM, as its place).
 ## Applying or dropping from Telegram — the buttons (16 Oct 2026)
 
 1. The morning run writes `message.txt` + `buttons.json` (the items' slugs in order);
-   `tg.mjs send` posts it as HTML (titles bold) with one button row per item
-   (`lf:a:<slug>` / `lf:d:<slug>`) and keeps the keyboard in `messages/<id>.json`.
+   `tg.mjs send` posts it as HTML (titles bold) with an ✅ Apply row and a ✏️ Change + 🗑 Drop row per item
+   (`lf:a:` / `lf:c:` / `lf:d:<slug>`) and keeps the keyboard in `messages/<id>.json`.
 2. A tap → the bot (`handlers/learn-buttons.js`) writes a `learn_requests` row (math
-   Supabase) and turns that row into "⏳ N · Applying …" / "🗑 N · Dropped".
+   Supabase) and turns that row into "⏳ Applying: <title>" / "🗑 Dropped: <title>".
 3. The Mac — launchd `com.adrianmath.learnapply`, every 10 min, `apply.sh` → `apply.mjs`
    — claims pending rows. **Drop**: no model; ledger `dropped`, proposal branches deleted.
    **Apply**: one headless session (plan, Opus medium) follows `APPLY_PROMPT.md` — the
    same steps as below, in the job's own clones; a memory-only rule goes into the repo
    instead; an automation becomes a 🌙 nightly-builder row (`approved … Adrian (Telegram ✅)`).
-   It writes one plain line; the button becomes "✅ N · Applied" and the line is replied
+   It writes one plain line; the button becomes "✅ Applied: <title>" and the line is replied
    under the message. A skill file under `.claude/` cannot be written headless — the
    reply then says to apply it in a session.
 4. The Mac must be on; a tap while it sleeps is carried out when it wakes.
@@ -103,7 +103,7 @@ is the point of keeping the ledger.
   runs, skill bodies or tool results; cuts long pasted material; batches by session;
   counts short repeated messages into `chores.tsv`) → one headless `claude -p` on PLAN
   usage (Opus, high effort) following `scripts/learn-from-adrian/LEARN_PROMPT.md` →
-  the wrapper sends `message.txt` to Telegram (`TELEGRAM_CHAT_ID`) when there is one,
+  the wrapper sends `message.txt` to the ☀️ Staff topic (the DM `TELEGRAM_CHAT_ID` only when Staff is not bound) when there is one,
   moves the cursor, and stamps `job_runs` `learn-from-adrian`.
 - **State** (`~/.adrianmath_learn/`): `cursor` (the last message time read), `ledger.json`
   (every group with its dated quotes and status), `proposals/<name>.md`, `repos/website`

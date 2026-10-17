@@ -504,7 +504,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     **H2 Math has no tone**: `subjectPill('H2 Math')` is `{ text: 'H2', tone: 'other' }`, so a
     JC paper shows a plain grey H2 pill and gets no card edge, header wash or cover band;
     the subject logic (JC accounts hand in under H2 Math, sort, count) is untouched. The
-    desk's `PAPER_SUBJECT_TONE` carries the same five as hexes; the cover's cache key is
+    cover's cache key is
     `-subject5` (`-subject3` was Set 2; `-subject4` the science remark the same day — a science
     cover's remark box says "concept gaps … read those topics again", never "do the
     practice", `lib/cover-remark.ts` `family:'science'`; `-subject5` the science FOOTER an hour
@@ -2957,7 +2957,7 @@ Vercel Blob addresses and the personal Dropbox. One module owns it: **`lib/stude
   `marked-full.pdf` (FIXED names — a rebuild overwrites the machine's copy, the old Dropbox
   "Marked (AI).pdf" rule), `runs/<runId>/annotated-<uuid>.pdf` / `amended-<ts>.pdf`,
   `uploads/<uuid>/<file>`, `handins/<identity>/<uuid>.<ext>`, `clippings/<identity>/<file>`
-  (the filename still carries the photo/clip kind for `lib/portal-notes.noteKind`),
+  (the filename still carries the photo/clip kind, `lib/student-files.ts`),
   `assignments/<identity>/<uuid>.pdf`, `inbox/<kind?>/<ts>-<name>`.
 - **Deletes:** `/admin/papers` DELETE and the bin purge sweep BOTH legacy Blob URLs and key URLs
   (`collectFileKeys`); `delete-account` clears `clippings/<identity>` + `assignments/<identity>`
