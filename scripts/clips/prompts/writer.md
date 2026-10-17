@@ -129,3 +129,5 @@ pass). Its exact numbers: at most **2 things APPEAR in a beat** — `write` and 
 beat that needs a third thing is two beats.
 
 Report one line per clip: slug, beats, words, and the draft-check result.
+
+- A law note uses the topic bible's OWN name for the law (Logarithms: "Add Power", "Minus Power", "Bring down power") — never a textbook name like "Power law".

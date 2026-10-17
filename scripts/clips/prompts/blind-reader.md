@@ -58,3 +58,5 @@ keeps its beat's board — only use token ids of the board that beat is on.
 
 Be strict. A clip that is correct but hard to follow is NOT a pass. Report one line per
 clip: slug, pick, lowest score, verdict.
+
+- When you write or fix a law note, use the topic bible's OWN name for the law (Logarithms: "Add Power", "Minus Power", "Bring down power", "Change of base", "Swop base") — never a textbook name like "Power law" (Adrian's notes, 17 Oct 2026).
