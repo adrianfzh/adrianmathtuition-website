@@ -65,7 +65,7 @@ For each chosen topic: find seed questions in the QB, then enqueue for the Fly
 
 ```sql
 SELECT id, left(question_text,120) FROM questions
-WHERE level='<LEVEL>' AND deleted_at IS NULL AND topics && ARRAY['<CanonicalTopic>']
+WHERE level='<LEVEL>' AND deleted_at IS NULL AND legacy_syllabus IS NOT TRUE AND topics && ARRAY['<CanonicalTopic>']
 ORDER BY verified DESC, year DESC NULLS LAST LIMIT 3;
 
 INSERT INTO generation_requests

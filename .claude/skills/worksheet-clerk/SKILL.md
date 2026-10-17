@@ -65,13 +65,14 @@ SELECT * FROM pick_candidates('<LEVEL>', '<topic fragment>', 15);
 
 Prefer `verified = true` and `has_solution = true`. Flag `has_image = true` rows (diagram questions) — fetch their `image_url` (not in the RPC output; `SELECT image_url FROM questions WHERE id = …`) and embed it in the worksheet.
 
-**From the generated pool (`practice_questions`)** — 4-gate-verified AI questions:
+**The generated questions (`questions` with `ai_generated = true`)** — 4-gate-verified AI questions (`practice_questions` was folded into `questions` and dropped, 12 Jul 2026):
 
 ```sql
-SELECT id, left(question_text, 400) AS q, marks, topic, subgroup_id, verified, generated_by
-FROM practice_questions
-WHERE level = '<LEVEL>' AND topic ILIKE '%<topic>%' AND verified = true
-ORDER BY generated_at DESC LIMIT 15;
+SELECT id, left(question_text, 400) AS q, total_marks, topics, verified
+FROM questions
+WHERE level = '<LEVEL>' AND ai_generated AND verified = true AND deleted_at IS NULL
+  AND legacy_syllabus IS NOT TRUE AND topics && ARRAY['<Exact Tag>']
+ORDER BY created_at DESC LIMIT 15;
 ```
 
 ## Step 3 — Generate new questions (only if asked, or if the bank comes up short)
@@ -133,12 +134,12 @@ If the job came from the Loop tasks list, PATCH the todo to `Status='Done'` and 
 ## Step 6 — Optional portal publishing (only when Adrian explicitly asks)
 
 - **"Also publish the worked examples to the swipe app"** → insert `content_snippets` rows (`content_kind='worked_example'`, `feature='both'`, `card_title`, annotated markdown `content`, `source='worksheet-clerk-<YYYY-MM>'`, `source_question_id`, `order_index` = max+1 within (level, topic, display_group), `is_published` true or false-for-review). They appear in `/revise/.../worked-examples` and `/admin/edit-cards`.
-- **"Also add the practice ones to the portal pool"** → copy seed-bank picks into `practice_questions` (`generated_by='worksheet-clerk'`, `verified=true`, `seed_question_id` set); only rows with a real `solution` and `has_image=false`. Generated picks are already in that table.
+- **"Also add the practice ones to the portal pool"** → nothing to copy: every pick is already a `questions` row, and that table is the pool (`practice_questions` was dropped 12 Jul 2026).
 
 ## Gotchas
 
-- `questions.topics` is a `text[]` of canonical topic names; `practice_questions.topic` is a single text column. Don't mix the filters up.
-- The portal grade route only serves `practice_questions` rows; students never see the `questions` seed bank directly.
-- PNG previews of a `practice_questions` row can be rendered via `POST /api/render-revise` (admin auth) if images are preferred over markdown in chat.
+- `questions.topics` is a `text[]` of canonical topic names — match with `topics && ARRAY['<Exact Tag>']`.
+- A row with `legacy_syllabus = true` (old syllabus) never goes on a sheet a student gets (bot CLAUDE.md rule 12) — leave it out of every pick query.
+- PNG previews of a bank row can be rendered via `POST /api/render-revise` (admin auth) if images are preferred over markdown in chat.
 - Escape single quotes in SQL literals by doubling them; question text is full of apostrophes and LaTeX backslashes — build INSERTs carefully and verify with a follow-up SELECT.
 - Diagram questions: download `image_url` and embed the image above the question text in the document.

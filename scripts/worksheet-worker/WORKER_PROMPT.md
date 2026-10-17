@@ -41,7 +41,8 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    sheet, ask which picks are safe — `POST $WORKSHEETS_API_BASE/api/admin/question-health
    {"action":"status","ids":[…]}` — and never use one that reads `paused` or `retired`. When the
    sheet is built, queue the rest for a check: `{"action":"enqueue","reason":"worksheet","ids":[…]}`
-   (the checker runs them; a swap is Adrian's when he edits the DOCX).
+   (the checker runs them; a swap is Adrian's when he edits the DOCX). While the check is PARKED (18 Oct 2026)
+   either call returns an error — its table does not exist yet — so carry on without it.
 
    **Kind 1 — revision worksheet with worked examples.** Invoke the
    `revision-worksheet` skill (`.claude/skills/revision-worksheet/`) and follow
