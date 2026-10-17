@@ -945,3 +945,17 @@ All maths papers drawn after the 16 Oct fixer pushes; only Eva's E Math St Gabri
 - **"should be" + a verb** — "43 should be remove" (Alessi Set 3 P1 p6 Q13(a)). Words (phrase frame).
 - **The printed note is the verdict squeezed to a riddle; the clear error_summary is not printed** — "(2x²+ax−3)(x+2) gives a – you used −10x−6 instead." (Gavin AM 2021 P1 p7 Q6(b)). Words (which field is printed).
 - **A science page's model answers not drawn** — the read wrote model answers for four lost parts; none on the page, no overflow sheet; a drawing part described, not drawn (Isabelle Chemistry Pasir Ris 2023 p12–13). Pen (science).
+
+# 18 Oct 2026 — the page reader: new defect classes (findings of 18 Oct: 3 papers, 30 pages; the fixer works them at 06:45)
+
+All three papers (Gavin E Math TYS 2022 P2, Alexis Biology 2022 P2, Eva E Math O-Level 2019 P1) were drawn after the 17 Oct fixer pushes, c47b99cc (say-once) included. One line per NEW class — returns (the point said 3× across the note, the strip and the "From your line" box/footer, eight parts on six pages: c47b99cc checks inside ONE text only; a part's words in another part's space; two ✓ on one spot; an awarded mark with no ✓; marks on her writing; footer for a not-attempted part with "B0") are in the reader's findings file.
+
+- **Ring and "should be" on her CORRECT statement in a printed list** — "underline the correct statements": her wrong underline is "P ∩ Q = {0}", but the ring and "should be ∅ / empty set has no elements" land on her right "16 ∉ P" (Eva EM 2019 P1 p10 Q18(b)). The read was right. Misleads. Pen (slip token → wrong statement).
+- **The score and the codes disagree** — chip "Q15 3/3 · B0 B1 B1" with a ✗B0 on her curve; the read has awarded 3, scheme summing to 2 (Eva EM 2019 P1 p7 Q15). Read — Adrian's call which is right.
+- **A later part's chip above the earlier parts** — "Q24(b)(ii)" above "(b)(i)", "Q17(b)(ii)" at the top of the strip above Q17(a) (Eva EM 2019 P1 p9, p15, p16). Pen (chip seat).
+- **An arrow that leaves its note's far end and runs back through the note** — "should be 15°, 75°, 195°, 255°", the leader crossing "195°, 255°" so they look struck out (Gavin EM 2022 P2 p4 Q3(b)). Pen (leader start).
+- **Science: a ✗ on a diagram arrow that has no answer line** — her wrong label "decomposition" is on food → sewage; the ✗B0 and "should be egestion/excretion" sit on the sewage → methane arrow (Alexis Biology 2022 P2 p10 Q5(b)). Misleads. Pen (science seat on a diagram).
+- **A style tip drawn as a ring on a ticked line** — the "=" in "△OAT = △OBT ✓" ringed red with "write it as ≡" (Eva EM 2019 P1 p8 Q16(a)). Words (pen rule): a tip should not wear an error mark.
+- **The gap printed where the fix should be** — "Not what was asked: treatment changes deaths, not new cases." — what to write instead ("they drank less alcohol") is in error_summary but not printed (Alexis Biology p9 Q4(b)(iii)). Words (which field is printed) — 17 Oct's class, now on science.
+- **Raw "_" in a strip note** — "write it as ∠N_cCD = θ" (Gavin EM 2022 P2 p11 Q7(a)). Pen (typesetting).
+- **Check before working the 17 Oct line "science model answers not drawn"**: the page reader's pull fetches only the plain copy; science model answers are drawn on the `url_with_solutions` twin (Alexis Biology: 10 of 16 pages carry one). Today's sightings were withdrawn for that reason; Isabelle's may be the same.
