@@ -270,6 +270,19 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **P — PURE GEOGRAPHY AND PURE HISTORY, 17 Oct 2026.** Adrian: "what about students taking pure geography and pure
+> history? … what if a student take pure geography?" → "yes".
+> - Social Studies is compulsory (half of Combined Humanities, with ONE elective); Pure Geography / Pure History are full
+>   subjects on top, never the same subject as the elective. "Check my answer" now asks once **"Which Humanities subjects
+>   do you take?"** — four ticks (Geography Elective · History Elective · Pure Geography · Pure History) that follow those
+>   rules (`lib/portal-prefs humanitiesChoiceError`), saved as `prefs.humanities_subjects` (an older `humanities_elective`
+>   still counts) — and shows a tab per subject beside Social Studies; "Change subjects" reopens the ticks.
+> - The hand-in carries `pure`; the marker is told "Pure Geography" / "Pure History" instead of "… Elective".
+> - **Why the marking needs nothing else:** in the banked papers the question types are the same — Pure and Elective
+>   Geography both ask "Describe" / "Explain" (2–5 marks) and "To what extent" (8–9 marks); Pure and Elective History both
+>   set a source-based case study (30 marks) and 10-mark essays. The difference is how much content (Pure covers more
+>   topics, over two papers), which the marker knows from the syllabus. Literature is not covered.
+
 > **O — THE MODEL ANSWER, BUILT FROM THE STUDENT'S OWN, 17 Oct 2026.** Adrian: "students feedback that the app does not give
 > answers" → "yes, but don't name it as 'Your answer, at full marks'" → **"Model answer"**.
 > - After a "Check my answer" answer is marked below full marks, ONE read on plan (Opus, `lib/humanities-model.ts`, kind

@@ -17,6 +17,8 @@ export interface OwnQuestion {
   /** The sources or extract, as typed out (one block; the student's own Source A, B … labels inside). */
   sources: string;
   marks?: number | null;
+  /** Pure Geography / Pure History, not the Combined Humanities elective (17 Oct 2026). */
+  pure?: boolean;
   /** Geography short questions (point-marked): the school's answer scheme if the student gave one. */
   scheme?: string;
   /** The creditable points, written at hand-in from `scheme` or from the question (lib/humanities-own-points). */
@@ -40,7 +42,7 @@ export { OWN_SKILLS, guessSkill, mentionsSources } from './humanities-own-guess'
 export type OwnCheck = { ok: true; own: OwnQuestion } | { ok: false; error: string };
 
 /** Tidy and check what the student sent. */
-export function checkOwn(input: { subject?: unknown; skill?: unknown; question?: unknown; sources?: unknown; marks?: unknown; scheme?: unknown }): OwnCheck {
+export function checkOwn(input: { subject?: unknown; skill?: unknown; question?: unknown; sources?: unknown; marks?: unknown; scheme?: unknown; pure?: unknown }): OwnCheck {
   const subject = String(input.subject ?? '') as HumanitiesSubject;
   if (!(subject in OWN_SKILLS)) return { ok: false, error: 'Pick the subject.' };
   const skill = String(input.skill ?? '') as HumanitiesSkill;
@@ -55,13 +57,14 @@ export function checkOwn(input: { subject?: unknown; skill?: unknown; question?:
   }
   const m = Number(input.marks);
   const marks = Number.isInteger(m) && m > 0 && m <= 30 ? m : printedMarks(question);
+  const pure = input.pure === true && subject !== 'social-studies';
   const scheme = String(input.scheme ?? '').replace(/\r\n?/g, '\n').trim().slice(0, OWN_MAX_SOURCES);
   if (isOwnPoints(skill)) {
     // One mark a point: the total must be known to mark it.
     if (!marks) return { ok: false, error: 'Add the marks for this question, for example [4].' };
-    return { ok: true, own: { subject, skill, question, sources, marks, ...(scheme ? { scheme } : {}) } };
+    return { ok: true, own: { subject, skill, question, sources, marks, ...(pure ? { pure } : {}), ...(scheme ? { scheme } : {}) } };
   }
-  return { ok: true, own: { subject, skill, question, sources, marks } };
+  return { ok: true, own: { subject, skill, question, sources, marks, ...(pure ? { pure } : {}) } };
 }
 
 /** The question in the shape the reader and the report already take. */
@@ -77,7 +80,7 @@ export function ownContext(id: string, own: OwnQuestion): QuestionInContext | nu
   const sources = own.sources ? [{ id: label, provenance: 'As given with the question.', text: own.sources }] : [];
   const set: HumanitiesSet = {
     id, subject: own.subject, kind, title: 'Your question',
-    issue: `A ${own.subject === 'social-studies' ? 'Social Studies' : `${SUBJECT_NAME[own.subject]} Elective (Combined Humanities)`} question the student brought from school.`,
+    issue: `A ${own.subject === 'social-studies' ? 'Social Studies' : own.pure ? `Pure ${SUBJECT_NAME[own.subject]}` : `${SUBJECT_NAME[own.subject]} Elective (Combined Humanities)`} question the student brought from school.`,
     sources,
     questions: [{
       id, skill: own.skill, sources: sources.map(s => s.id), question: own.question, ...(own.marks ? { marks: own.marks } : {}),

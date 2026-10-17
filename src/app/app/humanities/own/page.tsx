@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen, humanitiesOwnOpen } from '@/lib/portal-beta';
-import { studentElective } from '@/lib/portal-prefs';
+import { studentHumanities } from '@/lib/portal-prefs';
 import { loadHumanitiesRun } from '@/lib/humanities-runs';
 import { OWN_SKILLS, type OwnQuestion } from '@/lib/humanities-own';
 import type { HumanitiesSubject } from '@/lib/humanities-questions';
@@ -25,10 +25,14 @@ export default async function OwnQuestionPage({ searchParams }: { searchParams: 
     const run = await loadHumanitiesRun(again, portalIdentity(account));
     prefill = run?.own_question ?? null;
   }
-  const elective = studentElective(account?.prefs);
+  const choices = studentHumanities(account?.prefs);
   const asked = prefill?.subject ?? (s === 'history' ? 'history' : s === 'geography' ? 'geography' : 'social-studies');
-  // Only Social Studies and the student's own elective.
-  const subject: HumanitiesSubject = asked === 'social-studies' || asked === elective || prefill ? asked : 'social-studies';
+  const askedPure = prefill?.pure ?? false;
+  // Only Social Studies and the subjects the student ticked (a refill keeps its own).
+  const ticked = asked === 'social-studies' || choices.includes(`${asked}_${askedPure ? 'p' : 'e'}` as never)
+    || choices.some(c => c.startsWith(`${asked}_`));
+  const subject: HumanitiesSubject = ticked || prefill ? asked : 'social-studies';
+  const pure = subject === 'social-studies' ? false : prefill ? askedPure : choices.includes(`${subject}_p` as never) && !choices.includes(`${subject}_e` as never);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -36,9 +40,9 @@ export default async function OwnQuestionPage({ searchParams }: { searchParams: 
       <div>
         <h1 className="text-xl font-bold text-navy leading-snug">Check my answer</h1>
         <p className="text-sm text-gray-600 mt-1">Send a question you did and your answer. Type them, or send photos.</p>
-        <p className="text-[12px] text-gray-500">Combined Humanities: Social Studies and your elective.</p>
+        <p className="text-[12px] text-gray-500">Social Studies, your elective, and Pure Geography or History if you take them.</p>
       </div>
-      <OwnForm initialSubject={subject} elective={prefill && prefill.subject !== 'social-studies' ? prefill.subject as 'geography' | 'history' : elective} prefill={prefill} skills={OWN_SKILLS} maxWords={MAX_WORDS} />
+      <OwnForm initialSubject={subject} initialPure={pure} choices={choices} prefill={prefill} skills={OWN_SKILLS} maxWords={MAX_WORDS} />
     </div>
   );
 }

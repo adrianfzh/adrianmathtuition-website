@@ -27,18 +27,35 @@ export const SCIENCE_SUBJECT_LABEL: Record<ScienceSubject, string> = { physics: 
  */
 export const PORTAL_PREF_KEYS: readonly string[] = ['combined_science', 'push_asked'];
 /** List preferences: the key and the values it may hold. */
-export const PORTAL_PREF_LISTS: Readonly<Record<string, readonly string[]>> = { sciences: SCIENCE_SUBJECTS, humanities_elective: ['geography', 'history'] };
-
 /**
- * 15 Oct 2026 — the Humanities elective (Adrian: "allow them to choose their elect too (either it's geo or
- * hist), and only say it's for elect (not pure)"): Combined Humanities = Social Studies + ONE elective.
- * Stored as a one-item list; null until chosen.
+ * 17 Oct 2026 — the Humanities subjects a student takes (Adrian: "what about students taking pure geography and pure
+ * history?" → "yes"). Combined Humanities = Social Studies (every student) + ONE elective; Pure Geography / Pure History
+ * are full subjects on top. Never the same subject as both elective and pure. Stored as `humanities_subjects`.
  */
-export function studentElective(prefs: unknown): 'geography' | 'history' | null {
-  if (!prefs || typeof prefs !== 'object' || Array.isArray(prefs)) return null;
-  const v = (prefs as Record<string, unknown>).humanities_elective;
-  const first = Array.isArray(v) ? v[0] : null;
-  return first === 'geography' || first === 'history' ? first : null;
+export const HUMANITIES_CHOICES = ['geography_e', 'history_e', 'geography_p', 'history_p'] as const;
+export type HumanitiesChoice = (typeof HUMANITIES_CHOICES)[number];
+export const HUMANITIES_CHOICE_LABEL: Record<HumanitiesChoice, string> = {
+  geography_e: 'Geography Elective', history_e: 'History Elective', geography_p: 'Pure Geography', history_p: 'Pure History',
+};
+export const PORTAL_PREF_LISTS: Readonly<Record<string, readonly string[]>> = {
+  sciences: SCIENCE_SUBJECTS, humanities_elective: ['geography', 'history'], humanities_subjects: HUMANITIES_CHOICES,
+};
+
+/** A set of Humanities choices a school allows: one elective at most, never a subject as both elective and pure. */
+export function humanitiesChoiceError(list: readonly string[]): string | null {
+  if (list.filter(x => x.endsWith('_e')).length > 1) return 'Combined Humanities has one elective — pick Geography OR History';
+  if (list.includes('geography_e') && list.includes('geography_p')) return 'Geography is either the elective or Pure Geography, not both';
+  if (list.includes('history_e') && list.includes('history_p')) return 'History is either the elective or Pure History, not both';
+  return null;
+}
+
+/** The student's Humanities subjects, in a fixed order; [] until chosen. An older single `humanities_elective` counts. */
+export function studentHumanities(prefs: unknown): HumanitiesChoice[] {
+  if (!prefs || typeof prefs !== 'object' || Array.isArray(prefs)) return [];
+  const p = prefs as Record<string, unknown>;
+  const list = Array.isArray(p.humanities_subjects) ? p.humanities_subjects
+    : Array.isArray(p.humanities_elective) ? p.humanities_elective.map(x => `${x}_e`) : [];
+  return HUMANITIES_CHOICES.filter(c => list.includes(c));
 }
 
 export type PrefsPatch = Record<string, boolean | string[]>;
@@ -78,6 +95,10 @@ export function readPrefsPatch(input: unknown): { patch: PrefsPatch } | { error:
     patch[key] = value;
   }
   if (Object.keys(patch).length === 0) return { error: 'prefs is empty' };
+  if (Array.isArray(patch.humanities_subjects)) {
+    const why = humanitiesChoiceError(patch.humanities_subjects);
+    if (why) return { error: why };
+  }
   // Combined Science is two sciences, by definition.
   if (patch.combined_science === true && Array.isArray(patch.sciences) && patch.sciences.length !== 2) {
     return { error: 'Combined Science is two sciences — pick the two in your paper' };

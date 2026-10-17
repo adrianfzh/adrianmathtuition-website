@@ -90,3 +90,14 @@ describe('Geography short questions', () => {
     expect(ownContext('own-10', { subject: 'geography', skill: 'geo_describe', question: 'Describe it. [3]', sources: '', marks: 3 })).toBeNull();
   });
 });
+
+describe('Pure or Elective', () => {
+  it('tells the marker which paper it is', () => {
+    const r = checkOwn({ subject: 'history', skill: 'hist_evaluate', question: 'How far do you agree that the Cold War began in Europe?', pure: true });
+    expect(r.ok && r.own.pure).toBe(true);
+    expect(ownContext('own-p', (r as { own: Parameters<typeof ownContext>[1] }).own)!.set.issue).toContain('Pure History');
+    const e = checkOwn({ subject: 'history', skill: 'hist_evaluate', question: 'How far do you agree that the Cold War began in Europe?' });
+    expect(ownContext('own-e', (e as { own: Parameters<typeof ownContext>[1] }).own)!.set.issue).toContain('History Elective');
+    expect(checkOwn({ subject: 'social-studies', skill: 'sr_explain', question: 'Explain two ways citizens can take part.', pure: true }).ok && true).toBe(true);
+  });
+});

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { studentElective, PORTAL_PREF_KEYS, mergePrefs, readPrefsPatch, scienceChoiceLabel, studentSciences } from './portal-prefs';
+import { studentHumanities, PORTAL_PREF_KEYS, mergePrefs, readPrefsPatch, scienceChoiceLabel, studentSciences } from './portal-prefs';
 
 describe('readPrefsPatch', () => {
   it('refuses the retired switches (21 Sep 2026 — the four switches went)', () => {
@@ -56,11 +56,16 @@ describe('studentSciences', () => {
   });
 });
 
-describe('studentElective', () => {
-  it('reads the one elective, and accepts it as a pref', () => {
-    expect(studentElective({ humanities_elective: ['history'] })).toBe('history');
-    expect(studentElective({})).toBeNull();
-    expect(readPrefsPatch({ humanities_elective: ['geography'] })).toEqual({ patch: { humanities_elective: ['geography'] } });
-    expect('error' in readPrefsPatch({ humanities_elective: ['literature'] })).toBe(true);
+
+describe('studentHumanities', () => {
+  it('reads the chosen subjects, and an older single elective', () => {
+    expect(studentHumanities({ humanities_subjects: ['geography_p', 'history_e'] })).toEqual(['history_e', 'geography_p']);
+    expect(studentHumanities({ humanities_elective: ['history'] })).toEqual(['history_e']);
+    expect(studentHumanities({})).toEqual([]);
+  });
+  it('refuses what a school would not allow', () => {
+    expect('error' in readPrefsPatch({ humanities_subjects: ['geography_e', 'geography_p'] })).toBe(true);
+    expect('error' in readPrefsPatch({ humanities_subjects: ['geography_e', 'history_e'] })).toBe(true);
+    expect(readPrefsPatch({ humanities_subjects: ['history_e', 'geography_p'] })).toEqual({ patch: { humanities_subjects: ['history_e', 'geography_p'] } });
   });
 });
