@@ -2554,11 +2554,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           top (but not in the clip?)"). Two lines at most; a long one opens whole on a tap. */}
       {clip && question && !wide && !done && (
         <button type="button" onClick={() => setQOpen(o => !o)} data-question-strip
-          className="lsn-question block w-full text-left mb-2 rounded-2xl px-4 py-2.5 text-[14px] leading-snug">
-          <span className="line-clamp-2 block">
-            <span className="lsn-question-kicker text-[10px] font-bold uppercase tracking-wider mr-1.5">Question</span>
-            <MathText text={question} />
-          </span>
+          className="lsn-qstrip block w-full text-left mb-2.5 rounded-2xl bg-white border border-slate-200 border-l-4 border-l-amber-400 px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+          <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-amber-600 mb-0.5">Question</span>
+          <span className="line-clamp-2 block text-[15px] leading-snug text-navy"><MathText text={question} /></span>
         </button>
       )}
       {done ? (
