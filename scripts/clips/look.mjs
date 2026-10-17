@@ -181,6 +181,8 @@ for (const slug of slugs) {
           const r = el.getBoundingClientRect();
           if (r.width === 0 || r.height === 0) continue;
           if (r.top < scrollTop) continue;
+          // …and on a scrolling board, lines below its bottom edge are simply not scrolled to yet.
+          if (zoomEl && zoomEl.style.translate && boardEl && r.top > boardEl.getBoundingClientRect().bottom - 40) continue;
           const label = (el.getAttribute('data-key') || '') + ' ' + (el.textContent || '').trim().slice(0, 30);
           if (r.left < sr.left - 1 || r.right > sr.right + 1 || r.top < sr.top - 1 || r.bottom > sr.bottom + 1) cut.push(label);
           if (r.bottom > fold - 2 + window.scrollY - window.scrollY) hidden.push(`${label} (bottom ${r.bottom.toFixed(0)} px, bar at ${fold.toFixed(0)} px)`);
@@ -204,7 +206,16 @@ for (const slug of slugs) {
         const subsHide = [];
         if (subs && (subs.textContent || '').trim()) {
           const ur = subs.getBoundingClientRect();
-          for (const { r, label } of boxes) {
+          // On a scrolling board only the lines this beat talks about must clear the subtitle (an older
+          // line below them, while the board looks back up, is not being talked about).
+          const zoomS = stage.querySelector('.lsn-zoom');
+          const scrolling = !!(zoomS && zoomS.style.translate);
+          const talkLines = new Set([
+            ...focusIds.flatMap(id => Array.from(stage.querySelectorAll(`[data-token-id="${CSS.escape(id)}"]`))),
+            ...focusLines.map(n => stage.querySelector(`[data-line="${n}"]`)).filter(Boolean),
+          ].map(el => el.closest('.lsn-line')).filter(Boolean));
+          for (const { el, r, label } of boxes) {
+            if (scrolling && talkLines.size && !talkLines.has(el.closest('.lsn-line'))) continue;
             const w = Math.min(ur.right, r.right) - Math.max(ur.left, r.left);
             const h = Math.min(ur.bottom, r.bottom) - Math.max(ur.top, r.top);
             if (w > 3 && h > 3) subsHide.push(label);

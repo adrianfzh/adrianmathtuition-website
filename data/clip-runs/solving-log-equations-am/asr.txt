@@ -18,12 +18,12 @@ Verifying 28 clip(s) of solving-log-equations-am by transcription (gemini-2.5-fl
   scene-01-b16: 100% of narration words heard
   scene-01-b17: 100% of narration words heard
   scene-01-b18: 80% of narration words heard  ⚠ LOW
-      heard: factorize it into two brackets.
+      heard: Factorize it into two brackets.
   scene-01-b19: 89% of narration words heard
   scene-01-b20: 95% of narration words heard
   scene-01-b21: 100% of narration words heard
   scene-01-b22: 93% of narration words heard
-  scene-01-b23: 100% of narration words heard
+  scene-01-b23: 85% of narration words heard
   scene-01-b24: 94% of narration words heard
   scene-01-b25: 86% of narration words heard
   scene-01-b26: 100% of narration words heard

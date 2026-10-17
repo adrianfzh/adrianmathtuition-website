@@ -1,6 +1,6 @@
 {
  "slug": "solving-log-equations-am",
- "worst": 0.86,
+ "worst": 0.85,
  "lines": [
   {
    "beat": 1,
@@ -108,7 +108,7 @@
    "beat": 18,
    "bag": 0.8,
    "score": 0.958,
-   "heard": "factorize it into two brackets.",
+   "heard": "Factorize it into two brackets.",
    "said": "Factorise it into two brackets."
   },
   {
@@ -137,8 +137,8 @@
   },
   {
    "beat": 23,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.85,
+   "score": 0.85,
    "heard": null
   },
   {
