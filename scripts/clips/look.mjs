@@ -135,7 +135,9 @@ for (const slug of slugs) {
       // What this beat talks about (Adrian, 17 Oct 2026: "make sure content is not obscure (even
       // partially) when narrator is talking about it"): its actions' tokens and lines.
       const beatDo = script.scenes[e.scene ?? 0]?.beats?.[e.beat]?.do ?? [];
-      const focusIds = [...new Set(beatDo.flatMap(a => [a.token, a.near, a.span, a.from].flat().filter(x => typeof x === 'string')))];
+      // (A move's START is not checked here: when it is far above, the beat before shows it — "Look
+      // back at the question" — and the piece comes down from there.)
+      const focusIds = [...new Set(beatDo.flatMap(a => [a.token, a.near, a.span].flat().filter(x => typeof x === 'string')))];
       const focusLines = beatDo.map(a => a.step).filter(x => typeof x === 'number');
       const m = await page.evaluate((MIN_PX, focusIds, focusLines) => {
         const stage = document.querySelector('.lsn-stage');

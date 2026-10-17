@@ -1,6 +1,6 @@
 {
  "slug": "solving-log-equations-am",
- "at": "2026-10-16T16:03:57.474Z",
+ "at": "2026-10-17T13:52:58.808Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -12,16 +12,16 @@
   },
   "board": {
    "ok": true,
-   "detail": "13 lines = the checked plan"
+   "detail": "15 lines = the checked plan"
   },
   "read": {
    "ok": true,
    "detail": "pick G3 · lowest score 4 · pass"
   },
   "look": {
-   "ok": true,
-   "detail": "34/34 actions on the voice · cues worst 0.19 s (gate 0.3 s) · look problems 0"
+   "ok": false,
+   "detail": "38/38 actions on the voice · cues worst 0.16 s (gate 0.3 s) · look problems 2"
   }
  },
- "pass": true
+ "pass": false
 }

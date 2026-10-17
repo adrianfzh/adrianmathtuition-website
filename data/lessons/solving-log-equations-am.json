@@ -308,14 +308,23 @@
           "timing": "/lessons/solving-log-equations-am/scene-01-b20.timing.json"
         },
         {
-          "say": "For X equals negative one, take log base three of X minus eight from the question.",
-          "asks": ["Why use log base 3 of x minus 8?"],
+          "say": "Look back at the question. Its first log is log base three of X minus eight.",
+          "asks": ["Why look back at the question?"],
           "do": [
-            { "do": "write", "token": "kx", "on": "For X equals negative one" },
-            { "do": "move", "from": "l1", "on": "from the question" }
+            { "do": "highlight", "token": "l1", "on": "Its first log" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b21.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b21.timing.json"
+        },
+        {
+          "say": "For X equals negative one, take that log, log base three of X minus eight.",
+          "asks": ["Why use log base 3 of x minus 8?"],
+          "do": [
+            { "do": "write", "token": "kx", "on": "For X equals negative one" },
+            { "do": "move", "from": "l1", "on": "take that log" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b22.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b22.timing.json"
         },
         {
           "say": "Put in negative one: negative one minus eight is negative nine. So we get log base three of negative nine.",
@@ -324,8 +333,8 @@
             { "do": "write", "token": "ksub", "on": "Put in negative one" },
             { "do": "write", "token": "lgm", "on": "log base three of negative nine" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b22.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b22.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b23.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b23.timing.json"
         },
         {
           "say": "A log of a negative number is undefined, so log base three of negative nine does not exist.",
@@ -334,8 +343,8 @@
           "do": [
             { "do": "note", "text": "a log of a negative number is undefined", "near": "lgm", "on": "is undefined" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b23.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b23.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b24.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b24.timing.json"
         },
         {
           "say": "So we reject X equals negative one.",
@@ -343,8 +352,8 @@
           "do": [
             { "do": "write", "token": "rej", "on": "we reject" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b24.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b24.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b25.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b25.timing.json"
         },
         {
           "say": "Now X equals nine. Log base three of nine minus eight is log base three of one.",
@@ -353,8 +362,8 @@
             { "do": "write", "token": "k9", "on": "Now X equals nine" },
             { "do": "write", "token": "k9a", "on": "is log base three of one" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b25.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b25.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b26.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b26.timing.json"
         },
         {
           "say": "And log base three of X is log base three of nine. Both insides are positive, so X equals nine works.",
@@ -363,8 +372,8 @@
             { "do": "write", "token": "k9b", "on": "is log base three of nine" },
             { "do": "write", "token": "k9c", "on": "X equals nine works" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b26.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b26.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b27.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b27.timing.json"
         },
         {
           "say": "The answer is X equals nine.",
@@ -373,8 +382,8 @@
             { "do": "write", "step": 14, "on": "The answer is" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine." }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b27.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b27.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b28.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b28.timing.json"
         }
       ]
     }

@@ -96,6 +96,12 @@ the history.
 - **While a piece moves, NOTHING else moves** ("only thing that moves is 2 going up … then you can shift
   the frame"). Only the moving piece moves; the space it leaves closes after it lands (the player does
   this when the power token `replaces` the piece).
+- **Nothing the voice talks about is hidden, even partly** (17 Oct 2026: "make sure content is not
+  obscure (even partially) when narrator is talking about it"). The player keeps every target of the
+  current part in view; when a piece must come from a line far above (the question line), add a beat
+  that LOOKS BACK at it first ("Look back at the question…", highlight it) — the board scrolls up to
+  it, then glides back down as the piece comes down. The look check fails a talked-about piece under
+  the fade.
 - **The base in its own colour** when the voice talks about the base (`"part": "sub"`).
 - **Highlight the parts a law acts on**, colour-matched to the law (M orange, N blue), and keep those
   colours in the result line.

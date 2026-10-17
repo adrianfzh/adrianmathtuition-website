@@ -1,6 +1,6 @@
 {
  "slug": "solving-log-equations-am",
- "worst": 0.87,
+ "worst": 0.86,
  "lines": [
   {
    "beat": 1,
@@ -10,8 +10,8 @@
   },
   {
    "beat": 2,
-   "bag": 0.87,
-   "score": 0.87,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -76,8 +76,8 @@
   },
   {
    "beat": 13,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -125,16 +125,15 @@
   },
   {
    "beat": 21,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 22,
-   "bag": 0.8,
-   "score": 1,
-   "heard": "Put in -1 -1 - 8 is -9 so we get log base 3 of -9",
-   "said": "Put in negative one: negative one minus eight is negative nine. So we get log base three of negative nine."
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
   },
   {
    "beat": 23,
@@ -144,14 +143,14 @@
   },
   {
    "beat": 24,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
    "beat": 25,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.86,
+   "score": 0.86,
    "heard": null
   },
   {
@@ -162,6 +161,12 @@
   },
   {
    "beat": 27,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 28,
    "bag": 1,
    "score": 1,
    "heard": null
