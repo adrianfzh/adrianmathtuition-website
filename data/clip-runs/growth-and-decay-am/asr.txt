@@ -1,23 +1,25 @@
-Verifying 13 clip(s) of growth-and-decay-am by transcription (gemini-2.5-flash)…
+Verifying 15 clip(s) of growth-and-decay-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 83% of narration words heard  ⚠ LOW
-      heard: P equals P not E to the power KT, it starts at 100 and doubles every 7.5 hours. Find K.
+  scene-01-b1: 88% of narration words heard
   scene-01-b2: 100% of narration words heard
-  scene-01-b3: 91% of narration words heard
-  scene-01-b4: 94% of narration words heard
-  scene-01-b5: 93% of narration words heard
-  scene-01-b6: 100% of narration words heard
-  scene-01-b7: 85% of narration words heard  ⚠ LOW
-      heard: E is involved. So we use LN, which is log base E.
-  scene-01-b8: 95% of narration words heard
-  scene-01-b9: 68% of narration words heard  ⚠ LOW
-      heard: Now take LN of both sides LN of E to the power 7.5k equals LN2
-  scene-01-b10: 88% of narration words heard
-  scene-01-b11: 77% of narration words heard  ⚠ LOW
-      heard: ln e is one because e to the power one is e. So 7.5k equals ln2.
+  scene-01-b3: 96% of narration words heard
+  scene-01-b4: 100% of narration words heard
+  scene-01-b5: 87% of narration words heard
+  scene-01-b6: 94% of narration words heard
+  scene-01-b7: 93% of narration words heard
+  scene-01-b8: 100% of narration words heard
+  scene-01-b9: 85% of narration words heard  ⚠ LOW
+      heard: E is involved, so we use LN, which is log base E.
+  scene-01-b10: 95% of narration words heard
+  scene-01-b11: 68% of narration words heard  ⚠ LOW
+      heard: Now take ln of both sides, ln of E to the power 7.5k equals ln2.
   scene-01-b12: 75% of narration words heard  ⚠ LOW
-      heard: divide both sides by 7.5 K equals ln2 over 7.5
-  scene-01-b13: 77% of narration words heard  ⚠ LOW
+      heard: Bring the power down. 7.5K comes down in front of LNE.
+  scene-01-b13: 73% of narration words heard  ⚠ LOW
+      heard: ln is one because E to the power one is E. So 7.5k equals ln2.
+  scene-01-b14: 75% of narration words heard  ⚠ LOW
+      heard: divide both sides by 7.5 K = ln2 over 7.5
+  scene-01-b15: 77% of narration words heard  ⚠ LOW
       heard: That is 0.0924 correct to three significant figures.
 
 6 clip(s) below 85% — listen to those.

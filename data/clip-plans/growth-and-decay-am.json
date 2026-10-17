@@ -27,17 +27,12 @@
     {
       "tokens": [
         {
-          "tex": "t=0:",
+          "tex": "t=0,",
           "id": "t0"
         },
         {
           "tex": "P=100",
           "id": "pA"
-        },
-        {
-          "tex": "\\;\\Rightarrow\\;P_0=100",
-          "id": "p0",
-          "hl": "amber"
         }
       ],
       "checks": [
@@ -45,10 +40,48 @@
           "model": {
             "P": "P0*exp(k*t)"
           }
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "100=P_0e^{k(0)}",
+          "id": "sub"
+        }
+      ],
+      "checks": [
+        {
+          "form": "sub t = 0 and P = 100 into P = P0 e^(kt)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "100=P_0e^{0}",
+          "id": "s2a"
         },
         {
+          "tex": "=P_0",
+          "id": "s2b"
+        }
+      ],
+      "checks": [
+        {
           "identity": "P0*exp(k*0) = P0"
-        },
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "P_0=100",
+          "id": "p0",
+          "hl": "amber"
+        }
+      ],
+      "checks": [
         {
           "given": {
             "P0": 100

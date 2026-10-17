@@ -11,9 +11,9 @@ const scene = growth.scenes[0] as PlayScene;
 
 describe('clip-ask', () => {
   it('the "take ln" beat of Growth and decay: board so far + its ready questions', () => {
-    // beat 9 (index 8) = "Now take L N of both sides: …" — writes line 3 (Adrian's changes, 18 Oct 2026).
-    expect(boardTexAt(scene, 8)).toEqual(['t=0: P=100 \\;\\Rightarrow\\;P_0=100', '200 =100e^{7.5k}', 'e^{7.5k}=2', '\\ln e {}^{7.5k} =\\ln 2']);
-    expect(readyAsks(scene, 8)[0]).toBe('Why take L N of both sides?');
+    // beat 11 (index 10) = "Now take L N of both sides: …" — the t = 0 working is shown first (18 Oct 2026).
+    expect(boardTexAt(scene, 10)).toEqual(['t=0, P=100', '100=P_0e^{k(0)}', '100=P_0e^{0} =P_0', 'P_0=100', '200 =100e^{7.5k}', 'e^{7.5k}=2', '\\ln e {}^{7.5k} =\\ln 2']);
+    expect(readyAsks(scene, 10)[0]).toBe('Why take L N of both sides?');
   });
 
   it('only what is written: the first beat has an empty board', () => {

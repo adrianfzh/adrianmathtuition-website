@@ -12,12 +12,28 @@
       "type": "equation-steps",
       "heading": "Growth and decay",
       "intro": "$P = P_0e^{kt}$, $t$ in hours. It starts at $100$ and doubles every $7.5$ hours. Find $k$.",
+      "scroll": true,
       "steps": [
         {
           "tokens": [
-            { "tex": "t=0:", "id": "t0" },
-            { "tex": "P=100", "id": "pA" },
-            { "tex": "\\;\\Rightarrow\\;P_0=100", "id": "p0", "hl": "amber" }
+            { "tex": "t=0,", "id": "t0" },
+            { "tex": "P=100", "id": "pA" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "100=P_0e^{k(0)}", "id": "sub" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "100=P_0e^{0}", "id": "s2a" },
+            { "tex": "=P_0", "id": "s2b" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "P_0=100", "id": "p0", "hl": "amber" }
           ]
         },
         {
@@ -75,13 +91,33 @@
           "timing": "/lessons/growth-and-decay-am/scene-01-b2.timing.json"
         },
         {
-          "say": "E to the power zero is one, so at T equals zero, P is P nought. So P nought is one hundred.",
-          "asks": ["Why is e to the power zero equal to 1?"],
+          "say": "Put T equals zero and P equals one hundred into the formula: one hundred equals P nought E to the power K times zero.",
+          "asks": ["Why put in t equals zero?"],
           "do": [
-            { "do": "write", "token": "p0", "on": "So P nought is" }
+            { "do": "write", "token": "sub", "on": "one hundred equals P nought" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b3.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "K times zero is zero, so the power is zero. And E to the power zero is one.",
+          "asks": ["Why is e to the power zero equal to 1?"],
+          "do": [
+            { "do": "write", "token": "s2a", "on": "the power is zero" },
+            { "do": "note", "text": "$e^0 = 1$", "near": "s2a", "on": "E to the power zero is one" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b4.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "So one hundred equals P nought, times one. That means P nought is one hundred.",
+          "asks": ["What is P nought?"],
+          "do": [
+            { "do": "write", "token": "s2b", "on": "equals P nought" },
+            { "do": "write", "token": "p0", "on": "P nought is one hundred" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b5.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b5.timing.json"
         },
         {
           "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred.",
@@ -89,8 +125,8 @@
           "do": [
             { "do": "write", "token": "dbl", "on": "P is two hundred" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b4.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b4.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b6.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b6.timing.json"
         },
         {
           "say": "So two hundred equals one hundred E to the power seven point five K.",
@@ -98,8 +134,8 @@
           "do": [
             { "do": "write", "token": "rhs", "on": "one hundred E to the power" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b5.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b5.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b7.timing.json"
         },
         {
           "say": "We need to find K, and K is in the power. A log brings a power down, so we will take a log.",
@@ -107,8 +143,8 @@
           "do": [
             { "do": "highlight", "token": "rhs", "on": "K is in the power" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b6.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b6.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b8.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b8.timing.json"
         },
         {
           "say": "E is involved, so we use L N, which is log base E.",
@@ -117,26 +153,26 @@
           "do": [
             { "do": "highlight", "token": "rhs", "on": "E is involved" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b7.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b9.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b9.timing.json"
         },
         {
           "say": "But first, make E to the power seven point five K the subject: divide both sides by one hundred.",
           "asks": ["Why divide first?"],
           "do": [
-            { "do": "write", "step": 2, "on": "divide both sides by" }
+            { "do": "write", "step": 5, "on": "divide both sides by" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b8.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b8.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b10.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b10.timing.json"
         },
         {
           "say": "Now take L N of both sides: L N of E to the power seven point five K equals L N two.",
           "asks": ["Why take L N of both sides?"],
           "do": [
-            { "do": "write", "step": 3, "on": "take L N of both sides" }
+            { "do": "write", "step": 6, "on": "take L N of both sides" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b9.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b9.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b11.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b11.timing.json"
         },
         {
           "say": "Bring the power down: seven point five K comes down in front of L N E.",
@@ -145,18 +181,18 @@
             { "do": "write", "token": "l4", "on": "Bring the power down" },
             { "do": "move", "from": "pw3", "on": "comes down in front" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b10.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b10.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b12.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b12.timing.json"
         },
         {
           "say": "L N E is one, because E to the power one is E. So seven point five K equals L N two.",
           "asks": ["Why is L N E equal to 1?"],
           "do": [
             { "do": "note", "text": "$\\ln e = 1$, since $e^1 = e$", "near": "l4", "on": "because E to the power" },
-            { "do": "write", "step": 5, "on": "So seven point five K" }
+            { "do": "write", "step": 8, "on": "So seven point five K" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b11.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b11.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b13.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b13.timing.json"
         },
         {
           "say": "Divide both sides by seven point five: K equals L N two over seven point five.",
@@ -164,8 +200,8 @@
           "do": [
             { "do": "write", "token": "k1", "on": "K equals L N two" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b12.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b12.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b14.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b14.timing.json"
         },
         {
           "say": "That is zero point zero nine two four, correct to three significant figures.",
@@ -174,8 +210,8 @@
             { "do": "write", "token": "k2", "on": "That is zero point" },
             { "do": "mark", "kind": "box", "token": "k2", "on": "correct to three significant" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b13.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b13.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b15.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b15.timing.json"
         }
       ]
     }
