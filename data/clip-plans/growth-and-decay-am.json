@@ -1,8 +1,7 @@
 {
   "slug": "growth-and-decay-am",
   "title": "Growth and decay",
-  "heading": "Growth and decay",
-  "intro": "$P = P_0e^{kt}$, $t$ in hours. It starts at $100$ and doubles every $7.5$ hours. Find $k$.",
+  "intro": null,
   "level": "AM",
   "topic": "Logarithms",
   "subgroup": {
@@ -21,19 +20,16 @@
     "facts": [
       "k = log(2)/7.5"
     ],
-    "display": "0.0924"
+    "display": "k = 0.0924 (3 s.f.)"
   },
   "lines": [
     {
+      "board": 0,
+      "heading": "Step 1: the start",
       "tokens": [
         {
-          "tex": "t=0:",
-          "id": "t0"
-        },
-        {
-          "tex": "P_0=100",
-          "id": "p0",
-          "hl": "amber"
+          "tex": "P=P_0e^{kt}",
+          "id": "q0"
         }
       ],
       "checks": [
@@ -41,7 +37,41 @@
           "model": {
             "P": "P0*exp(k*t)"
           }
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\text{start}\\;\\to\\;\\text{double}\\;\\to\\;\\text{take }\\ln",
+          "id": "p1",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: use the start, then the doubling, then take ln"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "t=0:\\;P=P_0e^{0}=P_0",
+          "id": "q2a"
         },
+        {
+          "tex": "=",
+          "id": "eqA"
+        },
+        {
+          "tex": "100",
+          "id": "c100"
+        }
+      ],
+      "checks": [
         {
           "identity": "P0*exp(k*0) = P0"
         },
@@ -53,21 +83,48 @@
       ]
     },
     {
+      "board": 0,
+      "heading": "Step 2: the doubling",
       "tokens": [
         {
-          "tex": "200",
-          "id": "dbl",
-          "hl": "amber"
+          "tex": "t=7.5:\\;P=2\\times 100=",
+          "id": "q3a"
         },
         {
-          "tex": "=100e^{7.5k}",
-          "id": "rhs"
+          "tex": "200",
+          "id": "c200"
         }
       ],
       "checks": [
         {
           "fact": "2*P0 = 200"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "200",
+          "id": "a200",
+          "from": "c200"
         },
+        {
+          "tex": "=",
+          "id": "aeq"
+        },
+        {
+          "tex": "100",
+          "id": "a100",
+          "from": "c100"
+        },
+        {
+          "tex": "e^{7.5k}",
+          "id": "aexp",
+          "tight": true
+        }
+      ],
+      "checks": [
         {
           "start": "200 = P0*exp(k*7.5)",
           "var": "k"
@@ -75,6 +132,7 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
           "tex": "e^{7.5k}=2",
@@ -88,10 +146,21 @@
       ]
     },
     {
+      "board": 0,
+      "heading": "Step 3: take ln",
       "tokens": [
         {
-          "tex": "\\ln e^{7.5k}=\\ln 2",
-          "id": "lnboth"
+          "tex": "\\ln e",
+          "id": "l6a"
+        },
+        {
+          "tex": "{}^{7.5k}",
+          "id": "pw6",
+          "tight": true
+        },
+        {
+          "tex": "=\\ln 2",
+          "id": "l6b"
         }
       ],
       "checks": [
@@ -101,21 +170,62 @@
       ]
     },
     {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "7.5k",
+          "id": "m7k",
+          "from": "pw6"
+        },
+        {
+          "tex": "\\ln e=\\ln 2",
+          "id": "l7r"
+        }
+      ],
+      "checks": [
+        {
+          "step": "7.5*k*log(exp(1)) = log(2)"
+        }
+      ]
+    },
+    {
+      "board": 0,
       "tokens": [
         {
           "tex": "7.5k=\\ln 2",
-          "id": "ln"
-        },
-        {
-          "tex": "\\Rightarrow\\;k\\approx 0.0924",
-          "id": "ans",
-          "hl": "emerald"
+          "id": "l8"
         }
       ],
       "checks": [
         {
           "step": "7.5*k = log(2)"
-        },
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "k=\\dfrac{\\ln 2}{7.5}",
+          "id": "l9"
+        }
+      ],
+      "checks": [
+        {
+          "step": "k = log(2)/7.5"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "k=0.0924\\;\\text{(3 s.f.)}",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
         {
           "approx": 0.0924,
           "sf": 3
@@ -124,13 +234,15 @@
     }
   ],
   "outline": [
-    "Read the question (write model).",
-    "'Starts at 100' means t = 0, so P0 = 100 (write t0, p0).",
-    "Doubles every 7.5 hours: at t = 7.5, P = 200 (write dbl, rhs). Trap: P is 200, not 2.",
-    "Make e to the 7.5k the subject: divide by 100 (write iso).",
-    "e is involved, so take ln of both sides; ln e is 1 (write ln).",
-    "k = ln 2 over 7.5, about 0.0924 (write ans, box).",
-    "Adrian 15 Oct: 'ln e^(7.5k) = ln 2' is its own line (take ln on both sides is the key step). The model line is dropped — it is already in the question."
+    "Rebuilt 17 Oct 2026 to the house rules: one scrolling board; the start (t = 0, e^0 = 1); the doubling (P = 200); 200 and 100 move into the model; divide; take ln; the power comes down in front of ln e; ln e = 1; k (3 s.f.); one Watch out (P is 200, not 2)."
   ],
-  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$."
+  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$, correct to 3 significant figures.",
+  "boards": [
+    {
+      "heading": null,
+      "intro": null,
+      "scroll": true
+    }
+  ],
+  "minutes": 2
 }

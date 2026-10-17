@@ -271,6 +271,10 @@ New in the player: a clip board that would run below the screen scales its maths
 - Same day: the player keeps everything the current part talks about in view (a "focus" from the beat's
   actions); the question card is design B (white card, amber "Question" tag on its edge — Adrian's pick
   of six mock-ups).
+- **Rebuilt to the house rules (17 Oct 2026): Growth and decay** — one scrolling board, 11 lines, 14 beats,
+  ~1.4 min of voice: the start (t = 0, e⁰ = 1, P₀ = 100), the doubling (P = 200), 200 and 100 move into
+  the model, divide, take ln (law first), 7.5k comes down in front of ln e, ln e = 1, k = 0.0924 (3 s.f.),
+  one Watch out (P is 200, not 2). Maths 15/15, blind read pass (3 beats fixed), voice 14/14 ≥ 86 %.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

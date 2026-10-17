@@ -155,7 +155,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Logarithms',
     title: 'Growth and decay',
-    minutes: 1,
+    minutes: 2,
   },
   {
     slug: 'sketching-log-graphs-am',

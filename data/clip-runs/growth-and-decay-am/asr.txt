@@ -1,17 +1,23 @@
-Verifying 9 clip(s) of growth-and-decay-am by transcription (gemini-2.5-flash)…
+Verifying 14 clip(s) of growth-and-decay-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 83% of narration words heard  ⚠ LOW
-      heard: P equals P not E to the power KT. It starts at 100 and doubles every 7.5 hours. Find K.
-  scene-01-b2: 93% of narration words heard
-  scene-01-b3: 94% of narration words heard
-  scene-01-b4: 88% of narration words heard
-  scene-01-b5: 95% of narration words heard
-  scene-01-b6: 70% of narration words heard  ⚠ LOW
-      heard: He is involved. So take LN of both sides.
-  scene-01-b7: 67% of narration words heard  ⚠ LOW
-      heard: LN cancels E leaving the power. 7.5k equals LN2.
-  scene-01-b8: 65% of narration words heard  ⚠ LOW
-      heard: So K equals ln2 over 7.5 about 0.0924.
-  scene-01-b9: 100% of narration words heard
+  scene-01-b1: 91% of narration words heard
+  scene-01-b2: 84% of narration words heard  ⚠ LOW
+      heard: Here is the plan. Use the start to find P not, then use the doubling, then take LN.
+  scene-01-b3: 95% of narration words heard
+  scene-01-b4: 91% of narration words heard
+  scene-01-b5: 90% of narration words heard
+  scene-01-b6: 93% of narration words heard
+  scene-01-b7: 89% of narration words heard
+  scene-01-b8: 95% of narration words heard
+  scene-01-b9: 81% of narration words heard  ⚠ LOW
+      heard: He is involved, so take ln of both sides. Now the power can come down.
+  scene-01-b10: 75% of narration words heard  ⚠ LOW
+      heard: Bring the power down 7.5k comes down in front of LNE.
+  scene-01-b11: 77% of narration words heard  ⚠ LOW
+      heard: LN E is 1 because E to the power 1 is E. So 7.5K equals LN2.
+  scene-01-b12: 86% of narration words heard
+  scene-01-b13: 79% of narration words heard  ⚠ LOW
+      heard: So K is 0.0924 correct to three significant figures.
+  scene-01-b14: 100% of narration words heard
 
-4 clip(s) below 85% — listen to those.
+5 clip(s) below 85% — listen to those.

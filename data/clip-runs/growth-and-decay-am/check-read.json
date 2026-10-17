@@ -1,0 +1,199 @@
+{
+  "slug": "growth-and-decay-am",
+  "title": "Growth and decay",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 2,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$, correct to 3 significant figures.",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "scroll": true,
+      "steps": [
+        {
+          "heading": "Step 1: the start",
+          "tokens": [
+            { "tex": "P=P_0e^{kt}", "id": "q0" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\text{start}\\;\\to\\;\\text{double}\\;\\to\\;\\text{take }\\ln", "id": "p1", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "t=0:\\;P=P_0e^{0}=P_0", "id": "q2a" },
+            { "tex": "=", "id": "eqA" },
+            { "tex": "100", "id": "c100" }
+          ]
+        },
+        {
+          "heading": "Step 2: the doubling",
+          "tokens": [
+            { "tex": "t=7.5:\\;P=2\\times 100=", "id": "q3a" },
+            { "tex": "200", "id": "c200" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "200", "id": "a200", "from": "c200" },
+            { "tex": "=", "id": "aeq" },
+            { "tex": "100", "id": "a100", "from": "c100" },
+            { "tex": "e^{7.5k}", "id": "aexp", "tight": true }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "e^{7.5k}=2", "id": "iso" }
+          ]
+        },
+        {
+          "heading": "Step 3: take ln",
+          "tokens": [
+            { "tex": "\\ln e", "id": "l6a" },
+            { "tex": "{}^{7.5k}", "id": "pw6", "tight": true },
+            { "tex": "=\\ln 2", "id": "l6b" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "7.5k", "id": "m7k", "from": "pw6" },
+            { "tex": "\\ln e=\\ln 2", "id": "l7r" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "7.5k=\\ln 2", "id": "l8" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "k=\\dfrac{\\ln 2}{7.5}", "id": "l9" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "k=0.0924\\;\\text{(3 s.f.)}", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "P equals P nought E to the power K T. It doubles every seven point five hours, from one hundred. Find K.",
+          "asks": ["What is P nought?"],
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "Here is the plan: use the start to find P nought, then use the doubling, then take L N.",
+          "asks": ["Why take L N?"],
+          "do": [
+            { "do": "write", "token": "p1", "on": "Here is the plan" }
+          ]
+        },
+        {
+          "say": "To start with means T equals zero. E to the power zero is one, so P equals P nought.",
+          "asks": ["Why is E to the power zero equal to 1?"],
+          "do": [
+            { "do": "write", "token": "q2a", "on": "T equals zero" }
+          ]
+        },
+        {
+          "say": "It starts at one hundred, so P nought is one hundred.",
+          "asks": ["What does to start with mean?"],
+          "do": [
+            { "do": "write", "token": "eqA", "on": "so P nought is" },
+            { "do": "write", "token": "c100", "on": "one hundred." }
+          ]
+        },
+        {
+          "say": "Doubles every seven point five hours: at T equals seven point five, P is two times one hundred, two hundred.",
+          "asks": ["Why is P 200?"],
+          "do": [
+            { "do": "write", "token": "q3a", "on": "at T equals seven point five" },
+            { "do": "write", "token": "c200", "on": "two hundred." }
+          ]
+        },
+        {
+          "say": "Put them into the model. P is two hundred at T equals seven point five.",
+          "asks": ["Which values go into the model?"],
+          "do": [
+            { "do": "write", "step": 4, "on": "Put them into the model" },
+            { "do": "move", "from": "c200", "on": "P is two hundred" }
+          ]
+        },
+        {
+          "say": "And P nought is one hundred: two hundred equals one hundred E to the power seven point five K.",
+          "asks": ["Where does the 100 go?"],
+          "do": [
+            { "do": "move", "from": "c100", "on": "P nought is one hundred" }
+          ]
+        },
+        {
+          "say": "Divide both sides by one hundred, to get the E part alone. E to the power seven point five K equals two.",
+          "asks": ["Why divide by 100?"],
+          "do": [
+            { "do": "write", "step": 5, "on": "E to the power seven" }
+          ]
+        },
+        {
+          "say": "E is involved, so take L N of both sides. Now the power can come down.",
+          "asks": ["Why take L N and not log?", "Which law brings the power down?"],
+          "do": [
+            { "do": "write", "step": 6, "on": "take L N of both sides" },
+            { "do": "highlight", "token": "pw6", "on": "Now the power" },
+            { "do": "note", "text": "Power law: $\\ln M^{n} = n\\ln M$", "near": "pw6", "on": "can come down" }
+          ]
+        },
+        {
+          "say": "Bring the power down: seven point five K comes down in front of L N E.",
+          "asks": ["Why can the power come down?"],
+          "do": [
+            { "do": "write", "token": "l7r", "on": "Bring the power down" },
+            { "do": "move", "from": "pw6", "on": "comes down in front" }
+          ]
+        },
+        {
+          "say": "L N E is one, because E to the power one is E. So seven point five K equals L N two.",
+          "asks": ["Why is L N E equal to 1?"],
+          "do": [
+            { "do": "note", "text": "$\\ln e = 1$, since $e^1 = e$", "near": "l7r", "on": "because E to the power" },
+            { "do": "write", "step": 8, "on": "So seven point five K" }
+          ]
+        },
+        {
+          "say": "Divide by seven point five: K equals L N two over seven point five.",
+          "asks": ["Why divide by 7.5?"],
+          "do": [
+            { "do": "write", "step": 9, "on": "K equals L N two" }
+          ]
+        },
+        {
+          "say": "So K is zero point zero nine two four, correct to three significant figures.",
+          "asks": ["How do I key ln 2 over 7.5?"],
+          "do": [
+            { "do": "write", "step": 10, "on": "So K is" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "correct to three significant" }
+          ]
+        },
+        {
+          "say": "Watch out: when it doubles, P is two hundred, not two. Doubling one hundred gives two hundred.",
+          "asks": ["Why is P not 2?"],
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "c200", "on": "Watch out" },
+            {
+              "do": "note",
+              "text": "✗ Watch out: not $P = 2$ — double $100$ is $200$",
+              "near": "c200",
+              "on": "Doubling one hundred"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
