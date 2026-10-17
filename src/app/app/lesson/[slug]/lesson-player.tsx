@@ -600,7 +600,8 @@ function scrollClipBoard(cont: HTMLElement) {
   // fade (Adrian, 17 Oct 2026: "when narrator says reject and the pink rejects appears, it's partly
   // hidden"): the board scrolls back down just enough to show it.
   // (A board just drawn — the start, or a seek — has seen everything on it already.)
-  const FADE = 40;
+  // Clear of the top fade (36 px) AND of a circle drawn round the line (it reaches ~12 px above it).
+  const FADE = 64;
   const first = cont.dataset.scrollSeen !== '1';
   cont.dataset.scrollSeen = '1';
   let fresh = Infinity;
