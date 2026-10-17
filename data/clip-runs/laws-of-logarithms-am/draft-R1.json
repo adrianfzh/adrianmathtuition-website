@@ -1,0 +1,294 @@
+{
+ "slug": "laws-of-logarithms-am",
+ "draft": "R1",
+ "by": "session, 18 Oct 2026: rebuilt to the house rules",
+ "beats": [
+  {
+   "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+   "asks": [
+    "What does log base 3 mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "All three logs have the same base, three, so we can combine them.",
+   "asks": [
+    "Why must the bases be the same?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "a",
+      "b",
+      "c"
+     ],
+     "on": "the same base",
+     "part": "sub"
+    }
+   ]
+  },
+  {
+   "say": "The plan: plus means multiply, and minus means divide.",
+   "asks": [
+    "Why does plus mean multiply?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "plus means multiply"
+    }
+   ]
+  },
+  {
+   "say": "First, the plus. Log five plus log six: this is Add Power.",
+   "asks": [
+    "What is Add Power?",
+    "Which law is this?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "a",
+      "n5",
+      "b",
+      "n6"
+     ],
+     "on": "Log five plus"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a \\textcolor{#ff9a3c}{M} + \\log_a \\textcolor{#a8ecfb}{N} = \\log_a \\textcolor{#ff9a3c}{M}\\textcolor{#a8ecfb}{N}$",
+     "near": "n5",
+     "on": "this is Add Power",
+     "span": [
+      "n5",
+      "n6"
+     ]
+    }
+   ]
+  },
+  {
+   "say": "Here M is five, and N is six.",
+   "asks": [
+    "Which one is M?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "n5",
+     "on": "M is five",
+     "tone": "orange"
+    },
+    {
+     "do": "highlight",
+     "token": "n6",
+     "on": "N is six",
+     "tone": "sky"
+    }
+   ]
+  },
+  {
+   "say": "So the five goes inside one log,",
+   "asks": [
+    "Why does it go inside?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "So the five"
+    },
+    {
+     "do": "move",
+     "from": "n5",
+     "on": "goes inside one log"
+    }
+   ]
+  },
+  {
+   "say": "and the six goes in beside it, times: log base three of five times six.",
+   "asks": [
+    "Why times?"
+   ],
+   "do": [
+    {
+     "do": "move",
+     "from": "n6",
+     "on": "goes in beside it"
+    }
+   ]
+  },
+  {
+   "say": "Five times six is thirty. So we have log base three of thirty, minus log base three of ten.",
+   "asks": [
+    "Where did 30 come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So we have"
+    }
+   ]
+  },
+  {
+   "say": "Now the minus. Log thirty minus log ten: this is Minus Power.",
+   "asks": [
+    "What is Minus Power?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "l30",
+      "n30",
+      "m",
+      "n10"
+     ],
+     "on": "Log thirty minus"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\log_a \\textcolor{#ff9a3c}{M} - \\log_a \\textcolor{#a8ecfb}{N} = \\log_a \\tfrac{\\textcolor{#ff9a3c}{M}}{\\textcolor{#a8ecfb}{N}}$",
+     "near": "n30",
+     "on": "this is Minus Power",
+     "span": [
+      "n30",
+      "n10"
+     ]
+    }
+   ]
+  },
+  {
+   "say": "Here M is thirty, and N is ten.",
+   "asks": [
+    "Which one is N?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "n30",
+     "on": "M is thirty",
+     "tone": "orange"
+    },
+    {
+     "do": "highlight",
+     "token": "n10",
+     "on": "N is ten",
+     "tone": "sky"
+    }
+   ]
+  },
+  {
+   "say": "So thirty goes inside one log,",
+   "asks": [
+    "Why inside one log?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "So thirty goes"
+    },
+    {
+     "do": "move",
+     "from": "n30",
+     "on": "inside one log"
+    }
+   ]
+  },
+  {
+   "say": "and ten goes in after it, divided: log base three of thirty divided by ten.",
+   "asks": [
+    "Why divided?"
+   ],
+   "do": [
+    {
+     "do": "move",
+     "from": "n10",
+     "on": "goes in after it"
+    }
+   ]
+  },
+  {
+   "say": "Thirty divided by ten is three, which leaves log base three of three.",
+   "asks": [
+    "What is 30 divided by 10?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "which leaves"
+    }
+   ]
+  },
+  {
+   "say": "The base is three, and the number inside is three, so the log is one.",
+   "asks": [
+    "Why is log base 3 of 3 equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l3",
+     "on": "The base is three",
+     "part": "sub"
+    },
+    {
+     "do": "note",
+     "text": "$\\log_a a = 1$, since $a^1 = a$",
+     "near": "l3",
+     "on": "so the log is one"
+    }
+   ]
+  },
+  {
+   "say": "So the answer is one.",
+   "asks": [
+    "Can I check it on the calculator?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 6,
+     "on": "the answer is"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "is one."
+    }
+   ]
+  },
+  {
+   "say": "Watch out: log five times log six is not log thirty. Only added logs combine.",
+   "asks": [
+    "Why can't I multiply two logs?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "m6",
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$",
+     "near": "m6",
+     "on": "is not log thirty"
+    }
+   ]
+  }
+ ]
+}

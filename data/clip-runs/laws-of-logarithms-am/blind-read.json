@@ -1,84 +1,59 @@
 {
  "slug": "laws-of-logarithms-am",
- "pick": "W1",
- "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
- "scores": {
-  "clear": 5,
-  "one_idea": 4,
-  "voice_board": 5,
-  "why": 4,
-  "trap": 5,
-  "level": 5
- },
+ "pick": "R1",
+ "why": "Only draft (R1, the 18 Oct rebuild: scrolling board, plan as maths, numbers moving into one log, M orange / N blue); scored as fixed.",
+ "scores": { "clear": 5, "one_idea": 5, "voice_board": 5, "why": 4, "trap": 5, "level": 5 },
  "notes": [
-  "Working runs straight through Add Power, Minus Power and log_a a = 1 with no stop for a mistake; answer 1 boxed in beat 9; beat 10 opens 'Watch out:', circles log₃(5 × 6) and writes the ✗ note.",
-  "Beat 8 put the law 'log_a a = 1' on the board before the voice gave the reason (it is said in beat 9). Fixed: beat 8 only writes log₃ 3; the law appears in beat 9 on 'number inside', after 'The base matches' lights the base.",
-  "Beat 10 said 'log five times log six is not log thirty' while the board and the ✗ note say log base three. Fixed: the voice reads 'log base three of …' to match, and the circle now lands on 'Watch out' before the ✗ note on 'is not'."
+  "Maths and order match the approved cut: same base so combine, plan + → ×, − → ÷, Add Power with M orange / N blue, 5 and 6 move into one log, 30, Minus Power, 30 and 10 move into one log, log₃3 = 1 boxed, one Watch out at the end.",
+  "Beats 6 and 7 (and 11 and 12) were one sentence split across two beats ('So the five goes inside one log,' / 'and the six goes in beside it…'): a student who jumps to beat 7 hears a fragment starting 'and'. Fixed: each beat is a whole sentence ('…inside one log first.' / 'Then the six goes in beside it, with a times sign…'); cues unchanged.",
+  "Beat 14 said 'so the log is one' but never the reason the note gives (a¹ = a). Fixed: 'Three to the power one is three, so the log is one.'",
+  "Beat 16 circled the 6 inside log₃(5 × 6), but the mistake is about the times sign; and the voice said 'log five times log six' while the ✗ note says log base three. Fixed: circle and note on the × token, the voice reads 'log base three of …' to match the note."
  ],
  "fixed_beats": {
-  "8": {
-   "say": "Thirty over ten is three, which leaves log base three of three.",
+  "6": {
+   "say": "So the five goes inside one log first.",
+   "asks": ["Why does it go inside?"],
    "do": [
-    {
-     "do": "write",
-     "step": 4,
-     "on": "which leaves"
-    }
-   ],
-   "asks": [
-    "Why is log₃ 3 = 1?",
-    "What is log₃ 9?"
+    { "do": "write", "step": 2, "on": "So the five" },
+    { "do": "move", "from": "n5", "on": "goes inside one log" }
    ]
   },
-  "9": {
-   "say": "The base matches the number inside, so the log is one. The answer is one.",
+  "7": {
+   "say": "Then the six goes in beside it, with a times sign: log base three of five times six.",
+   "asks": ["Why times?"],
    "do": [
-    {
-     "do": "highlight",
-     "token": "l3",
-     "part": "sub",
-     "on": "The base matches"
-    },
-    {
-     "do": "note",
-     "text": "$\\log_a a = 1$",
-     "near": "l3",
-     "on": "number inside"
-    },
-    {
-     "do": "write",
-     "step": 5,
-     "on": "the log is one"
-    },
-    {
-     "do": "mark",
-     "kind": "box",
-     "token": "ans",
-     "on": "The answer is"
-    }
-   ],
-   "asks": [
-    "How can I check the answer is 1?"
+    { "do": "move", "from": "n6", "on": "goes in beside it" }
    ]
   },
-  "10": {
+  "11": {
+   "say": "So thirty goes inside one log first.",
+   "asks": ["Why inside one log?"],
+   "do": [
+    { "do": "write", "step": 4, "on": "So thirty goes" },
+    { "do": "move", "from": "n30", "on": "inside one log" }
+   ]
+  },
+  "12": {
+   "say": "Then ten goes in after it, divided: log base three of thirty divided by ten.",
+   "asks": ["Why divided?"],
+   "do": [
+    { "do": "move", "from": "n10", "on": "goes in after it" }
+   ]
+  },
+  "14": {
+   "say": "The base is three and the number inside is three. Three to the power one is three, so the log is one.",
+   "asks": ["Why is log base 3 of 3 equal to 1?"],
+   "do": [
+    { "do": "highlight", "token": "l3", "on": "The base is three", "part": "sub" },
+    { "do": "note", "text": "$\\log_a a = 1$, since $a^1 = a$", "near": "l3", "on": "so the log is one" }
+   ]
+  },
+  "16": {
    "say": "Watch out: log base three of five, times log base three of six, is not log base three of thirty. Only added logs combine.",
+   "asks": ["Why can't I multiply two logs?"],
    "do": [
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "p56",
-     "on": "Watch out"
-    },
-    {
-     "do": "note",
-     "text": "✗ Watch out: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$",
-     "near": "p56",
-     "on": "is not log base"
-    }
-   ],
-   "asks": [
-    "Why is log 5 × log 6 not log 30?"
+    { "do": "mark", "kind": "circle", "token": "tx", "on": "Watch out" },
+    { "do": "note", "text": "✗ Watch out: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$", "near": "tx", "on": "is not log base three of thirty" }
    ]
   }
  },

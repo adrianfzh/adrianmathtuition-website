@@ -1,6 +1,6 @@
 {
  "slug": "laws-of-logarithms-am",
- "at": "2026-10-15T09:15:47.538Z",
+ "at": "2026-10-17T16:39:03.314Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,19 +8,15 @@
   },
   "maths": {
    "ok": true,
-   "detail": "8/8 line checks"
+   "detail": "10/10 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "5 lines = the checked plan"
+   "detail": "7 lines = the checked plan"
   },
   "read": {
    "ok": true,
-   "detail": "pick A · lowest score 4 · pass"
-  },
-  "voice": {
-   "ok": true,
-   "detail": "7/7 beats voiced + timed · speech round trip worst 100 %"
+   "detail": "pick R1 · lowest score 4 · pass"
   },
   "look": {
    "ok": true,

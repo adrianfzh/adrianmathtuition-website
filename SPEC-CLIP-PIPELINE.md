@@ -282,6 +282,10 @@ New in the player: a clip board that would run below the screen scales its maths
   sketches (the shape of ln(−x), the curve against x = 2, the finished sketch with (0, ln 2) and (1, 0)),
   12 beats, maths 22/22, blind read pass (4 beats fixed — "the curve stops at the asymptote" was wrong:
   it only gets close), voice 12/12.
+- **Rebuilt to the house rules (18 Oct 2026): Laws of logarithms** — one scrolling board, 7 lines, 16 beats:
+  the plan as maths (+ → ×, − → ÷), bases lit, each law first, 5 and 6 then 30 and 10 move into one log
+  (M orange, N blue), log₃3 = 1 with its reason, one Watch out on the × sign. Maths 10/10, blind read
+  pass (6 beats fixed), voice 16/16 ≥ 89 %. **All seven Logarithms skill clips are now in the new style.**
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
