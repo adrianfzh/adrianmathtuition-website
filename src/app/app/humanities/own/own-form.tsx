@@ -126,7 +126,7 @@ export default function OwnForm({ initialSubject, initialPure, choices: savedCho
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setError(j.error || 'Something went wrong.'); setBusy(false); return; }
-      router.push(`/app/humanities/${j.id}`);
+      router.push(j.group ? `/app/humanities/group/${j.group}` : `/app/humanities/${j.id}`);
     } catch {
       setError('No connection — try again.'); setBusy(false);
     }

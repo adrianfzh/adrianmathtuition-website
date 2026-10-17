@@ -270,6 +270,23 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **Q — QUESTIONS WITH PARTS, MARKED PART BY PART, 17 Oct 2026.** Adrian: "does this check my answer cover all aspects of
+> their papers?" → "yes" (to fixing multi-part questions first).
+> - A question whose text has two or more part labels (`lib/humanities-parts hasParts`: "(a) … (b) …" on their own lines,
+>   or "(i) … (ii) …") goes through ONE short read at hand-in (`splitOwnParts`, Sonnet 5.5): the shared opening words
+>   (`stem`), each part with its label and marks, and the student's answer split by part (their own labels, else by
+>   what each piece answers). Each answered part is prepared like a single question (its own type, its own Geography
+>   points list) and handed in as its own run, all sharing `humanities_runs.group_id` (migration
+>   `humanities_runs_group_id.sql`); `own_question.part` = {label, of, unanswered}. Parts with no answer are listed
+>   as "Not answered", not marked. Each part counts against the day's 20.
+> - `/app/humanities/group/<id>`: **"This question, all parts — 9 out of 16 marks"** (`groupTotal`, once every part has
+>   an exact number — `lib/humanities-group partScore`), then a card per part showing only that part's words; a tap opens
+>   the part's full feedback and sample answer. The form goes there after a multi-part hand-in.
+> - Checked 17 Oct as the demo student: a 3-part Geography question (describe [3] · explain [4] · to what extent [9])
+>   with a labelled answer → split in 21 s, marked 3/3 · 2/4 · 4/9, total **9 out of 16** about a minute later.
+> - Still open from Adrian's list (17 Oct): exact numbers off a photographed graph (the photo reader describes it in
+>   words) · sending a whole paper at once · Literature.
+
 > **P — PURE GEOGRAPHY AND PURE HISTORY, 17 Oct 2026.** Adrian: "what about students taking pure geography and pure
 > history? … what if a student take pure geography?" → "yes".
 > - Social Studies is compulsory (half of Combined Humanities, with ONE elective); Pure Geography / Pure History are full

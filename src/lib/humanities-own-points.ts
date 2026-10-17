@@ -10,6 +10,7 @@ import { OWN_SKILLS } from './humanities-own-guess';
 import type { HumanitiesSkill, HumanitiesSubject } from './humanities-questions';
 import type { CreditPoint } from './humanities-questions';
 import type { OwnQuestion } from './humanities-own';
+import { splitPrompt, parseSplit, type OwnSplit } from './humanities-parts';
 
 /** Writing a marking list is judgement work, so the large model (CLAUDE.md token rules (c)). */
 export const OWN_POINTS_MODEL = process.env.OWN_POINTS_MODEL || 'claude-opus-5-5';
@@ -105,6 +106,19 @@ export async function classifyOwnType(subject: HumanitiesSubject, question: stri
     return t && OWN_SKILLS[subject].includes(t) ? t : null;
   } catch (e) {
     console.error('[humanities-own-type]', e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
+// ── A question with parts: split the question and the student's answer by part (lib/humanities-parts). ──
+
+export async function splitOwnParts(question: string, answer: string): Promise<OwnSplit | null> {
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await anthropic.messages.create({ model: OWN_TYPE_MODEL, max_tokens: 8000, messages: [{ role: 'user', content: splitPrompt(question, answer) }] });
+    return parseSplit(anthropicText(msg));
+  } catch (e) {
+    console.error('[humanities-own-split]', e instanceof Error ? e.message : e);
     return null;
   }
 }

@@ -44,13 +44,17 @@ export interface HumanitiesRunRow {
   own_title?: string | null;
   /** The model answer built from the student's answer (lib/humanities-model). */
   model_answer?: ModelState | null;
+  /** The parts of one multi-part question share it (lib/humanities-parts); the part's label, every label, the unanswered ones. */
+  group_id?: string | null;
+  own_part?: { label: string; of: string[]; unanswered: string[] } | null;
+  own_marks?: number | null;
   /** The list's copy of report.mark (the exact mark inside the level). */
   report_mark?: number | null;
 }
 
 /** The list columns — never the answer text, the report or the reads. */
 export const HUMANITIES_LIST_COLUMNS =
-  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes, own_title:own_question->>question, report_mark:report->mark';
+  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes, own_title:own_question->>question, report_mark:report->mark, group_id, own_part:own_question->part, own_marks:own_question->marks';
 
 export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' | 'reads' | 'error' | 'own_question'>;
 

@@ -39,6 +39,8 @@ export interface HumanitiesSubmission {
   model?: PlanModel;
   /** A question the student brought from school, in place of questionId (lib/humanities-own). */
   own?: OwnQuestion;
+  /** The parts of one multi-part question share this (lib/humanities-parts). */
+  groupId?: string | null;
 }
 
 export type SubmitOutcome =
@@ -78,6 +80,7 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
     truth_level: s.truthLevel ?? null,
     ...(s.paperId ? { paper_id: s.paperId, paper_minutes: s.paperMinutes ?? null } : {}),
     ...(s.own ? { own_question: s.own } : {}),
+    ...(s.groupId ? { group_id: s.groupId } : {}),
   }).select('id').single();
   if (error || !row) return { ok: false, status: 500, error: error?.message ?? 'Could not save the answer.' };
 

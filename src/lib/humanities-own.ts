@@ -17,6 +17,8 @@ export interface OwnQuestion {
   /** The sources or extract, as typed out (one block; the student's own Source A, B … labels inside). */
   sources: string;
   marks?: number | null;
+  /** One part of a question with parts (lib/humanities-parts): its label, every label, and the ones left unanswered. */
+  part?: { label: string; of: string[]; unanswered: string[] };
   /** Pure Geography / Pure History, not the Combined Humanities elective (17 Oct 2026). */
   pure?: boolean;
   /** Geography short questions (point-marked): the school's answer scheme if the student gave one. */
