@@ -151,7 +151,10 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   *"i want something visual, not wordy"*; 9 Oct: *"be visual - remember?"*; 16 Oct: *"SHOW
   the plan, instead of just saying"*). Admin pages, the morning brief and status reports lead
   with a big number, a bar, a tick or a small picture; words only label it. When he says
-  "show me", send the picture or the link to it — not a description.
+  "show me", send the picture or the link to it — not a description. A picture fits his
+  phone screen: crop to the part that matters, one picture per part, never one tall
+  full-page shot (13 Oct: *"i can't see, it's too small"*; 17 Oct: *"i can't see what you
+  send me"*).
 - **Marker's material stays out of what a student reads.** Mark codes, "[M1 for …]", a
   "Mark scheme:" paragraph, examiner commentary belong to the scheme, not the solution —
   at most a small grey code. Alternatives go AFTER the working, set apart.
