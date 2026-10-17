@@ -1,6 +1,7 @@
 {
   "slug": "laws-of-logarithms-am",
   "title": "Laws of logarithms",
+  "heading": "Laws of logarithms",
   "intro": null,
   "level": "AM",
   "topic": "Logarithms",
@@ -26,8 +27,6 @@
   },
   "lines": [
     {
-      "board": 0,
-      "heading": "Same base, so combine",
       "tokens": [
         {
           "tex": "\\log_3",
@@ -57,44 +56,16 @@
       ]
     },
     {
-      "board": 0,
       "tokens": [
         {
-          "tex": "+\\;\\to\\;\\times,\\qquad -\\;\\to\\;\\div",
-          "id": "p1",
-          "hl": "sky"
-        }
-      ],
-      "checks": [
-        {
-          "form": "the plan: plus means multiply, minus means divide"
-        }
-      ]
-    },
-    {
-      "board": 0,
-      "heading": "Step 1: Add Power",
-      "tokens": [
-        {
-          "tex": "=\\log_3(",
-          "id": "g1"
+          "tex": "="
         },
         {
-          "tex": "\\textcolor{#ff9a3c}{5}",
-          "id": "m5",
-          "from": "n5"
+          "tex": "\\log_3(\\textcolor{#ff9a3c}{5}\\times \\textcolor{#a8ecfb}{6})",
+          "id": "p56"
         },
         {
-          "tex": "\\times",
-          "id": "tx"
-        },
-        {
-          "tex": "\\textcolor{#a8ecfb}{6}",
-          "id": "m6",
-          "from": "n6"
-        },
-        {
-          "tex": ")-\\,\\log_3 10",
+          "tex": "-\\,\\log_3 10",
           "id": "c1"
         }
       ],
@@ -105,10 +76,12 @@
       ]
     },
     {
-      "board": 0,
       "tokens": [
         {
-          "tex": "=\\log_3",
+          "tex": "="
+        },
+        {
+          "tex": "\\log_3",
           "id": "l30"
         },
         {
@@ -131,30 +104,13 @@
       ]
     },
     {
-      "board": 0,
-      "heading": "Step 2: Minus Power",
       "tokens": [
         {
-          "tex": "=\\log_3(",
-          "id": "g2"
+          "tex": "="
         },
         {
-          "tex": "\\textcolor{#ff9a3c}{30}",
-          "id": "q30",
-          "from": "n30"
-        },
-        {
-          "tex": "\\div",
-          "id": "qd"
-        },
-        {
-          "tex": "\\textcolor{#a8ecfb}{10}",
-          "id": "q10",
-          "from": "n10"
-        },
-        {
-          "tex": ")",
-          "id": "g2b"
+          "tex": "\\log_3 \\tfrac{\\textcolor{#ff9a3c}{30}}{\\textcolor{#a8ecfb}{10}}",
+          "id": "q"
         }
       ],
       "checks": [
@@ -164,10 +120,12 @@
       ]
     },
     {
-      "board": 0,
       "tokens": [
         {
-          "tex": "=\\log_3 3",
+          "tex": "="
+        },
+        {
+          "tex": "\\log_3 3",
           "id": "l3"
         }
       ],
@@ -178,11 +136,12 @@
       ]
     },
     {
-      "board": 0,
-      "heading": "Step 3: a log of its own base",
       "tokens": [
         {
-          "tex": "=1",
+          "tex": "="
+        },
+        {
+          "tex": "1",
           "id": "ans",
           "hl": "emerald"
         }
@@ -198,15 +157,13 @@
     }
   ],
   "outline": [
-    "Rebuilt 18 Oct 2026 to the house rules (Adrian had passed the first cut): one scrolling board; the plan as maths (+ → ×, − → ÷); the bases lit; Add Power then 5 and 6 move into one log; Minus Power then 30 and 10 move into one log; log₃3 = 1; one Watch out (log 5 × log 6 is not log 30)."
+    "Read the question (line 0). All three logs are base 3: same base, so we can combine.",
+    "Adrian 15 Oct: at 'plus means multiply' HIGHLIGHT log5 + log6 only, the Add Power law appears right UNDER line 0.",
+    "Next line: log3(5 x 6) - log3 10. Then: log3 30 - log3 10.",
+    "Trap: only added logs combine — log 5 times log 6 is not log 30.",
+    "Same pattern for minus: highlight log3 30 - log3 10, Minus Power under that line, then log3(30/10).",
+    "30/10 = 3: log3 3. log_a a = 1 beside it. Answer 1, boxed.",
+    "Adrian 16 Oct: in each law colour x (orange) and y (blue); light the 5 / 30 orange and the 6 / 10 blue as the voice reads them, so log(5 x 6) and log(30/10) visibly come from xy and x/y."
   ],
-  "question": "Simplify $\\log_3 5 + \\log_3 6 - \\log_3 10$.",
-  "boards": [
-    {
-      "heading": null,
-      "intro": null,
-      "scroll": true
-    }
-  ],
-  "minutes": 2
+  "question": "Simplify $\\log_3 5 + \\log_3 6 - \\log_3 10$."
 }

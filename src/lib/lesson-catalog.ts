@@ -127,7 +127,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Logarithms',
     title: 'Laws of logarithms',
-    minutes: 2,
+    minutes: 1,
   },
   {
     slug: 'solving-log-equations-am',

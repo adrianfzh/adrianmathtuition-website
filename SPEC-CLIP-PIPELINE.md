@@ -285,7 +285,7 @@ New in the player: a clip board that would run below the screen scales its maths
 - **Rebuilt to the house rules (18 Oct 2026): Laws of logarithms** — one scrolling board, 7 lines, 16 beats:
   the plan as maths (+ → ×, − → ÷), bases lit, each law first, 5 and 6 then 30 and 10 move into one log
   (M orange, N blue), log₃3 = 1 with its reason, one Watch out on the × sign. Maths 10/10, blind read
-  pass (6 beats fixed), voice 16/16 ≥ 89 %. **All seven Logarithms skill clips are now in the new style.**
+  pass (6 beats fixed), voice 16/16 ≥ 89 %. **REVERTED the same night** (Adrian: "badly redone. Before redo is better … screen keep shifting up and down") — the approved first cut is back; a short clip stays one fixed board.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

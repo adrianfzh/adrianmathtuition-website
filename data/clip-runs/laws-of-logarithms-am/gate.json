@@ -1,6 +1,6 @@
 {
  "slug": "laws-of-logarithms-am",
- "at": "2026-10-17T16:39:03.314Z",
+ "at": "2026-10-17T16:52:14.359Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,15 +8,15 @@
   },
   "maths": {
    "ok": true,
-   "detail": "10/10 line checks"
+   "detail": "9/9 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "7 lines = the checked plan"
+   "detail": "6 lines = the checked plan"
   },
   "read": {
    "ok": true,
-   "detail": "pick R1 · lowest score 4 · pass"
+   "detail": "pick W1 · lowest score 4 · pass"
   },
   "look": {
    "ok": true,

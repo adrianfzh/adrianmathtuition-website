@@ -16,6 +16,14 @@ reads — on every Claude account, because it lives in the repo.
 
 ## 1. The series look
 
+- **A clip that fits ONE screen stays one fixed board** (18 Oct 2026, of the rebuilt Laws clip: "Laws
+  of logarithms is badly redone. Before redo is better. The explanation flow is hard to follow. And
+  screen keep shifting up and down - can't see"). Use the scrolling board only when the working is
+  longer than a phone screen (more than about 7 lines); `assemble.mjs` scrolls only then. Never point
+  the voice back up at an old line while the board is scrolled — write the step again on a new line
+  below instead, so the eye only ever moves DOWN.
+- **An approved clip is changed only where Adrian asks.** Don't rebuild a clip he passed into a busier
+  one; apply his named change and keep everything else.
 - **ONE scrolling board** (`"scroll": true` on the one `equation-steps` scene; Adrian, 16 Oct 2026:
   "make the lines move up, like scrolling up, then we don't have to change screen"). The maths stays
   full size; when the newest line would reach the subtitle the board glides up and older lines fade off
