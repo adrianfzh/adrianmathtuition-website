@@ -110,6 +110,9 @@ the history.
   (rejecting a root) stays in place as a plain reason. **Only a mistake students COMMONLY make gets a
   Watch out** (17 Oct 2026, of "rounding never removes the minus": "we don't have to write the watch
   out … it is not a common thing students do") — no Watch out at all is fine.
+- **Name each letter ON the board as the voice names it** (18 Oct 2026, Log scales: "should write on
+  screen let intensity of the pump be I_p with the narration > will be much clearer"): "Call the
+  pump's intensity I P" writes `Let I_p = intensity of pump` on those words.
 - **Light the terms a step moves** ("we can highlight the x, so students can see the x terms
   clearly"): when the voice says "X terms to the left", light those terms, and keep the x in the same
   colour on the lines that follow.
@@ -228,7 +231,7 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 | Linear form with logs (Linear Law) | New style (R1 + fixes) |
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
-| Log scales | The version before the rebuild + (18 Oct) the two readings as equations first and why we subtract (draft W2) |
+| Log scales | The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped so the board fits a phone |
 | Sketching log graphs | Put back to the version before the rebuild |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so

@@ -167,26 +167,6 @@
      "on": "fifteen point eight times"
     }
    ]
-  },
-  {
-   "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
-   "asks": [
-    "Why is the answer not 12?"
-   ],
-   "do": [
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "twelve",
-     "on": "Watch out"
-    },
-    {
-     "do": "note",
-     "text": "✗ Watch out: not $12$: that is the dB difference",
-     "near": "ans",
-     "on": "difference in decibels"
-    }
-   ]
   }
  ]
 }
