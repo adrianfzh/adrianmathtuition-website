@@ -251,6 +251,11 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
   under the board). Check a scrolling clip's LAST frames at phone size, not only the first.
 - **Anything that appears under the board moves the slider.** → new things go ON the board (overlay),
   never in the page flow under it.
+- **The notes' hand-written words blinked out during a move** (18 Oct 2026, seen by the stand-in
+  reviewer in Same base, compare powers): the board grows as a piece moves, resizing the ink layer
+  wipes it, and the ink came back only on the next frame. Fixed in the player (`chalk-writer.ts`:
+  a resize re-lays the ink at once; a re-fit re-lays it in the next frame, never wiping first). →
+  while a piece moves, check a frame at move + 0.7 s: every "Times power:" word and ↑ must be there.
 
 ### The redo recipe (each step, in order)
 1. Change the plan / draft only where asked (`data/clip-plans/<slug>.json`, `data/clip-runs/<slug>/draft-*.json`,

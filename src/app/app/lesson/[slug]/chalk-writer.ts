@@ -270,6 +270,10 @@ export class ChalkWriter {
     this.img = this.ictx.createImageData(W, H);
     this.ictx.clearRect(0, 0, W, H);
     for (const u of this.units.values()) { u.plan = null; u.failed = false; }
+    // Setting a canvas's size wipes it, and a ResizeObserver runs AFTER this frame's tick: lay the
+    // ink again now, or the frame paints with every hand-written word gone (the board grows as a
+    // piece moves — Adrian's rule: "while a piece moves, NOTHING else moves", 18 Oct 2026).
+    try { this.paintUnits(0); } catch (err) { console.warn('[chalk-writer] re-lay after resize failed', err); }
     return true;
   }
 
@@ -346,8 +350,13 @@ export class ChalkWriter {
       this.units.delete(u.el);
       gone = true;
     }
-    if (gone) this.relayout();
+    if (gone || this.stale) this.wipe();
+    this.paintUnits(dt);
+    this.drawTip(now);
+  }
 
+  /** Build and reveal every unit at its own progress; `dt` advances the timed ones. */
+  private paintUnits(dt: number): void {
     let active: Unit | null = null;
     let activeT = 0;
     for (const u of this.units.values()) {
@@ -373,13 +382,18 @@ export class ChalkWriter {
       if (p > 0 && p < 1) { active = u; activeT = p; }
     }
 
-    if (active) { this.activeUnit = active; this.activeT = activeT; this.lastActiveAt = now; }
-    this.drawTip(now);
+    if (active) { this.activeUnit = active; this.activeT = activeT; this.lastActiveAt = performance.now(); }
   }
 
-  /** The board moved under the ink (a line rewritten in place, a re-fit): wipe the canvas and
-   *  re-lay every unit at its own progress on the next tick. */
-  relayout(): void {
+  /** The board moved under the ink (a line rewritten in place, a re-fit): the next tick wipes the
+   *  canvas and re-lays every unit at its own progress in the SAME frame — never a wipe now, which
+   *  would paint a frame with the hand-written words gone, and never before the re-fit that asked
+   *  for it has resized the words. */
+  relayout(): void { this.stale = true; }
+  private stale = false;
+
+  private wipe(): void {
+    this.stale = false;
     if (!this.ictx || !this.img) return;
     this.img = this.ictx.createImageData(this.W, this.H);
     this.ictx.clearRect(0, 0, this.W, this.H);
