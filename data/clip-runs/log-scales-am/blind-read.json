@@ -1,7 +1,7 @@
 {
  "slug": "log-scales-am",
- "pick": "W1",
- "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
+ "pick": "W2",
+ "why": "W2 = W1 with its fixes baked in, plus the two readings as their own equations and why we subtract (Adrian, 18 Oct 2026: '62-50=10 lg ... needs to be further explained. it is unclear why this step works and why start from this step').",
  "scores": {
   "clear": 5,
   "one_idea": 4,
@@ -16,66 +16,71 @@
   "Beat 3 wrote the law with nothing lit; §1b wants the terms lit first. Fixed: the right side lights on 'Minus Power'.",
   "Beat 8 wrote the ✗ note before the circle, uncued. Fixed: circle on 'Watch out', ✗ note on 'difference in decibels'."
  ],
- "fixed_beats": {
-  "1": {
-   "say": "Dishwasher sixty-two decibels, pump fifty. Find how many times as intense. Subtract the two readings, each ten log I over K.",
-   "do": [
-    {
-     "do": "write",
-     "step": 0,
-     "on": "Subtract the two readings"
-    }
-   ],
-   "asks": [
-    "Why subtract the two readings?",
-    "What is a decibel?"
-   ]
-  },
-  "3": {
-   "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
-   "do": [
-    {
-     "do": "highlight",
-     "token": "two",
-     "on": "Minus Power"
+ "verdict": "pass",
+ "history": [
+  {
+   "pick": "W1",
+   "fixed_beats": {
+    "1": {
+     "say": "Dishwasher sixty-two decibels, pump fifty. Find how many times as intense. Subtract the two readings, each ten log I over K.",
+     "do": [
+      {
+       "do": "write",
+       "step": 0,
+       "on": "Subtract the two readings"
+      }
+     ],
+     "asks": [
+      "Why subtract the two readings?",
+      "What is a decibel?"
+     ]
     },
-    {
-     "do": "write",
-     "token": "one",
-     "on": "one log of the ratio"
+    "3": {
+     "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+     "do": [
+      {
+       "do": "highlight",
+       "token": "two",
+       "on": "Minus Power"
+      },
+      {
+       "do": "write",
+       "token": "one",
+       "on": "one log of the ratio"
+      },
+      {
+       "do": "note",
+       "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$",
+       "near": "one",
+       "on": "K cancels"
+      }
+     ],
+     "asks": [
+      "What is the Minus Power law?",
+      "Why does k cancel?"
+     ]
     },
-    {
-     "do": "note",
-     "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$",
-     "near": "one",
-     "on": "K cancels"
+    "8": {
+     "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
+     "do": [
+      {
+       "do": "mark",
+       "kind": "circle",
+       "token": "twelve",
+       "on": "Watch out"
+      },
+      {
+       "do": "note",
+       "text": "✗ Watch out: not $12$: that is the dB difference",
+       "near": "twelve",
+       "on": "difference in decibels"
+      }
+     ],
+     "asks": [
+      "Why is the answer not 12?"
+     ]
     }
-   ],
-   "asks": [
-    "What is the Minus Power law?",
-    "Why does k cancel?"
-   ]
-  },
-  "8": {
-   "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
-   "do": [
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "twelve",
-     "on": "Watch out"
-    },
-    {
-     "do": "note",
-     "text": "✗ Watch out: not $12$: that is the dB difference",
-     "near": "twelve",
-     "on": "difference in decibels"
-    }
-   ],
-   "asks": [
-    "Why is the answer not 12?"
-   ]
+   }
   }
- },
- "verdict": "pass"
+ ]
 }

@@ -30,6 +30,32 @@
     {
       "tokens": [
         {
+          "id": "pump",
+          "tex": "50=10\\lg\\tfrac{I_p}{k}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "50 = 10*log(Ip/k,10)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "dish",
+          "tex": "62=10\\lg\\tfrac{I_d}{k}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "62 = 10*log(Id/k,10)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
           "tex": "62-50",
           "id": "diff"
         },

@@ -1,0 +1,182 @@
+{
+ "slug": "log-scales-am",
+ "draft": "W2",
+ "by": "session, Adrian's watch 18 Oct 2026 (explain why we start by subtracting)",
+ "beats": [
+  {
+   "say": "Call the pump's intensity I P. The pump is fifty decibels, so fifty equals ten log I P over K.",
+   "asks": [
+    "Why is the pump fifty equals ten log I P over K?",
+    "What is K?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0,
+     "on": "so fifty equals"
+    }
+   ]
+  },
+  {
+   "say": "Call the dishwasher's intensity I D. It is sixty-two decibels, so sixty-two equals ten log I D over K.",
+   "asks": [
+    "Where does sixty-two come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "so sixty-two equals"
+    }
+   ]
+  },
+  {
+   "say": "We want I D over I P, but K is unknown. Subtracting joins the two logs into one, and K cancels.",
+   "asks": [
+    "Why subtract the equations?",
+    "Why can't we find each intensity on its own?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "pump",
+      "dish"
+     ],
+     "on": "but K is unknown"
+    }
+   ]
+  },
+  {
+   "say": "So take the dishwasher's equation minus the pump's: sixty-two minus fifty equals the two logs, one minus the other.",
+   "asks": [
+    "Why the dishwasher minus the pump?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "sixty-two minus fifty"
+    }
+   ]
+  },
+  {
+   "say": "Sixty-two minus fifty is twelve.",
+   "asks": [
+    "Why work out 62 − 50 first?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "twelve",
+     "on": "is twelve"
+    }
+   ]
+  },
+  {
+   "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+   "asks": [
+    "What is the Minus Power law?",
+    "Why does k cancel?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "two",
+     "on": "Minus Power"
+    },
+    {
+     "do": "write",
+     "token": "one",
+     "on": "one log of the ratio"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$",
+     "near": "one",
+     "on": "K cancels"
+    }
+   ]
+  },
+  {
+   "say": "Divide both sides by ten. Log of the ratio is one point two.",
+   "asks": [
+    "Why divide both sides by 10?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "Log of the ratio"
+    }
+   ]
+  },
+  {
+   "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
+   "asks": [
+    "What does un-log mean?",
+    "Why 10 to the power?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "unlog",
+     "on": "The ratio is ten"
+    },
+    {
+     "do": "note",
+     "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^{c}$",
+     "near": "unlog",
+     "on": "one point two"
+    }
+   ]
+  },
+  {
+   "say": "Ten to the power one point two is about fifteen point eight.",
+   "asks": [
+    "How do I key this in?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ans",
+     "on": "about fifteen point eight"
+    }
+   ]
+  },
+  {
+   "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
+   "asks": [
+    "What does 'times as intense' mean?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "fifteen point eight times"
+    }
+   ]
+  },
+  {
+   "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
+   "asks": [
+    "Why is the answer not 12?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "twelve",
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: not $12$: that is the dB difference",
+     "near": "twelve",
+     "on": "difference in decibels"
+    }
+   ]
+  }
+ ]
+}

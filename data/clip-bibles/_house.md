@@ -114,6 +114,12 @@ the history.
   clearly"): when the voice says "X terms to the left", light those terms, and keep the x in the same
   colour on the lines that follow.
 
+- **Start from what the question gives, and say why the first move is the move** (18 Oct 2026, Log
+  scales: "62-50=10 lg ... needs to be further explained. it is unclear why this step works and why
+  start from this step"): write each given reading as its own equation first (`50 = 10lg(I_p/k)`,
+  `62 = 10lg(I_d/k)`), say what we want and what stops us (k is unknown), then why the move gets
+  round it (subtracting joins the logs and k cancels) — and only then the combined line.
+
 ### Checks and answers
 - **A log equation's check opens "For log equations, always check each answer."**
 - **Show where a checked expression comes from** ("it's from the first line, so students may have
@@ -222,7 +228,7 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 | Linear form with logs (Linear Law) | New style (R1 + fixes) |
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
-| Log scales | Put back to the version before the rebuild |
+| Log scales | The version before the rebuild + (18 Oct) the two readings as equations first and why we subtract (draft W2) |
 | Sketching log graphs | Put back to the version before the rebuild |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so
