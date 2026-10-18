@@ -12,8 +12,8 @@
    "do": [
     {
      "do": "write",
-     "step": 0,
-     "on": "so fifty equals"
+     "on": "so fifty equals",
+     "token": "pump"
     }
    ]
   },
@@ -25,8 +25,8 @@
    "do": [
     {
      "do": "write",
-     "step": 1,
-     "on": "so sixty-two equals"
+     "on": "so sixty-two equals",
+     "token": "dish"
     }
    ]
   },
@@ -55,7 +55,7 @@
    "do": [
     {
      "do": "write",
-     "step": 2,
+     "step": 1,
      "on": "sixty-two minus fifty"
     }
    ]
@@ -106,7 +106,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 3,
      "on": "Log of the ratio"
     }
    ]
