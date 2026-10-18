@@ -249,19 +249,6 @@
    ]
   },
   {
-   "say": "Collect the terms: two X plus Y minus one.",
-   "asks": [
-    "How do I collect the terms?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "ta3",
-     "on": "two X plus"
-    }
-   ]
-  },
-  {
    "say": "For B: X plus two, minus the bracket two Y minus four.",
    "asks": [
     "Which is the bottom power for b?"
@@ -293,27 +280,15 @@
    ]
   },
   {
-   "say": "Collect the terms: X minus two Y plus six.",
+   "say": "Collect the terms: the left side is A to the power two X plus Y minus one,",
    "asks": [
-    "Where does the six come from?"
+    "How do I collect the terms?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "tb3",
-     "on": "X minus two"
-    }
-   ]
-  },
-  {
-   "say": "So the left side is A to the power two X plus Y minus one,",
-   "asks": [
-    "Where does this power come from?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "u1"
+     "token": "u1",
+     "on": "the left side"
     },
     {
      "do": "write",
@@ -325,7 +300,7 @@
   {
    "say": "times B to the power X minus two Y plus six.",
    "asks": [
-    "Is the left side tidy now?"
+    "Where does the six come from?"
    ],
    "do": [
     {

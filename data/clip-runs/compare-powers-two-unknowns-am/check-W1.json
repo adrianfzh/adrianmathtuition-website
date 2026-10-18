@@ -63,15 +63,13 @@
           "heading": "Step 4: tidy up each power",
           "tokens": [
             { "id": "ta1", "tex": "a:\\;(2x+2)-(3-y)" },
-            { "id": "ta2", "tex": "=2x+2-3+y" },
-            { "id": "ta3", "tex": "=2x+y-1" }
+            { "id": "ta2", "tex": "=2x+2-3+y" }
           ]
         },
         {
           "tokens": [
             { "id": "tb1", "tex": "b:\\;(x+2)-(2y-4)" },
-            { "id": "tb2", "tex": "=x+2-2y+4" },
-            { "id": "tb3", "tex": "=x-2y+6" }
+            { "id": "tb2", "tex": "=x+2-2y+4" }
           ]
         },
         {
@@ -247,13 +245,6 @@
           ]
         },
         {
-          "say": "Collect the terms: two X plus Y minus one.",
-          "asks": ["How do I collect the terms?"],
-          "do": [
-            { "do": "write", "token": "ta3", "on": "two X plus" }
-          ]
-        },
-        {
           "say": "For B: X plus two, minus the bracket two Y minus four.",
           "asks": ["Which is the bottom power for b?"],
           "do": [
@@ -269,23 +260,16 @@
           ]
         },
         {
-          "say": "Collect the terms: X minus two Y plus six.",
-          "asks": ["Where does the six come from?"],
+          "say": "Collect the terms: the left side is A to the power two X plus Y minus one,",
+          "asks": ["How do I collect the terms?"],
           "do": [
-            { "do": "write", "token": "tb3", "on": "X minus two" }
-          ]
-        },
-        {
-          "say": "So the left side is A to the power two X plus Y minus one,",
-          "asks": ["Where does this power come from?"],
-          "do": [
-            { "do": "write", "token": "u1" },
+            { "do": "write", "token": "u1", "on": "the left side" },
             { "do": "write", "token": "u2", "on": "two X plus" }
           ]
         },
         {
           "say": "times B to the power X minus two Y plus six.",
-          "asks": ["Is the left side tidy now?"],
+          "asks": ["Where does the six come from?"],
           "do": [
             { "do": "write", "token": "u3" },
             { "do": "write", "token": "u4", "on": "X minus two" }

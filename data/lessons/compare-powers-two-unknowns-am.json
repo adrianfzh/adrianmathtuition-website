@@ -63,15 +63,13 @@
           "heading": "Step 4: tidy up each power",
           "tokens": [
             { "id": "ta1", "tex": "a:\\;(2x+2)-(3-y)" },
-            { "id": "ta2", "tex": "=2x+2-3+y" },
-            { "id": "ta3", "tex": "=2x+y-1" }
+            { "id": "ta2", "tex": "=2x+2-3+y" }
           ]
         },
         {
           "tokens": [
             { "id": "tb1", "tex": "b:\\;(x+2)-(2y-4)" },
-            { "id": "tb2", "tex": "=x+2-2y+4" },
-            { "id": "tb3", "tex": "=x-2y+6" }
+            { "id": "tb2", "tex": "=x+2-2y+4" }
           ]
         },
         {
@@ -277,23 +275,14 @@
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b15.timing.json"
         },
         {
-          "say": "Collect the terms: two X plus Y minus one.",
-          "asks": ["How do I collect the terms?"],
-          "do": [
-            { "do": "write", "token": "ta3", "on": "two X plus" }
-          ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b16.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b16.timing.json"
-        },
-        {
           "say": "For B: X plus two, minus the bracket two Y minus four.",
           "asks": ["Which is the bottom power for b?"],
           "do": [
             { "do": "write", "token": "tb1", "on": "For B" },
             { "do": "highlight", "token": "d2", "on": "X plus two" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b17.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b17.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b16.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b16.timing.json"
         },
         {
           "say": "Again every sign flips: minus two Y, and plus four.",
@@ -301,37 +290,28 @@
           "do": [
             { "do": "write", "token": "tb2", "on": "minus two Y" }
           ],
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b17.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b17.timing.json"
+        },
+        {
+          "say": "Collect the terms: the left side is A to the power two X plus Y minus one,",
+          "asks": ["How do I collect the terms?"],
+          "do": [
+            { "do": "write", "token": "u1", "on": "the left side" },
+            { "do": "write", "token": "u2", "on": "two X plus" }
+          ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b18.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b18.timing.json"
         },
         {
-          "say": "Collect the terms: X minus two Y plus six.",
-          "asks": ["Where does the six come from?"],
-          "do": [
-            { "do": "write", "token": "tb3", "on": "X minus two" }
-          ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b19.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b19.timing.json"
-        },
-        {
-          "say": "So the left side is A to the power two X plus Y minus one,",
-          "asks": ["Where does this power come from?"],
-          "do": [
-            { "do": "write", "token": "u1" },
-            { "do": "write", "token": "u2", "on": "two X plus" }
-          ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b20.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b20.timing.json"
-        },
-        {
           "say": "times B to the power X minus two Y plus six.",
-          "asks": ["Is the left side tidy now?"],
+          "asks": ["Where does the six come from?"],
           "do": [
             { "do": "write", "token": "u3" },
             { "do": "write", "token": "u4", "on": "X minus two" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b21.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b21.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b19.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b19.timing.json"
         },
         {
           "say": "On the right, a bare B means B to the power one, so write it in.",
@@ -340,8 +320,8 @@
             { "do": "write", "token": "u5" },
             { "do": "note", "text": "bare $b$ means $b^1$", "near": "u5", "on": "a bare B" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b22.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b22.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b20.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b20.timing.json"
         },
         {
           "say": "Step five, compare the powers of each base. First the base A.",
@@ -362,8 +342,8 @@
             { "do": "highlight", "token": ["u1", "u5"], "on": "compare the powers" },
             { "do": "write", "token": "ca", "on": "First the base" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b23.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b23.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b21.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b21.timing.json"
         },
         {
           "say": "Same base A on both sides, so the powers are equal: two X plus Y minus one equals nine.",
@@ -373,8 +353,8 @@
             { "do": "move", "from": "u2", "on": "two X plus" },
             { "do": "write", "token": "ca3", "on": "equals nine" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b24.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b24.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b22.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b22.timing.json"
         },
         {
           "say": "Now the base B: its powers are equal too.",
@@ -383,8 +363,8 @@
             { "do": "write", "token": "cb" },
             { "do": "highlight", "token": ["u3", "u5"], "on": "its powers are" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b25.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b25.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b23.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b23.timing.json"
         },
         {
           "say": "X minus two Y plus six equals one, the one from the bare B.",
@@ -394,8 +374,8 @@
             { "do": "write", "token": "cb3", "on": "equals one" },
             { "do": "highlight", "token": "u5", "on": "the bare B" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b26.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b26.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b24.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b24.timing.json"
         },
         {
           "say": "Step six, solve together. Add one to the A equation: two X plus Y equals ten.",
@@ -403,8 +383,8 @@
           "do": [
             { "do": "write", "token": "e1", "on": "two X plus" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b27.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b27.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b25.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b25.timing.json"
         },
         {
           "say": "Make Y the subject, so it can go into the B equation: Y equals ten minus two X.",
@@ -412,8 +392,8 @@
           "do": [
             { "do": "write", "token": "e1b", "on": "Y equals ten" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b28.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b28.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b26.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b26.timing.json"
         },
         {
           "say": "Substitute: X minus two times, ten minus two X, plus six equals one.",
@@ -421,8 +401,8 @@
           "do": [
             { "do": "write", "step": 13, "on": "X minus two" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b29.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b29.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b27.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b27.timing.json"
         },
         {
           "say": "Expand: X minus twenty plus four X plus six equals one.",
@@ -430,8 +410,8 @@
           "do": [
             { "do": "write", "step": 14, "on": "X minus twenty" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b30.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b30.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b28.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b28.timing.json"
         },
         {
           "say": "Collect: five X equals fifteen, so X equals three.",
@@ -439,8 +419,8 @@
           "do": [
             { "do": "write", "step": 15, "on": "five X equals" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b31.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b31.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b29.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b29.timing.json"
         },
         {
           "say": "Then Y equals ten minus two times three: four.",
@@ -448,8 +428,8 @@
           "do": [
             { "do": "write", "step": 16, "on": "Y equals ten" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b32.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b32.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b30.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b30.timing.json"
         },
         {
           "say": "So X equals three and Y equals four.",
@@ -458,8 +438,8 @@
             { "do": "write", "step": 17, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "Y equals four" }
           ],
-          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b33.mp3",
-          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b33.timing.json"
+          "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b31.mp3",
+          "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b31.timing.json"
         }
       ]
     }

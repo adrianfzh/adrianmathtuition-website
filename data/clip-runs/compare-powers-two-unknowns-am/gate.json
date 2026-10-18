@@ -1,0 +1,31 @@
+{
+ "slug": "compare-powers-two-unknowns-am",
+ "at": "2026-10-18T16:20:28.487Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "25/25 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "18 lines = the checked plan"
+  },
+  "read": {
+   "ok": true,
+   "detail": "one draft — the stand-in reviewer judges it (see review)"
+  },
+  "look": {
+   "ok": true,
+   "detail": "53/53 actions on the voice · cues worst 0.19 s (gate 0.3 s) · look problems 0"
+  },
+  "review": {
+   "ok": true,
+   "detail": "0 must, 3 should · 33 frames"
+  }
+ },
+ "pass": true
+}
