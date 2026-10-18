@@ -2334,6 +2334,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   // The written drop-down of a side point (Beat.aside.read): open = that slug. The clip pauses
   // while it is read and goes on when it is closed.
   const [readOpen, setReadOpen] = useState<string | null>(null);
+  // Closed unless asked for (Adrian, 18 Oct 2026: "make the written drop-down closed by default >
+  // student can click if they need explanation"): moving on to another part shuts it again.
+  useEffect(() => { setReadOpen(null); }, [sceneIdx, step]);
   const toggleRead = (s: string) => { if (readOpen === s) { setReadOpen(null); setPaused(false); } else { setPaused(true); setReadOpen(s); } };
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
