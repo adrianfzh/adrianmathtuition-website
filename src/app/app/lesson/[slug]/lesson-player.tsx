@@ -2746,6 +2746,41 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             )}
             {scene.type === 'check-skipped' && <CheckSkippedView />}
           </BoardLayer>
+          {/* A written side point (Beat.aside.read) sits ON the board, so nothing under it moves
+              (Adrian, 18 Oct 2026: "when the popup appears, it pushes the slider down > any better,
+              more elegant way?"): a small 💡 chip in the board's top corner; a tap lays the
+              explanation over the board, the clip paused behind it. Closed until asked for. */}
+          {clip && hasBeats(scene) && (() => {
+            const reads = scene.beats.slice(0, step + 1).map(b => b.aside).filter((a): a is { text: string; slug: string; read: string[] } => !!a?.read?.length);
+            const a = reads[reads.length - 1];
+            if (!a) return null;
+            const open = readOpen === a.slug;
+            return (<>
+              {!open && (
+                <button key={`chip-${a.slug}`} type="button" data-aside-read-chip aria-expanded={false} aria-label={a.text}
+                  onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
+                  className="lsn-read-chip absolute top-2.5 right-2.5 z-20 inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy text-[13px] font-bold px-3 py-1.5 shadow-md">
+                  💡 Why?
+                </button>
+              )}
+              {open && (
+                <div data-aside-read onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
+                  className="lsn-read-veil absolute inset-0 z-30 rounded-3xl bg-slate-950/45 flex items-end p-2.5 cursor-default">
+                  <div role="dialog" aria-label={a.text} onClick={e => e.stopPropagation()}
+                    className="lsn-read-card w-full max-h-full overflow-y-auto rounded-2xl bg-[hsl(45,40%,98%)] px-4 pt-3 pb-3 text-[15px] leading-relaxed text-slate-800 shadow-xl">
+                    <div className="flex items-start gap-2 mb-1.5">
+                      <p className="flex-1 text-[14px] font-bold text-navy">💡 {a.text}</p>
+                      <button type="button" aria-label="Close" onClick={() => toggleRead(a.slug)}
+                        className="shrink-0 -mt-0.5 w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-[15px] font-bold">✕</button>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {a.read.map((l, i) => <li key={i}><MathText text={l} /></li>)}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </>);
+          })()}
           {/* The tap's own feedback: ⏸ / ▶ in the middle of the board, grown and
               gone inside half a second — the gesture every video player uses. */}
           {gesture && (
@@ -2807,7 +2842,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       {clip && !done && (() => {
         const sc = scenes[sceneIdx];
         const links = hasBeats(sc) ? sc.beats.slice(0, step + 1).map(b => b.aside).filter((a): a is { text: string; slug: string; read?: string[] } => !!a) : [];
-        if (!links.length) return null;
+        if (!links.some(a => !a.read?.length)) return null;   // written points live ON the board
         return (
           <div className="mt-2 flex flex-wrap gap-2 px-0.5">
             {links.filter(a => !a.read?.length).map(a => asides[a.slug] ? (
@@ -2820,20 +2855,6 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
                 className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
                 ▶ {a.text}
               </Link>
-            ))}
-            {links.filter(a => a.read?.length).map(a => (
-              <button key={`read-${a.slug}`} type="button" onClick={() => toggleRead(a.slug)} data-aside-read-chip aria-expanded={readOpen === a.slug}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
-                💡 {a.text} <span aria-hidden className={`transition-transform ${readOpen === a.slug ? 'rotate-180' : ''}`}>▾</span>
-              </button>
-            ))}
-            {links.filter(a => a.read?.length && readOpen === a.slug).map(a => (
-              <div key={`readbox-${a.slug}`} data-aside-read className="lsn-read-drop w-full rounded-2xl border border-amber-200 bg-white px-4 py-3 text-[15px] leading-relaxed text-slate-800 shadow-sm">
-                <ul className="space-y-1.5">
-                  {a.read!.map((l, i) => <li key={i}><MathText text={l} /></li>)}
-                </ul>
-                <button type="button" onClick={() => toggleRead(a.slug)} className="mt-2 text-[13px] font-semibold text-amber-800">▴ Hide, carry on with the clip</button>
-              </div>
             ))}
             {side && asides[side] && typeof document !== 'undefined' && createPortal(
               <SidePopup clip={asides[side]} onClose={closeSide} />, document.body)}
@@ -3315,6 +3336,11 @@ const PLAYER_CSS = `
 [data-lsn-themed] .lsn-zoom[data-focus] [data-focused] { filter: brightness(1.1); }
 /* The tap gesture: the glyph a video player flashes when you tap to pause. */
 @keyframes lsnGesture { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); } 18% { opacity: 0.92; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+.lsn-read-chip { animation: lsnFade 240ms ease both; }
+.lsn-read-veil { animation: lsnFade 180ms ease both; }
+.lsn-read-card { animation: lsnReadUp 240ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes lsnReadUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lsn-read-chip, .lsn-read-veil, .lsn-read-card { animation: none; } }
 .lsn-gesture { position: absolute; left: 50%; top: 50%; z-index: 9; pointer-events: none;
   width: 62px; height: 62px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
   font-size: 24px; line-height: 1; color: #fff; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2px);
