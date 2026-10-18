@@ -171,6 +171,15 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **Teach the family before the case** (18 Oct 2026, Sketching: "perhaps can introduce the four basic
+  shapes of logarithmic graphs first"): a clip that uses a set of basic shapes or standard forms
+  first SHOWS the set — one sketch with every curve labelled (`graph.curves`), each lit as the voice
+  names it and says how it is flipped — then does the question.
+- **A method's steps are listed on screen and stay in view** (18 Oct 2026: "when narrator says four
+  steps: should list it out on screen, then use those steps and show how to build from those steps
+  (keeping those steps in view) highlight the steps when it comes to their turn"): the plan's
+  `pinned` steps sit above the board for the whole clip (they never scroll), shown on the beat that
+  names them (`pin: 0`) and each lit on its turn (`pin: n`).
 - **Draw it when a picture teaches it** (17 Oct 2026: "if you need to include diagrams in the clips,
   please do so"): a graph question gets real sketches on the board — give the line a `graph`
   (curve, dashed asymptote, labelled points); show the shape, then the curve against its asymptote,
@@ -276,7 +285,7 @@ The test for every beat: if the voice says it and it helps, it is on the board a
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
 | Log scales | **The word-problem reference (approved 18 Oct: "way better").** The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
-| Sketching log graphs | The version before the rebuild + (18 Oct) real sketches: the shape of ln(−x), the curve against x = 2, the labelled sketch (draft W2; it scrolls) |
+| Sketching log graphs | The version before the rebuild + (18 Oct) the 4 basic shapes first, the 4 steps pinned and lit, real sketches: the shape of ln(−x), the curve against x = 2, the labelled sketch (draft W2; it scrolls) |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so
 no step is a shortcut (the 18 Oct rule). Update this table whenever a clip changes.

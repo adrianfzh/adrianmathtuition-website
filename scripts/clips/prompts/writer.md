@@ -72,6 +72,10 @@ no focus, no clear.
   has no dot), ² ³ ˣ for powers (raised letters like ʳ ⁿ ᵏ draw as ticks; write the power out or
   leave it off), √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
+- **A method with named steps**: put them in the plan's `pinned` (pinned above the board, never
+  scrolled); the beat that names them carries `"pin": 0`, each step's first beat `"pin": n`.
+- **A set of basic shapes first**: one `graph` with `curves` (each `id` + `label` + `labelAt`), a beat
+  per curve that `highlight`s its id as the voice names it and says how it is flipped.
 - **Explain a word problem first** (house rules §2): a question with a story or a formula the student
   may not know opens with a "First, what the question says" step — the formula on the board, what each
   letter means (its own line each, the letter lit: `part` "num"/"den" for a fraction's top/bottom), each
