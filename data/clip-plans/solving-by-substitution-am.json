@@ -185,7 +185,11 @@
       "tokens": [
         {
           "id": "x1",
-          "tex": "2^x=2=2^1\\;\\Rightarrow\\;x=1"
+          "tex": "a=2:\\;\\;2^x=2=2^1"
+        },
+        {
+          "id": "x1b",
+          "tex": "\\;\\Rightarrow\\;x=1"
         }
       ],
       "checks": [
@@ -200,7 +204,7 @@
       "tokens": [
         {
           "id": "x0",
-          "tex": "2^x=1=2^0\\;\\Rightarrow\\;x=0"
+          "tex": "a=1:\\;\\;2^x=1=2^0\\;\\Rightarrow\\;x=0"
         }
       ],
       "checks": [

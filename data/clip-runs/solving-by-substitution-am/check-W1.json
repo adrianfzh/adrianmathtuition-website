@@ -67,12 +67,13 @@
         },
         {
           "tokens": [
-            { "id": "x1", "tex": "2^x=2=2^1\\;\\Rightarrow\\;x=1" }
+            { "id": "x1", "tex": "a=2:\\;\\;2^x=2=2^1" },
+            { "id": "x1b", "tex": "\\;\\Rightarrow\\;x=1" }
           ]
         },
         {
           "tokens": [
-            { "id": "x0", "tex": "2^x=1=2^0\\;\\Rightarrow\\;x=0" }
+            { "id": "x0", "tex": "a=1:\\;\\;2^x=1=2^0\\;\\Rightarrow\\;x=0" }
           ]
         },
         {
@@ -141,7 +142,7 @@
           ]
         },
         {
-          "say": "Now the equation has two to the power X, and two to the power X squared. A quadratic in disguise.",
+          "say": "Now the equation has two to the power X, and two to the power X, all squared. A quadratic in disguise.",
           "asks": ["Why is it a quadratic?"],
           "do": [
             { "do": "highlight", "token": ["r2x", "k1"], "on": "two to the power X, and" }
@@ -212,7 +213,8 @@
           "say": "Both sides have base two, so the powers are equal: X equals one.",
           "asks": ["Why can I compare the powers?"],
           "do": [
-            { "do": "highlight", "token": "x1", "on": "Both sides have" }
+            { "do": "highlight", "token": "x1", "on": "Both sides have" },
+            { "do": "write", "token": "x1b", "on": "the powers are equal" }
           ]
         },
         {

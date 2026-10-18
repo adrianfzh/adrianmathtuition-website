@@ -1,11 +1,12 @@
 Verifying 19 clip(s) of solving-by-substitution-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 94% of narration words heard
+  scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 95% of narration words heard
   scene-01-b4: 100% of narration words heard
   scene-01-b5: 100% of narration words heard
-  scene-01-b6: 100% of narration words heard
+  scene-01-b6: 73% of narration words heard  ⚠ LOW
+      heard: So the equation becomes 2 ^ 2x - 3 * 2 ^ x + 2 = 0.
   scene-01-b7: 100% of narration words heard
   scene-01-b8: 100% of narration words heard
   scene-01-b9: 100% of narration words heard
@@ -20,4 +21,4 @@ Verifying 19 clip(s) of solving-by-substitution-am by transcription (gemini-2.5-
   scene-01-b18: 100% of narration words heard
   scene-01-b19: 100% of narration words heard
 
-All clips match their narration.
+1 clip(s) below 85% — listen to those.

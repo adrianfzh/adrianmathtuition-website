@@ -143,7 +143,7 @@
    ]
   },
   {
-   "say": "Now the equation has two to the power X, and two to the power X squared. A quadratic in disguise.",
+   "say": "Now the equation has two to the power X, and two to the power X, all squared. A quadratic in disguise.",
    "asks": [
     "Why is it a quadratic?"
    ],
@@ -297,6 +297,11 @@
      "do": "highlight",
      "token": "x1",
      "on": "Both sides have"
+    },
+    {
+     "do": "write",
+     "token": "x1b",
+     "on": "the powers are equal"
     }
    ]
   },

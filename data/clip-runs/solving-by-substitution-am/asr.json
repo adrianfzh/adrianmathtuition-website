@@ -4,8 +4,8 @@
  "lines": [
   {
    "beat": 1,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -34,9 +34,10 @@
   },
   {
    "beat": 6,
-   "bag": 1,
+   "bag": 0.73,
    "score": 1,
-   "heard": null
+   "heard": "So the equation becomes 2 ^ 2x - 3 * 2 ^ x + 2 = 0.",
+   "said": "So the equation becomes two to the power two X, minus three times two to the power X, plus two, equals zero."
   },
   {
    "beat": 7,
