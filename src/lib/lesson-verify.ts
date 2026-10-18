@@ -785,8 +785,8 @@ export function clipIssues(script: LessonScript): Issue[] {
         && !b.do.some(a => a.do === 'note' && /^\s*✗/.test(a.text))) {
         out.push(issue('warn', `${at}.beats[${k}]`, 'the voice names a mistake but the board does not show it — add a ✗ note ("✗ Common mistake: …") where it bites'));
       }
-      if (b.aside !== undefined && (typeof b.aside?.text !== 'string' || !b.aside.text.trim() || b.aside.text.length > 70 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(b.aside?.slug)))) {
-        out.push(issue('error', `${at}.beats[${k}].aside`, 'a side link is { text (≤ 70 chars), slug of another clip }'));
+      if (b.aside !== undefined && (typeof b.aside?.text !== 'string' || !b.aside.text.trim() || b.aside.text.length > 70 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(b.aside?.slug)) || (b.aside?.read !== undefined && (!Array.isArray(b.aside.read) || !b.aside.read.length || b.aside.read.length > 10 || b.aside.read.some((l: unknown) => typeof l !== 'string' || !l.trim() || l.length > 140))))) {
+        out.push(issue('error', `${at}.beats[${k}].aside`, 'a side link is { text (≤ 70 chars), slug of another clip, read? (1–10 lines ≤ 140 chars) }'));
       }
       // Adrian, 16 Oct 2026: "don't say fly - say power bring up" · "x equals minus one > minus sounds weird".
       if (/\b(fly|flies|flying|flew)\b/i.test(b.say)) out.push(issue('warn', `${at}.beats[${k}].say`, 'never say a piece "flies" — say the maths ("bring the power up", "goes up as the power")'));

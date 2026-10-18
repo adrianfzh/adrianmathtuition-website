@@ -2331,6 +2331,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const [side, setSide] = useState<string | null>(null);
   const openSide = (s: string) => { setPaused(true); setSide(s); };
   const closeSide = useCallback(() => { setSide(null); setPaused(false); }, []);
+  // The written drop-down of a side point (Beat.aside.read): open = that slug. The clip pauses
+  // while it is read and goes on when it is closed.
+  const [readOpen, setReadOpen] = useState<string | null>(null);
+  const toggleRead = (s: string) => { if (readOpen === s) { setReadOpen(null); setPaused(false); } else { setPaused(true); setReadOpen(s); } };
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
   // ⏪ 10 / 10 ⏩: about ten seconds of voice back or forward, landing at the start of that part. A
@@ -2799,7 +2803,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           depth, a tap away, without stopping the main lesson for everyone. */}
       {clip && !done && (() => {
         const sc = scenes[sceneIdx];
-        const links = hasBeats(sc) ? sc.beats.slice(0, step + 1).map(b => b.aside).filter((a): a is { text: string; slug: string } => !!a) : [];
+        const links = hasBeats(sc) ? sc.beats.slice(0, step + 1).map(b => b.aside).filter((a): a is { text: string; slug: string; read?: string[] } => !!a) : [];
         if (!links.length) return null;
         return (
           <div className="mt-2 flex flex-wrap gap-2 px-0.5">
@@ -2813,6 +2817,20 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
                 className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
                 ▶ {a.text}
               </Link>
+            ))}
+            {links.filter(a => a.read?.length).map(a => (
+              <button key={`read-${a.slug}`} type="button" onClick={() => toggleRead(a.slug)} data-aside-read-chip aria-expanded={readOpen === a.slug}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white border border-sky-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-sky-50">
+                📖 Read why instead <span aria-hidden className={`transition-transform ${readOpen === a.slug ? 'rotate-180' : ''}`}>▾</span>
+              </button>
+            ))}
+            {links.filter(a => a.read?.length && readOpen === a.slug).map(a => (
+              <div key={`readbox-${a.slug}`} data-aside-read className="lsn-read-drop w-full rounded-2xl border border-sky-200 bg-white px-4 py-3 text-[15px] leading-relaxed text-slate-800 shadow-sm">
+                <ul className="space-y-1.5">
+                  {a.read!.map((l, i) => <li key={i}><MathText text={l} /></li>)}
+                </ul>
+                <button type="button" onClick={() => toggleRead(a.slug)} className="mt-2 text-[13px] font-semibold text-sky-700">▴ Hide, carry on with the clip</button>
+              </div>
             ))}
             {side && asides[side] && typeof document !== 'undefined' && createPortal(
               <SidePopup clip={asides[side]} onClose={closeSide} />, document.body)}

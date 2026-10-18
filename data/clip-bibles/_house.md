@@ -38,6 +38,11 @@ reads — on every Claude account, because it lives in the repo.
 - **A side clip opens in a SHEET over the clip, never a new page** (18 Oct 2026: "clicking it brings me
   to another page, which interrupts the clip experience"): the board stays in view above, paused; ✕,
   Esc, a tap above or a swipe down closes it and the clip carries on.
+  **On trial beside it: the same point WRITTEN** (18 Oct 2026: "how about instead of a popup clip, we
+  have a written explanation (drop down)? put that in too, and i compare which is better?"): the
+  beat's `aside.read` (one idea a line, inline maths, the last line bold) opens as a drop-down under
+  the board ("📖 Read why instead"); the clip pauses while it is open. Growth and decay carries both;
+  keep the one Adrian picks and update this rule.
 - **No Watch out by default** (18 Oct 2026, of "P is 200, not 2": "there is no need for the watch out at
   the end that watchout is NOT helpful"). Add one only when Adrian asks for it, or the mistake is one
   his students really make on this exact step.

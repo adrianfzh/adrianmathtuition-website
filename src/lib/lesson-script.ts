@@ -308,7 +308,11 @@ export interface Beat {
    *  2026: "put a side link … to another clip explaining why … if student needs to know that they
    *  can click the link instead of interrupting the main lesson"). Shown under the board from this
    *  beat on; the other clip's back button returns here. */
-  aside?: { text: string; slug: string };
+  aside?: { text: string; slug: string;
+    /** The same point WRITTEN, one idea a line (inline `$…$`, `**bold**`): shown in a drop-down
+     *  under the board beside the clip link, so Adrian can compare the two (18 Oct 2026: "instead
+     *  of a popup clip, we have a written explanation (drop down)? put that in too"). */
+    read?: string[] };
 }
 
 /** Every scene may carry beats instead of narration. */

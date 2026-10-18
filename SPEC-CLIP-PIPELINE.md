@@ -599,3 +599,5 @@ slider at the bottom, after the clip"* — built in `lesson-player.tsx`:
     the slider is below the board (`--width 1280` plays a laptop). Re-played on the preview,
     15 Oct 2026: all 7 pass at 390 × 844 (📄 button) and at 1280 × 800 (question panel) — every board
     move on its word (worst 0.18 s), no look problems.
+
+- **18 Oct 2026 — side point: clip sheet vs written drop-down, on trial.** Adrian: "how about instead of a popup clip, we have a written explanation (drop down)? put that in too, and i compare which is better?". `Beat.aside.read` (string[], ≤ 10 lines ≤ 140 chars, checked in `lesson-verify.ts`) shows a "📖 Read why instead" chip beside the 💡 clip chip; it drops a card of the lines under the board and pauses the clip. Growth and decay (beat 7) has both. Waiting on his pick.
