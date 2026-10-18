@@ -77,6 +77,41 @@
           "shape": "log(2 - x)",
           "family": "ln(-x)"
         }
+      ],
+      "graph": {
+        "fn": "ln(-x)",
+        "xMin": -5,
+        "xMax": 2,
+        "yMin": -2.6,
+        "yMax": 2.6,
+        "asymptote": {
+          "x": 0,
+          "label": "x = 0"
+        }
+      }
+    },
+    {
+      "tokens": [
+        {
+          "id": "drw",
+          "tex": "y=\\ln(2-x)\\;\\text{ against }x=2"
+        }
+      ],
+      "graph": {
+        "fn": "ln(2 - x)",
+        "xMin": -5,
+        "xMax": 3.5,
+        "yMin": -2.6,
+        "yMax": 2.6,
+        "asymptote": {
+          "x": 2,
+          "label": "x = 2"
+        }
+      },
+      "checks": [
+        {
+          "form": "the shape of ln(-x) drawn against the asymptote x = 2"
+        }
       ]
     },
     {
@@ -134,6 +169,48 @@
           "solves": "log(2 - xi) = 0",
           "var": "xi",
           "gives": 1
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "lab",
+          "tex": "x=2,\\;(0,\\,\\ln 2),\\;(1,\\,0)"
+        }
+      ],
+      "graph": {
+        "fn": "ln(2 - x)",
+        "xMin": -5,
+        "xMax": 3.5,
+        "yMin": -2.6,
+        "yMax": 2.6,
+        "asymptote": {
+          "x": 2,
+          "label": "x = 2"
+        },
+        "points": [
+          {
+            "x": 0,
+            "y": 0.693,
+            "label": "(0, ln 2)"
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "label": "(1, 0)"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "fact": "xa = 2"
+        },
+        {
+          "fact": "yi = log(2)"
+        },
+        {
+          "fact": "xi = 1"
         }
       ]
     }

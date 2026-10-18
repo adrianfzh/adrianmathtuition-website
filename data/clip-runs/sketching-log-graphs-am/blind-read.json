@@ -1,7 +1,7 @@
 {
  "slug": "sketching-log-graphs-am",
- "pick": "B",
- "why": "B reveals each intercept token as it is said, its margin note states the rule ('Asymptote: inside equals zero') instead of a bare label, its trap is two full sentences, and its last beat finishes the working ('two minus X is one'); A's trap is clipped fragments and its y-intercept line appears before it is said.",
+ "pick": "W2",
+ "why": "W2 = the approved cut (B + its fixes baked in) with real sketches added: the shape, the curve against x = 2, the labelled sketch (Adrian, 18 Oct 2026: 'how do you teach sketching a graph without drawing the graph?').",
  "scores": {
   "clear": 4,
   "one_idea": 4,
@@ -17,27 +17,32 @@
   "Beat 4 highlights the whole equation on 'Minus in front'; the minus is not its own token, so the gesture is broad but fine.",
   "Session edit after the read: beat 6 says 'draw that shape on your paper' — the board cannot draw a log curve yet, so the student draws it."
  ],
- "fixed_beats": {
-  "5": {
-   "say": "So the curve has the shape of L N of minus X.",
-   "do": [
-    {
-     "do": "write",
-     "step": 2,
-     "on": "shape of L N"
+ "verdict": "pass",
+ "history": [
+  {
+   "pick": "B",
+   "fixed_beats": {
+    "5": {
+     "say": "So the curve has the shape of L N of minus X.",
+     "do": [
+      {
+       "do": "write",
+       "step": 2,
+       "on": "shape of L N"
+      }
+     ]
+    },
+    "6": {
+     "say": "Step three. Draw that shape on your paper, hugging X equals two. The inside must be positive, so the curve stays left of it.",
+     "do": [
+      {
+       "do": "highlight",
+       "token": "asy",
+       "on": "X equals two"
+      }
+     ]
     }
-   ]
-  },
-  "6": {
-   "say": "Step three. Draw that shape on your paper, hugging X equals two. The inside must be positive, so the curve stays left of it.",
-   "do": [
-    {
-     "do": "highlight",
-     "token": "asy",
-     "on": "X equals two"
-    }
-   ]
+   }
   }
- },
- "verdict": "pass"
+ ]
 }

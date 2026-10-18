@@ -1,0 +1,178 @@
+{
+ "slug": "sketching-log-graphs-am",
+ "draft": "W2",
+ "by": "session, Adrian 18 Oct 2026 ('how do you teach sketching a graph without drawing the graph?'): the approved cut + real sketches",
+ "beats": [
+  {
+   "say": "Sketch Y equals L N of two minus X. Four steps: asymptote, shape, draw, intercepts.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ],
+   "asks": [
+    "What is an asymptote?"
+   ]
+  },
+  {
+   "say": "Step one, the asymptote. Let the inside of the log equal zero.",
+   "do": [
+    {
+     "do": "write",
+     "token": "in0",
+     "on": "inside of the log"
+    }
+   ],
+   "asks": [
+    "Why let the inside equal zero?"
+   ]
+  },
+  {
+   "say": "Two minus X equals zero, so the asymptote is X equals two.",
+   "do": [
+    {
+     "do": "note",
+     "text": "← Asymptote: inside equals zero",
+     "near": "in0"
+    },
+    {
+     "do": "write",
+     "token": "asy",
+     "on": "X equals two"
+    }
+   ],
+   "asks": [
+    "Why is the asymptote x = 2?"
+   ]
+  },
+  {
+   "say": "Step two, the shape. Minus in front of X flips the graph in the Y axis.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "eqn",
+     "on": "Minus in front"
+    }
+   ],
+   "asks": [
+    "Why does −x flip the graph?"
+   ]
+  },
+  {
+   "say": "So the curve has the shape of L N of minus X.",
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "shape of L N"
+    }
+   ],
+   "asks": [
+    "What does y = ln(−x) look like?"
+   ]
+  },
+  {
+   "say": "Step three, draw it. Move that shape to hug X equals two. The inside must be positive, so the curve stays left of it.",
+   "asks": [
+    "Why must the inside be positive?",
+    "Which side of x = 2 is the curve?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "asy",
+     "on": "Step three"
+    },
+    {
+     "do": "write",
+     "step": 3,
+     "on": "Move that shape"
+    }
+   ]
+  },
+  {
+   "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
+   "do": [
+    {
+     "do": "write",
+     "token": "x0",
+     "on": "When X is zero"
+    },
+    {
+     "do": "write",
+     "token": "yint",
+     "on": "Y is L N two"
+    }
+   ],
+   "asks": [
+    "Why is y = ln 2 when x = 0?"
+   ]
+  },
+  {
+   "say": "When Y is zero, the inside equals E to the power zero, which is one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "y0",
+     "on": "When Y is zero"
+    },
+    {
+     "do": "write",
+     "token": "xin",
+     "on": "the inside equals"
+    }
+   ],
+   "asks": [
+    "Why is the inside 1 when y = 0?"
+   ]
+  },
+  {
+   "say": "The asymptote uses inside equals zero. The intercept uses inside equals one.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "xin",
+     "on": "inside equals one"
+    }
+   ],
+   "asks": [
+    "When is it inside = 0, when inside = 1?"
+   ]
+  },
+  {
+   "say": "So two minus X is one, and the X intercept is X equals one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "ans",
+     "on": "two minus X"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "X equals one"
+    }
+   ],
+   "asks": [
+    "How do I label the intercepts?"
+   ]
+  },
+  {
+   "say": "Now label the sketch: the asymptote X equals two, L N two on the Y axis, and one on the X axis.",
+   "asks": [
+    "What must a sketch show?",
+    "Why label the asymptote?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 7,
+     "on": "label the sketch"
+    }
+   ]
+  }
+ ]
+}
