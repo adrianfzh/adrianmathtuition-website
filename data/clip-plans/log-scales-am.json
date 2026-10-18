@@ -30,6 +30,23 @@
     {
       "tokens": [
         {
+          "id": "letp",
+          "tex": "\\text{Let } I_p=\\text{intensity of pump}"
+        },
+        {
+          "id": "letd",
+          "tex": ",\\;\\; I_d=\\text{intensity of dishwasher}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "Ip = Ip"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
           "id": "pump",
           "tex": "50=10\\lg\\tfrac{I_p}{k}"
         },

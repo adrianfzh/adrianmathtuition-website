@@ -12,6 +12,11 @@
    "do": [
     {
      "do": "write",
+     "token": "letp",
+     "on": "Call the pump's intensity"
+    },
+    {
+     "do": "write",
      "on": "so fifty equals",
      "token": "pump"
     }
@@ -23,6 +28,11 @@
     "Where does sixty-two come from?"
    ],
    "do": [
+    {
+     "do": "write",
+     "token": "letd",
+     "on": "Call the dishwasher's intensity"
+    },
     {
      "do": "write",
      "on": "so sixty-two equals",
@@ -55,7 +65,7 @@
    "do": [
     {
      "do": "write",
-     "step": 1,
+     "step": 2,
      "on": "sixty-two minus fifty"
     }
    ]
@@ -106,7 +116,7 @@
    "do": [
     {
      "do": "write",
-     "step": 3,
+     "step": 4,
      "on": "Log of the ratio"
     }
    ]
