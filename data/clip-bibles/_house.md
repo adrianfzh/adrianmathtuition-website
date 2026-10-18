@@ -212,6 +212,10 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
   is written as it is said.
 - **A detour in a separate clip broke the flow** (a new page, then a sheet). → a side point is a short
   WRITTEN explanation on the board, closed until tapped (§1).
+- **The scrolling board was measured too small on a phone** (18 Oct 2026): it counted the stage's
+  empty min-height as taken and shrank to 240 px, so lines slid off the top early with an empty band
+  above the subtitle. Fixed in the player (`scrollClipBoard`: only the stage's bottom padding sits
+  under the board). Check a scrolling clip's LAST frames at phone size, not only the first.
 - **Anything that appears under the board moves the slider.** → new things go ON the board (overlay),
   never in the page flow under it.
 
