@@ -60,10 +60,13 @@ export function saidItems(say: string): SaidItem[] {
     };
     for (const p of parts) take(p);
     let j = i + 1;
-    while (j < words.length && !/[.,:;]$/.test(words[j - 1]) && bare(words[j]).split('-').every(isNumWord) && bare(words[j]) !== '' ) {
+    while (j < words.length && !/[.,:;]$/.test(words[j - 1]) && ((bare(words[j]).split('-').every(isNumWord) && bare(words[j]) !== '') || (bare(words[j]) === 'and' && /^(hundred|thousand)$/.test(bare(words[j - 1]))))) {
       // "two hundred" / "one thousand" join; "two two" does not.
-      const nb = bare(words[j]);
-      if (nb !== 'hundred' && nb !== 'thousand' && !(nb in TENS || nb in UNITS && cur % 10 === 0 && cur >= 20 && UNITS[nb] < 10)) break;
+      let nb = bare(words[j]);
+      // "four hundred AND forty-eight", "two thousand AND eighteen".
+      if (nb === 'and' && /^(hundred|thousand)$/.test(bare(words[j - 1])) && j + 1 < words.length && bare(words[j + 1]).split('-').every(isNumWord)) { j++; nb = bare(words[j]); }
+      const afterBig = /^(hundred|thousand|and)$/.test(bare(words[j - 1]));
+      if (nb !== 'hundred' && nb !== 'thousand' && !afterBig && !(nb in TENS || nb in UNITS && cur % 10 === 0 && cur >= 20 && UNITS[nb] < 10)) break;
       for (const p of nb.split('-')) take(p);
       j++;
     }
@@ -79,6 +82,10 @@ export function saidItems(say: string): SaidItem[] {
     i = j - 1;
     if (!num.includes('.')) {
       if (COUNT_BEFORE.test(before) || COUNT_AFTER.test(after)) continue;
+      // A count of things ("four products", "two equations"): a plural noun after it, not "times".
+      if (/^[a-z]{3,}s$/.test(after) && !/^(times|is|was|equals|minus|plus|thirds?|halves|tens|hundreds|thousands|decibels|hours|minutes|seconds|days|weeks|months|years|metres|meters|centimetres|kilometres|grams|kilograms|litres|degrees|dollars|cents|percent|units|radians|bacteria|people)$/.test(after)) continue;
+      // A list label ("One: A times A …", "Four: B times …").
+      if (/:$/.test(words[j - 1])) continue;
       if (num === '1' && (ONE_WORD_AFTER.test(after) || before === 'into' || before === 'in' || before === 'no' || /\bthe other\b/i.test(words.slice(j, j + 4).join(' ')))) continue;
       if (/^(both|each|every|first|second)$/.test(before)) continue;
     }
