@@ -1,11 +1,11 @@
 {
  "slug": "solving-by-substitution-am",
- "worst": 0.92,
+ "worst": 0.88,
  "lines": [
   {
    "beat": 1,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -22,8 +22,8 @@
   },
   {
    "beat": 4,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.88,
+   "score": 0.88,
    "heard": null
   },
   {
@@ -34,10 +34,9 @@
   },
   {
    "beat": 6,
-   "bag": 0.73,
+   "bag": 1,
    "score": 1,
-   "heard": "So the equation becomes 2 ^ 2x - 3 * 2 ^ x + 2 = 0.",
-   "said": "So the equation becomes two to the power two X, minus three times two to the power X, plus two, equals zero."
+   "heard": null
   },
   {
    "beat": 7,
@@ -59,14 +58,15 @@
   },
   {
    "beat": 10,
-   "bag": 1,
-   "score": 1,
-   "heard": null
+   "bag": 0.64,
+   "score": 0.967,
+   "heard": "Step two, substitute. Let A = 2 ^ x.",
+   "said": "Step two, substitute: let A equal two to the power X."
   },
   {
    "beat": 11,
-   "bag": 0.92,
-   "score": 0.92,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -77,14 +77,14 @@
   },
   {
    "beat": 13,
-   "bag": 0.93,
-   "score": 0.93,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 14,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
@@ -113,6 +113,12 @@
   },
   {
    "beat": 19,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 20,
    "bag": 1,
    "score": 1,
    "heard": null

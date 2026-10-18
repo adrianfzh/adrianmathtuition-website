@@ -1,60 +1,60 @@
 {
  "slug": "solving-by-substitution-am",
- "at": "2026-10-18T15:25:29.353Z",
+ "at": "2026-10-18T15:34:39.206Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 36138,
+  "input_tokens": 36213,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1849,
+  "output_tokens": 2565,
   "output_tokens_details": {
-   "thinking_tokens": 1168
+   "thinking_tokens": 1725
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "pass",
+ "verdict": "fix",
  "findings": [
   {
-   "beat": 9,
-   "rule": "what, how and why",
+   "beat": 7,
+   "rule": "what, how, why",
+   "severity": "must",
+   "problem": "This is the key step of the whole method, but the board jumps from 2^{2x} to (2^x)^2. The only reason given is \"two X is double X\" and a note \"Times power, used backwards\", so a student cannot see which number plays m and which plays n.",
+   "fix": "Write the middle step on the line, 2^{2x} = 2^{x×2} = (2^x)^2. Say \"two X is X times two, so by times power this is two to the X, all squared\", and change the note to (a^m)^n = a^{mn} with m = x, n = 2."
+  },
+  {
+   "beat": 5,
+   "rule": "said = shown",
    "severity": "should",
-   "problem": "The substitution arrives with no reason, so a student may not see why letting A = 2^x helps.",
-   "fix": "Add one short sentence before or after 'let A equal two to the power X': 'Then the equation becomes a quadratic in A, which we know how to solve.'"
+   "problem": "The voice works out \"two times X\", but the board goes straight from (2^2)^x to 2^{2x}, so the multiplication the voice describes is never seen.",
+   "fix": "Write (2^2)^x = 2^{2×x} = 2^{2x} on the words \"multiply the powers, two times X\"."
+  },
+  {
+   "beat": 3,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "The voice says to write four with base two because the other term is 2^x, but never says why matching bases helps: it lets both terms be written using 2^x, so one letter can stand for it.",
+   "fix": "Add one short sentence, e.g. \"With the same base, both terms can be written using two to the power X\"."
   },
   {
    "beat": 8,
-   "rule": "voice",
+   "rule": "what, how, why",
    "severity": "should",
-   "problem": "'Two to the power X squared' can be heard as 2^(x²), not (2^x)², which is the exact confusion this step must avoid.",
-   "fix": "Say 'two to the power X, all squared', as beat 10 does."
-  },
-  {
-   "beat": 16,
-   "rule": "what, how and why",
-   "severity": "should",
-   "problem": "Line 9 writes '⇒ x = 1' in beat 16, but the reason (same base, so the powers are equal) is only said in beat 17, so the answer appears before its reason.",
-   "fix": "In beat 16 write only '2^x = 2 = 2^1', and add '⇒ x = 1' in beat 17 on 'the powers are equal', with the bases 2 and the powers x and 1 lit as they are named."
+   "problem": "\"A quadratic in disguise\" is said but not explained or shown. A student may not see that one term is the square of the other, just as a² and a are in a quadratic.",
+   "fix": "Say \"one term is the square of the other, like A squared and A\", and write a short note under the lit terms, e.g. (2^x)^2 and 2^x ↔ a^2 and a."
   },
   {
    "beat": 18,
-   "rule": "what, how and why",
+   "rule": "what, how, why",
    "severity": "should",
-   "problem": "'So X equals zero' gives no reason, and the beat must make sense on its own when a student jumps to it.",
-   "fix": "Add 'Same base two, so the powers are equal' before 'X equals zero', with the bases and powers lit as in beat 17."
-  },
-  {
-   "beat": 16,
-   "rule": "said = shown",
-   "severity": "should",
-   "problem": "The voice opens with 'A equals two' (and beat 18 with 'A equals one'), but the new lines do not show which value of A they come from.",
-   "fix": "Start line 9 with 'a = 2: ' and line 10 with 'a = 1: ', written on those words."
+   "problem": "This beat must make sense on its own, but it gives no reason why 1 is 2^0 or why x = 0 follows. Beat 17 gave the \"powers are equal\" reason only for the first value.",
+   "fix": "Add \"any number to the power zero is one\" and \"both sides have base two, so the powers are equal\", lighting line 10 as it is said."
   }
  ]
 }

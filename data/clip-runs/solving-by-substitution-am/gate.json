@@ -1,0 +1,31 @@
+{
+ "slug": "solving-by-substitution-am",
+ "at": "2026-10-18T15:34:39.269Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "17/17 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "12 lines = the checked plan"
+  },
+  "read": {
+   "ok": true,
+   "detail": "one draft — the stand-in reviewer judges it (see review)"
+  },
+  "look": {
+   "ok": true,
+   "detail": "35/35 actions on the voice · cues worst 0.20 s (gate 0.3 s) · look problems 0"
+  },
+  "review": {
+   "ok": false,
+   "detail": "1 must, 4 should · 24 frames · b7 This is the key step of the whole method, but the board jumps from 2^{2x} to (2^x)^2. The only reason given is \"two X is double X\" and a note \"Times power, used backwards\", so a student cannot see which number plays m and which plays n."
+  }
+ },
+ "pass": false
+}

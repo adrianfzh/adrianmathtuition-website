@@ -36,7 +36,7 @@
         },
         {
           "tokens": [
-            { "id": "k1", "tex": "2^{2x}=(2^x)^2" },
+            { "id": "k1", "tex": "2^{2x}=2^{x\\times 2}=(2^x)^2" },
             { "id": "k2", "tex": "=a^2" }
           ]
         },
@@ -133,12 +133,18 @@
           ]
         },
         {
-          "say": "Look at the powers: two X is double X. So two to the power two X equals two to the power X, all squared.",
+          "say": "Look at the powers: two X is the same as X times two.",
+          "asks": ["Why is 2x the same as x times 2?"],
+          "do": [
+            { "do": "highlight", "token": "r1", "on": "Look at the powers" }
+          ]
+        },
+        {
+          "say": "So by times power, two to the power two X is two to the power X, all squared.",
           "asks": ["Why is 2 to the 2x the same as (2 to the x) squared?"],
           "do": [
-            { "do": "highlight", "token": "r1", "on": "Look at the powers" },
-            { "do": "write", "step": 3, "on": "So two to" },
-            { "do": "note", "text": "Times power, used backwards", "near": "k1", "on": "all squared" }
+            { "do": "write", "step": 3, "on": "So by times" },
+            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$, here $m=x$, $n=2$", "near": "k1", "on": "all squared" }
           ]
         },
         {
