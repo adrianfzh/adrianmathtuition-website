@@ -1,18 +1,23 @@
-Verifying 11 clip(s) of sketching-log-graphs-am by transcription (gemini-2.5-flash)…
+Verifying 16 clip(s) of sketching-log-graphs-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 87% of narration words heard
-  scene-01-b2: 100% of narration words heard
-  scene-01-b3: 100% of narration words heard
-  scene-01-b4: 100% of narration words heard
-  scene-01-b5: 83% of narration words heard  ⚠ LOW
-      heard: So the curve has the shape of LN of minus X.
-  scene-01-b6: 100% of narration words heard
-  scene-01-b7: 79% of narration words heard  ⚠ LOW
-      heard: Step four, the intercepts. When x is zero, y is ln2, about 0.693.
+  scene-01-b1: 100% of narration words heard
+  scene-01-b2: 94% of narration words heard
+  scene-01-b3: 88% of narration words heard
+  scene-01-b4: 88% of narration words heard
+  scene-01-b5: 76% of narration words heard  ⚠ LOW
+      heard: y = - ln of - x, both minuses, so it is flipped in both axis.The audio transcription is complete. I have provided only the spoken words as requested.
+  scene-01-b6: 87% of narration words heard
+  scene-01-b7: 100% of narration words heard
   scene-01-b8: 100% of narration words heard
-  scene-01-b9: 83% of narration words heard  ⚠ LOW
-      heard: The asymptote use is inside equals zero. The intercept use is inside equals one.
-  scene-01-b10: 100% of narration words heard
-  scene-01-b11: 91% of narration words heard
+  scene-01-b9: 100% of narration words heard
+  scene-01-b10: 83% of narration words heard  ⚠ LOW
+      heard: So the curve has the shape of ln of minus X
+  scene-01-b11: 100% of narration words heard
+  scene-01-b12: 79% of narration words heard  ⚠ LOW
+      heard: Step four, the intercepts. When x is 0, y is ln2, about 0.693.
+  scene-01-b13: 100% of narration words heard
+  scene-01-b14: 100% of narration words heard
+  scene-01-b15: 100% of narration words heard
+  scene-01-b16: 91% of narration words heard
 
 3 clip(s) below 85% — listen to those.

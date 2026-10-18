@@ -550,8 +550,8 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
   const W = 300, H = 165, P = 14;
   const sx = (x: number) => P + ((x - g.xMin) / (g.xMax - g.xMin)) * (W - 2 * P);
   const sy = (y: number) => H - P - ((y - g.yMin) / (g.yMax - g.yMin)) * (H - 2 * P);
-  const d = useMemo(() => {
-    const f = graphFn(g.fn);
+  const pathOf = (fn: string) => {
+    const f = graphFn(fn);
     if (!f) return '';
     let path = '', pen = false;
     const N = 240;
@@ -563,8 +563,16 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
       pen = true;
     }
     return path;
+  };
+  // The main curve first, then any more on the same axes (the four basic shapes, 18 Oct 2026).
+  const all = useMemo(() => [{ fn: g.fn, id: g.id, label: g.label, labelAt: g.labelAt, dash: false }, ...(g.curves ?? [])]
+    .map(c => {
+      const f = graphFn(c.fn);
+      const ly = c.labelAt !== undefined && f ? f(c.labelAt) : NaN;
+      return { ...c, d: pathOf(c.fn), lab: c.label && Number.isFinite(ly) ? { x: sx(c.labelAt!), y: sy(Math.max(g.yMin + 0.3, Math.min(g.yMax - 0.3, ly))) } : null };
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [g.fn, g.xMin, g.xMax, g.yMin, g.yMax]);
+    [JSON.stringify(g)]);
   const x0 = g.xMin <= 0 && g.xMax >= 0 ? sx(0) : null;
   const y0 = g.yMin <= 0 && g.yMax >= 0 ? sy(0) : null;
   return (
@@ -585,7 +593,12 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
           {g.asymptote.label && <text x={P + 2} y={sy(g.asymptote.y) - 5} className="lsn-graph-lab">{g.asymptote.label}</text>}
         </g>
       )}
-      <path d={d} pathLength={1} className="lsn-graph-curve" />
+      {all.map((c, i) => (
+        <g key={i} data-token-id={c.id} data-ci={i} className="lsn-graph-c">
+          <path d={c.d} pathLength={1} className="lsn-graph-curve" />
+          {c.lab && <text x={c.lab.x} y={c.lab.y - 7} textAnchor={c.lab.x > W / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab">{c.label}</text>}
+        </g>
+      ))}
       {(g.points ?? []).map((pt, i) => (
         <g key={i} className="lsn-graph-pt">
           <circle cx={sx(pt.x)} cy={sy(pt.y)} r={3.6} />
@@ -2736,6 +2749,23 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           style={sheet && sheetFit.scale < 1 ? { scale: String(sheetFit.scale), transformOrigin: 'top center', marginBottom: `${-((1 - sheetFit.scale) * sheetFit.height)}px` } : undefined}
           data-step={step} data-leaving={leaving || undefined}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
+          {/* The method's steps, pinned above the board for the whole clip; the step being done is lit
+              (Adrian, 18 Oct 2026: "list it out on screen … keeping those steps in view … highlight
+              the steps when it comes to their turn"). Outside the board, so it never scrolls away. */}
+          {scene.type === 'equation-steps' && scene.pinned?.length && hasBeats(scene) && (() => {
+            const pins = scene.beats.slice(0, step + 1).map(b => b.pin).filter((p): p is number => p !== undefined);
+            if (!pins.length) return null;
+            const lit = pins[pins.length - 1];
+            return (
+              <ol className="lsn-pinned" data-lsn-pinned>
+                {scene.pinned.map((t, i) => (
+                  <li key={i} data-on={lit === i + 1 || undefined} data-done={lit > i + 1 || undefined}>
+                    <span className="lsn-pinned-n">{i + 1}</span><MathText text={t} />
+                  </li>
+                ))}
+              </ol>
+            );
+          })()}
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
             character={characterOn ? (board?.pose ?? 'idle') : null} look={look}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
@@ -3150,6 +3180,24 @@ const PLAYER_CSS = `
 .lsn-graph-lab { fill: rgba(248,250,252,0.85); font: italic 12px Georgia, 'Times New Roman', serif; }
 .lsn-graph-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .lsn-graph.on .lsn-graph-curve { stroke-dashoffset: 0; transition: stroke-dashoffset 1.8s ease-in-out 0.3s; }
+.lsn-pinned { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 0 0 8px; padding: 0; list-style: none; animation: lsnFade 300ms ease both; position: relative; z-index: 5; }
+.lsn-pinned li { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 4px; border-radius: 999px; font: 600 12.5px ui-sans-serif, system-ui, sans-serif; color: rgba(248,250,252,0.7); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); transition: background 300ms ease, color 300ms ease, border-color 300ms ease; }
+.lsn-pinned-n { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 11px; }
+.lsn-pinned li[data-done] { color: rgba(248,250,252,0.5); }
+.lsn-pinned li[data-on] { color: #1e293b; background: #fcd34d; border-color: #fcd34d; box-shadow: 0 0 10px rgba(252,211,77,0.55); }
+.lsn-pinned li[data-on] .lsn-pinned-n { background: rgba(30,41,59,0.18); }
+@media (min-width: 520px) { .lsn-pinned li { font-size: 14px; } }
+.lsn-graph-clab { opacity: 0; transition: opacity 400ms ease 1.6s; font-size: 11px; }
+.lsn-graph.on .lsn-graph-clab { opacity: 1; }
+/* More curves on one sketch: each its own colour, its label in that colour (the four basic shapes). */
+.lsn-graph-c[data-ci="1"] .lsn-graph-curve { stroke: #a8ecfb; } .lsn-graph-c[data-ci="1"] .lsn-graph-clab { fill: #a8ecfb; }
+.lsn-graph-c[data-ci="2"] .lsn-graph-curve { stroke: #fda4af; } .lsn-graph-c[data-ci="2"] .lsn-graph-clab { fill: #fda4af; }
+.lsn-graph-c[data-ci="3"] .lsn-graph-curve { stroke: #c4b5fd; } .lsn-graph-c[data-ci="3"] .lsn-graph-clab { fill: #c4b5fd; }
+.lsn-graph-c[data-ci="0"] .lsn-graph-clab { fill: #ffe89a; }
+/* One curve lit as the voice names it; the others step back. */
+.lsn-graph:has(.lsn-graph-c.lsn-lit) .lsn-graph-c:not(.lsn-lit) { opacity: 0.3; transition: opacity 300ms ease; }
+.lsn-graph-c.lsn-lit .lsn-graph-curve { stroke-width: 3.6; filter: drop-shadow(0 0 4px currentColor); }
+.lsn-graph-c.lsn-lit .lsn-graph-clab { font-weight: bold; }
 .lsn-graph-asy line { stroke: #a8ecfb; stroke-width: 1.4; stroke-dasharray: 5 4; }
 .lsn-graph-asy, .lsn-graph-pt { opacity: 0; }
 .lsn-graph.on .lsn-graph-asy { opacity: 1; transition: opacity 0.5s ease 0s; }

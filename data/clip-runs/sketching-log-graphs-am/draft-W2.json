@@ -4,16 +4,82 @@
  "by": "session, Adrian 18 Oct 2026 ('how do you teach sketching a graph without drawing the graph?'): the approved cut + real sketches",
  "beats": [
   {
+   "say": "First, the four basic shapes of log graphs. Learn each shape, and which axis it is flipped in.",
+   "asks": [
+    "Why learn the four shapes?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0,
+     "on": "four basic shapes"
+    }
+   ]
+  },
+  {
+   "say": "Y equals L N X: the basic shape. It rises slowly, to the right of the Y axis.",
+   "asks": [
+    "Why is ln x only to the right?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c1",
+     "on": "Y equals L N X"
+    }
+   ]
+  },
+  {
+   "say": "Y equals L N of minus X: a minus inside flips it in the Y axis.",
+   "asks": [
+    "Why does a minus inside flip it left?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c2",
+     "on": "Y equals L N"
+    }
+   ]
+  },
+  {
+   "say": "Y equals minus L N X: a minus in front flips it in the X axis.",
+   "asks": [
+    "Why does a minus in front flip it down?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c3",
+     "on": "Y equals minus"
+    }
+   ]
+  },
+  {
+   "say": "Y equals minus L N of minus X: both minuses, so it is flipped in both axes.",
+   "asks": [
+    "How do I know which shape to use?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c4",
+     "on": "Y equals minus"
+    }
+   ]
+  },
+  {
    "say": "Sketch Y equals L N of two minus X. Four steps: asymptote, shape, draw, intercepts.",
    "do": [
     {
      "do": "write",
-     "step": 0
+     "step": 1
     }
    ],
    "asks": [
     "What is an asymptote?"
-   ]
+   ],
+   "pin": 0
   },
   {
    "say": "Step one, the asymptote. Let the inside of the log equal zero.",
@@ -26,7 +92,8 @@
    ],
    "asks": [
     "Why let the inside equal zero?"
-   ]
+   ],
+   "pin": 1
   },
   {
    "say": "Two minus X equals zero, so the asymptote is X equals two.",
@@ -57,14 +124,15 @@
    ],
    "asks": [
     "Why does −x flip the graph?"
-   ]
+   ],
+   "pin": 2
   },
   {
    "say": "So the curve has the shape of L N of minus X.",
    "do": [
     {
      "do": "write",
-     "step": 2,
+     "step": 3,
      "on": "shape of L N"
     }
    ],
@@ -81,10 +149,11 @@
    "do": [
     {
      "do": "write",
-     "step": 3,
+     "step": 4,
      "on": "Move that shape"
     }
-   ]
+   ],
+   "pin": 3
   },
   {
    "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
@@ -102,7 +171,8 @@
    ],
    "asks": [
     "Why is y = ln 2 when x = 0?"
-   ]
+   ],
+   "pin": 4
   },
   {
    "say": "When Y is zero, the inside equals E to the power zero, which is one.",
@@ -164,7 +234,7 @@
    "do": [
     {
      "do": "write",
-     "step": 7,
+     "step": 8,
      "on": "label the sketch"
     }
    ]

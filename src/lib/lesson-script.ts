@@ -92,6 +92,11 @@ export interface StepGraph {
   asymptote?: { x?: number; y?: number; label?: string };
   /** Points to mark and label ("(1, 0)"). */
   points?: { x: number; y: number; label: string }[];
+  /** The main curve's id (a `highlight` lights it) and its label, written beside the curve at x = labelAt. */
+  id?: string; label?: string; labelAt?: number;
+  /** More curves on the same axes (Adrian, 18 Oct 2026: "introduce the four basic shapes of
+   *  logarithmic graphs first"): each may be dashed, labelled and lit by its id. */
+  curves?: { fn: string; id?: string; label?: string; labelAt?: number; dash?: boolean }[];
 }
 
 const GRAPH_FN = /^(?:[0-9x+\-*/().^ ,]|ln|log|exp|sqrt|abs|e)*$/;
@@ -313,6 +318,8 @@ export interface Beat {
      *  under the board beside the clip link, so Adrian can compare the two (18 Oct 2026: "instead
      *  of a popup clip, we have a written explanation (drop down)? put that in too"). */
     read?: string[] };
+  /** The scene's `pinned` steps: 0 shows them (none lit), n lights step n, from this beat on. */
+  pin?: number;
 }
 
 /** Every scene may carry beats instead of narration. */
@@ -326,6 +333,10 @@ export type EquationStepsScene = NarrationFields & BeatFields & {
    *  as new lines are written (Adrian, 16 Oct 2026: "make the lines move up, like scrolling up, then
    *  we don't have to change screen"). */
   scroll?: boolean;
+  /** A method's steps, pinned above the board and kept in view the whole clip (Adrian, 18 Oct 2026:
+   *  "when narrator says four steps: should list it out on screen … keeping those steps in view …
+   *  highlight the steps when it comes to their turn"). Shown from the first beat with `pin`. */
+  pinned?: string[];
 };
 export type GraphMorphScene = NarrationFields & BeatFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
@@ -848,6 +859,11 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           const nums = ['xMin', 'xMax', 'yMin', 'yMax'].every(k => typeof g?.[k] === 'number' && Number.isFinite(g[k] as number));
           if (!isRecord(g) || !nonEmptyString(g.fn) || !graphFn(g.fn as string)) errors.push(`${sAt}: graph.fn must be plain maths in x (ln, log, exp, sqrt, abs, e, + - * / ^)`);
           else if (!nums || (g.xMin as number) >= (g.xMax as number) || (g.yMin as number) >= (g.yMax as number)) errors.push(`${sAt}: graph needs xMin < xMax and yMin < yMax`);
+          if (isRecord(g) && nonEmptyString(g.id)) sceneIds.add(g.id as string);
+          if (isRecord(g) && g.curves !== undefined) {
+            if (!Array.isArray(g.curves) || g.curves.some((c: unknown) => !isRecord(c) || !nonEmptyString(c.fn) || !graphFn(c.fn as string))) errors.push(`${sAt}: graph.curves are { fn (plain maths in x), id?, label?, labelAt?, dash? }`);
+            else for (const c of g.curves as Record<string, unknown>[]) if (nonEmptyString(c.id)) sceneIds.add(c.id as string);
+          }
         }
       });
       scope.tokenIds = sceneIds;
