@@ -44,7 +44,10 @@
       "steps": [
         {
           "tokens": [
-            { "tex": "y=\\ln(2-x)", "id": "eqn" }
+            { "id": "eqn", "tex": "y=\\ln(" },
+            { "id": "e2", "tex": "2", "tight": true },
+            { "id": "emx", "tex": "-x", "tight": true },
+            { "id": "erp", "tex": ")", "tight": true }
           ]
         },
         {
@@ -175,7 +178,7 @@
           "asks": ["Which of the four shapes is it?"],
           "do": [
             { "do": "pin", "lit": 2, "on": "Step two" },
-            { "do": "highlight", "token": "eqn", "on": "Minus in front" }
+            { "do": "highlight", "token": "emx", "on": "Minus in front" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b10.mp3",
           "timing": "/lessons/sketching-log-graphs-am/scene-01-b10.timing.json"
@@ -185,6 +188,7 @@
           "asks": ["Why ln(−x)?"],
           "do": [
             { "do": "write", "step": 2, "on": "the shape of" },
+            { "do": "highlight", "token": ["eqn", "emx", "erp"], "tone": "sky", "on": "L N of minus" },
             { "do": "highlight", "token": "c2", "on": "from the corner" },
             { "do": "sketch", "show": "shape", "on": "Lift it onto" }
           ],

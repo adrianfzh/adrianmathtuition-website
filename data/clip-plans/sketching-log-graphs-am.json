@@ -29,8 +29,23 @@
     {
       "tokens": [
         {
-          "tex": "y=\\ln(2-x)",
-          "id": "eqn"
+          "id": "eqn",
+          "tex": "y=\\ln("
+        },
+        {
+          "id": "e2",
+          "tex": "2",
+          "tight": true
+        },
+        {
+          "id": "emx",
+          "tex": "-x",
+          "tight": true
+        },
+        {
+          "id": "erp",
+          "tex": ")",
+          "tight": true
         }
       ],
       "checks": [

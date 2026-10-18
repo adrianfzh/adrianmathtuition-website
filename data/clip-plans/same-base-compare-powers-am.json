@@ -1,0 +1,190 @@
+{
+  "slug": "same-base-compare-powers-am",
+  "title": "Same base, compare powers",
+  "heading": "Same base, compare powers",
+  "intro": null,
+  "level": "AM",
+  "topic": "Indices",
+  "subgroup": null,
+  "source": {
+    "unit": "108.27",
+    "also": [
+      "108.26"
+    ]
+  },
+  "bible": "data/clip-bibles/indices-am.md",
+  "answer": {
+    "facts": [
+      "x = 4"
+    ],
+    "display": "x = 4"
+  },
+  "outline": [
+    "Built 18 Oct 2026 in one go to the house rules (first Indices clip, the one-shot test): the two steps pinned and lit, the plan as maths, 25 = 5² lit and written, Times power named and the 2 moved into the power, why equal bases mean equal powers, the powers moved down and compared, the answer boxed, no Watch out."
+  ],
+  "question": "Solve $5^{x+2} = 25^{x-1}$.",
+  "pinned": [
+    "same base",
+    "compare powers"
+  ],
+  "minutes": 1,
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "q5",
+          "tex": "5^{x+2}"
+        },
+        {
+          "id": "qe",
+          "tex": "="
+        },
+        {
+          "id": "q25",
+          "tex": "25^{x-1}"
+        }
+      ],
+      "checks": [
+        {
+          "start": "5**(x+2) = 25**(x-1)",
+          "var": "x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "p1",
+          "tex": "a^{\\square}=a^{\\triangle}\\;\\Rightarrow\\;\\square=\\triangle",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: same base on both sides, so the powers are equal"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "a2",
+          "tex": "5^{x+2}"
+        },
+        {
+          "id": "e2",
+          "tex": "="
+        },
+        {
+          "id": "b5",
+          "tex": "(5"
+        },
+        {
+          "id": "sq",
+          "tex": "{}^{2}",
+          "tight": true
+        },
+        {
+          "id": "rb",
+          "tex": ")"
+        },
+        {
+          "id": "pw",
+          "tex": "{}^{x-1}",
+          "tight": true
+        }
+      ],
+      "checks": [
+        {
+          "step": "5**(x+2) = (5**2)**(x-1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "l3",
+          "tex": "5^{x+2}=5"
+        },
+        {
+          "id": "m2",
+          "tex": "{}^{2}",
+          "tight": true,
+          "from": "sq"
+        },
+        {
+          "id": "pw3",
+          "tex": "{}^{(x-1)}",
+          "tight": true
+        }
+      ],
+      "checks": [
+        {
+          "step": "5**(x+2) = 5**(2*(x-1))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "b1",
+          "tex": "5"
+        },
+        {
+          "id": "e1",
+          "tex": "{}^{x+2}",
+          "tight": true
+        },
+        {
+          "id": "b2",
+          "tex": "=5"
+        },
+        {
+          "id": "e4",
+          "tex": "{}^{2x-2}",
+          "tight": true
+        }
+      ],
+      "checks": [
+        {
+          "step": "5**(x+2) = 5**(2*x-2)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "c1",
+          "tex": "x+2",
+          "from": "e1"
+        },
+        {
+          "id": "c2",
+          "tex": "=2x-2",
+          "from": "e4"
+        }
+      ],
+      "checks": [
+        {
+          "step": "x + 2 = 2*x - 2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ans",
+          "tex": "x=4",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "solves": "x + 2 = 2*x - 2",
+          "var": "x",
+          "gives": 4
+        }
+      ]
+    }
+  ]
+}

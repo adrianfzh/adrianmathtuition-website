@@ -151,6 +151,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 2,
   },
   {
+    slug: 'same-base-compare-powers-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Same base, compare powers',
+    minutes: 1,
+  },
+  {
     slug: 'growth-and-decay-am',
     level: 'AM',
     topic: 'Logarithms',

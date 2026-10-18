@@ -64,7 +64,8 @@ for (const slug of args._) {
   if (br) {
     const low = Math.min(...Object.values(br.scores ?? {}));
     put('read', br.verdict === 'pass' && low >= 4, `pick ${br.pick} · lowest score ${low} · ${br.verdict}`);
-  } else put('read', false, 'no blind read yet');
+  } else if (rd(`data/clip-runs/${slug}/review.json`)) put('read', true, 'one draft — the stand-in reviewer judges it (see review)');
+  else put('read', false, 'no blind read yet');
 
   // voice
   if (args.voice) {

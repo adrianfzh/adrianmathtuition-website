@@ -168,7 +168,7 @@
     },
     {
      "do": "highlight",
-     "token": "eqn",
+     "token": "emx",
      "on": "Minus in front"
     }
    ]
@@ -183,6 +183,16 @@
      "do": "write",
      "step": 2,
      "on": "the shape of"
+    },
+    {
+     "do": "highlight",
+     "token": [
+      "eqn",
+      "emx",
+      "erp"
+     ],
+     "tone": "sky",
+     "on": "L N of minus"
     },
     {
      "do": "highlight",

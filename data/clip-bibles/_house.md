@@ -171,6 +171,10 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **Show which parts make the shape** (18 Oct 2026, Sketching: "highlight ln(-x) in ln (2-x) when
+  saying that is the shape"): when the voice says the question's curve "has the shape of" a basic one,
+  light those parts in the question's equation (`ln(` `−x` `)`, not the 2), in the colour of that
+  shape's curve in the corner (`"tone": "sky"`). Split the equation into tokens so the parts can light.
 - **Teach the family before the case** (18 Oct 2026, Sketching: "perhaps can introduce the four basic
   shapes of logarithmic graphs first"): a clip that uses a set of basic shapes or standard forms
   first SHOWS the set — one sketch with every curve labelled (`graph.curves`), each lit as the voice
