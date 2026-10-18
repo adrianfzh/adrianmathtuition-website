@@ -35,6 +35,9 @@ reads — on every Claude account, because it lives in the repo.
   simplification (k(0) = 0, e⁰ = 1), then the result — never jump from the given values to the answer.
   What the voice works out is WRITTEN as it is said ("when t = 7.5, P = 2 x 100 < write that on screen
   when narrating"): `t = 7.5, P = 2 × 100 = 200`.
+- **A side clip opens in a SHEET over the clip, never a new page** (18 Oct 2026: "clicking it brings me
+  to another page, which interrupts the clip experience"): the board stays in view above, paused; ✕,
+  Esc, a tap above or a swipe down closes it and the clip carries on.
 - **No Watch out by default** (18 Oct 2026, of "P is 200, not 2": "there is no need for the watch out at
   the end that watchout is NOT helpful"). Add one only when Adrian asks for it, or the mistake is one
   his students really make on this exact step.

@@ -1966,19 +1966,35 @@ type Pacing = 'manual' | 'auto' | 'narrated';
 /** The side clip's popup: over the main clip (which waits, paused), its own player; ✕, Esc or the
  *  end card's button closes it and the main clip carries on from the same spot. */
 function SidePopup({ clip: c, onClose }: { clip: SideClip; onClose: () => void }) {
+  // A SHEET from the bottom, not a new page (Adrian, 18 Oct 2026: "clicking it brings me to another
+  // page, which interrupts the clip experience"): the clip's board stays in view above it, paused at
+  // the same spot; ✕, Esc, a tap above the sheet or a swipe down closes it and the clip carries on.
+  const [dragY, setDragY] = useState(0);
+  const start = useRef<number | null>(null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+    return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-[70] overflow-y-auto bg-[hsl(45,40%,97%)]" role="dialog" aria-modal="true" aria-label={c.title} data-side-popup>
-      <div className="mx-auto max-w-lg px-4 pt-[max(12px,env(safe-area-inset-top))] pb-10">
-        <LessonPlayer slug={c.slug} title={c.title} topic={c.topic} minutes={c.minutes} theme={c.theme} scenes={c.scenes}
-          question={c.question} clip startAuto startVoice kicker="Why?" doneTitle="That's why"
-          doneText="Back to the clip to carry on." practiceLabel="‹ Back to the clip" onClose={onClose} />
+    <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={c.title} data-side-popup>
+      <button type="button" aria-label="Back to the clip" onClick={onClose} className="absolute inset-0 w-full h-full bg-slate-900/25 cursor-default" />
+      <div className="lsn-side-sheet absolute inset-x-0 bottom-0 mx-auto max-w-lg h-[68dvh] rounded-t-3xl bg-[hsl(45,40%,97%)] shadow-[0_-12px_32px_-12px_rgba(15,23,42,0.45)] flex flex-col"
+        style={{ transform: `translateY(${dragY}px)`, transition: start.current === null ? 'transform 220ms ease-out' : 'none' }}>
+        <div className="shrink-0 flex items-center gap-2 px-4 pt-2 pb-1 touch-none select-none"
+          onPointerDown={e => { start.current = e.clientY; e.currentTarget.setPointerCapture(e.pointerId); }}
+          onPointerMove={e => { if (start.current !== null) setDragY(Math.max(0, e.clientY - start.current)); }}
+          onPointerUp={() => { const y = dragY; start.current = null; setDragY(0); if (y > 90) onClose(); }}
+          onPointerCancel={() => { start.current = null; setDragY(0); }}>
+          <span aria-hidden className="absolute left-1/2 top-2 -translate-x-1/2 h-1.5 w-10 rounded-full bg-slate-300" />
+          <span className="mt-3 text-[13px] font-semibold text-navy">💡 {c.title}</span>
+          <button type="button" onClick={onClose} aria-label="Close" className="ml-auto mt-2 w-8 h-8 rounded-full bg-white text-navy shadow-[0_1px_2px_rgba(15,23,42,0.1)]">✕</button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-3 pb-4" data-side-sheet-body>
+          <LessonPlayer slug={c.slug} title={c.title} topic={c.topic} minutes={c.minutes} theme={c.theme} scenes={c.scenes}
+            clip embedded startAuto startVoice kicker="Why?" doneTitle="That's why"
+            doneText="Back to the clip to carry on." practiceLabel="‹ Back to the clip" onClose={onClose} />
+        </div>
       </div>
     </div>
   );
@@ -1987,7 +2003,7 @@ function SidePopup({ clip: c, onClose }: { clip: SideClip; onClose: () => void }
 /** A side clip a beat links to, ready to play in a popup (page.tsx loads it). */
 export interface SideClip { slug: string; title: string; topic: string; minutes: number; theme: LessonTheme; scenes: PlayScene[]; question: string | null }
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null, question = null, asides = {} }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null, question = null, asides = {}, embedded = false }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -2033,6 +2049,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   askLevel?: string | null;
   /** Side clips the beats link to (Beat.aside), by slug: a link opens its clip in a popup over this one. */
   asides?: Record<string, SideClip>;
+  /** Played inside the side-clip sheet: no header, no step controls — the sheet has its own ✕. */
+  embedded?: boolean;
 }) {
   const theme = normalizeTheme(themeProp);
   // ?at= (back from Ask) opens the clip at that stop; out of range = the start.
@@ -2580,8 +2598,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           with the timed pacings they control; Auto ⇄ Mute swap places so the
           row keeps its shape whichever mode is on. Long labels are for ≥ sm;
           a phone gets icons + the fill colour (measured: one row at 390 px). */}
-      <div className="flex items-center gap-2.5 pt-1 mb-3">
-        {onClose ? (
+      <div className={`flex items-center gap-2.5 ${embedded ? 'mb-2' : 'pt-1 mb-3'}`}>
+        {embedded ? null : onClose ? (
           <button type="button" onClick={onClose} aria-label="Back"
             className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
             <span className="text-lg leading-none" aria-hidden>‹</span>
@@ -2592,7 +2610,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             <span className="text-lg leading-none" aria-hidden>‹</span>
           </Link>
         )}
-        <div className="min-w-0 flex-1">
+        <div className={`min-w-0 flex-1 ${embedded ? 'invisible h-0' : ''}`}>
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">▶ {kicker} · {minutes} min</p>
           <h1 className="font-bold text-navy text-sm truncate">{title}</h1>
         </div>
@@ -2877,7 +2895,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       {!clip && subtitles}
 
       {/* Bottom controls — fixed shape, never jumps between scenes. */}
-      {!done && (
+      {!done && !embedded && (
         <div className={`lsn-controls flex items-center gap-2 ${pacing === 'narrated' ? 'mt-3' : 'mt-4'}`}>
           <button type="button" onClick={onBack} disabled={sceneIdx === 0 && step === 0}
             aria-label={pacing === 'narrated' ? 'Replay this scene' : 'Back one step'}
