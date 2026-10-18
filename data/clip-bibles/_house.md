@@ -167,6 +167,10 @@ the history.
   that LOOKS BACK at it first ("Look back at the question…", highlight it) — the board scrolls up to
   it, then glides back down as the piece comes down. The look check fails a talked-about piece under
   the fade.
+- **A graph clip ALWAYS draws the graph** (18 Oct 2026: "how do you teach sketching a graph without
+  drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
+  on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
+  against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
 - **Draw it when a picture teaches it** (17 Oct 2026: "if you need to include diagrams in the clips,
   please do so"): a graph question gets real sketches on the board — give the line a `graph`
   (curve, dashed asymptote, labelled points); show the shape, then the curve against its asymptote,
@@ -213,6 +217,9 @@ Adrian, 18 Oct 2026: "great, remember all we have learnt from redoing the clips 
 clip must follow are §1–§2; this is HOW to change one without making it worse.
 
 ### What went wrong, and the rule it gave
+- **Putting a clip back can lose what it needs.** The Sketching cut we went back to never drew the
+  graph. → after a revert, check the clip against §1–§2 again (a graph clip draws, a word problem is
+  explained first).
 - **A full rebuild of an approved clip made it worse.** Laws of logarithms, Log scales and Sketching
   were rebuilt in the scrolling style; Adrian: "badly redone. Before redo is better … screen keep
   shifting up and down". They were put back. → Change an approved clip ONLY where he asks; a short
@@ -269,7 +276,7 @@ The test for every beat: if the voice says it and it helps, it is on the board a
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
 | Log scales | **The word-problem reference (approved 18 Oct: "way better").** The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
-| Sketching log graphs | Put back to the version before the rebuild |
+| Sketching log graphs | The version before the rebuild + (18 Oct) real sketches: the shape of ln(−x), the curve against x = 2, the labelled sketch (draft W2; it scrolls) |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so
 no step is a shortcut (the 18 Oct rule). Update this table whenever a clip changes.
