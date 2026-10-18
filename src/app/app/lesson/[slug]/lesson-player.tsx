@@ -701,7 +701,7 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
           {shapeOn && (
             <g style={{ transform: has('shift') ? `translate(${dx}px, ${dy}px)` : 'none', transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
               <g ref={flyRef} className="lsn-sketch-shape" style={{ transformBox: 'fill-box', transformOrigin: '0 0' }}>
-                <path d={shapeD} className="lsn-sketch-curve" />
+                <path d={shapeD} className="lsn-sketch-curve" data-ci={Math.max(0, insetCurves.findIndex(c => c.id === sk.from))} />
               </g>
             </g>
           )}
@@ -3297,6 +3297,8 @@ const PLAYER_CSS = `
 .lsn-sketch-inset .lsn-graph-curve { stroke-width: 2; }
 .lsn-sketch-main { margin-top: 8px; animation: lsnFade 400ms ease both; }
 .lsn-sketch-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; }
+/* The lifted shape keeps the colour it had in the corner (a moving piece keeps its colour). */
+.lsn-sketch-curve[data-ci="1"] { stroke: #a8ecfb; } .lsn-sketch-curve[data-ci="2"] { stroke: #fda4af; } .lsn-sketch-curve[data-ci="3"] { stroke: #c4b5fd; }
 .lsn-sketch-asy { animation: lsnFade 500ms ease both; }
 .lsn-sketch-asy line { stroke: #a8ecfb; stroke-width: 1.5; stroke-dasharray: 5 4; }
 .lsn-sketch-pt { animation: lsnFade 400ms ease both; }
