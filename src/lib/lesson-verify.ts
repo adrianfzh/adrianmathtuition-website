@@ -22,6 +22,7 @@
 // pi. They go through evalExpr's own parser — nothing is ever eval'd.
 
 import { hasBeats, sceneNarration, type LessonScript, type Scene, type GraphMorphScene, type CheckScene } from './lesson-script';
+import { saidNotShown } from './clip-said-shown';
 import { estimateSayS, lineKey, paragraphCount, resolveActionTimes, sceneTargets, sceneTokens, targetKeys, tokKey } from './lesson-beats';
 import { getTopicsForPaperLevel } from './canonical-topics';
 import { usableCheckAnswer, type CheckQuestionRow } from './lesson-load';
@@ -775,6 +776,11 @@ export function clipIssues(script: LessonScript): Issue[] {
     const at = `scenes[${i}]`;
     if (s.type === 'check') out.push(issue('error', at, 'a clip carries no check — it explains one thing and stops'));
     if (!hasBeats(s)) { out.push(issue('error', at, 'every scene of a clip is cut into beats')); return; }
+    // Said but not shown (Adrian, 18 Oct 2026, build #1): every number and named letter the voice
+    // says is on the board by the end of that beat.
+    for (const m of saidNotShown(s, { firstBeatReadsQuestion: i === 0 })) {
+      out.push(issue('warn', `${at}.beats[${m.beat}]`, `the voice says "${m.said}" but the board does not show ${m.want} by the end of this beat — write it as it is said`));
+    }
     s.beats.forEach((b, k) => {
       const w = wordCount(b.say);
       words += w;
