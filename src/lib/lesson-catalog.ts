@@ -158,6 +158,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 1,
   },
   {
+    slug: 'solving-by-substitution-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Solving by substitution',
+    minutes: 2,
+  },
+  {
     slug: 'growth-and-decay-am',
     level: 'AM',
     topic: 'Logarithms',

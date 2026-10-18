@@ -1,0 +1,103 @@
+{
+ "slug": "solving-by-substitution-am",
+ "worst": 0.93,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 8,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 9,
+   "bag": 0.83,
+   "score": 1,
+   "heard": "and 3 x 2 to the power X is 3 x A.",
+   "said": "And three times two to the power X is three times A."
+  },
+  {
+   "beat": 10,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 11,
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 13,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 14,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 15,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 16,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  }
+ ]
+}

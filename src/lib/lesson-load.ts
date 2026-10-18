@@ -27,6 +27,7 @@ import lawsOfLogarithmsAm from '../../data/lessons/laws-of-logarithms-am.json';
 import solvingLogEquationsAm from '../../data/lessons/solving-log-equations-am.json';
 import solvingExponentialEquationsAm from '../../data/lessons/solving-exponential-equations-am.json';
 import sameBaseComparePowersAm from '../../data/lessons/same-base-compare-powers-am.json';
+import solvingBySubstitutionAm from '../../data/lessons/solving-by-substitution-am.json';
 import linearFormWithLogsAm from '../../data/lessons/linear-form-with-logs-am.json';
 import growthAndDecayAm from '../../data/lessons/growth-and-decay-am.json';
 import sketchingLogGraphsAm from '../../data/lessons/sketching-log-graphs-am.json';
@@ -60,6 +61,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'solving-log-equations-am': solvingLogEquationsAm,
   'solving-exponential-equations-am': solvingExponentialEquationsAm,
   'same-base-compare-powers-am': sameBaseComparePowersAm,
+  'solving-by-substitution-am': solvingBySubstitutionAm,
   'linear-form-with-logs-am': linearFormWithLogsAm,
   'growth-and-decay-am': growthAndDecayAm,
   'sketching-log-graphs-am': sketchingLogGraphsAm,

@@ -1,0 +1,294 @@
+{
+ "slug": "solving-by-substitution-am",
+ "draft": "W1",
+ "by": "session, 18 Oct 2026, one shot to the house rules",
+ "beats": [
+  {
+   "say": "Solve four to the power X, minus three times two to the power X, plus two, equals zero.",
+   "asks": [
+    "What makes this hard?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "Four steps: first the same base, then substitute, then solve the quadratic, and last bring back X.",
+   "asks": [
+    "Why these four steps?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "q4",
+      "qr"
+     ],
+     "on": "Four steps"
+    },
+    {
+     "do": "pin",
+     "show": 1,
+     "on": "the same base"
+    },
+    {
+     "do": "pin",
+     "show": 2,
+     "on": "then substitute"
+    },
+    {
+     "do": "pin",
+     "show": 3,
+     "on": "solve the quadratic"
+    },
+    {
+     "do": "pin",
+     "show": 4,
+     "on": "bring back X"
+    }
+   ]
+  },
+  {
+   "say": "Step one, same base. Four is two squared, so four to the power X is two squared, to the power X.",
+   "asks": [
+    "Why change 4 to 2 squared?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 1
+    },
+    {
+     "do": "highlight",
+     "token": "q4",
+     "on": "Four is two"
+    },
+    {
+     "do": "write",
+     "token": "b1",
+     "on": "so four to"
+    }
+   ]
+  },
+  {
+   "say": "Times power: multiply the powers, two times X. That gives two to the power two X.",
+   "asks": [
+    "Which law is this?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Times power: $(a^m)^n=a^{mn}$",
+     "near": "b1",
+     "on": "Times power"
+    },
+    {
+     "do": "write",
+     "token": "b2",
+     "on": "That gives two"
+    }
+   ]
+  },
+  {
+   "say": "So the equation becomes two to the power two X, minus three times two to the power X, plus two, equals zero.",
+   "asks": [
+    "Why rewrite the whole equation?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "So the equation"
+    }
+   ]
+  },
+  {
+   "say": "Look at the powers: two X is double X. So two to the power two X equals two to the power X, all squared.",
+   "asks": [
+    "Why is 2 to the 2x the same as (2 to the x) squared?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "r1",
+     "on": "Look at the powers"
+    },
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So two to"
+    },
+    {
+     "do": "note",
+     "text": "Times power, used backwards",
+     "near": "k1",
+     "on": "all squared"
+    }
+   ]
+  },
+  {
+   "say": "A quadratic in disguise. Step two, substitute: let A equal two to the power X.",
+   "asks": [
+    "Why use a letter?",
+    "Can I use u instead of a?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 2,
+     "on": "Step two"
+    },
+    {
+     "do": "write",
+     "step": 4,
+     "on": "let A equal"
+    }
+   ]
+  },
+  {
+   "say": "Then two to the power X, all squared, is A squared.",
+   "asks": [
+    "Where does a squared come from?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "k1",
+     "on": "Then two to"
+    },
+    {
+     "do": "write",
+     "token": "k2",
+     "on": "is A squared"
+    }
+   ]
+  },
+  {
+   "say": "And three times two to the power X is three times A.",
+   "asks": [
+    "Why is 3 times 2 to the x equal to 3a?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "r2x",
+     "on": "two to the power"
+    },
+    {
+     "do": "write",
+     "step": 5,
+     "on": "is three times A"
+    }
+   ]
+  },
+  {
+   "say": "So the equation becomes A squared minus three A plus two equals zero.",
+   "asks": [
+    "Is this a normal quadratic now?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 6,
+     "on": "the equation becomes"
+    }
+   ]
+  },
+  {
+   "say": "Step three, solve the quadratic. It factorises into A minus two, times A minus one.",
+   "asks": [
+    "How do I factorise it?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 3
+    },
+    {
+     "do": "write",
+     "step": 7,
+     "on": "It factorises into"
+    }
+   ]
+  },
+  {
+   "say": "So A equals two, or A equals one. Both are positive, as two to the power X always is.",
+   "asks": [
+    "Are these the answers?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 8,
+     "on": "So A equals"
+    },
+    {
+     "do": "note",
+     "text": "$2^x>0$: both allowed",
+     "near": "rts",
+     "on": "Both are positive"
+    }
+   ]
+  },
+  {
+   "say": "Step four, bring back X. The question asks for X, so each value of A gives a value of X.",
+   "asks": [
+    "Why can't I stop at a?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 4
+    }
+   ]
+  },
+  {
+   "say": "A equals two: two to the power X is two, which is two to the power one. The powers match, so X equals one.",
+   "asks": [
+    "Why write 2 as 2 to the power 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 9,
+     "on": "two to the power X is two"
+    }
+   ]
+  },
+  {
+   "say": "A equals one: two to the power X is one, which is two to the power zero. So X equals zero.",
+   "asks": [
+    "Why is 1 the same as 2 to the power 0?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 10,
+     "on": "two to the power X is one"
+    }
+   ]
+  },
+  {
+   "say": "So X equals one, or X equals zero.",
+   "asks": [
+    "Can I check these answers?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 11,
+     "on": "So X equals"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "X equals zero"
+    }
+   ]
+  }
+ ]
+}

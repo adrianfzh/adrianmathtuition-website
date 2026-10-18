@@ -1,0 +1,230 @@
+{
+  "slug": "solving-by-substitution-am",
+  "title": "Solving by substitution",
+  "heading": "Solving by substitution",
+  "intro": null,
+  "level": "AM",
+  "topic": "Indices",
+  "subgroup": null,
+  "source": {
+    "unit": "108.28",
+    "also": [
+      "108.26",
+      "108.31"
+    ]
+  },
+  "bible": "data/clip-bibles/indices-am.md",
+  "answer": {
+    "facts": [
+      "4**1 - 3*2**1 + 2 = 0",
+      "4**0 - 3*2**0 + 2 = 0"
+    ],
+    "display": "x = 1 or x = 0"
+  },
+  "outline": [
+    "Built 18 Oct 2026 in one go to the house rules (Indices clip 2, the one-shot test): 4 steps pinned and lit, 4 = 2² with Times power, 2^{2x} = (2^x)² with its reason, Let a = 2^x written, the quadratic solved fast, each a brought back to x by same base, compare powers, the answer boxed, no Watch out."
+  ],
+  "question": "Solve $4^x - 3(2^x) + 2 = 0$.",
+  "pinned": [
+    "same base",
+    "substitute",
+    "solve the quadratic",
+    "bring back x"
+  ],
+  "minutes": 2,
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "q4",
+          "tex": "4^x"
+        },
+        {
+          "id": "qr",
+          "tex": "-3(2^x)+2=0"
+        }
+      ],
+      "checks": [
+        {
+          "start": "4**x - 3*2**x + 2 = 0",
+          "var": "x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "b1",
+          "tex": "4^x=(2^2)^x"
+        },
+        {
+          "id": "b2",
+          "tex": "=2^{2x}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "4**x = 2**(2*x)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "r1",
+          "tex": "2^{2x}"
+        },
+        {
+          "id": "r2a",
+          "tex": "-3("
+        },
+        {
+          "id": "r2x",
+          "tex": "2^x",
+          "tight": true
+        },
+        {
+          "id": "r2b",
+          "tex": ")+2=0",
+          "tight": true
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**(2*x) - 3*2**x + 2 = 0"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "k1",
+          "tex": "2^{2x}=(2^x)^2"
+        },
+        {
+          "id": "k2",
+          "tex": "=a^2"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "2**(2*x) = (2**x)**2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "let",
+          "tex": "\\text{Let }a=2^x"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the substitution a = 2^x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "t3",
+          "tex": "3(2^x)=3a"
+        }
+      ],
+      "checks": [
+        {
+          "form": "with a = 2^x, 3(2^x) is 3a"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s",
+          "tex": "a^2-3a+2=0"
+        }
+      ],
+      "checks": [
+        {
+          "start": "a**2 - 3*a + 2 = 0",
+          "var": "a"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "f",
+          "tex": "(a-2)(a-1)=0"
+        }
+      ],
+      "checks": [
+        {
+          "step": "(a - 2)*(a - 1) = 0"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "rts",
+          "tex": "a=2\\;\\text{ or }\\;a=1"
+        }
+      ],
+      "checks": [
+        {
+          "roots": [
+            2,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "x1",
+          "tex": "2^x=2=2^1\\;\\Rightarrow\\;x=1"
+        }
+      ],
+      "checks": [
+        {
+          "solves": "2**x = 2",
+          "var": "x",
+          "gives": 1
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "x0",
+          "tex": "2^x=1=2^0\\;\\Rightarrow\\;x=0"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "2**0 = 1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ans",
+          "tex": "x=1\\;\\text{ or }\\;x=0",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "4**1 - 3*2**1 + 2 = 0"
+        },
+        {
+          "fact": "4**0 - 3*2**0 + 2 = 0"
+        }
+      ]
+    }
+  ]
+}
