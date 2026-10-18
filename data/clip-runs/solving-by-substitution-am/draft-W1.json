@@ -28,26 +28,6 @@
       "qr"
      ],
      "on": "Four steps"
-    },
-    {
-     "do": "pin",
-     "show": 1,
-     "on": "the same base"
-    },
-    {
-     "do": "pin",
-     "show": 2,
-     "on": "then substitute"
-    },
-    {
-     "do": "pin",
-     "show": 3,
-     "on": "solve the quadratic"
-    },
-    {
-     "do": "pin",
-     "show": 4,
-     "on": "bring back X"
     }
    ]
   },
@@ -57,10 +37,6 @@
     "Why change 4 to base 2?"
    ],
    "do": [
-    {
-     "do": "pin",
-     "lit": 1
-    },
     {
      "do": "highlight",
      "token": "qr",
@@ -174,11 +150,6 @@
    ],
    "do": [
     {
-     "do": "pin",
-     "lit": 2,
-     "on": "Step two"
-    },
-    {
      "do": "write",
      "step": 4,
      "on": "let A equal"
@@ -241,10 +212,6 @@
    ],
    "do": [
     {
-     "do": "pin",
-     "lit": 3
-    },
-    {
      "do": "write",
      "step": 7,
      "on": "It factorises into"
@@ -277,8 +244,9 @@
    ],
    "do": [
     {
-     "do": "pin",
-     "lit": 4
+     "do": "highlight",
+     "token": "rts",
+     "on": "each value of"
     }
    ]
   },

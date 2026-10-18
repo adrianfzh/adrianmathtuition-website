@@ -16,8 +16,8 @@ You get:
 1. **The question is explained first** when it has a story or a formula: what each letter means
    (lit as it is named), each given value SUBSTITUTED on the board, what we must find (in words, then
    in letters).
-2. **A method with steps lists them on screen** as the voice lists them, keeps them in view, lights
-   each on its turn.
+2. **Graph sketching lists its steps on screen** (pinned, lit in turn). Do NOT ask for a steps strip
+   on any other clip — Adrian: "we don't have to always give steps like that".
 3. **Every move says what, how, and why** — why this first move, why the law applies here, which part
    is which. Flag a shortcut: "cancels", "un-log", "bring it across", "just", a jump between two lines
    with no reason given.

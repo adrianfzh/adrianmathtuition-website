@@ -28,16 +28,6 @@
       "q25"
      ],
      "on": "X is in"
-    },
-    {
-     "do": "pin",
-     "show": 1,
-     "on": "make the same base"
-    },
-    {
-     "do": "pin",
-     "show": 2,
-     "on": "compare the powers"
     }
    ]
   },
@@ -65,10 +55,6 @@
     "How do I spot that 25 is 5 squared?"
    ],
    "do": [
-    {
-     "do": "pin",
-     "lit": 1
-    },
     {
      "do": "highlight",
      "token": [
@@ -158,10 +144,6 @@
     "What does compare powers mean?"
    ],
    "do": [
-    {
-     "do": "pin",
-     "lit": 2
-    },
     {
      "do": "highlight",
      "token": [

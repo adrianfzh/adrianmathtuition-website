@@ -72,8 +72,8 @@ no focus, no clear.
   has no dot), ² ³ ˣ for powers (raised letters like ʳ ⁿ ᵏ draw as ticks; write the power out or
   leave it off), √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
-- **A method with named steps**: put them in the plan's `pinned` (pinned above the board, never
-  scrolled); the beat that names them carries `"pin": 0`, each step's first beat `"pin": n`.
+- **Pinned steps only for graph sketching** (or when Adrian asks): the plan's `pinned` + `pin` actions
+  (`show` as the voice lists them, `lit` on each step's turn). An ordinary solve has no strip.
 - **A set of basic shapes first**: one `graph` with `curves` (each `id` + `label` + `labelAt`), a beat
   per curve that `highlight`s its id as the voice names it and says how it is flipped.
 - **Explain a word problem first** (house rules §2): a question with a story or a formula the student

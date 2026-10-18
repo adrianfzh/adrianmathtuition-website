@@ -179,11 +179,12 @@ the history.
   shapes of logarithmic graphs first"): a clip that uses a set of basic shapes or standard forms
   first SHOWS the set — one sketch with every curve labelled (`graph.curves`), each lit as the voice
   names it and says how it is flipped — then does the question.
-- **A method's steps are listed on screen and stay in view** (18 Oct 2026: "when narrator says four
-  steps: should list it out on screen, then use those steps and show how to build from those steps
-  (keeping those steps in view) highlight the steps when it comes to their turn"): the plan's
-  `pinned` steps sit above the board for the whole clip (they never scroll), shown on the beat that
-  names them (`pin: 0`) and each lit on its turn (`pin: n`).
+- **Steps pinned on screen ONLY where they help — not by default** (18 Oct 2026: "we don't have to
+  always give steps like that. i only suggested it for graph sketching for logs because it's
+  helpful"). Graph sketching (asymptote → shape → draw → intercepts) keeps them: the plan's `pinned`
+  steps sit above the board, shown as the voice lists them (`pin` show) and lit on each one's turn
+  (`pin` lit). An ordinary solve says its plan in the voice and shows it as maths on the board, with
+  no strip.
 - **Draw it when a picture teaches it** (17 Oct 2026: "if you need to include diagrams in the clips,
   please do so"): a graph question gets real sketches on the board — give the line a `graph`
   (curve, dashed asymptote, labelled points); show the shape, then the curve against its asymptote,
@@ -275,6 +276,14 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
      `must`, re-run until it passes; the gate's `review` check needs a pass newer than the lesson.
      Only then does Adrian watch it. Every new note he gives is a miss of the reviewer: add it here
      (§2) AND to its checklist (`scripts/clips/prompts/reviewer.md`).
+   **Review before recording** (Adrian, 18 Oct 2026: "yes" to making clips cheaper): run the reviewer
+   on the storyboard (`--no-frames`) as soon as the draft passes draft-check, fix, and run it AGAIN (it
+   is not deterministic — take every must from both runs). Only then record the voice, ONCE. Then the
+   phone look and one review with frames; a must there is fixed without changing the words if it can be
+   (so the recording stays). Voice ≈ US$0.10, reviews ≈ US$0.10 (text) / US$0.20 (frames) a run.
+   **One clip per fresh session**: a new clip is built in its own new session, never at the end of a
+   long one — a long session re-reads its whole history every message. Everything a builder needs is in
+   this file, the topic bible, `scripts/clips/prompts/writer.md` and the reference clips.
 5. Write Adrian's note into §2 here, dated, his words — same commit. Tell him the link, the login
    (admin) and where to tap.
 

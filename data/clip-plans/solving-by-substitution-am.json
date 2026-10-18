@@ -25,12 +25,6 @@
     "Built 18 Oct 2026 in one go to the house rules (Indices clip 2, the one-shot test): 4 steps pinned and lit, 4 = 2² with Times power, 2^{2x} = (2^x)² with its reason, Let a = 2^x written, the quadratic solved fast, each a brought back to x by same base, compare powers, the answer boxed, no Watch out."
   ],
   "question": "Solve $4^x - 3(2^x) + 2 = 0$.",
-  "pinned": [
-    "same base",
-    "substitute",
-    "solve the quadratic",
-    "bring back x"
-  ],
   "minutes": 2,
   "lines": [
     {

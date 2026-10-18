@@ -12,7 +12,6 @@
       "type": "equation-steps",
       "heading": "Solving by substitution",
       "scroll": true,
-      "pinned": ["same base", "substitute", "solve the quadratic", "bring back x"],
       "steps": [
         {
           "tokens": [
@@ -96,11 +95,7 @@
           "say": "Four steps: first the same base, then substitute, then solve the quadratic, and last bring back X.",
           "asks": ["Why these four steps?"],
           "do": [
-            { "do": "highlight", "token": ["q4", "qr"], "on": "Four steps" },
-            { "do": "pin", "show": 1, "on": "the same base" },
-            { "do": "pin", "show": 2, "on": "then substitute" },
-            { "do": "pin", "show": 3, "on": "solve the quadratic" },
-            { "do": "pin", "show": 4, "on": "bring back X" }
+            { "do": "highlight", "token": ["q4", "qr"], "on": "Four steps" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b2.mp3",
           "timing": "/lessons/solving-by-substitution-am/scene-01-b2.timing.json"
@@ -109,7 +104,6 @@
           "say": "Step one, same base. The other term is two to the power X, so write four with base two too.",
           "asks": ["Why change 4 to base 2?"],
           "do": [
-            { "do": "pin", "lit": 1 },
             { "do": "highlight", "token": "qr", "on": "The other term" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b3.mp3",
@@ -176,7 +170,6 @@
           "say": "Step two, substitute: let A equal two to the power X.",
           "asks": ["Why use a letter?", "Can I use u instead of a?"],
           "do": [
-            { "do": "pin", "lit": 2, "on": "Step two" },
             { "do": "write", "step": 4, "on": "let A equal" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b10.mp3",
@@ -215,7 +208,6 @@
           "say": "Step three, solve the quadratic. It factorises into A minus two, times A minus one.",
           "asks": ["How do I factorise it?"],
           "do": [
-            { "do": "pin", "lit": 3 },
             { "do": "write", "step": 7, "on": "It factorises into" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b14.mp3",
@@ -235,7 +227,7 @@
           "say": "Step four, bring back X. The question asks for X, so each value of A gives a value of X.",
           "asks": ["Why can't I stop at a?"],
           "do": [
-            { "do": "pin", "lit": 4 }
+            { "do": "highlight", "token": "rts", "on": "each value of" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b16.mp3",
           "timing": "/lessons/solving-by-substitution-am/scene-01-b16.timing.json"
