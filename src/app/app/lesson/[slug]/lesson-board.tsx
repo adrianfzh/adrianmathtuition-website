@@ -80,7 +80,7 @@ export function offsetRect(el: HTMLElement, container: HTMLElement) {
 // gets accidentally italicised (the practice-flow MathText guard).
 const INLINE_P = { p: ({ children }: { children?: React.ReactNode }) => <>{children}</> };
 export function MathText({ text }: { text: string }) {
-  if (!text.includes('$')) return <>{text}</>;
+  if (!text.includes('$') && !text.includes('**')) return <>{text}</>;
   return <MathMarkdown content={text} components={INLINE_P} />;
 }
 
