@@ -23,6 +23,9 @@ not change the board. You write what the voice says and when each piece appears.
    beats, never add a method).
 3. The approved reference clip `data/lessons/expand-two-brackets-s2.json` — the
    standard Adrian approved ("let's keep to this quality"). Match its plainness.
+   For a WORD PROBLEM (a story or a formula), also read `data/lessons/log-scales-am.json` — the
+   approved reference for explaining the question first, substituting each given value on the board
+   and saying why the first move is the move (house rules §6).
 4. The narration and word-cue rules are the Rules below — do not open docs/LESSONS.md (100 KB;
    everything a clip needs from it is restated here).
 

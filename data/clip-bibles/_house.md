@@ -244,6 +244,22 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 5. Write Adrian's note into §2 here, dated, his words — same commit. Tell him the link, the login
    (admin) and where to tap.
 
+### The reference for a word problem: Log scales (Adrian, 18 Oct 2026: "this is way better, remember what did here for future videos")
+`data/lessons/log-scales-am.json` (plan `data/clip-plans/log-scales-am.json`, draft W2) is the clip to
+copy for any question with a story or a formula. Its shape, in order:
+1. **"First, what the question says"** — the formula on the board; each letter LIT as it is named
+   (`part` "num"/"den" for a fraction's top/bottom) and its meaning written (`N: noise rating (dB),
+   I: intensity, k: a constant` — one line, so the formula stays in view).
+2. **Each given value substituted, on the board** — `Pump: N = 50, I = I_p` (the letter named as the
+   voice names it), then the formula with them in (`50 = 10lg(I_p/k)`), the formula lit as they go in.
+   Same for each other object.
+3. **"Now solve it"** — what we want, in words then letters (`We want (intensity of dishwasher)/
+   (intensity of pump) = I_d/I_p = ?`).
+4. **Why the first move** — what stops us (k unknown) and how the move gets round it (subtract: the
+   logs join, k cancels) — before the move's line.
+5. The working, each law lit then written, the answer boxed. No Watch out unless asked.
+The test for every beat: if the voice says it and it helps, it is on the board as it is said.
+
 ### Where each clip stands (18 Oct 2026, test site only — nothing promoted)
 | Clip | State |
 |---|---|
@@ -252,7 +268,7 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 | Linear form with logs (Linear Law) | New style (R1 + fixes) |
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
-| Log scales | The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
+| Log scales | **The word-problem reference (approved 18 Oct: "way better").** The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
 | Sketching log graphs | Put back to the version before the rebuild |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so
