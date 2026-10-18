@@ -111,6 +111,12 @@ the history.
   (rejecting a root) stays in place as a plain reason. **Only a mistake students COMMONLY make gets a
   Watch out** (17 Oct 2026, of "rounding never removes the minus": "we don't have to write the watch
   out … it is not a common thing students do") — no Watch out at all is fine.
+- **A question that can confuse gets explained FIRST** (18 Oct 2026, Log scales: "able to have an
+  introduction of the question? because students may be confused by the question itself > do an
+  explanation of the question first"): before any working, a short "First, what the question says"
+  step writes the given formula, says what each letter means (a note: `N = noise rating (dB), I =
+  intensity, k = a constant`), the given values, and what we must find, in plain words. Then
+  "Now solve it". Do this for every word problem or formula the student may not have met.
 - **Write what we are asked to find, then in letters** (18 Oct 2026, Log scales: "should show on screen
   intensity of the dishwasher / intensity of the pump = ? while narrating … hence it's I_d / I_p = ?"):
   `We want (intensity of dishwasher)/(intensity of pump) = I_d/I_p = ?`, each part on the words that say it.
@@ -239,7 +245,7 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 | Linear form with logs (Linear Law) | New style (R1 + fixes) |
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
-| Log scales | The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now 7 lines so it SCROLLS (`"scroll": true` in the plan) |
+| Log scales | The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
 | Sketching log graphs | Put back to the version before the rebuild |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so

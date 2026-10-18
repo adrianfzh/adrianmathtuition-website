@@ -69,6 +69,9 @@ no focus, no clear.
   has no dot), ² ³ ˣ for powers (raised letters like ʳ ⁿ ᵏ draw as ticks; write the power out or
   leave it off), √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
+- **Explain a word problem first** (house rules §2): a question with a story or a formula the student
+  may not know opens with a "First, what the question says" step — the formula on the board, what each
+  letter means (one note), the given values, what we must find — before the plan.
 - **The plan first** (bible §1b): the second beat says the aim before the first move — and
   writes no working line (a highlight at most). Each working line
   appears in the beat whose voice explains it, on the words that name it.

@@ -4,6 +4,53 @@
  "by": "session, Adrian's watch 18 Oct 2026 (explain why we start by subtracting)",
  "beats": [
   {
+   "say": "First, what the question says. This formula links two numbers for a sound. N is its noise rating, in decibels.",
+   "asks": [
+    "What is a decibel?",
+    "What does N stand for?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0,
+     "on": "This formula links"
+    },
+    {
+     "do": "highlight",
+     "token": "f",
+     "on": "N is its"
+    }
+   ]
+  },
+  {
+   "say": "I is its intensity: how strong the sound really is. K is a fixed number, and its value is unknown.",
+   "asks": [
+    "What is intensity?",
+    "Why is K not given?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "$N$ = noise rating (dB),  $I$ = intensity,  $k$ = a constant",
+     "near": "f",
+     "on": "I is its intensity"
+    }
+   ]
+  },
+  {
+   "say": "The pump is fifty decibels, the dishwasher sixty-two. We must find how many times as intense the dishwasher is.",
+   "asks": [
+    "What does 'how many times as intense' mean?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "f",
+     "on": "how many times"
+    }
+   ]
+  },
+  {
    "say": "Call the pump's intensity I P. The pump is fifty decibels, so fifty equals ten log I P over K.",
    "asks": [
     "Why is the pump fifty equals ten log I P over K?",
@@ -83,7 +130,7 @@
    "do": [
     {
      "do": "write",
-     "step": 3,
+     "step": 4,
      "on": "sixty-two minus fifty"
     }
    ]
@@ -134,7 +181,7 @@
    "do": [
     {
      "do": "write",
-     "step": 5,
+     "step": 6,
      "on": "Log of the ratio"
     }
    ]
