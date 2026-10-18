@@ -2767,13 +2767,13 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
                 <div data-aside-read onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
                   className="lsn-read-veil absolute inset-0 z-30 rounded-3xl bg-slate-950/45 flex items-end p-2.5 cursor-default">
                   <div role="dialog" aria-label={a.text} onClick={e => e.stopPropagation()}
-                    className="lsn-read-card w-full max-h-full overflow-y-auto rounded-2xl bg-[hsl(45,40%,98%)] px-4 pt-3 pb-3 text-[15px] leading-relaxed text-slate-800 shadow-xl">
+                    className="lsn-read-card w-full max-h-full overflow-y-auto rounded-2xl bg-[hsl(45,40%,98%)] px-3.5 pt-2.5 pb-3 text-[14px] leading-snug sm:text-[15px] sm:leading-relaxed text-slate-800 shadow-xl">
                     <div className="flex items-start gap-2 mb-1.5">
                       <p className="flex-1 text-[14px] font-bold text-navy">💡 {a.text}</p>
                       <button type="button" aria-label="Close" onClick={() => toggleRead(a.slug)}
                         className="shrink-0 -mt-0.5 w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-[15px] font-bold">✕</button>
                     </div>
-                    <ul className="space-y-1.5">
+                    <ul className="space-y-1 sm:space-y-1.5">
                       {a.read.map((l, i) => <li key={i}><MathText text={l} /></li>)}
                     </ul>
                   </div>

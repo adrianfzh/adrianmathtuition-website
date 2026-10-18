@@ -40,7 +40,9 @@ reads — on every Claude account, because it lives in the repo.
   (drop down)? … i compare which is better?" → "Keep the written drop-down, drop the popup clip"). The
   beat's `aside` carries `read`: up to 10 lines, one idea a line, inline maths, the last line the
   takeaway in bold. It is CLOSED by default ("make the written drop-down closed by default > student can click if they need
-  explanation"): the 💡 chip opens it under the board and pauses the clip; "Hide" carries on, and moving
+  explanation"). It lives ON the board, so nothing under the board moves ("when the popup appears, it
+  pushes the slider down > any better, more elegant way?"): a small "💡 Why?" chip in the board's top
+  corner; a tap lays the explanation over the board and pauses the clip; "Hide" carries on, and moving
   on to the next part closes it again. No new
   side clip is made for a side point (an `aside` without `read` still falls back to the old sheet).
 - **No Watch out by default** (18 Oct 2026, of "P is 200, not 2": "there is no need for the watch out at
