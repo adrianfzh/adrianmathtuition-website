@@ -1,0 +1,560 @@
+{
+ "slug": "compare-powers-two-unknowns-am",
+ "draft": "W1",
+ "by": "session, 18 Oct 2026, one clip to the house rules",
+ "beats": [
+  {
+   "say": "A to the power X plus one, over B to the power Y minus two, all squared,",
+   "asks": [
+    "What does all squared cover?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "q1"
+    }
+   ]
+  },
+  {
+   "say": "times B to the power X plus two, over A to the power three minus Y, equals A to the power nine B.",
+   "asks": [
+    "Which part is the second fraction?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "q2"
+    },
+    {
+     "do": "write",
+     "token": "q3",
+     "on": "equals A to"
+    }
+   ]
+  },
+  {
+   "say": "Find X and Y. Two unknowns need two equations: the bases A and B give one each.",
+   "asks": [
+    "How can one equation give two answers?",
+    "Why do the bases matter?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q3",
+     "on": "the bases A"
+    }
+   ]
+  },
+  {
+   "say": "The plan: tidy each side into one power of A times one power of B.",
+   "asks": [
+    "What does one power of A mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "tidy each side"
+    }
+   ]
+  },
+  {
+   "say": "Then the powers of A must match, and the powers of B must match.",
+   "asks": [
+    "Why must the powers match?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p2",
+     "on": "the powers of A"
+    }
+   ]
+  },
+  {
+   "say": "Step one, do the power first: the bracket must go before we can group the bases.",
+   "asks": [
+    "Why do the power first?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "s1",
+     "on": "do the power"
+    }
+   ]
+  },
+  {
+   "say": "Squaring a fraction squares its top and its bottom.",
+   "asks": [
+    "Does the square go to the top and bottom?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "s1b"
+    },
+    {
+     "do": "note",
+     "text": "$\\left(\\frac{M}{N}\\right)^2=\\frac{M^2}{N^2}$",
+     "near": "s1b",
+     "on": "its top and"
+    }
+   ]
+  },
+  {
+   "say": "Now times power: a power of a power, multiply the powers.",
+   "asks": [
+    "Which law is this?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "s1b",
+     "on": "a power of"
+    },
+    {
+     "do": "note",
+     "text": "Times power: $(a^m)^n=a^{mn}$",
+     "near": "s1b",
+     "on": "multiply the powers"
+    }
+   ]
+  },
+  {
+   "say": "So A to the power two times X plus one, over B to the power two times Y minus two.",
+   "asks": [
+    "Why multiply by two?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "s2"
+    }
+   ]
+  },
+  {
+   "say": "Expand the brackets: two X plus two on top, two Y minus four below. Then put it back into the equation.",
+   "asks": [
+    "How do I expand 2(x + 1)?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "r1",
+     "on": "Expand the brackets"
+    },
+    {
+     "do": "write",
+     "token": "r2",
+     "on": "put it back"
+    }
+   ]
+  },
+  {
+   "say": "Step two, group the same bases. Multiplying fractions: tops together, bottoms together.",
+   "asks": [
+    "Why can I join the two fractions?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "Multiplying fractions"
+    },
+    {
+     "do": "highlight",
+     "token": "g1",
+     "on": "bottoms together"
+    }
+   ]
+  },
+  {
+   "say": "Step three, divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
+   "asks": [
+    "Which law is this?",
+    "Why minus the powers?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "g1",
+     "on": "The same base"
+    },
+    {
+     "do": "write",
+     "step": 6,
+     "on": "so minus the"
+    },
+    {
+     "do": "note",
+     "text": "Minus power: $a^m\\div a^n=a^{m-n}$",
+     "near": "d1",
+     "on": "top power minus"
+    }
+   ]
+  },
+  {
+   "say": "Keep the brackets: the whole bottom power is taken away.",
+   "asks": [
+    "Why do I need the brackets?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "d1",
+      "d2"
+     ],
+     "on": "Keep the brackets"
+    }
+   ]
+  },
+  {
+   "say": "Step four, tidy each power. For A: two X plus two, minus the bracket three minus Y.",
+   "asks": [
+    "Why tidy one power at a time?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "d1",
+     "on": "tidy each power"
+    },
+    {
+     "do": "write",
+     "token": "ta1",
+     "on": "For A"
+    }
+   ]
+  },
+  {
+   "say": "Minus a bracket flips every sign inside: the three becomes minus three, and minus Y becomes plus Y.",
+   "asks": [
+    "Why does minus Y become plus Y?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ta2",
+     "on": "the three becomes"
+    },
+    {
+     "do": "note",
+     "text": "Minus a bracket flips every sign inside",
+     "near": "ta2",
+     "on": "minus Y becomes"
+    }
+   ]
+  },
+  {
+   "say": "Collect the terms: two X plus Y minus one.",
+   "asks": [
+    "How do I collect the terms?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ta3",
+     "on": "two X plus"
+    }
+   ]
+  },
+  {
+   "say": "For B: X plus two, minus the bracket two Y minus four.",
+   "asks": [
+    "Which is the bottom power for b?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "tb1",
+     "on": "For B"
+    },
+    {
+     "do": "highlight",
+     "token": "d2",
+     "on": "X plus two"
+    }
+   ]
+  },
+  {
+   "say": "Again every sign flips: minus two Y, and plus four.",
+   "asks": [
+    "Why does minus four become plus four?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "tb2",
+     "on": "minus two Y"
+    }
+   ]
+  },
+  {
+   "say": "Collect the terms: X minus two Y plus six.",
+   "asks": [
+    "Where does the six come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "tb3",
+     "on": "X minus two"
+    }
+   ]
+  },
+  {
+   "say": "So the left side is A to the power two X plus Y minus one,",
+   "asks": [
+    "Where does this power come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "u1"
+    },
+    {
+     "do": "write",
+     "token": "u2",
+     "on": "two X plus"
+    }
+   ]
+  },
+  {
+   "say": "times B to the power X minus two Y plus six.",
+   "asks": [
+    "Is the left side tidy now?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "u3"
+    },
+    {
+     "do": "write",
+     "token": "u4",
+     "on": "X minus two"
+    }
+   ]
+  },
+  {
+   "say": "On the right, a bare B means B to the power one, so write it in.",
+   "asks": [
+    "Why is b the same as b to the power 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "u5"
+    },
+    {
+     "do": "note",
+     "text": "bare $b$ means $b^1$",
+     "near": "u5",
+     "on": "a bare B"
+    }
+   ]
+  },
+  {
+   "say": "Step five, compare the powers of each base. First the base A.",
+   "asks": [
+    "What does compare powers mean?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "u1",
+      "u5"
+     ],
+     "on": "compare the powers"
+    },
+    {
+     "do": "write",
+     "token": "ca",
+     "on": "First the base"
+    }
+   ],
+   "aside": {
+    "text": "Why can we compare powers?",
+    "slug": "indices-compare-powers-two-bases",
+    "read": [
+     "The equation is true for every value of $a$ and $b$.",
+     "Take $b = 1$: every power of $b$ is $1$, so only the $a$ parts are left.",
+     "That leaves $a^{2x+y-1} = a^9$ for every $a$.",
+     "Two powers of the same base are equal only when the powers are equal.",
+     "So $2x+y-1 = 9$. Taking $a = 1$ instead gives $x-2y+6 = 1$.",
+     "**Same base on both sides: the powers must match.**"
+    ]
+   }
+  },
+  {
+   "say": "Same base A on both sides, so the powers are equal: two X plus Y minus one equals nine.",
+   "asks": [
+    "Why are the powers equal?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "u1",
+      "u5"
+     ],
+     "on": "Same base A"
+    },
+    {
+     "do": "move",
+     "from": "u2",
+     "on": "two X plus"
+    },
+    {
+     "do": "write",
+     "token": "ca3",
+     "on": "equals nine"
+    }
+   ]
+  },
+  {
+   "say": "Now the base B: its powers are equal too.",
+   "asks": [
+    "Why are the b powers equal?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "cb"
+    },
+    {
+     "do": "highlight",
+     "token": [
+      "u3",
+      "u5"
+     ],
+     "on": "its powers are"
+    }
+   ]
+  },
+  {
+   "say": "X minus two Y plus six equals one, the one from the bare B.",
+   "asks": [
+    "Where did the 1 come from?"
+   ],
+   "do": [
+    {
+     "do": "move",
+     "from": "u4",
+     "on": "X minus two"
+    },
+    {
+     "do": "write",
+     "token": "cb3",
+     "on": "equals one"
+    },
+    {
+     "do": "highlight",
+     "token": "u5",
+     "on": "the bare B"
+    }
+   ]
+  },
+  {
+   "say": "Step six, solve together. Add one to the A equation: two X plus Y equals ten.",
+   "asks": [
+    "How do I solve two equations together?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "e1",
+     "on": "two X plus"
+    }
+   ]
+  },
+  {
+   "say": "Make Y the subject, so it can go into the B equation: Y equals ten minus two X.",
+   "asks": [
+    "Why make y the subject?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "e1b",
+     "on": "Y equals ten"
+    }
+   ]
+  },
+  {
+   "say": "Substitute: X minus two times, ten minus two X, plus six equals one.",
+   "asks": [
+    "Why substitute for y?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 13,
+     "on": "X minus two"
+    }
+   ]
+  },
+  {
+   "say": "Expand: X minus twenty plus four X plus six equals one.",
+   "asks": [
+    "Why plus four X?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 14,
+     "on": "X minus twenty"
+    }
+   ]
+  },
+  {
+   "say": "Collect: five X equals fifteen, so X equals three.",
+   "asks": [
+    "How do I get 5x?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 15,
+     "on": "five X equals"
+    }
+   ]
+  },
+  {
+   "say": "Then Y equals ten minus two times three: four.",
+   "asks": [
+    "How do I find y?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 16,
+     "on": "Y equals ten"
+    }
+   ]
+  },
+  {
+   "say": "So X equals three and Y equals four.",
+   "asks": [
+    "Can I check the answer?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 17,
+     "on": "So X equals"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "Y equals four"
+    }
+   ]
+  }
+ ]
+}

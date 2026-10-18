@@ -165,6 +165,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 2,
   },
   {
+    slug: 'compare-powers-two-unknowns-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Compare powers: two unknowns',
+    minutes: 3,
+  },
+  {
     slug: 'growth-and-decay-am',
     level: 'AM',
     topic: 'Logarithms',
