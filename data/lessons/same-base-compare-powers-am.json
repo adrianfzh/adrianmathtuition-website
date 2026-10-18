@@ -11,6 +11,7 @@
     {
       "type": "equation-steps",
       "heading": "Same base, compare powers",
+      "scroll": true,
       "pinned": ["same base", "compare powers"],
       "steps": [
         {
@@ -58,6 +59,11 @@
         },
         {
           "tokens": [
+            { "id": "sv", "tex": "2+2=2x-x" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "ans", "tex": "x=4", "hl": "emerald" }
           ]
         }
@@ -98,7 +104,8 @@
           "asks": ["How do I spot that 25 is 5 squared?"],
           "do": [
             { "do": "pin", "lit": 1, "on": "Step one" },
-            { "do": "highlight", "token": "q25", "on": "twenty-five is five" }
+            { "do": "highlight", "token": ["q5", "q25"], "on": "The bases are" },
+            { "do": "note", "text": "$25=5^2$", "near": "q25", "on": "twenty-five is five" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b4.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b4.timing.json"
@@ -174,7 +181,8 @@
           "say": "Take X from both sides and add two. So X equals four, the answer.",
           "asks": ["Can I check x = 4?"],
           "do": [
-            { "do": "write", "step": 6, "on": "So X equals" },
+            { "do": "write", "step": 6, "on": "Take X from" },
+            { "do": "write", "step": 7, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "the answer" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b12.mp3",

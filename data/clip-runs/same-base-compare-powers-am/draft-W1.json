@@ -72,7 +72,16 @@
     },
     {
      "do": "highlight",
-     "token": "q25",
+     "token": [
+      "q5",
+      "q25"
+     ],
+     "on": "The bases are"
+    },
+    {
+     "do": "note",
+     "text": "$25=5^2$",
+     "near": "q25",
      "on": "twenty-five is five"
     }
    ]
@@ -205,6 +214,11 @@
     {
      "do": "write",
      "step": 6,
+     "on": "Take X from"
+    },
+    {
+     "do": "write",
+     "step": 7,
      "on": "So X equals"
     },
     {
