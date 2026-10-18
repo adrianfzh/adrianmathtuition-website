@@ -19,7 +19,8 @@ reads — on every Claude account, because it lives in the repo.
 - **A clip that fits ONE screen stays one fixed board** (18 Oct 2026, of the rebuilt Laws clip: "Laws
   of logarithms is badly redone. Before redo is better. The explanation flow is hard to follow. And
   screen keep shifting up and down - can't see"). Use the scrolling board only when the working is
-  longer than a phone screen (more than about 7 lines); `assemble.mjs` scrolls only then. Never point
+  longer than a phone screen (more than about 7 lines); `assemble.mjs` scrolls only then. A plan whose lines
+  and notes are too tall under the question on a phone sets `"scroll": true` to force it (the look check says "taller than the screen"). Never point
   the voice back up at an old line while the board is scrolled — write the step again on a new line
   below instead, so the eye only ever moves DOWN.
 - **Explain the method, never just the shortcut** (18 Oct 2026: "explanation of concepts or how to use or
@@ -110,6 +111,9 @@ the history.
   (rejecting a root) stays in place as a plain reason. **Only a mistake students COMMONLY make gets a
   Watch out** (17 Oct 2026, of "rounding never removes the minus": "we don't have to write the watch
   out … it is not a common thing students do") — no Watch out at all is fine.
+- **Write what we are asked to find, then in letters** (18 Oct 2026, Log scales: "should show on screen
+  intensity of the dishwasher / intensity of the pump = ? while narrating … hence it's I_d / I_p = ?"):
+  `We want (intensity of dishwasher)/(intensity of pump) = I_d/I_p = ?`, each part on the words that say it.
 - **Name each letter ON the board as the voice names it** (18 Oct 2026, Log scales: "should write on
   screen let intensity of the pump be I_p with the narration > will be much clearer"): "Call the
   pump's intensity I P" writes `Let I_p = intensity of pump` on those words.
@@ -231,7 +235,7 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 | Linear form with logs (Linear Law) | New style (R1 + fixes) |
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
-| Log scales | The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped so the board fits a phone |
+| Log scales | The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now 7 lines so it SCROLLS (`"scroll": true` in the plan) |
 | Sketching log graphs | Put back to the version before the rebuild |
 
 Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so

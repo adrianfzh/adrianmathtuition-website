@@ -41,7 +41,25 @@
    ]
   },
   {
-   "say": "We want I D over I P, but K is unknown. Subtracting joins the two logs into one, and K cancels.",
+   "say": "We want the intensity of the dishwasher over the intensity of the pump. That is I D over I P.",
+   "asks": [
+    "Why I D over I P and not I P over I D?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "wtxt",
+     "on": "We want the intensity"
+    },
+    {
+     "do": "write",
+     "token": "wsym",
+     "on": "That is I D"
+    }
+   ]
+  },
+  {
+   "say": "But K is unknown. Subtracting the two equations joins the two logs into one, and K cancels.",
    "asks": [
     "Why subtract the equations?",
     "Why can't we find each intensity on its own?"
@@ -53,7 +71,7 @@
       "pump",
       "dish"
      ],
-     "on": "but K is unknown"
+     "on": "But K is unknown"
     }
    ]
   },
@@ -65,7 +83,7 @@
    "do": [
     {
      "do": "write",
-     "step": 2,
+     "step": 3,
      "on": "sixty-two minus fifty"
     }
    ]
@@ -116,7 +134,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 5,
      "on": "Log of the ratio"
     }
    ]

@@ -71,8 +71,9 @@ const scenes = sceneBeats.map((list, k) => {
     // A scrolling board (one long board that slides up) carries each step's title on its first line.
     // ONE scrolling board is the default for a clip (house rules §1); a plan opts out with "scroll": false.
     // …but only when the working is longer than a phone screen: a short clip stays one fixed board
-    // (Adrian, 18 Oct 2026: "screen keep shifting up and down - can't see").
-    ...(board.scroll || (nBoards === 1 && plan.scroll !== false && plan.lines.length > 7) ? { scroll: true } : {}),
+    // (Adrian, 18 Oct 2026: "screen keep shifting up and down - can't see"). "scroll": true forces it
+    // when the lines + notes are too tall for a phone under the question (Log scales, 18 Oct 2026).
+    ...(board.scroll || (nBoards === 1 && plan.scroll === true) || (nBoards === 1 && plan.scroll !== false && plan.lines.length > 7) ? { scroll: true } : {}),
     steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ ...(l.heading ? { heading: l.heading } : {}), tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}), ...(l.graph ? { graph: l.graph } : {}) })),
     beats: list,
   };

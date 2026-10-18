@@ -12,6 +12,7 @@
       "type": "equation-steps",
       "heading": "Log scales: decibels",
       "intro": "$N = 10\\lg\\tfrac{I}{k}$. Dishwasher $62$ dB, pump $50$ dB. How many times as intense is the dishwasher?",
+      "scroll": true,
       "steps": [
         {
           "tokens": [
@@ -23,6 +24,12 @@
           "tokens": [
             { "id": "pump", "tex": "50=10\\lg\\tfrac{I_p}{k}" },
             { "id": "dish", "tex": ",\\quad 62=10\\lg\\tfrac{I_d}{k}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "wtxt", "tex": "\\text{We want }\\dfrac{\\text{intensity of dishwasher}}{\\text{intensity of pump}}" },
+            { "id": "wsym", "tex": "=\\dfrac{I_d}{I_p}=\\;?" }
           ]
         },
         {
@@ -71,22 +78,32 @@
           "timing": "/lessons/log-scales-am/scene-01-b2.timing.json"
         },
         {
-          "say": "We want I D over I P, but K is unknown. Subtracting joins the two logs into one, and K cancels.",
-          "asks": ["Why subtract the equations?", "Why can't we find each intensity on its own?"],
+          "say": "We want the intensity of the dishwasher over the intensity of the pump. That is I D over I P.",
+          "asks": ["Why I D over I P and not I P over I D?"],
           "do": [
-            { "do": "highlight", "token": ["pump", "dish"], "on": "but K is unknown" }
+            { "do": "write", "token": "wtxt", "on": "We want the intensity" },
+            { "do": "write", "token": "wsym", "on": "That is I D" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b3.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b3.timing.json"
         },
         {
-          "say": "So take the dishwasher's equation minus the pump's: sixty-two minus fifty equals the two logs, one minus the other.",
-          "asks": ["Why the dishwasher minus the pump?"],
+          "say": "But K is unknown. Subtracting the two equations joins the two logs into one, and K cancels.",
+          "asks": ["Why subtract the equations?", "Why can't we find each intensity on its own?"],
           "do": [
-            { "do": "write", "step": 2, "on": "sixty-two minus fifty" }
+            { "do": "highlight", "token": ["pump", "dish"], "on": "But K is unknown" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b4.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "So take the dishwasher's equation minus the pump's: sixty-two minus fifty equals the two logs, one minus the other.",
+          "asks": ["Why the dishwasher minus the pump?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "sixty-two minus fifty" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b5.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b5.timing.json"
         },
         {
           "say": "Sixty-two minus fifty is twelve.",
@@ -94,8 +111,8 @@
           "do": [
             { "do": "write", "token": "twelve", "on": "is twelve" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b5.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b5.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
         },
         {
           "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
@@ -105,17 +122,17 @@
             { "do": "write", "token": "one", "on": "one log of the ratio" },
             { "do": "note", "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$", "near": "one", "on": "K cancels" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
         },
         {
           "say": "Divide both sides by ten. Log of the ratio is one point two.",
           "asks": ["Why divide both sides by 10?"],
           "do": [
-            { "do": "write", "step": 4, "on": "Log of the ratio" }
+            { "do": "write", "step": 5, "on": "Log of the ratio" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
         },
         {
           "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
@@ -124,8 +141,8 @@
             { "do": "write", "token": "unlog", "on": "The ratio is ten" },
             { "do": "note", "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^{c}$", "near": "unlog", "on": "one point two" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b9.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b9.timing.json"
         },
         {
           "say": "Ten to the power one point two is about fifteen point eight.",
@@ -133,8 +150,8 @@
           "do": [
             { "do": "write", "token": "ans", "on": "about fifteen point eight" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b9.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b9.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b10.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b10.timing.json"
         },
         {
           "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
@@ -142,8 +159,8 @@
           "do": [
             { "do": "mark", "kind": "box", "token": "ans", "on": "fifteen point eight times" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b10.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b10.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b11.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b11.timing.json"
         }
       ]
     }
