@@ -52,15 +52,28 @@
    ]
   },
   {
-   "say": "Step one, same base. Four is two squared, so four to the power X is two squared, to the power X.",
+   "say": "Step one, same base. The other term is two to the power X, so write four with base two too.",
    "asks": [
-    "Why change 4 to 2 squared?"
+    "Why change 4 to base 2?"
    ],
    "do": [
     {
      "do": "pin",
      "lit": 1
     },
+    {
+     "do": "highlight",
+     "token": "qr",
+     "on": "The other term"
+    }
+   ]
+  },
+  {
+   "say": "Four is two squared, so four to the power X is two squared, to the power X.",
+   "asks": [
+    "Why change 4 to 2 squared?"
+   ],
+   "do": [
     {
      "do": "highlight",
      "token": "q4",
@@ -130,7 +143,23 @@
    ]
   },
   {
-   "say": "A quadratic in disguise. Step two, substitute: let A equal two to the power X.",
+   "say": "Now the equation has two to the power X, and two to the power X squared. A quadratic in disguise.",
+   "asks": [
+    "Why is it a quadratic?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "r2x",
+      "k1"
+     ],
+     "on": "two to the power X, and"
+    }
+   ]
+  },
+  {
+   "say": "Step two, substitute: let A equal two to the power X.",
    "asks": [
     "Why use a letter?",
     "Can I use u instead of a?"
@@ -246,7 +275,7 @@
    ]
   },
   {
-   "say": "A equals two: two to the power X is two, which is two to the power one. The powers match, so X equals one.",
+   "say": "A equals two: two to the power X is two, which is two to the power one.",
    "asks": [
     "Why write 2 as 2 to the power 1?"
    ],
@@ -255,6 +284,19 @@
      "do": "write",
      "step": 9,
      "on": "two to the power X is two"
+    }
+   ]
+  },
+  {
+   "say": "Both sides have base two, so the powers are equal: X equals one.",
+   "asks": [
+    "Why can I compare the powers?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "x1",
+     "on": "Both sides have"
     }
    ]
   },

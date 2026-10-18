@@ -1,11 +1,11 @@
 {
  "slug": "solving-by-substitution-am",
- "worst": 0.93,
+ "worst": 0.92,
  "lines": [
   {
    "beat": 1,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -16,8 +16,8 @@
   },
   {
    "beat": 3,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -52,10 +52,9 @@
   },
   {
    "beat": 9,
-   "bag": 0.83,
+   "bag": 1,
    "score": 1,
-   "heard": "and 3 x 2 to the power X is 3 x A.",
-   "said": "And three times two to the power X is three times A."
+   "heard": null
   },
   {
    "beat": 10,
@@ -65,8 +64,8 @@
   },
   {
    "beat": 11,
-   "bag": 0.93,
-   "score": 0.93,
+   "bag": 0.92,
+   "score": 0.92,
    "heard": null
   },
   {
@@ -77,8 +76,8 @@
   },
   {
    "beat": 13,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
@@ -95,6 +94,24 @@
   },
   {
    "beat": 16,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 17,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 18,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 19,
    "bag": 1,
    "score": 1,
    "heard": null
