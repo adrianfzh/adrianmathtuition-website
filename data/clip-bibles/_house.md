@@ -46,8 +46,8 @@ reads — on every Claude account, because it lives in the repo.
   his students really make on this exact step.
 - **Say WHY a method is chosen before using it** (18 Oct 2026, Growth and decay): "emphasize that need
   to find k > since k is the power, we can take lg or ln to bring the power down > since e is involved,
-  ln is used instead". The "why this and not that" detour is a side clip in a popup (`aside`), e.g.
-  `why-ln-when-e-am`. Then the order on the board: make the power part the subject FIRST, THEN take the
+  ln is used instead". The "why this and not that" detour is a written drop-down (`aside.read`).
+  Then the order on the board: make the power part the subject FIRST, THEN take the
   log of both sides, then bring the power down in front of ln e, and ln e = 1.
 - **An approved clip is changed only where Adrian asks.** Don't rebuild a clip he passed into a busier
   one; apply his named change and keep everything else.
