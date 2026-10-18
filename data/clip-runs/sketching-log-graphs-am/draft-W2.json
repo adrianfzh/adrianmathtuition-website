@@ -80,11 +80,6 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "asy",
-     "on": "Step three"
-    },
-    {
      "do": "write",
      "step": 3,
      "on": "Move that shape"

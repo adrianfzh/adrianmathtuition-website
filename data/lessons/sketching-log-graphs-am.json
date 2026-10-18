@@ -136,7 +136,6 @@
           "say": "Step three, draw it. Move that shape to hug X equals two. The inside must be positive, so the curve stays left of it.",
           "asks": ["Why must the inside be positive?", "Which side of x = 2 is the curve?"],
           "do": [
-            { "do": "highlight", "token": "asy", "on": "Step three" },
             { "do": "write", "step": 3, "on": "Move that shape" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b6.mp3",
