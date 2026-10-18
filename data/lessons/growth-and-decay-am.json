@@ -38,6 +38,12 @@
         },
         {
           "tokens": [
+            { "tex": "t=7.5,", "id": "tq" },
+            { "tex": "P=2\\times 100=200", "id": "pq" }
+          ]
+        },
+        {
+          "tokens": [
             { "tex": "200", "id": "dbl", "hl": "amber" },
             { "tex": "=100e^{7.5k}", "id": "rhs" }
           ]
@@ -120,10 +126,11 @@
           "timing": "/lessons/growth-and-decay-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred.",
+          "say": "Doubling every seven point five hours means: when T equals seven point five, P is two times one hundred, two hundred.",
           "asks": ["Why is P 200?"],
           "do": [
-            { "do": "write", "token": "dbl", "on": "P is two hundred" }
+            { "do": "write", "token": "tq", "on": "when T equals seven point five" },
+            { "do": "write", "token": "pq", "on": "P is two times" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b6.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b6.timing.json"
@@ -132,6 +139,7 @@
           "say": "So two hundred equals one hundred E to the power seven point five K.",
           "asks": ["Where did this equation come from?"],
           "do": [
+            { "do": "write", "token": "dbl", "on": "So two hundred" },
             { "do": "write", "token": "rhs", "on": "one hundred E to the power" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
@@ -160,7 +168,7 @@
           "say": "But first, make E to the power seven point five K the subject: divide both sides by one hundred.",
           "asks": ["Why divide first?"],
           "do": [
-            { "do": "write", "step": 5, "on": "divide both sides by" }
+            { "do": "write", "step": 6, "on": "divide both sides by" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b10.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b10.timing.json"
@@ -169,7 +177,7 @@
           "say": "Now take L N of both sides: L N of E to the power seven point five K equals L N two.",
           "asks": ["Why take L N of both sides?"],
           "do": [
-            { "do": "write", "step": 6, "on": "take L N of both sides" }
+            { "do": "write", "step": 7, "on": "take L N of both sides" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b11.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b11.timing.json"
@@ -189,7 +197,7 @@
           "asks": ["Why is L N E equal to 1?"],
           "do": [
             { "do": "note", "text": "$\\ln e = 1$, since $e^1 = e$", "near": "l4", "on": "because E to the power" },
-            { "do": "write", "step": 8, "on": "So seven point five K" }
+            { "do": "write", "step": 9, "on": "So seven point five K" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b13.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b13.timing.json"

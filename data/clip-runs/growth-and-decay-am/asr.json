@@ -4,8 +4,8 @@
  "lines": [
   {
    "beat": 1,
-   "bag": 0.88,
-   "score": 0.88,
+   "bag": 0.92,
+   "score": 0.92,
    "heard": null
   },
   {
@@ -16,9 +16,10 @@
   },
   {
    "beat": 3,
-   "bag": 0.96,
-   "score": 0.96,
-   "heard": null
+   "bag": 0.83,
+   "score": 0.931,
+   "heard": "Put T equal 0 and P equal 100 into the formula. 100 equal P not E to the power K times 0.",
+   "said": "Put T equals zero and P equals one hundred into the formula: one hundred equals P nought E to the power K times zero."
   },
   {
    "beat": 4,
@@ -34,8 +35,8 @@
   },
   {
    "beat": 6,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.9,
+   "score": 0.9,
    "heard": null
   },
   {
@@ -72,23 +73,21 @@
   },
   {
    "beat": 12,
-   "bag": 0.75,
-   "score": 0.977,
-   "heard": "Bring the power down. 7.5K comes down in front of LNE.",
-   "said": "Bring the power down: seven point five K comes down in front of L N E."
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
   },
   {
    "beat": 13,
-   "bag": 0.73,
-   "score": 0.972,
-   "heard": "ln is one because E to the power one is E. So 7.5k equals ln2.",
-   "said": "L N E is one, because E to the power one is E. So seven point five K equals L N two."
+   "bag": 0.95,
+   "score": 0.95,
+   "heard": null
   },
   {
    "beat": 14,
    "bag": 0.75,
    "score": 1,
-   "heard": "divide both sides by 7.5 K = ln2 over 7.5",
+   "heard": "Divide both sides by 7.5 K = LN2 over 7.5",
    "said": "Divide both sides by seven point five: K equals L N two over seven point five."
   },
   {

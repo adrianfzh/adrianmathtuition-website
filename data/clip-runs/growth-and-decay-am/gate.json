@@ -1,6 +1,6 @@
 {
  "slug": "growth-and-decay-am",
- "at": "2026-10-17T23:50:47.325Z",
+ "at": "2026-10-18T00:15:02.886Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -12,7 +12,7 @@
   },
   "board": {
    "ok": true,
-   "detail": "10 lines = the checked plan"
+   "detail": "11 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,7 +20,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "16/16 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "20/20 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   }
  },
  "pass": true

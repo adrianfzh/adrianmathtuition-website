@@ -92,6 +92,23 @@
     {
       "tokens": [
         {
+          "tex": "t=7.5,",
+          "id": "tq"
+        },
+        {
+          "tex": "P=2\\times 100=200",
+          "id": "pq"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "2*P0 = 200"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
           "tex": "200",
           "id": "dbl",
           "hl": "amber"
@@ -102,9 +119,6 @@
         }
       ],
       "checks": [
-        {
-          "fact": "2*P0 = 200"
-        },
         {
           "start": "200 = P0*exp(k*7.5)",
           "var": "k"
