@@ -180,3 +180,50 @@ the history.
 - Never name Adrian or any person (students hear "we").
 - Adrian's method, not a textbook's: where the topic bible teaches a way, the clip uses it.
 - Never the bank's words "question bank", "source", "prelim".
+
+## 6. Redoing a clip — what we learnt (16–18 Oct 2026, the 7 A Math Logarithms clips)
+
+Adrian, 18 Oct 2026: "great, remember all we have learnt from redoing the clips so far". The rules a
+clip must follow are §1–§2; this is HOW to change one without making it worse.
+
+### What went wrong, and the rule it gave
+- **A full rebuild of an approved clip made it worse.** Laws of logarithms, Log scales and Sketching
+  were rebuilt in the scrolling style; Adrian: "badly redone. Before redo is better … screen keep
+  shifting up and down". They were put back. → Change an approved clip ONLY where he asks; a short
+  clip stays a fixed board.
+- **"Fast" turned into shortcuts** ("a lot of the explanations seems to give shortcuts"). → Fast only
+  for algebra the level knows; every law and concept is explained: what, how it is used here, why.
+- **The board font was too big for a scrolling board**, so earlier lines left the screen. → fit 0.74.
+- **The question card cut the question off.** → the whole question, always.
+- **A said-but-not-written step** (the t = 0 substitution, "P = 2 × 100"). → what the voice works out
+  is written as it is said.
+- **A detour in a separate clip broke the flow** (a new page, then a sheet). → a side point is a short
+  WRITTEN explanation on the board, closed until tapped (§1).
+- **Anything that appears under the board moves the slider.** → new things go ON the board (overlay),
+  never in the page flow under it.
+
+### The redo recipe (each step, in order)
+1. Change the plan / draft only where asked (`data/clip-plans/<slug>.json`, `data/clip-runs/<slug>/draft-*.json`,
+   and `blind-read.json` `fixed_beats` — it overrides the draft, so edit it too).
+2. `assemble.mjs` → `gate.mjs` (must PASS) → the tests (`clip-ask.test.ts` names board lines; catalog
+   minutes in `lesson-catalog.ts` must match the plan).
+3. Voice: `generate-narration.mjs <slug> --force` then **`align-narration.mjs <slug> --force`** — without
+   `--force` the old timings stay and every cue fires early. Then `--verify` / `asr-score.mjs`.
+4. Push `dev`, wait for the preview, move the alias, then `look.mjs` against adrianmath-dev and LOOK at
+   it yourself at phone size (375 wide): nothing talked about hidden, slider not moving, question whole.
+5. Write Adrian's note into §2 here, dated, his words — same commit. Tell him the link, the login
+   (admin) and where to tap.
+
+### Where each clip stands (18 Oct 2026, test site only — nothing promoted)
+| Clip | State |
+|---|---|
+| Solving log equations | New scrolling style (G9), every watch note applied; side point "log of a negative" written |
+| Solving exponential equations | New style (R3), x terms lit, no Watch out |
+| Linear form with logs (Linear Law) | New style (R1 + fixes) |
+| Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
+| Laws of logarithms | Put back to the version before the rebuild (fixed board) |
+| Log scales | Put back to the version before the rebuild |
+| Sketching log graphs | Put back to the version before the rebuild |
+
+Still offered, not answered: rewrite the explanations in log equations, exponential and Linear Law so
+no step is a shortcut (the 18 Oct rule). Update this table whenever a clip changes.
