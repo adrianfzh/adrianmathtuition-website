@@ -17,23 +17,49 @@
         {
           "heading": "First, what the question says",
           "tokens": [
-            { "id": "f", "tex": "N=10\\lg\\dfrac{I}{k}" }
+            { "id": "fN", "tex": "N" },
+            { "id": "f", "tex": "=10\\lg\\dfrac{I}{k}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mN", "tex": "N:\\ \\text{noise rating, in dB}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mI", "tex": "I:\\ \\text{intensity (how strong the sound is)}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mk", "tex": "k:\\ \\text{a constant, value unknown}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "pN", "tex": "\\text{Pump: }N=50," },
+            { "id": "pI", "tex": "\\;I=I_p" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "pump", "tex": "50=10\\lg\\dfrac{I_p}{k}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "dN", "tex": "\\text{Dishwasher: }N=62," },
+            { "id": "dI", "tex": "\\;I=I_d" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "dish", "tex": "62=10\\lg\\dfrac{I_d}{k}" }
           ]
         },
         {
           "heading": "Now solve it",
-          "tokens": [
-            { "id": "letp", "tex": "\\text{Let } I_p=\\text{intensity of pump}" },
-            { "id": "letd", "tex": ",\\;\\; I_d=\\text{intensity of dishwasher}" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "pump", "tex": "50=10\\lg\\tfrac{I_p}{k}" },
-            { "id": "dish", "tex": ",\\quad 62=10\\lg\\tfrac{I_d}{k}" }
-          ]
-        },
-        {
           "tokens": [
             { "id": "wtxt", "tex": "\\text{We want }\\dfrac{\\text{intensity of dishwasher}}{\\text{intensity of pump}}" },
             { "id": "wsym", "tex": "=\\dfrac{I_d}{I_p}=\\;?" }
@@ -65,67 +91,93 @@
       ],
       "beats": [
         {
-          "say": "First, what the question says. This formula links two numbers for a sound. N is its noise rating, in decibels.",
-          "asks": ["What is a decibel?", "What does N stand for?"],
+          "say": "First, what the question says. This formula links two numbers for a sound.",
+          "asks": ["What does this formula tell us?"],
           "do": [
-            { "do": "write", "step": 0, "on": "This formula links" },
-            { "do": "highlight", "token": "f", "on": "N is its" }
+            { "do": "write", "step": 0, "on": "This formula links" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b1.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b1.timing.json"
         },
         {
-          "say": "I is its intensity: how strong the sound really is. K is a fixed number, and its value is unknown.",
-          "asks": ["What is intensity?", "Why is K not given?"],
+          "say": "N is its noise rating, measured in decibels.",
+          "asks": ["What is a decibel?"],
           "do": [
-            {
-              "do": "note",
-              "text": "$N$ = noise rating (dB),  $I$ = intensity,  $k$ = a constant",
-              "near": "f",
-              "on": "I is its intensity"
-            }
+            { "do": "highlight", "token": "fN", "on": "N is its" },
+            { "do": "write", "step": 1, "on": "measured in decibels" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b2.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b2.timing.json"
         },
         {
-          "say": "The pump is fifty decibels, the dishwasher sixty-two. We must find how many times as intense the dishwasher is.",
-          "asks": ["What does 'how many times as intense' mean?"],
+          "say": "I is its intensity: how strong the sound really is.",
+          "asks": ["What is intensity?"],
           "do": [
-            { "do": "highlight", "token": "f", "on": "how many times" }
+            { "do": "highlight", "token": "f", "part": "num", "on": "I is its" },
+            { "do": "write", "step": 2, "on": "how strong the sound" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b3.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Call the pump's intensity I P. The pump is fifty decibels, so fifty equals ten log I P over K.",
-          "asks": ["Why is the pump fifty equals ten log I P over K?", "What is K?"],
+          "say": "K is a fixed number, and its value is unknown.",
+          "asks": ["Why is K not given?"],
           "do": [
-            { "do": "write", "token": "letp", "on": "Call the pump's intensity" },
-            { "do": "write", "on": "so fifty equals", "token": "pump" }
+            { "do": "highlight", "token": "f", "part": "den", "on": "K is a fixed" },
+            { "do": "write", "step": 3, "on": "its value is unknown" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b4.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b4.timing.json"
         },
         {
-          "say": "Call the dishwasher's intensity I D. It is sixty-two decibels, so sixty-two equals ten log I D over K.",
-          "asks": ["Where does sixty-two come from?"],
+          "say": "The pump is fifty decibels, so for the pump, N is fifty. Call its intensity I P.",
+          "asks": ["Why is N fifty for the pump?"],
           "do": [
-            { "do": "write", "token": "letd", "on": "Call the dishwasher's intensity" },
-            { "do": "write", "on": "so sixty-two equals", "token": "dish" }
+            { "do": "write", "token": "pN", "on": "N is fifty" },
+            { "do": "write", "token": "pI", "on": "Call its intensity" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b5.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b5.timing.json"
         },
         {
-          "say": "We want the intensity of the dishwasher over the intensity of the pump. That is I D over I P.",
+          "say": "Substitute them into the formula: fifty equals ten log I P over K.",
+          "asks": ["Where does each number go?"],
+          "do": [
+            { "do": "highlight", "token": ["pN", "pI"], "on": "Substitute them into" },
+            { "do": "write", "step": 5, "on": "fifty equals ten" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "The dishwasher is sixty-two decibels, so N is sixty-two. Call its intensity I D.",
+          "asks": ["Why a different letter for the dishwasher?"],
+          "do": [
+            { "do": "write", "token": "dN", "on": "N is sixty-two" },
+            { "do": "write", "token": "dI", "on": "Call its intensity" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "Substitute them in: sixty-two equals ten log I D over K.",
+          "asks": ["Is K the same for both?"],
+          "do": [
+            { "do": "highlight", "token": ["dN", "dI"], "on": "Substitute them in" },
+            { "do": "write", "step": 7, "on": "sixty-two equals ten" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
+        },
+        {
+          "say": "Now solve it. We want the intensity of the dishwasher over the intensity of the pump. That is I D over I P.",
           "asks": ["Why I D over I P and not I P over I D?"],
           "do": [
             { "do": "write", "token": "wtxt", "on": "We want the intensity" },
             { "do": "write", "token": "wsym", "on": "That is I D" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b9.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b9.timing.json"
         },
         {
           "say": "But K is unknown. Subtracting the two equations joins the two logs into one, and K cancels.",
@@ -133,17 +185,17 @@
           "do": [
             { "do": "highlight", "token": ["pump", "dish"], "on": "But K is unknown" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b10.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b10.timing.json"
         },
         {
           "say": "So take the dishwasher's equation minus the pump's: sixty-two minus fifty equals the two logs, one minus the other.",
           "asks": ["Why the dishwasher minus the pump?"],
           "do": [
-            { "do": "write", "step": 4, "on": "sixty-two minus fifty" }
+            { "do": "write", "step": 9, "on": "sixty-two minus fifty" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b11.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b11.timing.json"
         },
         {
           "say": "Sixty-two minus fifty is twelve.",
@@ -151,8 +203,8 @@
           "do": [
             { "do": "write", "token": "twelve", "on": "is twelve" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b9.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b9.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b12.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b12.timing.json"
         },
         {
           "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
@@ -162,17 +214,17 @@
             { "do": "write", "token": "one", "on": "one log of the ratio" },
             { "do": "note", "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$", "near": "one", "on": "K cancels" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b10.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b10.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b13.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b13.timing.json"
         },
         {
           "say": "Divide both sides by ten. Log of the ratio is one point two.",
           "asks": ["Why divide both sides by 10?"],
           "do": [
-            { "do": "write", "step": 6, "on": "Log of the ratio" }
+            { "do": "write", "step": 11, "on": "Log of the ratio" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b11.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b11.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b14.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b14.timing.json"
         },
         {
           "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
@@ -181,8 +233,8 @@
             { "do": "write", "token": "unlog", "on": "The ratio is ten" },
             { "do": "note", "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^{c}$", "near": "unlog", "on": "one point two" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b12.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b12.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b15.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b15.timing.json"
         },
         {
           "say": "Ten to the power one point two is about fifteen point eight.",
@@ -190,8 +242,8 @@
           "do": [
             { "do": "write", "token": "ans", "on": "about fifteen point eight" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b13.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b13.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b16.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b16.timing.json"
         },
         {
           "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
@@ -199,8 +251,8 @@
           "do": [
             { "do": "mark", "kind": "box", "token": "ans", "on": "fifteen point eight times" }
           ],
-          "audio": "/lessons/log-scales-am/scene-01-b14.mp3",
-          "timing": "/lessons/log-scales-am/scene-01-b14.timing.json"
+          "audio": "/lessons/log-scales-am/scene-01-b17.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b17.timing.json"
         }
       ]
     }

@@ -4,91 +4,154 @@
  "by": "session, Adrian's watch 18 Oct 2026 (explain why we start by subtracting)",
  "beats": [
   {
-   "say": "First, what the question says. This formula links two numbers for a sound. N is its noise rating, in decibels.",
+   "say": "First, what the question says. This formula links two numbers for a sound.",
    "asks": [
-    "What is a decibel?",
-    "What does N stand for?"
+    "What does this formula tell us?"
    ],
    "do": [
     {
      "do": "write",
      "step": 0,
      "on": "This formula links"
-    },
-    {
-     "do": "highlight",
-     "token": "f",
-     "on": "N is its"
     }
    ]
   },
   {
-   "say": "I is its intensity: how strong the sound really is. K is a fixed number, and its value is unknown.",
+   "say": "N is its noise rating, measured in decibels.",
    "asks": [
-    "What is intensity?",
+    "What is a decibel?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "fN",
+     "on": "N is its"
+    },
+    {
+     "do": "write",
+     "step": 1,
+     "on": "measured in decibels"
+    }
+   ]
+  },
+  {
+   "say": "I is its intensity: how strong the sound really is.",
+   "asks": [
+    "What is intensity?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "f",
+     "part": "num",
+     "on": "I is its"
+    },
+    {
+     "do": "write",
+     "step": 2,
+     "on": "how strong the sound"
+    }
+   ]
+  },
+  {
+   "say": "K is a fixed number, and its value is unknown.",
+   "asks": [
     "Why is K not given?"
    ],
    "do": [
     {
-     "do": "note",
-     "text": "$N$ = noise rating (dB),  $I$ = intensity,  $k$ = a constant",
-     "near": "f",
-     "on": "I is its intensity"
+     "do": "highlight",
+     "token": "f",
+     "part": "den",
+     "on": "K is a fixed"
+    },
+    {
+     "do": "write",
+     "step": 3,
+     "on": "its value is unknown"
     }
    ]
   },
   {
-   "say": "The pump is fifty decibels, the dishwasher sixty-two. We must find how many times as intense the dishwasher is.",
+   "say": "The pump is fifty decibels, so for the pump, N is fifty. Call its intensity I P.",
    "asks": [
-    "What does 'how many times as intense' mean?"
+    "Why is N fifty for the pump?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "pN",
+     "on": "N is fifty"
+    },
+    {
+     "do": "write",
+     "token": "pI",
+     "on": "Call its intensity"
+    }
+   ]
+  },
+  {
+   "say": "Substitute them into the formula: fifty equals ten log I P over K.",
+   "asks": [
+    "Where does each number go?"
    ],
    "do": [
     {
      "do": "highlight",
-     "token": "f",
-     "on": "how many times"
+     "token": [
+      "pN",
+      "pI"
+     ],
+     "on": "Substitute them into"
+    },
+    {
+     "do": "write",
+     "step": 5,
+     "on": "fifty equals ten"
     }
    ]
   },
   {
-   "say": "Call the pump's intensity I P. The pump is fifty decibels, so fifty equals ten log I P over K.",
+   "say": "The dishwasher is sixty-two decibels, so N is sixty-two. Call its intensity I D.",
    "asks": [
-    "Why is the pump fifty equals ten log I P over K?",
-    "What is K?"
+    "Why a different letter for the dishwasher?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "letp",
-     "on": "Call the pump's intensity"
+     "token": "dN",
+     "on": "N is sixty-two"
     },
     {
      "do": "write",
-     "on": "so fifty equals",
-     "token": "pump"
+     "token": "dI",
+     "on": "Call its intensity"
     }
    ]
   },
   {
-   "say": "Call the dishwasher's intensity I D. It is sixty-two decibels, so sixty-two equals ten log I D over K.",
+   "say": "Substitute them in: sixty-two equals ten log I D over K.",
    "asks": [
-    "Where does sixty-two come from?"
+    "Is K the same for both?"
    ],
    "do": [
     {
-     "do": "write",
-     "token": "letd",
-     "on": "Call the dishwasher's intensity"
+     "do": "highlight",
+     "token": [
+      "dN",
+      "dI"
+     ],
+     "on": "Substitute them in"
     },
     {
      "do": "write",
-     "on": "so sixty-two equals",
-     "token": "dish"
+     "step": 7,
+     "on": "sixty-two equals ten"
     }
    ]
   },
   {
-   "say": "We want the intensity of the dishwasher over the intensity of the pump. That is I D over I P.",
+   "say": "Now solve it. We want the intensity of the dishwasher over the intensity of the pump. That is I D over I P.",
    "asks": [
     "Why I D over I P and not I P over I D?"
    ],
@@ -130,7 +193,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 9,
      "on": "sixty-two minus fifty"
     }
    ]
@@ -181,7 +244,7 @@
    "do": [
     {
      "do": "write",
-     "step": 6,
+     "step": 11,
      "on": "Log of the ratio"
     }
    ]

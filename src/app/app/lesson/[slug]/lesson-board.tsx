@@ -469,9 +469,9 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       const live = last && (board.beat ?? 0) - (last.beat ?? 0) <= 1 ? pulses.filter(p => p.beat === last.beat) : [];
       // part 'sub' lights only the base (the subscript) — its own colour (Adrian, 15 Oct 2026).
       const want = new Map<string, string>();
-      for (const p of live) for (const id of p.tokens) want.set(id, p.part === 'sub' ? 'lsn-lit-sub' : p.tone === 'orange' ? 'lsn-lit-orange' : p.tone === 'sky' ? 'lsn-lit-blue' : 'lsn-lit');
-      const ALL = ['lsn-lit', 'lsn-lit-sub', 'lsn-lit-orange', 'lsn-lit-blue'];
-      zoom.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub, .lsn-lit-orange, .lsn-lit-blue').forEach(el => {
+      for (const p of live) for (const id of p.tokens) want.set(id, p.part === 'sub' ? 'lsn-lit-sub' : p.part === 'num' ? 'lsn-lit-num' : p.part === 'den' ? 'lsn-lit-den' : p.tone === 'orange' ? 'lsn-lit-orange' : p.tone === 'sky' ? 'lsn-lit-blue' : 'lsn-lit');
+      const ALL = ['lsn-lit', 'lsn-lit-sub', 'lsn-lit-num', 'lsn-lit-den', 'lsn-lit-orange', 'lsn-lit-blue'];
+      zoom.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub, .lsn-lit-num, .lsn-lit-den, .lsn-lit-orange, .lsn-lit-blue').forEach(el => {
         const w = want.get(el.dataset.tokenId ?? '');
         for (const c of ALL) if (c !== w) el.classList.remove(c);
       });

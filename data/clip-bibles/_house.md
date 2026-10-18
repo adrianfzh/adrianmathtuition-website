@@ -117,6 +117,13 @@ the history.
   step writes the given formula, says what each letter means (a note: `N = noise rating (dB), I =
   intensity, k = a constant`), the given values, and what we must find, in plain words. Then
   "Now solve it". Do this for every word problem or formula the student may not have met.
+  **Each meaning its own line, its letter lit as it is named, and each given value SUBSTITUTED on
+  the board** (18 Oct 2026: "when narrator says I is its intensity, we can highlight I, likewise for
+  k … show how we can sub in 50 dB then the intensity of which is ... call it I_pump > show the
+  substitution on the screen … whatever you think needs to be on screen for better clarity > do
+  so"): `N: noise rating, in dB` (N lit), `I: intensity …` (I lit — `"part": "num"` lights a
+  fraction's top, `"den"` its bottom), then `Pump: N = 50, I = I_p` → `50 = 10lg(I_p/k)`. The
+  standing test: if the voice says it and it helps, it is on the board.
 - **Write what we are asked to find, then in letters** (18 Oct 2026, Log scales: "should show on screen
   intensity of the dishwasher / intensity of the pump = ? while narrating … hence it's I_d / I_p = ?"):
   `We want (intensity of dishwasher)/(intensity of pump) = I_d/I_p = ?`, each part on the words that say it.

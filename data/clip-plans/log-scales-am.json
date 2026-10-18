@@ -31,8 +31,12 @@
       "heading": "First, what the question says",
       "tokens": [
         {
+          "id": "fN",
+          "tex": "N"
+        },
+        {
           "id": "f",
-          "tex": "N=10\\lg\\dfrac{I}{k}"
+          "tex": "=10\\lg\\dfrac{I}{k}"
         }
       ],
       "checks": [
@@ -44,36 +48,97 @@
     {
       "tokens": [
         {
-          "id": "letp",
-          "tex": "\\text{Let } I_p=\\text{intensity of pump}"
-        },
-        {
-          "id": "letd",
-          "tex": ",\\;\\; I_d=\\text{intensity of dishwasher}"
+          "id": "mN",
+          "tex": "N:\\ \\text{noise rating, in dB}"
         }
       ],
       "checks": [
         {
-          "form": "Ip = Ip"
+          "form": "N = N"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "mI",
+          "tex": "I:\\ \\text{intensity (how strong the sound is)}"
         }
       ],
-      "heading": "Now solve it"
+      "checks": [
+        {
+          "form": "I = I"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "mk",
+          "tex": "k:\\ \\text{a constant, value unknown}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "k = k"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "pN",
+          "tex": "\\text{Pump: }N=50,"
+        },
+        {
+          "id": "pI",
+          "tex": "\\;I=I_p"
+        }
+      ],
+      "checks": [
+        {
+          "form": "N = 50"
+        }
+      ]
     },
     {
       "tokens": [
         {
           "id": "pump",
-          "tex": "50=10\\lg\\tfrac{I_p}{k}"
-        },
-        {
-          "id": "dish",
-          "tex": ",\\quad 62=10\\lg\\tfrac{I_d}{k}"
+          "tex": "50=10\\lg\\dfrac{I_p}{k}"
         }
       ],
       "checks": [
         {
           "form": "50 = 10*log(Ip/k,10)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "dN",
+          "tex": "\\text{Dishwasher: }N=62,"
         },
+        {
+          "id": "dI",
+          "tex": "\\;I=I_d"
+        }
+      ],
+      "checks": [
+        {
+          "form": "N = 62"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "dish",
+          "tex": "62=10\\lg\\dfrac{I_d}{k}"
+        }
+      ],
+      "checks": [
         {
           "form": "62 = 10*log(Id/k,10)"
         }
@@ -94,7 +159,8 @@
         {
           "form": "R = Id/Ip"
         }
-      ]
+      ],
+      "heading": "Now solve it"
     },
     {
       "tokens": [

@@ -3206,6 +3206,10 @@ const PLAYER_CSS = `
 /* A clip's highlight stays lit while it is talked about (lesson-board 2b): the chalk turns yellow. */
 [data-lsn-clip] .lsn-lit, [data-lsn-clip] .lsn-lit .katex { color: var(--lsn-hl-amber); transition: color 250ms ease; }
 /* A law's x and y, matched on the board: orange and blue chalk (Adrian, 16 Oct 2026). */
+/* One letter of a fraction lit (Adrian, 18 Oct 2026: "when narrator says I is its intensity, we can
+   highlight I, likewise for k"): KaTeX lays a fraction out bottom, line, top. */
+[data-lsn-clip] .lsn-lit-num .mfrac > .vlist-t > .vlist-r:first-child > .vlist > span:nth-child(3),
+[data-lsn-clip] .lsn-lit-den .mfrac > .vlist-t > .vlist-r:first-child > .vlist > span:nth-child(1) { color: var(--lsn-hl-amber); text-shadow: 0 0 8px rgba(252,211,77,0.65); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-orange, [data-lsn-clip] .lsn-lit-orange .katex { color: #ff9a3c; text-shadow: 0 0 8px rgba(255,154,60,0.6); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-blue, [data-lsn-clip] .lsn-lit-blue .katex { color: #a8ecfb; text-shadow: 0 0 8px rgba(168,236,251,0.6); transition: color 250ms ease; }
 [data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
