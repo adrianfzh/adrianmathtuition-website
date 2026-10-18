@@ -622,9 +622,14 @@ function scrollClipBoard(cont: HTMLElement) {
     }
     const scrub = document.querySelector<HTMLElement>('.lsn-scrub');
     const reserve = scrub ? scrub.getBoundingClientRect().height + 8 : 0;
-    const sr = stage.getBoundingClientRect();
     const br = boardEl.getBoundingClientRect();
-    const h = Math.max(240, Math.floor(bar - 8 - reserve - (sr.bottom - br.bottom) - (br.top + window.scrollY)));
+    // Below the board sits only the stage's own bottom padding (the subtitle strip lives in it). Not
+    // the stage's bottom: the stage has a min-height, so a short board left it taller than the board,
+    // that gap was counted as taken and the board shrank to its 240 px floor (18 Oct 2026, Log scales:
+    // the lines slid off the top early, an empty band above the subtitle).
+    const cs = getComputedStyle(stage);
+    const below = parseFloat(cs.paddingBottom) + parseFloat(cs.borderBottomWidth);
+    const h = Math.max(240, Math.floor(bar - 8 - reserve - below - (br.top + window.scrollY)));
     boardEl.style.height = `${h}px`;
     boardEl.style.flex = 'none';   // .lsn-board is flex: 1 — a flex-basis would let it grow with its lines
   }
