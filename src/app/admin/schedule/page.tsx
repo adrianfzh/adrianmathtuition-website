@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { makeupLimitOnDate, weeklyLimit } from '@/lib/class-size-rules';
+import { canMoveInPlace } from '@/lib/move-in-place';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
 import { isBroughtForward } from '@/lib/reschedule-chain';
@@ -353,6 +354,8 @@ interface RescheduleState {
   notes: string;
   showPickers: boolean; // true = manual pick mode (from action sheet)
   switchMode?: boolean; // true = same-day slot switch (date locked, slot picker only)
+  // A moved-in lesson: false = the usual reschedule (new record). Unset = change its time in place (the default when allowed).
+  moveInPlace?: boolean;
 }
 interface ActionSheetState {
   lesson: EnrichedLesson;
@@ -2369,10 +2372,13 @@ export default function SchedulePage() {
         await fetchSchedule(monday);
         showToast('success', `✓ Switched to ${json.newSlotName} from ${json.switchDate} — ${json.cancelled} cancelled, ${json.created} created${json.adjustment ? ` · ${json.adjustment > 0 ? '+' : ''}$${json.adjustment} ${json.adjustmentMonth} adjustment` : ''}`);
       } else {
+        // A moved-in lesson defaults to "Change this lesson's time" (edit it in place,
+        // no trail of crossed-out lessons — Adrian, 18 Oct 2026); the old way stays one tap away.
+        const mode = canMoveInPlace(lesson) && rescheduleModal.moveInPlace !== false ? 'move' : 'reschedule';
         let res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined }),
+          body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, mode }),
         });
         let json = await res.json();
         if (res.status === 409 && json.doubleBooked) {
@@ -2392,7 +2398,7 @@ export default function SchedulePage() {
           res = await fetch('/api/admin-schedule/reschedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, force: true }),
+            body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, force: true, mode }),
           });
           json = await res.json();
         }
@@ -2400,7 +2406,7 @@ export default function SchedulePage() {
         setRescheduleModal(null);
         setTargetDayCounts({}); // booked counts changed — drop the cache
         await fetchSchedule(monday);
-        showToast('success', '✓ Rescheduled');
+        showToast('success', json.movedInPlace ? '✓ Time changed' : '✓ Rescheduled');
       }
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
@@ -4597,6 +4603,25 @@ export default function SchedulePage() {
                 <span className="modal-label">From</span>
                 <span>{formatDateSlot(rescheduleModal.lesson.date, rescheduleModal.lesson.slotId)}</span>
               </div>
+              {/* A lesson that was already moved here: change its time in place (default), or the
+                  usual reschedule that leaves it crossed out and starts a new one (18 Oct 2026). */}
+              {!rescheduleModal.switchMode && canMoveInPlace(rescheduleModal.lesson) && (() => {
+                const inPlace = rescheduleModal.moveInPlace !== false;
+                const opt = (on: boolean, value: boolean, title: string, sub: string) => (
+                  <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                    border: `1px solid ${on ? '#2563eb' : '#e2e8f0'}`, background: on ? '#eff6ff' : '#fff' }}>
+                    <input type="radio" name="resched-mode" checked={on} style={{ marginTop: 3 }}
+                      onChange={() => setRescheduleModal(m => m ? { ...m, moveInPlace: value } : null)} />
+                    <span><span style={{ fontWeight: 600, fontSize: 14 }}>{title}</span><br /><span style={{ fontSize: 12, color: '#64748b' }}>{sub}</span></span>
+                  </label>
+                );
+                return (
+                  <div className="form-group" style={{ display: 'grid', gap: 6 }}>
+                    {opt(inPlace, true, "Change this lesson's time", 'This lesson was already moved here. Just give it a new time — no extra crossed-out lesson.')}
+                    {opt(!inPlace, false, 'Reschedule', 'The usual way: this one is crossed out and a new lesson is made.')}
+                  </div>
+                );
+              })()}
               {rescheduleModal.showPickers ? (
                 <>
                   {!rescheduleModal.switchMode && (
@@ -4776,7 +4801,7 @@ export default function SchedulePage() {
                 <button className="btn-cancel" onClick={() => setRescheduleModal(null)} disabled={submitting}>Cancel</button>
                 <button className="btn-primary" onClick={handleConfirmReschedule}
                   disabled={submitting || (rescheduleModal.showPickers && (!rescheduleModal.toDate || !rescheduleModal.toSlotId))}>
-                  {submitting ? 'Rescheduling…' : 'Confirm'}
+                  {submitting ? 'Saving…' : (!rescheduleModal.switchMode && canMoveInPlace(rescheduleModal.lesson) && rescheduleModal.moveInPlace !== false ? 'Change time' : 'Confirm')}
                 </button>
               </div>
             </div>
