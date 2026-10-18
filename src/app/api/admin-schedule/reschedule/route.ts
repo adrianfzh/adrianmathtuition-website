@@ -13,6 +13,7 @@ import {
 import { fullMessage, makeupLimit } from '@/lib/class-size-rules';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
+import { canMoveInPlace, moveHistoryNote } from '@/lib/move-in-place';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
 
 export const runtime = 'nodejs';
@@ -29,6 +30,9 @@ export async function POST(req: NextRequest) {
     notes?: string;
     // Admin override: book into a full slot anyway (client confirms first).
     force?: boolean;
+    // 'move' = change a moved-in lesson's own date/slot instead of starting a new
+    // record (18 Oct 2026, lib/move-in-place.ts). Omitted = the usual reschedule.
+    mode?: 'move' | 'reschedule';
   };
   try {
     body = await req.json();
@@ -37,6 +41,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { lessonId, newDate, newSlotId, notes, force } = body;
+  const moveInPlace = body.mode === 'move';
 
   if (!lessonId || !newDate || !newSlotId) {
     return NextResponse.json(
@@ -62,6 +67,13 @@ export async function POST(req: NextRequest) {
     if (origSlotId === newSlotId && origDate === newDate) {
       return NextResponse.json(
         { error: 'Same slot and date as the original lesson — nothing to change' },
+        { status: 400 }
+      );
+    }
+
+    if (moveInPlace && !canMoveInPlace({ type: origFields['Type'], status: origFields['Status'] })) {
+      return NextResponse.json(
+        { error: 'Only a lesson that was already moved here (and is still booked) can have its time changed — use Reschedule instead' },
         { status: 400 }
       );
     }
@@ -124,6 +136,24 @@ export async function POST(req: NextRequest) {
         },
         { status: 409 }
       );
+    }
+
+    // 3b. "Change this lesson's time": edit the moved-in lesson itself. Its source still
+    // links to this same record, so the chain stays one hop and nothing is crossed out;
+    // Type / Billing Month / Is Makeup are untouched, so billing and counts stay right.
+    if (moveInPlace) {
+      const origSlot = origSlotId ? await airtableRequest('Slots', `/${origSlotId}`).catch(() => null) : null;
+      const history = moveHistoryNote(
+        origFields['Notes'],
+        { date: origDate, time: origSlot?.fields?.['Time'] || '' },
+        { date: newDate, time: targetFields['Time'] || '' },
+      );
+      await airtableRequest('Lessons', `/${lessonId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { Date: newDate, Slot: [newSlotId], Notes: notes ? `${history} — ${notes}` : history } }),
+      });
+      invalidateScheduleStatics();
+      return NextResponse.json({ success: true, movedInPlace: true, lessonId });
     }
 
     // Format original date for the note e.g. "Mon, 4 May 2026"
