@@ -29,8 +29,8 @@
     },
     {
      "do": "write",
-     "step": 1,
-     "on": "measured in decibels"
+     "on": "measured in decibels",
+     "token": "mN"
     }
    ]
   },
@@ -48,8 +48,8 @@
     },
     {
      "do": "write",
-     "step": 2,
-     "on": "how strong the sound"
+     "on": "how strong the sound",
+     "token": "mI"
     }
    ]
   },
@@ -67,8 +67,8 @@
     },
     {
      "do": "write",
-     "step": 3,
-     "on": "its value is unknown"
+     "on": "its value is unknown",
+     "token": "mk"
     }
    ]
   },
@@ -99,6 +99,7 @@
     {
      "do": "highlight",
      "token": [
+      "f",
       "pN",
       "pI"
      ],
@@ -106,7 +107,7 @@
     },
     {
      "do": "write",
-     "step": 5,
+     "step": 3,
      "on": "fifty equals ten"
     }
    ]
@@ -145,7 +146,7 @@
     },
     {
      "do": "write",
-     "step": 7,
+     "step": 5,
      "on": "sixty-two equals ten"
     }
    ]
@@ -193,7 +194,7 @@
    "do": [
     {
      "do": "write",
-     "step": 9,
+     "step": 7,
      "on": "sixty-two minus fifty"
     }
    ]
@@ -244,7 +245,7 @@
    "do": [
     {
      "do": "write",
-     "step": 11,
+     "step": 9,
      "on": "Log of the ratio"
     }
    ]

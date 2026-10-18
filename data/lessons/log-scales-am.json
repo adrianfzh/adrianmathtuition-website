@@ -23,17 +23,9 @@
         },
         {
           "tokens": [
-            { "id": "mN", "tex": "N:\\ \\text{noise rating, in dB}" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "mI", "tex": "I:\\ \\text{intensity (how strong the sound is)}" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "mk", "tex": "k:\\ \\text{a constant, value unknown}" }
+            { "id": "mN", "tex": "N:\\text{ noise rating (dB)}," },
+            { "id": "mI", "tex": "\\;I:\\text{ intensity}," },
+            { "id": "mk", "tex": "\\;k:\\text{ a constant}" }
           ]
         },
         {
@@ -104,7 +96,7 @@
           "asks": ["What is a decibel?"],
           "do": [
             { "do": "highlight", "token": "fN", "on": "N is its" },
-            { "do": "write", "step": 1, "on": "measured in decibels" }
+            { "do": "write", "on": "measured in decibels", "token": "mN" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b2.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b2.timing.json"
@@ -114,7 +106,7 @@
           "asks": ["What is intensity?"],
           "do": [
             { "do": "highlight", "token": "f", "part": "num", "on": "I is its" },
-            { "do": "write", "step": 2, "on": "how strong the sound" }
+            { "do": "write", "on": "how strong the sound", "token": "mI" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b3.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b3.timing.json"
@@ -124,7 +116,7 @@
           "asks": ["Why is K not given?"],
           "do": [
             { "do": "highlight", "token": "f", "part": "den", "on": "K is a fixed" },
-            { "do": "write", "step": 3, "on": "its value is unknown" }
+            { "do": "write", "on": "its value is unknown", "token": "mk" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b4.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b4.timing.json"
@@ -143,8 +135,8 @@
           "say": "Substitute them into the formula: fifty equals ten log I P over K.",
           "asks": ["Where does each number go?"],
           "do": [
-            { "do": "highlight", "token": ["pN", "pI"], "on": "Substitute them into" },
-            { "do": "write", "step": 5, "on": "fifty equals ten" }
+            { "do": "highlight", "token": ["f", "pN", "pI"], "on": "Substitute them into" },
+            { "do": "write", "step": 3, "on": "fifty equals ten" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
@@ -164,7 +156,7 @@
           "asks": ["Is K the same for both?"],
           "do": [
             { "do": "highlight", "token": ["dN", "dI"], "on": "Substitute them in" },
-            { "do": "write", "step": 7, "on": "sixty-two equals ten" }
+            { "do": "write", "step": 5, "on": "sixty-two equals ten" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
@@ -192,7 +184,7 @@
           "say": "So take the dishwasher's equation minus the pump's: sixty-two minus fifty equals the two logs, one minus the other.",
           "asks": ["Why the dishwasher minus the pump?"],
           "do": [
-            { "do": "write", "step": 9, "on": "sixty-two minus fifty" }
+            { "do": "write", "step": 7, "on": "sixty-two minus fifty" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b11.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b11.timing.json"
@@ -221,7 +213,7 @@
           "say": "Divide both sides by ten. Log of the ratio is one point two.",
           "asks": ["Why divide both sides by 10?"],
           "do": [
-            { "do": "write", "step": 11, "on": "Log of the ratio" }
+            { "do": "write", "step": 9, "on": "Log of the ratio" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b14.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b14.timing.json"

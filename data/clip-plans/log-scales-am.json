@@ -49,38 +49,20 @@
       "tokens": [
         {
           "id": "mN",
-          "tex": "N:\\ \\text{noise rating, in dB}"
+          "tex": "N:\\text{ noise rating (dB)},"
+        },
+        {
+          "id": "mI",
+          "tex": "\\;I:\\text{ intensity},"
+        },
+        {
+          "id": "mk",
+          "tex": "\\;k:\\text{ a constant}"
         }
       ],
       "checks": [
         {
           "form": "N = N"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "mI",
-          "tex": "I:\\ \\text{intensity (how strong the sound is)}"
-        }
-      ],
-      "checks": [
-        {
-          "form": "I = I"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "mk",
-          "tex": "k:\\ \\text{a constant, value unknown}"
-        }
-      ],
-      "checks": [
-        {
-          "form": "k = k"
         }
       ]
     },
