@@ -258,6 +258,8 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
   a resize re-lays the ink at once; a re-fit re-lays it in the next frame, never wiping first). →
   while a piece moves, check a frame at move + 0.7 s: every "Times power:" word and ↑ must be there.
 
+- **A long chain on one line prints small on a phone** (19 Oct 2026, Compare powers: `a: (2x+2) − (3−y) = 2x+2−3+y = 2x+y−1` shrank to about 60 %). A line shrinks to fit the width, so keep a line to about 25 characters; put the result of a chain on the next line (or into the line that uses it).
+
 ### The redo recipe (each step, in order)
 1. Change the plan / draft only where asked (`data/clip-plans/<slug>.json`, `data/clip-runs/<slug>/draft-*.json`,
    and `blind-read.json` `fixed_beats` — it overrides the draft, so edit it too).
@@ -312,6 +314,7 @@ The test for every beat: if the voice says it and it helps, it is on the board a
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | **Indices: Same base, compare powers** (`same-base-compare-powers-am`) | Built 18 Oct in ONE go with both checks (the one-shot test); stand-in review: 0 must after two false alarms were fixed in the reviewer's brief. Waiting for Adrian's note count. |
 | **Indices: Solving by substitution** (`solving-by-substitution-am`) | Built 18 Oct in one go (Indices clip 2). Stand-in review rounds: 2 must → 1 must → pass → (a fresh run found 1 more must: the key step's middle line) → pass with shoulds only. Waiting for Adrian's note count. |
+| **Indices: Compare powers, two unknowns** (`compare-powers-two-unknowns-am`) | Built 19 Oct alone in a fresh session, recipe in order. Storyboard reviews: 2 musts over 6 runs (a skipped middle line; "= 1" a beat late), both fixed before the voice. Phone review: pass; its "lines too small" should was taken (a long chain on one line shrinks — keep each line to about 25 characters). Waiting for Adrian's note count. |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
 | Log scales | **The word-problem reference (approved 18 Oct: "way better").** The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
 | Sketching log graphs | The version before the rebuild + (18 Oct) the 4 basic shapes first, the 4 steps pinned and lit, real sketches: the shape of ln(−x), the curve against x = 2, the labelled sketch (draft W2; it scrolls) |

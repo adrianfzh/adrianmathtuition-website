@@ -1,19 +1,19 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-18T16:20:17.836Z",
+ "at": "2026-10-18T16:33:25.161Z",
  "model": "claude-opus-5-5",
- "frames": 33,
+ "frames": 31,
  "usage": {
-  "input_tokens": 56208,
+  "input_tokens": 53472,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1824,
+  "output_tokens": 2043,
   "output_tokens_details": {
-   "thinking_tokens": 1349
+   "thinking_tokens": 1675
   },
   "service_tier": "standard",
   "inference_geo": "global",
@@ -22,25 +22,16 @@
  "verdict": "pass",
  "findings": [
   {
-   "beat": 14,
+   "beat": 18,
+   "rule": "every move says what, how, why",
+   "problem": "\"Collect the terms\" jumps from 2x + 2 − 3 + y and x + 2 − 2y + 4 straight to the powers 2x + y − 1 and x − 2y + 6, so a weaker student may not see where the −1 and the +6 come from.",
+   "fix": "As the voice collects, light the number terms on lines 7 and 8 (the 2 and −3, then the 2 and +4) and say \"two minus three is negative one\" and \"two plus four is six\"."
+  },
+  {
+   "beat": 31,
    "rule": "layout",
-   "severity": "should",
-   "problem": "The Step 4 lines ('a: (2x+2)-(3-y) = 2x+2-3+y = 2x+y-1' and the b line) shrink to fit and come out much smaller than every other line, so they are hard to read on a phone while the voice works through them.",
-   "fix": "Break each chain over two lines, for example put '= 2x+y-1' on the next line, so the Step 4 working stays at full size."
-  },
-  {
-   "beat": 12,
-   "rule": "part talked about is lit",
-   "severity": "should",
-   "problem": "On 'the same base is on top and bottom' the whole fraction lights up, so a student does not see which two pieces share a base.",
-   "fix": "Split g1 into tokens and light a^{2x+2} with a^{3-y} in one colour and b^{x+2} with b^{2y-4} in another as the voice names them."
-  },
-  {
-   "beat": 33,
-   "rule": "checks and answers",
-   "severity": "should",
-   "problem": "The answer is boxed without being checked, so a sign slip in Step 4 would go unnoticed.",
-   "fix": "Before the box, add a short line putting x = 3 and y = 4 into the b equation, 3 - 8 + 6 = 1 ✓, written as it is said."
+   "problem": "On the later beats (27–31) the \"💡 Why?\" chip sits over the top line of the board, covering part of \"y = 10 − 2x\" and the Step 5 heading as they scroll past.",
+   "fix": "Keep the chip clear of the maths: pad the board's top-right corner, or shrink or fade the chip once the board starts scrolling."
   }
  ]
 }
