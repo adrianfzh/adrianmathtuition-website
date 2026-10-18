@@ -86,7 +86,8 @@
         },
         {
           "id": "rb",
-          "tex": ")"
+          "tex": ")",
+          "tight": true
         },
         {
           "id": "pw",

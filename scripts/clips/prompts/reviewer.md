@@ -30,6 +30,10 @@ You get:
 8. **Voice**: "negative" not "minus" for a negative number, never "fly", no Watch out unless asked.
 9. **Layout (from screenshots)**: nothing talked about hidden or cut off, nothing covering an equation,
    labels readable on a phone, nothing jumping.
+   A screenshot can catch a moving piece HALF-WAY through its move (a lone "2" between two lines, a
+   gap waiting for it to land): that is the movement working, not a glitch. Flag a move only when it
+   starts or ends in the wrong place. Before saying something is not lit, look at the frame: a lit
+   token shows in yellow (or the tone named).
 10. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?

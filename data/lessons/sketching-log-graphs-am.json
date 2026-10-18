@@ -156,7 +156,7 @@
           "say": "Step one, the asymptote. Let the inside of the log equal zero.",
           "asks": ["Why does the inside equal zero at the asymptote?"],
           "do": [
-            { "do": "pin", "lit": 1, "on": "Step one" },
+            { "do": "pin", "lit": 1 },
             { "do": "write", "token": "in0", "on": "inside of the log" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b8.mp3",
@@ -177,7 +177,7 @@
           "say": "Step two, the shape. Minus in front of X flips the graph in the Y axis.",
           "asks": ["Which of the four shapes is it?"],
           "do": [
-            { "do": "pin", "lit": 2, "on": "Step two" },
+            { "do": "pin", "lit": 2 },
             { "do": "highlight", "token": "emx", "on": "Minus in front" }
           ],
           "audio": "/lessons/sketching-log-graphs-am/scene-01-b10.mp3",
@@ -199,7 +199,7 @@
           "say": "Step three, draw it. Slide that shape to hug X equals two. The inside must be positive, so the curve stays left of it.",
           "asks": ["Why does the curve stay left of x = 2?"],
           "do": [
-            { "do": "pin", "lit": 3, "on": "Step three" },
+            { "do": "pin", "lit": 3 },
             { "do": "write", "step": 3, "on": "Slide that shape" },
             { "do": "sketch", "show": "shift", "on": "hug X equals" }
           ],
@@ -210,7 +210,7 @@
           "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
           "asks": ["Why put x = 0?"],
           "do": [
-            { "do": "pin", "lit": 4, "on": "Step four" },
+            { "do": "pin", "lit": 4 },
             { "do": "write", "token": "x0", "on": "When X is zero" },
             { "do": "write", "token": "yint", "on": "Y is L N two" },
             { "do": "sketch", "point": 0, "on": "about zero point" }

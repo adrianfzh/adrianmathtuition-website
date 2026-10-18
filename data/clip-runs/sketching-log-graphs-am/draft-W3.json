@@ -121,8 +121,7 @@
    "do": [
     {
      "do": "pin",
-     "lit": 1,
-     "on": "Step one"
+     "lit": 1
     },
     {
      "do": "write",
@@ -163,8 +162,7 @@
    "do": [
     {
      "do": "pin",
-     "lit": 2,
-     "on": "Step two"
+     "lit": 2
     },
     {
      "do": "highlight",
@@ -214,8 +212,7 @@
    "do": [
     {
      "do": "pin",
-     "lit": 3,
-     "on": "Step three"
+     "lit": 3
     },
     {
      "do": "write",
@@ -237,8 +234,7 @@
    "do": [
     {
      "do": "pin",
-     "lit": 4,
-     "on": "Step four"
+     "lit": 4
     },
     {
      "do": "write",

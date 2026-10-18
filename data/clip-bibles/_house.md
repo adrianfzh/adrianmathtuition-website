@@ -296,6 +296,7 @@ The test for every beat: if the voice says it and it helps, it is on the board a
 | Solving exponential equations | New style (R3), x terms lit, no Watch out |
 | Linear form with logs (Linear Law) | New style (R1 + fixes) |
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
+| **Indices: Same base, compare powers** (`same-base-compare-powers-am`) | Built 18 Oct in ONE go with both checks (the one-shot test); stand-in review: 0 must after two false alarms were fixed in the reviewer's brief. Waiting for Adrian's note count. |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
 | Log scales | **The word-problem reference (approved 18 Oct: "way better").** The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
 | Sketching log graphs | The version before the rebuild + (18 Oct) the 4 basic shapes first, the 4 steps pinned and lit, real sketches: the shape of ln(−x), the curve against x = 2, the labelled sketch (draft W2; it scrolls) |

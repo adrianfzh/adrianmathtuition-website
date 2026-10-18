@@ -32,7 +32,7 @@
             { "id": "e2", "tex": "=" },
             { "id": "b5", "tex": "(5" },
             { "id": "sq", "tex": "{}^{2}", "tight": true },
-            { "id": "rb", "tex": ")" },
+            { "id": "rb", "tex": ")", "tight": true },
             { "id": "pw", "tex": "{}^{x-1}", "tight": true }
           ]
         },
@@ -103,7 +103,7 @@
           "say": "Step one, same base. The bases are five and twenty-five, and twenty-five is five squared.",
           "asks": ["How do I spot that 25 is 5 squared?"],
           "do": [
-            { "do": "pin", "lit": 1, "on": "Step one" },
+            { "do": "pin", "lit": 1 },
             { "do": "highlight", "token": ["q5", "q25"], "on": "The bases are" },
             { "do": "note", "text": "$25=5^2$", "near": "q25", "on": "twenty-five is five" }
           ],
@@ -152,7 +152,7 @@
           "say": "Step two, compare powers. The bases match: five on the left, five on the right.",
           "asks": ["What does compare powers mean?"],
           "do": [
-            { "do": "pin", "lit": 2, "on": "Step two" },
+            { "do": "pin", "lit": 2 },
             { "do": "highlight", "token": ["b1", "b2"], "on": "The bases match" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b9.mp3",
