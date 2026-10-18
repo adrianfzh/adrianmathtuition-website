@@ -1982,7 +1982,10 @@ function SidePopup({ clip: c, onClose }: { clip: SideClip; onClose: () => void }
       <div className="lsn-side-sheet absolute inset-x-0 bottom-0 mx-auto max-w-lg h-[68dvh] rounded-t-3xl bg-[hsl(45,40%,97%)] shadow-[0_-12px_32px_-12px_rgba(15,23,42,0.45)] flex flex-col"
         style={{ transform: `translateY(${dragY}px)`, transition: start.current === null ? 'transform 220ms ease-out' : 'none' }}>
         <div className="shrink-0 flex items-center gap-2 px-4 pt-2 pb-1 touch-none select-none"
-          onPointerDown={e => { start.current = e.clientY; e.currentTarget.setPointerCapture(e.pointerId); }}
+          onPointerDown={e => {
+            if ((e.target as HTMLElement).closest('button')) return;   // the ✕ keeps its own tap
+            start.current = e.clientY; e.currentTarget.setPointerCapture(e.pointerId);
+          }}
           onPointerMove={e => { if (start.current !== null) setDragY(Math.max(0, e.clientY - start.current)); }}
           onPointerUp={() => { const y = dragY; start.current = null; setDragY(0); if (y > 90) onClose(); }}
           onPointerCancel={() => { start.current = null; setDragY(0); }}>
