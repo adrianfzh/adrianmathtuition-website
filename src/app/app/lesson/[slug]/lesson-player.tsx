@@ -3337,6 +3337,8 @@ const PLAYER_CSS = `
 /* The tap gesture: the glyph a video player flashes when you tap to pause. */
 @keyframes lsnGesture { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); } 18% { opacity: 0.92; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
 .lsn-read-chip { animation: lsnFade 240ms ease both; }
+/* The 💡 Why? chip owns the top corner; the Paused chip steps left of it. */
+.lsn-scene:has([data-aside-read-chip]) .lsn-paused-chip { right: 6rem; }
 .lsn-read-veil { animation: lsnFade 180ms ease both; }
 .lsn-read-card { animation: lsnReadUp 240ms cubic-bezier(.2,.8,.2,1) both; }
 @keyframes lsnReadUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
