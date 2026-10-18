@@ -471,11 +471,13 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       const want = new Map<string, string>();
       for (const p of live) for (const id of p.tokens) want.set(id, p.part === 'sub' ? 'lsn-lit-sub' : p.part === 'num' ? 'lsn-lit-num' : p.part === 'den' ? 'lsn-lit-den' : p.tone === 'orange' ? 'lsn-lit-orange' : p.tone === 'sky' ? 'lsn-lit-blue' : 'lsn-lit');
       const ALL = ['lsn-lit', 'lsn-lit-sub', 'lsn-lit-num', 'lsn-lit-den', 'lsn-lit-orange', 'lsn-lit-blue'];
-      zoom.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub, .lsn-lit-num, .lsn-lit-den, .lsn-lit-orange, .lsn-lit-blue').forEach(el => {
+      // The scene card, not only the board: the side sketch's corner shapes light by id too.
+      const litRoot = zoom.closest<HTMLElement>('.lsn-scene') ?? zoom;
+      litRoot.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub, .lsn-lit-num, .lsn-lit-den, .lsn-lit-orange, .lsn-lit-blue').forEach(el => {
         const w = want.get(el.dataset.tokenId ?? '');
         for (const c of ALL) if (c !== w) el.classList.remove(c);
       });
-      for (const [id, c] of want) zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`)?.classList.add(c);
+      for (const [id, c] of want) (zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`) ?? litRoot.querySelector(`[data-token-id="${CSS.escape(id)}"]`))?.classList.add(c);
     }
 
     // 3. Marks: draw new ones, drop cleared ones.

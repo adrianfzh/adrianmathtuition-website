@@ -207,6 +207,11 @@ export interface BoardState {
   sticker: BoardSticker | null;
   /** Actions applied so far across the scene — the seq of the next one. */
   seq: number;
+  /** The side sketch's stages shown so far (`inset`, `axes`, …, and `p0`, `p1` … for its points). */
+  sketch: string[];
+  /** The pinned steps: how many are written, and which one is lit (0 = none). */
+  pinShown: number;
+  pinLit: number;
 }
 
 /** The write/reveal targets and move ids of a whole scene (what waits for an action). */
@@ -228,6 +233,7 @@ export function emptyBoard(scene: Scene | PlayScene): BoardState {
   return {
     shown: new Set(), written: new Set(), targeted, movable, moved: new Set(),
     state: 0, pulses: [], marks: [], notes: [], focus: null, pose: 'idle', sticker: null, seq: 0,
+    sketch: [], pinShown: 0, pinLit: 0,
   };
 }
 
@@ -316,6 +322,15 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       break;
     case 'sticker':
       board.sticker = { kind: action.kind, near: action.near ?? null, seq };
+      break;
+    case 'sketch': {
+      const stage = action.show ?? (action.point !== undefined ? `p${action.point}` : null);
+      if (stage && !board.sketch.includes(stage)) board.sketch = [...board.sketch, stage];
+      break;
+    }
+    case 'pin':
+      if (action.show !== undefined) board.pinShown = Math.max(board.pinShown, action.show);
+      if (action.lit !== undefined) { board.pinLit = action.lit; board.pinShown = Math.max(board.pinShown, action.lit); }
       break;
   }
 }

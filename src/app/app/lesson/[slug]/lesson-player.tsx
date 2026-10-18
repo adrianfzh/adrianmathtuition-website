@@ -79,7 +79,7 @@ import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
   type GraphMorphScene, type GraphPiece, type MotionGraphScene, type StepGraph, graphFn, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
-  type ResolvedCheckScene, type StepToken, type TitleScene,
+  type ResolvedCheckScene, type StepToken, type TitleScene, type SceneSketch,
 } from '@/lib/lesson-script';
 import {
   PLAYBACK_RATES, alignShownToSpoken, buildSpeechTrack, handWriteS, isBlockMarkdown, rateLabel, scaleBeat,
@@ -606,6 +606,114 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
         </g>
       ))}
     </svg>
+  );
+}
+
+/** One curve as an SVG path in a W×H box over the window. */
+function plotPath(fn: string, w: { xMin: number; xMax: number; yMin: number; yMax: number }, W: number, H: number, P: number): string {
+  const f = graphFn(fn);
+  if (!f) return '';
+  const sx = (x: number) => P + ((x - w.xMin) / (w.xMax - w.xMin)) * (W - 2 * P);
+  const sy = (y: number) => H - P - ((y - w.yMin) / (w.yMax - w.yMin)) * (H - 2 * P);
+  let path = '', pen = false;
+  for (let i = 0; i <= 240; i++) {
+    const x = w.xMin + ((w.xMax - w.xMin) * i) / 240;
+    const y = f(x);
+    if (!Number.isFinite(y) || y < w.yMin - 0.5 || y > w.yMax + 0.5) { pen = false; continue; }
+    path += `${pen ? 'L' : 'M'}${sx(x).toFixed(1)} ${sy(Math.max(w.yMin, Math.min(w.yMax, y))).toFixed(1)} `;
+    pen = true;
+  }
+  return path;
+}
+
+/** The side sketch (Adrian, 18 Oct 2026): the basic shapes small in the corner (each lit by its id),
+ *  and under them the working sketch, built stage by stage — empty axes, the dashed asymptote, the
+ *  shape lifted out of the corner and enlarged onto the axes, slid to its place, then each point. */
+function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
+  const has = (s: string) => stages.includes(s);
+  const iw = { xMin: sk.inset.xMin, xMax: sk.inset.xMax, yMin: sk.inset.yMin, yMax: sk.inset.yMax };
+  const IW = 180, IH = 104, IP = 6;
+  const W = 200, H = 170, P = 12;
+  const sx = (x: number) => P + ((x - sk.xMin) / (sk.xMax - sk.xMin)) * (W - 2 * P);
+  const sy = (y: number) => H - P - ((y - sk.yMin) / (sk.yMax - sk.yMin)) * (H - 2 * P);
+  const isx = (x: number) => IP + ((x - iw.xMin) / (iw.xMax - iw.xMin)) * (IW - 2 * IP);
+  const isy = (y: number) => IH - IP - ((y - iw.yMin) / (iw.yMax - iw.yMin)) * (IH - 2 * IP);
+  const insetCurves = [{ fn: sk.inset.fn, id: sk.inset.id, label: sk.inset.label, labelAt: sk.inset.labelAt }, ...(sk.inset.curves ?? [])];
+  const shapeD = useMemo(() => plotPath(sk.shape, sk, W, H, P), [sk]);
+  const dx = sk.shift?.dx ? sx(sk.shift.dx) - sx(0) : 0;
+  const dy = sk.shift?.dy ? sy(sk.shift.dy) - sy(0) : 0;
+  // The lift: the shape starts exactly over its curve in the corner and grows onto the big axes.
+  const flyRef = useRef<SVGGElement>(null);
+  const insetRef = useRef<SVGSVGElement>(null);
+  const flown = useRef<boolean | null>(null);
+  const shapeOn = has('shape');
+  useIsoLayoutEffect(() => {
+    if (flown.current === null) { flown.current = shapeOn; return; }   // a board drawn afresh: no flight
+    if (!shapeOn || flown.current) return;
+    flown.current = true;
+    const g = flyRef.current;
+    const src = sk.from ? insetRef.current?.querySelector<SVGGraphicsElement>(`[data-token-id="${CSS.escape(sk.from)}"] path`) : null;
+    if (!g || !src || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const to = g.getBoundingClientRect();
+    const fr = src.getBoundingClientRect();
+    const svg = g.ownerSVGElement;
+    if (!svg || !to.width || !fr.width) return;
+    const k = W / svg.getBoundingClientRect().width;   // screen px → this SVG's units
+    const s = fr.width / to.width;
+    g.animate([
+      { transform: `translate(${(fr.left - to.left) * k}px, ${(fr.top - to.top) * k}px) scale(${s})`, opacity: 1 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 1300, easing: 'cubic-bezier(0.45, 0, 0.3, 1)' });
+  }, [shapeOn]);
+  return (
+    <div className="lsn-sketch">
+      {has('inset') && (
+        <svg ref={insetRef} viewBox={`0 0 ${IW} ${IH}`} className="lsn-graph lsn-sketch-inset on" aria-hidden>
+          <line x1={IP} y1={isy(0)} x2={IW - IP} y2={isy(0)} className="lsn-graph-axis" />
+          <line x1={isx(0)} y1={IH - IP} x2={isx(0)} y2={IP} className="lsn-graph-axis" />
+          {insetCurves.map((c, i) => {
+            const f = graphFn(c.fn);
+            const ly = c.labelAt !== undefined && f ? f(c.labelAt) : NaN;
+            return (
+              <g key={i} data-token-id={c.id} data-ci={i} className="lsn-graph-c">
+                <path d={plotPath(c.fn, iw, IW, IH, IP)} pathLength={1} className="lsn-graph-curve" />
+                {c.label && Number.isFinite(ly) && (
+                  <text x={isx(c.labelAt!)} y={isy(Math.max(iw.yMin + 0.3, Math.min(iw.yMax - 0.3, ly))) + (ly < 0 ? 13 : -5)}
+                    textAnchor={isx(c.labelAt!) > IW / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab">{c.label}</text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      )}
+      {has('axes') && (
+        <svg viewBox={`0 0 ${W} ${H}`} className="lsn-graph lsn-sketch-main on" aria-hidden>
+          <line x1={P - 4} y1={sy(0)} x2={W - P + 4} y2={sy(0)} className="lsn-graph-axis" />
+          <line x1={sx(0)} y1={H - P + 4} x2={sx(0)} y2={P - 4} className="lsn-graph-axis" />
+          <text x={W - P + 2} y={sy(0) - 5} className="lsn-graph-lab">x</text>
+          <text x={sx(0) + 5} y={P + 2} className="lsn-graph-lab">y</text>
+          {has('asymptote') && sk.asymptote?.x !== undefined && (
+            <g className="lsn-sketch-asy">
+              <line x1={sx(sk.asymptote.x)} y1={P - 4} x2={sx(sk.asymptote.x)} y2={H - P + 4} />
+              {sk.asymptote.label && <text x={sx(sk.asymptote.x) + 4} y={P + 9} className="lsn-graph-lab">{sk.asymptote.label}</text>}
+            </g>
+          )}
+          {shapeOn && (
+            <g style={{ transform: has('shift') ? `translate(${dx}px, ${dy}px)` : 'none', transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
+              <g ref={flyRef} className="lsn-sketch-shape" style={{ transformBox: 'fill-box', transformOrigin: '0 0' }}>
+                <path d={shapeD} className="lsn-sketch-curve" />
+              </g>
+            </g>
+          )}
+          {(sk.points ?? []).map((pt, i) => has(`p${i}`) && (
+            <g key={i} className="lsn-sketch-pt">
+              <circle cx={sx(pt.x)} cy={sy(pt.y)} r={3.4} />
+              <text x={sx(pt.x) + (sx(pt.x) > W * 0.6 ? -6 : 6)} y={sy(pt.y) + (pt.y > 0.05 ? -6 : 13)} textAnchor={sx(pt.x) > W * 0.6 ? 'end' : 'start'} className="lsn-graph-lab">{pt.label}</text>
+            </g>
+          ))}
+        </svg>
+      )}
+    </div>
   );
 }
 
@@ -2752,20 +2860,20 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           {/* The method's steps, pinned above the board for the whole clip; the step being done is lit
               (Adrian, 18 Oct 2026: "list it out on screen … keeping those steps in view … highlight
               the steps when it comes to their turn"). Outside the board, so it never scrolls away. */}
-          {scene.type === 'equation-steps' && scene.pinned?.length && hasBeats(scene) && (() => {
-            const pins = scene.beats.slice(0, step + 1).map(b => b.pin).filter((p): p is number => p !== undefined);
-            if (!pins.length) return null;
-            const lit = pins[pins.length - 1];
-            return (
-              <ol className="lsn-pinned" data-lsn-pinned>
-                {scene.pinned.map((t, i) => (
-                  <li key={i} data-on={lit === i + 1 || undefined} data-done={lit > i + 1 || undefined}>
-                    <span className="lsn-pinned-n">{i + 1}</span><MathText text={t} />
-                  </li>
-                ))}
-              </ol>
-            );
-          })()}
+          {scene.type === 'equation-steps' && (scene.pinned?.length || scene.sketch) && (
+            <div className="lsn-sidewrap" data-has-sketch={scene.sketch ? '' : undefined}>
+              {scene.pinned?.length && board && board.pinShown > 0 ? (
+                <ol className="lsn-pinned" data-lsn-pinned>
+                  {scene.pinned.slice(0, board.pinShown).map((t, i) => (
+                    <li key={i} data-on={board.pinLit === i + 1 || undefined} data-done={board.pinLit > i + 1 || undefined}>
+                      <span className="lsn-pinned-n">{i + 1}</span><MathText text={t} />
+                    </li>
+                  ))}
+                </ol>
+              ) : <div className="lsn-pinned lsn-pinned-empty" aria-hidden />}
+              {scene.sketch && board && <SketchPanel sk={scene.sketch} stages={board.sketch} />}
+            </div>
+          )}
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
             character={characterOn ? (board?.pose ?? 'idle') : null} look={look}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
@@ -3180,6 +3288,23 @@ const PLAYER_CSS = `
 .lsn-graph-lab { fill: rgba(248,250,252,0.85); font: italic 12px Georgia, 'Times New Roman', serif; }
 .lsn-graph-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .lsn-graph.on .lsn-graph-curve { stroke-dashoffset: 0; transition: stroke-dashoffset 1.8s ease-in-out 0.3s; }
+.lsn-sidewrap { position: relative; z-index: 6; }
+.lsn-pinned-empty { margin: 0; height: 0; }
+.lsn-sketch { position: absolute; top: calc(100% + 4px); right: 0; width: 46%; pointer-events: none; }
+.lsn-sketch svg { display: block; width: 100%; height: auto; overflow: visible; }
+.lsn-sketch-inset { background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; }
+.lsn-sketch-inset .lsn-graph-lab { font-size: 10px; }
+.lsn-sketch-inset .lsn-graph-curve { stroke-width: 2; }
+.lsn-sketch-main { margin-top: 8px; animation: lsnFade 400ms ease both; }
+.lsn-sketch-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; }
+.lsn-sketch-asy { animation: lsnFade 500ms ease both; }
+.lsn-sketch-asy line { stroke: #a8ecfb; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.lsn-sketch-pt { animation: lsnFade 400ms ease both; }
+.lsn-sketch-pt circle { fill: #f9a8d4; }
+/* With a side sketch the working takes the left of the board, the sketch the right. */
+.lsn-scene:has(.lsn-sidewrap[data-has-sketch]) .lsn-zoom { width: 54%; flex: none; }
+/* The pinned steps own the top of the card: the Paused chip moves down, above the subtitle. */
+.lsn-scene:has(.lsn-pinned li) .lsn-paused-chip { top: auto; bottom: 4.6rem; right: 50%; translate: 50% 0; }
 .lsn-pinned { display: flex; flex-wrap: wrap; gap: 4px 4px; margin: 0 0 8px; padding: 0; list-style: none; animation: lsnFade 300ms ease both; position: relative; z-index: 5; }
 .lsn-pinned li { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border-radius: 999px; font: 600 11.5px ui-sans-serif, system-ui, sans-serif; color: rgba(248,250,252,0.7); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); transition: background 300ms ease, color 300ms ease, border-color 300ms ease; }
 .lsn-pinned-n { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 11px; }

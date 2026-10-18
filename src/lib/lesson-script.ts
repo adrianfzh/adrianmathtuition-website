@@ -292,10 +292,18 @@ export type BeatAction =
   /** The character (the teacher) at the board's corner takes this pose (held until the next one; a scene starts `idle`). */
   | ({ do: 'character'; pose: CharacterPose } & Timed)
   /** A sticker pops in beside the token `near` (else the board's top-right corner) and is gone when the next beat starts. At most ONE per beat. */
-  | ({ do: 'sticker'; kind: StickerKind; near?: string } & Timed);
+  | ({ do: 'sticker'; kind: StickerKind; near?: string } & Timed)
+  /** The scene's side `sketch` grows one stage (Adrian, 18 Oct 2026): the corner shapes, the empty
+   *  axes, the dashed asymptote, the shape lifted from the corner, the shape slid to its place, or
+   *  one labelled point (`point`: its index). */
+  | ({ do: 'sketch'; show?: SketchStage; point?: number } & Timed)
+  /** The scene's `pinned` steps: `show` n writes the first n (as the voice lists them), `lit` n lights step n. */
+  | ({ do: 'pin'; show?: number; lit?: number } & Timed);
+export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'shift';
 
 export type BeatActionKind = BeatAction['do'];
-export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin'];
+export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'shift'];
 
 export interface Beat {
   /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
@@ -318,8 +326,6 @@ export interface Beat {
      *  under the board beside the clip link, so Adrian can compare the two (18 Oct 2026: "instead
      *  of a popup clip, we have a written explanation (drop down)? put that in too"). */
     read?: string[] };
-  /** The scene's `pinned` steps: 0 shows them (none lit), n lights step n, from this beat on. */
-  pin?: number;
 }
 
 /** Every scene may carry beats instead of narration. */
@@ -337,7 +343,25 @@ export type EquationStepsScene = NarrationFields & BeatFields & {
    *  "when narrator says four steps: should list it out on screen … keeping those steps in view …
    *  highlight the steps when it comes to their turn"). Shown from the first beat with `pin`. */
   pinned?: string[];
+  /** A sketch built at the SIDE of the working, stage by stage (`sketch` actions), with the family
+   *  of basic shapes small in its top corner (Adrian, 18 Oct 2026: "put the four basic shapes at
+   *  the right hand corner … start with an empty graph at the side … as narrator explains … draw
+   *  the dotted line x=2 … take the shape from the top right hand corner (highlight it), then
+   *  animation fly from the top right hand corner to enlarge to the actual graph"). */
+  sketch?: SceneSketch;
 };
+export interface SceneSketch {
+  /** The basic shapes in the corner: a graph with `curves`, each with an `id` a highlight can light. */
+  inset: StepGraph;
+  /** The working sketch's window. */
+  xMin: number; xMax: number; yMin: number; yMax: number;
+  /** The basic shape lifted from the corner (its fn on the big axes), and the inset curve it comes from. */
+  shape: string; from?: string;
+  /** Where the shape slides to (the `shift` stage): right by dx, up by dy. */
+  shift?: { dx?: number; dy?: number };
+  asymptote?: { x?: number; y?: number; label?: string };
+  points?: { x: number; y: number; label: string }[];
+}
 export type GraphMorphScene = NarrationFields & BeatFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
   states: GraphState[]; window: GraphWindow; xLabel?: string; yLabel?: string;
@@ -594,6 +618,10 @@ interface BeatScope {
   pieces: number;
   /** Token ids (equation-steps / annotate). */
   tokenIds: Set<string>;
+  /** equation-steps: how many points its sketch has (undefined = no sketch). */
+  sketchPoints?: number;
+  /** equation-steps: how many pinned steps (undefined = none). */
+  pinned?: number;
   /** `from` ids some later token flies from (equation-steps). */
   fromIds: Set<string>;
   /** Prose fields present on this scene (only these may be written). */
@@ -729,6 +757,19 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
         errors.push(`${where}: near "${String(a.near)}" is not a token id in this scene`);
       }
       break;
+    case 'sketch':
+      if (!scope.sketchPoints && scope.sketchPoints !== 0) errors.push(`${where}: sketch actions need the scene's "sketch"`);
+      else if ((a.show === undefined) === (a.point === undefined)) errors.push(`${where}: a sketch action has ONE of show (${SKETCH_STAGES.join('/')}) or point (an index)`);
+      else if (a.show !== undefined && !(SKETCH_STAGES as readonly unknown[]).includes(a.show)) errors.push(`${where}: show must be one of ${SKETCH_STAGES.join('/')}`);
+      else if (a.point !== undefined && (!Number.isInteger(a.point) || Number(a.point) < 0 || Number(a.point) >= (scope.sketchPoints ?? 0))) errors.push(`${where}: point must be an index of sketch.points`);
+      break;
+    case 'pin': {
+      const n = scope.pinned ?? 0;
+      if (!n) errors.push(`${where}: pin actions need the scene's "pinned" steps`);
+      else if ((a.show === undefined) === (a.lit === undefined)) errors.push(`${where}: a pin action has ONE of show (how many steps are written) or lit (which step is lit)`);
+      else if (![a.show, a.lit].filter(v => v !== undefined).every(v => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= n)) errors.push(`${where}: pin numbers run 0–${n}`);
+      break;
+    }
   }
 }
 
@@ -866,6 +907,21 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           }
         }
       });
+      if (scene.sketch !== undefined) {
+        const k = scene.sketch as Record<string, unknown>;
+        const inset = k?.inset as Record<string, unknown> | undefined;
+        if (!isRecord(k) || !isRecord(inset) || !nonEmptyString(inset.fn) || !graphFn(inset.fn as string) || !nonEmptyString(k.shape) || !graphFn(k.shape as string)
+          || !['xMin', 'xMax', 'yMin', 'yMax'].every(f => typeof k[f] === 'number')) errors.push(`${at}: sketch is { inset (a graph), xMin, xMax, yMin, yMax, shape (fn in x), from?, shift?, asymptote?, points? }`);
+        else {
+          if (nonEmptyString(inset.id)) sceneIds.add(inset.id as string);
+          for (const c of (Array.isArray(inset.curves) ? inset.curves : []) as Record<string, unknown>[]) if (nonEmptyString(c?.id)) sceneIds.add(c.id as string);
+          scope.sketchPoints = Array.isArray(k.points) ? k.points.length : 0;
+        }
+      }
+      if (scene.pinned !== undefined) {
+        if (!Array.isArray(scene.pinned) || !scene.pinned.length || scene.pinned.length > 6 || scene.pinned.some((p: unknown) => !nonEmptyString(p) || (p as string).length > 24)) errors.push(`${at}: pinned is 1–6 short step names (≤ 24 chars)`);
+        else scope.pinned = scene.pinned.length;
+      }
       scope.tokenIds = sceneIds;
       break;
     }

@@ -39,9 +39,7 @@ const beats = draft.beats.map((b, i) => {
   const asks = fix?.asks ?? b.asks;
   // `aside` (a side link to another clip, Beat.aside) rides with the beat too.
   const aside = fix?.aside ?? b.aside;
-  // `pin` (which of the scene's pinned steps is lit from this beat on) rides with the beat too.
-  const pin = fix?.pin ?? b.pin;
-  return { say: fix ? fix.say : b.say, ...(asks?.length ? { asks } : {}), ...(aside ? { aside } : {}), ...(pin !== undefined ? { pin } : {}), do: fix ? fix.do : b.do };
+  return { say: fix ? fix.say : b.say, ...(asks?.length ? { asks } : {}), ...(aside ? { aside } : {}), do: fix ? fix.do : b.do };
 });
 
 // Keep audio already made for an unchanged line (a rewrite drops it: it belongs to the old words).
@@ -77,6 +75,7 @@ const scenes = sceneBeats.map((list, k) => {
     // when the lines + notes are too tall for a phone under the question (Log scales, 18 Oct 2026).
     ...(board.scroll || (nBoards === 1 && plan.scroll === true) || (nBoards === 1 && plan.scroll !== false && plan.lines.length > 7) ? { scroll: true } : {}),
     ...(plan.pinned?.length && k === 0 ? { pinned: plan.pinned } : {}),
+    ...(plan.sketch && k === 0 ? { sketch: plan.sketch } : {}),
     steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ ...(l.heading ? { heading: l.heading } : {}), tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}), ...(l.graph ? { graph: l.graph } : {}) })),
     beats: list,
   };

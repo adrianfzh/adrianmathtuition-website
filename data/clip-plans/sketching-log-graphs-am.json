@@ -27,50 +27,6 @@
   },
   "lines": [
     {
-      "heading": "First, the 4 basic shapes",
-      "tokens": [
-        {
-          "id": "shp",
-          "tex": "\\text{The 4 basic log shapes}"
-        }
-      ],
-      "graph": {
-        "fn": "ln(x)",
-        "id": "c1",
-        "label": "y = ln x",
-        "labelAt": 3.4,
-        "xMin": -4,
-        "xMax": 4,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "curves": [
-          {
-            "fn": "ln(-x)",
-            "id": "c2",
-            "label": "y = ln(−x)",
-            "labelAt": -3.4
-          },
-          {
-            "fn": "-ln(x)",
-            "id": "c3",
-            "label": "y = −ln x",
-            "labelAt": 3.4
-          },
-          {
-            "fn": "-ln(-x)",
-            "id": "c4",
-            "label": "y = −ln(−x)",
-            "labelAt": -3.4
-          }
-        ]
-      },
-      "checks": [
-        {
-          "form": "the four basic shapes: ln x, ln(-x), -ln x, -ln(-x)"
-        }
-      ]
-    },
-    {
       "tokens": [
         {
           "tex": "y=\\ln(2-x)",
@@ -83,8 +39,7 @@
             "y": "log(2-x)"
           }
         }
-      ],
-      "heading": "Now sketch it"
+      ]
     },
     {
       "tokens": [
@@ -112,7 +67,7 @@
     {
       "tokens": [
         {
-          "tex": "\\text{shape of}\\;\\; y=\\ln(-x)",
+          "tex": "\\text{shape of }y=\\ln(-x)",
           "id": "shape",
           "hl": "amber"
         }
@@ -122,40 +77,18 @@
           "shape": "log(2 - x)",
           "family": "ln(-x)"
         }
-      ],
-      "graph": {
-        "fn": "ln(-x)",
-        "xMin": -5,
-        "xMax": 2,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "asymptote": {
-          "x": 0,
-          "label": "x = 0"
-        }
-      }
+      ]
     },
     {
       "tokens": [
         {
           "id": "drw",
-          "tex": "y=\\ln(2-x)\\;\\text{ against }x=2"
+          "tex": "\\text{slide it to hug }x=2"
         }
       ],
-      "graph": {
-        "fn": "ln(2 - x)",
-        "xMin": -5,
-        "xMax": 3.5,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "asymptote": {
-          "x": 2,
-          "label": "x = 2"
-        }
-      },
       "checks": [
         {
-          "form": "the shape of ln(-x) drawn against the asymptote x = 2"
+          "form": "the shape of ln(-x) slid right 2 to hug the asymptote x = 2"
         }
       ]
     },
@@ -216,48 +149,6 @@
           "gives": 1
         }
       ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "lab",
-          "tex": "x=2,\\;(0,\\,\\ln 2),\\;(1,\\,0)"
-        }
-      ],
-      "graph": {
-        "fn": "ln(2 - x)",
-        "xMin": -5,
-        "xMax": 3.5,
-        "yMin": -2.6,
-        "yMax": 2.6,
-        "asymptote": {
-          "x": 2,
-          "label": "x = 2"
-        },
-        "points": [
-          {
-            "x": 0,
-            "y": 0.693,
-            "label": "(0, ln 2)"
-          },
-          {
-            "x": 1,
-            "y": 0,
-            "label": "(1, 0)"
-          }
-        ]
-      },
-      "checks": [
-        {
-          "fact": "xa = 2"
-        },
-        {
-          "fact": "yi = log(2)"
-        },
-        {
-          "fact": "xi = 1"
-        }
-      ]
     }
   ],
   "outline": [
@@ -275,5 +166,63 @@
     "shape",
     "draw",
     "intercepts"
-  ]
+  ],
+  "sketch": {
+    "inset": {
+      "fn": "ln(x)",
+      "id": "c1",
+      "label": "ln x",
+      "labelAt": 3.6,
+      "xMin": -4,
+      "xMax": 4,
+      "yMin": -2.6,
+      "yMax": 2.6,
+      "curves": [
+        {
+          "fn": "ln(-x)",
+          "id": "c2",
+          "label": "ln(−x)",
+          "labelAt": -3.6
+        },
+        {
+          "fn": "-ln(x)",
+          "id": "c3",
+          "label": "−ln x",
+          "labelAt": 3.6
+        },
+        {
+          "fn": "-ln(-x)",
+          "id": "c4",
+          "label": "−ln(−x)",
+          "labelAt": -3.6
+        }
+      ]
+    },
+    "xMin": -3,
+    "xMax": 3.5,
+    "yMin": -2.6,
+    "yMax": 2.6,
+    "shape": "ln(-x)",
+    "from": "c2",
+    "shift": {
+      "dx": 2
+    },
+    "asymptote": {
+      "x": 2,
+      "label": "x = 2"
+    },
+    "points": [
+      {
+        "x": 0,
+        "y": 0.693,
+        "label": "(0, ln 2)"
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "label": "(1, 0)"
+      }
+    ]
+  },
+  "scroll": false
 }

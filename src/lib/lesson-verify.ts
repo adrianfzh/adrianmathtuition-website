@@ -788,10 +788,6 @@ export function clipIssues(script: LessonScript): Issue[] {
       if (b.aside !== undefined && (typeof b.aside?.text !== 'string' || !b.aside.text.trim() || b.aside.text.length > 70 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(b.aside?.slug)) || (b.aside?.read !== undefined && (!Array.isArray(b.aside.read) || !b.aside.read.length || b.aside.read.length > 10 || b.aside.read.some((l: unknown) => typeof l !== 'string' || !l.trim() || l.length > 140))))) {
         out.push(issue('error', `${at}.beats[${k}].aside`, 'a side link is { text (≤ 70 chars), slug of another clip, read? (1–10 lines ≤ 140 chars) }'));
       }
-      if (b.pin !== undefined) {
-        const n = s.type === 'equation-steps' ? (s.pinned?.length ?? 0) : 0;
-        if (!Number.isInteger(b.pin) || b.pin < 0 || b.pin > n) out.push(issue('error', `${at}.beats[${k}].pin`, `pin is 0 (show the pinned steps) or 1–${n} (light that step) — the scene needs "pinned"`));
-      }
       // Adrian, 16 Oct 2026: "don't say fly - say power bring up" · "x equals minus one > minus sounds weird".
       if (/\b(fly|flies|flying|flew)\b/i.test(b.say)) out.push(issue('warn', `${at}.beats[${k}].say`, 'never say a piece "flies" — say the maths ("bring the power up", "goes up as the power")'));
       if (/\b(equals|is|be|gives)\s+minus\s+(one|two|three|four|five|six|seven|eight|nine|ten|\w+teen|twenty|thirty|forty|fifty|a|an)\b/i.test(b.say)
