@@ -153,7 +153,7 @@
             {
               "do": "note",
               "text": "✗ Watch out: not $12$: that is the dB difference",
-              "near": "twelve",
+              "near": "ans",
               "on": "difference in decibels"
             }
           ],
