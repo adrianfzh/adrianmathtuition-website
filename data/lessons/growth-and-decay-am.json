@@ -157,7 +157,7 @@
         {
           "say": "E is involved, so we use L N, which is log base E.",
           "asks": ["Why L N and not log?"],
-          "aside": { "text": "Why L N when E is involved?", "slug": "why-ln-when-e-am",
+          "aside": { "text": "Why ln when e is involved?", "slug": "why-ln-when-e-am",
             "read": ["We need $k$, and $k$ is in the power: $e^{7.5k}=2$.", "Taking a log of both sides brings the power down. Both lg and ln can do it.", "With lg: $7.5k\\,\\lg e=\\lg 2$.", "But $\\lg e\\approx 0.434$, an awkward number that stays in the working.", "ln is log base $e$, so $\\ln e=1$.", "With ln: $7.5k\\,\\ln e=\\ln 2$, which is just $7.5k=\\ln 2$.", "**When the base is $e$, take ln: $\\ln e=1$ drops out.**"] },
           "do": [
             { "do": "highlight", "token": "rhs", "on": "E is involved" }

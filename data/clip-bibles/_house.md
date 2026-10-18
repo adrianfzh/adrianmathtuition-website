@@ -35,14 +35,12 @@ reads — on every Claude account, because it lives in the repo.
   simplification (k(0) = 0, e⁰ = 1), then the result — never jump from the given values to the answer.
   What the voice works out is WRITTEN as it is said ("when t = 7.5, P = 2 x 100 < write that on screen
   when narrating"): `t = 7.5, P = 2 × 100 = 200`.
-- **A side clip opens in a SHEET over the clip, never a new page** (18 Oct 2026: "clicking it brings me
-  to another page, which interrupts the clip experience"): the board stays in view above, paused; ✕,
-  Esc, a tap above or a swipe down closes it and the clip carries on.
-  **On trial beside it: the same point WRITTEN** (18 Oct 2026: "how about instead of a popup clip, we
-  have a written explanation (drop down)? put that in too, and i compare which is better?"): the
-  beat's `aside.read` (one idea a line, inline maths, the last line bold) opens as a drop-down under
-  the board ("📖 Read why instead"); the clip pauses while it is open. Growth and decay carries both;
-  keep the one Adrian picks and update this rule.
+- **A side point is WRITTEN, in a drop-down under the board — not a side clip** (18 Oct 2026: Adrian
+  tried both on Growth and decay — "how about instead of a popup clip, we have a written explanation
+  (drop down)? … i compare which is better?" → "Keep the written drop-down, drop the popup clip"). The
+  beat's `aside` carries `read`: up to 10 lines, one idea a line, inline maths, the last line the
+  takeaway in bold. The 💡 chip opens it under the board and pauses the clip; "Hide" carries on. No new
+  side clip is made for a side point (an `aside` without `read` still falls back to the old sheet).
 - **No Watch out by default** (18 Oct 2026, of "P is 200, not 2": "there is no need for the watch out at
   the end that watchout is NOT helpful"). Add one only when Adrian asks for it, or the mistake is one
   his students really make on this exact step.
@@ -121,9 +119,9 @@ the history.
   relevant?" was the bare `log₃9`).
 - **A rejection is explained, then shown**: substitute, show what breaks, and only then write "(rej)"
   (its own token) on the word "reject".
-- **A "why" detour is a side clip in a popup** ("a popup hint … that students can link to"): say the
-  fact in one line on the board ("a log of a negative number is undefined") and give the beat an
-  `aside` to a short clip that explains why. Never stop the main working for it.
+- **A "why" detour is a written drop-down** ("a popup hint … that students can link to"; written since
+  18 Oct 2026): say the fact in one line on the board ("a log of a negative number is undefined") and
+  give the beat an `aside` with `read` lines that explain why. Never stop the main working for it.
 
 ### Animation (the teacher's finger)
 - **When a piece moves in the maths, move it on the board** ("its an animation right? you should take

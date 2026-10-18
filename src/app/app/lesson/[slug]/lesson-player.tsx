@@ -2807,7 +2807,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         if (!links.length) return null;
         return (
           <div className="mt-2 flex flex-wrap gap-2 px-0.5">
-            {links.map(a => asides[a.slug] ? (
+            {links.filter(a => !a.read?.length).map(a => asides[a.slug] ? (
               <button key={a.slug} type="button" onClick={() => openSide(a.slug)} data-aside-chip
                 className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
                 💡 {a.text}
@@ -2820,16 +2820,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             ))}
             {links.filter(a => a.read?.length).map(a => (
               <button key={`read-${a.slug}`} type="button" onClick={() => toggleRead(a.slug)} data-aside-read-chip aria-expanded={readOpen === a.slug}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white border border-sky-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-sky-50">
-                📖 Read why instead <span aria-hidden className={`transition-transform ${readOpen === a.slug ? 'rotate-180' : ''}`}>▾</span>
+                className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
+                💡 {a.text} <span aria-hidden className={`transition-transform ${readOpen === a.slug ? 'rotate-180' : ''}`}>▾</span>
               </button>
             ))}
             {links.filter(a => a.read?.length && readOpen === a.slug).map(a => (
-              <div key={`readbox-${a.slug}`} data-aside-read className="lsn-read-drop w-full rounded-2xl border border-sky-200 bg-white px-4 py-3 text-[15px] leading-relaxed text-slate-800 shadow-sm">
+              <div key={`readbox-${a.slug}`} data-aside-read className="lsn-read-drop w-full rounded-2xl border border-amber-200 bg-white px-4 py-3 text-[15px] leading-relaxed text-slate-800 shadow-sm">
                 <ul className="space-y-1.5">
                   {a.read!.map((l, i) => <li key={i}><MathText text={l} /></li>)}
                 </ul>
-                <button type="button" onClick={() => toggleRead(a.slug)} className="mt-2 text-[13px] font-semibold text-sky-700">▴ Hide, carry on with the clip</button>
+                <button type="button" onClick={() => toggleRead(a.slug)} className="mt-2 text-[13px] font-semibold text-amber-800">▴ Hide, carry on with the clip</button>
               </div>
             ))}
             {side && asides[side] && typeof document !== 'undefined' && createPortal(

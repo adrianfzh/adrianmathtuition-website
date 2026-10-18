@@ -21,7 +21,7 @@
    "board": 3,
    "say": "A log of a negative number is undefined, so log base three of negative nine does not exist.",
    "asks": ["Why is a log of a negative number undefined?"],
-   "aside": { "text": "Why is a log of a negative number undefined?", "slug": "log-of-negative-undefined-am" },
+   "aside": { "text": "Why is a log of a negative number undefined?", "slug": "log-of-negative-undefined-am", "read": ["A log asks for a power: $\\log_3(-9)$ asks “$3$ to what power gives $-9$?”", "Written with powers: $3^{\\,?}=-9$.", "Try some powers: $3^2=9$, $3^1=3$, $3^0=1$, $3^{-1}=\\tfrac{1}{3}$.", "Every answer is positive: multiplying or dividing threes never gives a negative number.", "So no power of $3$ gives $-9$. The question has no answer.", "The same for any base. A log of $0$ is undefined too: no power gives $0$.", "**A log of a negative number (or zero) is undefined.**"] },
    "do": [ { "do": "note", "text": "a log of a negative number is undefined", "near": "arg", "on": "is undefined" } ]
   }
  },

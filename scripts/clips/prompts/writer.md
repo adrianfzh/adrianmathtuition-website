@@ -88,8 +88,9 @@ no focus, no clear.
 - **Checks**: a log equation's check opens "For log equations, always check each answer."; the
   expression checked comes from the question line (a `move` from its token); EVERY answer is checked
   on the board, each log of the question named (`log₃x = log₃9 ✓`), never only in the voice.
-- **A "why" detour is a side clip**: one line on the board states the fact, and the beat carries
-  `"aside": {"text": "Why …?", "slug": "<side clip>"}` — it opens in a popup; never stop the working.
+- **A "why" detour is written, in a drop-down**: one line on the board states the fact, and the beat
+  carries `"aside": {"text": "Why …?", "slug": "<topic>-<point>", "read": ["…", "…", "**takeaway**"]}`
+  — up to 10 lines, one idea a line, inline `$…$` maths, the last line bold. No side clip is made.
 - **While a piece moves, nothing else is written**: the `move` is the only action on its words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.

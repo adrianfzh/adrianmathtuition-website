@@ -140,7 +140,7 @@
     }
    ],
    "aside": {
-    "text": "Why L N when E is involved?",
+    "text": "Why ln when e is involved?",
     "slug": "why-ln-when-e-am",
     "read": [
      "We need $k$, and $k$ is in the power: $e^{7.5k}=2$.",
