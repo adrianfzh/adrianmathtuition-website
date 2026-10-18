@@ -96,6 +96,8 @@ export function boardTextAfter(scene: Scene | PlayScene, k: number): string {
       const lineOn = b.shown.has(`line:${n}`);
       st.tokens.forEach((t, i) => {
         const key = `tok:${n}:${i}`;
+        // A piece still waiting to move in (the 2 going up into the power) is not on the board yet.
+        if (t.from && b.movable.has(t.from) && !b.moved.has(t.from)) return;
         if (b.shown.has(key) || (lineOn && !b.targeted.has(key))) bits.push(t.tex);
       });
       if (lineOn) {

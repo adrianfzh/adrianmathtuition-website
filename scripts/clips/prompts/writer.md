@@ -142,4 +142,7 @@ beat that needs a third thing is two beats.
 
 Report one line per clip: slug, beats, words, and the draft-check result.
 
+- **Said = shown is machine-checked** (`clip-said-shown.ts`): every number and named letter you SAY must be
+  on the board by the end of that beat (write it on the words that say it). Then the stand-in reviewer
+  (`review.mjs`) marks the clip against the house rules before Adrian sees it.
 - A law note uses the topic bible's OWN name for the law (Logarithms: "Add Power", "Minus Power", "Bring down power") — never a textbook name like "Power law".

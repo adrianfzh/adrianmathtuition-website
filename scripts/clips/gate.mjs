@@ -14,6 +14,8 @@
 //   · voice  — with --voice: every beat has its clip + timing sidecar, and the speech
 //              round trip (generate-narration --verify) heard ≥ 85 % of the words.
 //   · look   — data/clip-runs/<slug>/look.json (scripts/clips/look.mjs) passed.
+//   · review — data/clip-runs/<slug>/review.json (scripts/clips/review.mjs, the stand-in for
+//              Adrian) has no "must" note and is newer than the lesson.
 //
 // Writes data/clip-runs/<slug>/gate.json; prints one line per check. Exit 1 if any fails.
 
@@ -78,6 +80,15 @@ for (const slug of args._) {
   const lk = rd(`data/clip-runs/${slug}/look.json`);
   if (lk) put('look', lk.pass, `${lk.actions.fired}/${lk.actions.expected} actions on the voice · cues worst ${lk.cue.worst.toFixed(2)} s (gate ${lk.cue.gateS} s) · look problems ${lk.look.problems}`);
   else put('look', false, 'not looked at yet (scripts/clips/look.mjs)');
+
+  // review — the stand-in for Adrian (scripts/clips/review.mjs): no "must" note left. It must be
+  // newer than the lesson, so a clip changed after its review is reviewed again.
+  const rv = rd(`data/clip-runs/${slug}/review.json`);
+  const lessonAt = fs.existsSync(path.join(ROOT, 'data/lessons', `${slug}.json`)) ? fs.statSync(path.join(ROOT, 'data/lessons', `${slug}.json`)).mtimeMs : 0;
+  if (rv && Date.parse(rv.at) >= lessonAt - 1000) {
+    const musts = (rv.findings ?? []).filter(f => f.severity === 'must');
+    put('review', musts.length === 0, `${musts.length} must, ${(rv.findings ?? []).length - musts.length} should · ${rv.frames} frames${musts.length ? ' · ' + musts.map(f => `b${f.beat} ${f.problem}`).join(' | ') : ''}`);
+  } else put('review', false, rv ? 'reviewed before the clip last changed — run scripts/clips/review.mjs again' : 'not reviewed yet (scripts/clips/review.mjs)');
 
   out.pass = Object.values(out.checks).every(c => c.ok);
   failed ||= !out.pass;

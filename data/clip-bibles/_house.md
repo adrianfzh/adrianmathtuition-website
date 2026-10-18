@@ -257,6 +257,15 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
    `--force` the old timings stay and every cue fires early. Then `--verify` / `asr-score.mjs`.
 4. Push `dev`, wait for the preview, move the alias, then `look.mjs` against adrianmath-dev and LOOK at
    it yourself at phone size (375 wide): nothing talked about hidden, slider not moving, question whole.
+4b. **The two checks that stand in for Adrian** (18 Oct 2026: "currently still need a lot of
+   hand-holding … able to one shot this?" → "build #1 … build #2"):
+   - **Said but not shown** (`src/lib/clip-said-shown.ts`, run by verify-lesson as part of `rules`):
+     every number and named letter the voice says is on the board by the end of its beat.
+   - **The stand-in reviewer** (`node scripts/clips/review.mjs <slug>`, after look.mjs so it gets the
+     phone frames): a second model gives the notes Adrian would give, against this file. Fix every
+     `must`, re-run until it passes; the gate's `review` check needs a pass newer than the lesson.
+     Only then does Adrian watch it. Every new note he gives is a miss of the reviewer: add it here
+     (§2) AND to its checklist (`scripts/clips/prompts/reviewer.md`).
 5. Write Adrian's note into §2 here, dated, his words — same commit. Tell him the link, the login
    (admin) and where to tap.
 
