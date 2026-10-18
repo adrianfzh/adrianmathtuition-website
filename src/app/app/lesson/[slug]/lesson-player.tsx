@@ -569,7 +569,7 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
     .map(c => {
       const f = graphFn(c.fn);
       const ly = c.labelAt !== undefined && f ? f(c.labelAt) : NaN;
-      return { ...c, d: pathOf(c.fn), lab: c.label && Number.isFinite(ly) ? { x: sx(c.labelAt!), y: sy(Math.max(g.yMin + 0.3, Math.min(g.yMax - 0.3, ly))) } : null };
+      return { ...c, d: pathOf(c.fn), lab: c.label && Number.isFinite(ly) ? { x: sx(c.labelAt!), y: sy(Math.max(g.yMin + 0.3, Math.min(g.yMax - 0.3, ly))), below: ly < 0 } : null };
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(g)]);
@@ -596,7 +596,7 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
       {all.map((c, i) => (
         <g key={i} data-token-id={c.id} data-ci={i} className="lsn-graph-c">
           <path d={c.d} pathLength={1} className="lsn-graph-curve" />
-          {c.lab && <text x={c.lab.x} y={c.lab.y - 7} textAnchor={c.lab.x > W / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab">{c.label}</text>}
+          {c.lab && <text x={c.lab.x} y={c.lab.below ? c.lab.y + 15 : c.lab.y - 7} textAnchor={c.lab.x > W / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab">{c.label}</text>}
         </g>
       ))}
       {(g.points ?? []).map((pt, i) => (
@@ -3180,9 +3180,9 @@ const PLAYER_CSS = `
 .lsn-graph-lab { fill: rgba(248,250,252,0.85); font: italic 12px Georgia, 'Times New Roman', serif; }
 .lsn-graph-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .lsn-graph.on .lsn-graph-curve { stroke-dashoffset: 0; transition: stroke-dashoffset 1.8s ease-in-out 0.3s; }
-.lsn-pinned { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 0 0 8px; padding: 0; list-style: none; animation: lsnFade 300ms ease both; position: relative; z-index: 5; }
-.lsn-pinned li { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 4px; border-radius: 999px; font: 600 12.5px ui-sans-serif, system-ui, sans-serif; color: rgba(248,250,252,0.7); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); transition: background 300ms ease, color 300ms ease, border-color 300ms ease; }
-.lsn-pinned-n { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 11px; }
+.lsn-pinned { display: flex; flex-wrap: wrap; gap: 4px 4px; margin: 0 0 8px; padding: 0; list-style: none; animation: lsnFade 300ms ease both; position: relative; z-index: 5; }
+.lsn-pinned li { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border-radius: 999px; font: 600 11.5px ui-sans-serif, system-ui, sans-serif; color: rgba(248,250,252,0.7); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); transition: background 300ms ease, color 300ms ease, border-color 300ms ease; }
+.lsn-pinned-n { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 11px; }
 .lsn-pinned li[data-done] { color: rgba(248,250,252,0.5); }
 .lsn-pinned li[data-on] { color: #1e293b; background: #fcd34d; border-color: #fcd34d; box-shadow: 0 0 10px rgba(252,211,77,0.55); }
 .lsn-pinned li[data-on] .lsn-pinned-n { background: rgba(30,41,59,0.18); }
