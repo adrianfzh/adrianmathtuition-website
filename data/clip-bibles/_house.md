@@ -171,6 +171,11 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **A power of a power: multiply straight away, on the same line** (19 Oct 2026: "a power of a power
+  means multiply the two powers, just multiply directly, show the continuation of the equation, don't
+  have to separately show the multiplying of the two powers"): `5^{x+2} = (5^2)^{x-1} = 5^{2x-2}` —
+  no separate `5^{2(x-1)}` line, no moving 2, no `2^{x\times2}` middle step. Times power is named in
+  the note under it. (The reviewer once asked for that middle step — Adrian's rule wins.)
 - **Show which parts make the shape** (18 Oct 2026, Sketching: "highlight ln(-x) in ln (2-x) when
   saying that is the shape"): when the voice says the question's curve "has the shape of" a basic one,
   light those parts in the question's equation (`ln(` `−x` `)`, not the 2), in the colour of that
@@ -192,6 +197,11 @@ the history.
 - **The base in its own colour** when the voice talks about the base (`"part": "sub"`).
 - **Highlight the parts a law acts on**, colour-matched to the law (M orange, N blue), and keep those
   colours in the result line.
+- **Light the pieces INSIDE a fraction when the voice pairs them** (19 Oct 2026, Compare powers — the
+  reviewer's note "which a sits over which a", Adrian: "do it"): wrap each piece in the token's tex,
+  `\htmlClass{lsn-pc-a}{a^{2x+2}}`, and light it with `{"do": "highlight", "token": "g1", "inside": "a",
+  "tone": "orange"}` — the a's orange, the b's blue (`"inside": "b", "tone": "sky"`), same colours on the
+  next line.
 
 ### Voice
 - **A rounded answer is "correct to three significant figures"** (17 Oct 2026: "say x=8.57 correct to
@@ -314,7 +324,7 @@ The test for every beat: if the voice says it and it helps, it is on the board a
 | Growth and decay | Approved cut + his edits: t = 0 working, why k / why ln, divide then ln, no Watch out, written "Why ln" |
 | **Indices: Same base, compare powers** (`same-base-compare-powers-am`) | Built 18 Oct in ONE go with both checks (the one-shot test); stand-in review: 0 must after two false alarms were fixed in the reviewer's brief. Waiting for Adrian's note count. |
 | **Indices: Solving by substitution** (`solving-by-substitution-am`) | Built 18 Oct in one go (Indices clip 2). Stand-in review rounds: 2 must → 1 must → pass → (a fresh run found 1 more must: the key step's middle line) → pass with shoulds only. Waiting for Adrian's note count. |
-| **Indices: Compare powers, two unknowns** (`compare-powers-two-unknowns-am`) | Built 19 Oct alone in a fresh session, recipe in order. Storyboard reviews: 2 musts over 6 runs (a skipped middle line; "= 1" a beat late), both fixed before the voice. Phone review: pass; its "lines too small" should was taken (a long chain on one line shrinks — keep each line to about 25 characters). Waiting for Adrian's note count. |
+| **Indices: Compare powers, two unknowns** (`compare-powers-two-unknowns-am`) | Built 19 Oct alone in a fresh session, recipe in order. Then ("do it") the a's light orange and the b's blue inside the fractions. Storyboard reviews: 2 musts over 6 runs (a skipped middle line; "= 1" a beat late), both fixed before the voice. Phone review: pass; its "lines too small" should was taken (a long chain on one line shrinks — keep each line to about 25 characters). Waiting for Adrian's note count. |
 | Laws of logarithms | Put back to the version before the rebuild (fixed board) |
 | Log scales | **The word-problem reference (approved 18 Oct: "way better").** The version before the rebuild + (18 Oct) "Let I_p = intensity of pump, I_d = …" written, the two readings as equations, why we subtract (draft W2); its "not 12" Watch out dropped; "We want … = I_d/I_p = ?" written; now it SCROLLS (`"scroll": true` in the plan); opens with "First, what the question says" (the formula, each letter, what to find) |
 | Sketching log graphs | The version before the rebuild + (18 Oct) the 4 basic shapes first, the 4 steps pinned and lit, real sketches: the shape of ln(−x), the curve against x = 2, the labelled sketch (draft W2; it scrolls) |

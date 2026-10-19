@@ -1,11 +1,11 @@
 {
  "slug": "same-base-compare-powers-am",
- "worst": 1,
+ "worst": 0.88,
  "lines": [
   {
    "beat": 1,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -28,8 +28,8 @@
   },
   {
    "beat": 5,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.88,
+   "score": 0.88,
    "heard": null
   },
   {
@@ -64,12 +64,6 @@
   },
   {
    "beat": 11,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 12,
    "bag": 1,
    "score": 1,
    "heard": null

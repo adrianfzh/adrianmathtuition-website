@@ -16,18 +16,16 @@
    ]
   },
   {
-   "say": "Four steps: first the same base, then substitute, then solve the quadratic, and last bring back X.",
+   "say": "The plan: write everything with base two. Then it becomes a quadratic in two to the power X.",
    "asks": [
-    "Why these four steps?"
+    "Why change to base two?",
+    "What is a quadratic in disguise?"
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": [
-      "q4",
-      "qr"
-     ],
-     "on": "Four steps"
+     "do": "write",
+     "step": 1,
+     "on": "The plan"
     }
    ]
   },
@@ -89,38 +87,30 @@
    "do": [
     {
      "do": "write",
-     "step": 2,
+     "step": 3,
      "on": "So the equation"
     }
    ]
   },
   {
-   "say": "Look at the powers: two X is the same as X times two.",
+   "say": "Look at the powers: by times power, two to the power two X is two to the power X, all squared.",
    "asks": [
-    "Why is 2x the same as x times 2?"
+    "Why is 2 to the 2x the same as (2 to the x) squared?"
    ],
    "do": [
     {
      "do": "highlight",
      "token": "r1",
      "on": "Look at the powers"
-    }
-   ]
-  },
-  {
-   "say": "So by times power, two to the power two X is two to the power X, all squared.",
-   "asks": [
-    "Why is 2 to the 2x the same as (2 to the x) squared?"
-   ],
-   "do": [
+    },
     {
      "do": "write",
-     "step": 3,
-     "on": "So by times"
+     "step": 4,
+     "on": "by times power"
     },
     {
      "do": "note",
-     "text": "Times power: $(a^m)^n=a^{mn}$, here $m=x$, $n=2$",
+     "text": "Times power: $(a^m)^n=a^{mn}$",
      "near": "k1",
      "on": "all squared"
     }
@@ -151,7 +141,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 5,
      "on": "let A equal"
     }
    ]
@@ -187,7 +177,7 @@
     },
     {
      "do": "write",
-     "step": 5,
+     "step": 6,
      "on": "is three times A"
     }
    ]
@@ -200,7 +190,7 @@
    "do": [
     {
      "do": "write",
-     "step": 6,
+     "step": 7,
      "on": "the equation becomes"
     }
    ]
@@ -213,7 +203,7 @@
    "do": [
     {
      "do": "write",
-     "step": 7,
+     "step": 8,
      "on": "It factorises into"
     }
    ]
@@ -226,7 +216,7 @@
    "do": [
     {
      "do": "write",
-     "step": 8,
+     "step": 9,
      "on": "So A equals"
     },
     {
@@ -258,7 +248,7 @@
    "do": [
     {
      "do": "write",
-     "step": 9,
+     "step": 10,
      "on": "two to the power X is two"
     }
    ]
@@ -289,7 +279,7 @@
    "do": [
     {
      "do": "write",
-     "step": 10,
+     "step": 11,
      "on": "two to the power X is one"
     }
    ]
@@ -302,7 +292,7 @@
    "do": [
     {
      "do": "write",
-     "step": 11,
+     "step": 12,
      "on": "So X equals"
     },
     {

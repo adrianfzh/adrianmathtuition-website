@@ -48,6 +48,20 @@
     {
       "tokens": [
         {
+          "id": "plan",
+          "tex": "\\text{base }2\\;\\Rightarrow\\;\\text{a quadratic in }2^x",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: base 2, then a quadratic in 2^x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
           "id": "b1",
           "tex": "4^x=(2^2)^x"
         },
@@ -93,7 +107,7 @@
       "tokens": [
         {
           "id": "k1",
-          "tex": "2^{2x}=2^{x\\times 2}=(2^x)^2"
+          "tex": "2^{2x}=(2^x)^2"
         },
         {
           "id": "k2",

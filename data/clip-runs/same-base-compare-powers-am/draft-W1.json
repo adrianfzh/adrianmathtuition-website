@@ -93,48 +93,32 @@
    "do": [
     {
      "do": "highlight",
-     "token": [
-      "sq",
-      "pw"
-     ],
+     "token": "b5",
      "on": "a power of"
     },
     {
      "do": "note",
      "text": "Times power: $(a^m)^n=a^{mn}$",
-     "near": "pw",
+     "near": "b5",
      "on": "multiply the two"
     }
    ]
   },
   {
-   "say": "So the two joins the power: five to the power two times X minus one.",
+   "say": "So five squared, to the power X minus one, is five to the power two X minus two.",
    "asks": [
-    "Where does the 2 go?"
+    "How do I multiply 2 by x − 1?"
    ],
    "do": [
     {
      "do": "write",
-     "step": 3,
-     "on": "So the two"
+     "token": "b2",
+     "on": "is five to"
     },
     {
-     "do": "move",
-     "from": "sq",
-     "on": "joins the power"
-    }
-   ]
-  },
-  {
-   "say": "Expand the bracket: two X minus two. Now both sides are five to a power.",
-   "asks": [
-    "How do I expand 2(x − 1)?"
-   ],
-   "do": [
-    {
      "do": "write",
-     "step": 4,
-     "on": "Expand the bracket"
+     "token": "e4",
+     "on": "two X minus two"
     }
    ]
   },
@@ -193,12 +177,12 @@
    "do": [
     {
      "do": "write",
-     "step": 6,
+     "step": 4,
      "on": "Take X from"
     },
     {
      "do": "write",
-     "step": 7,
+     "step": 5,
      "on": "So X equals"
     },
     {

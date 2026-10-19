@@ -11,7 +11,6 @@
     {
       "type": "equation-steps",
       "heading": "Same base, compare powers",
-      "pinned": ["same base", "compare powers"],
       "steps": [
         {
           "tokens": [
@@ -27,25 +26,10 @@
         },
         {
           "tokens": [
-            { "id": "a2", "tex": "5^{x+2}" },
-            { "id": "e2", "tex": "=" },
-            { "id": "b5", "tex": "(5" },
-            { "id": "sq", "tex": "{}^{2}", "tight": true },
-            { "id": "rb", "tex": ")" },
-            { "id": "pw", "tex": "{}^{x-1}", "tight": true }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "l3", "tex": "5^{x+2}=5" },
-            { "id": "m2", "tex": "{}^{2}", "tight": true, "from": "sq" },
-            { "id": "pw3", "tex": "{}^{(x-1)}", "tight": true }
-          ]
-        },
-        {
-          "tokens": [
             { "id": "b1", "tex": "5" },
             { "id": "e1", "tex": "{}^{x+2}", "tight": true },
+            { "id": "e2", "tex": "=" },
+            { "id": "b5", "tex": "(5^2)^{x-1}" },
             { "id": "b2", "tex": "=5" },
             { "id": "e4", "tex": "{}^{2x-2}", "tight": true }
           ]
@@ -54,6 +38,11 @@
           "tokens": [
             { "id": "c1", "tex": "x+2", "from": "e1" },
             { "id": "c2", "tex": "=2x-2", "from": "e4" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "sv", "tex": "2+2=2x-x" }
           ]
         },
         {
@@ -74,9 +63,7 @@
           "say": "X is in the power. Two steps: first make the same base, then compare the powers.",
           "asks": ["Why can't I just solve for X directly?"],
           "do": [
-            { "do": "highlight", "token": ["q5", "q25"], "on": "X is in" },
-            { "do": "pin", "show": 1, "on": "make the same base" },
-            { "do": "pin", "show": 2, "on": "compare the powers" }
+            { "do": "highlight", "token": ["q5", "q25"], "on": "X is in" }
           ]
         },
         {
@@ -91,8 +78,8 @@
           "say": "Step one, same base. The bases are five and twenty-five, and twenty-five is five squared.",
           "asks": ["How do I spot that 25 is 5 squared?"],
           "do": [
-            { "do": "pin", "lit": 1, "on": "Step one" },
-            { "do": "highlight", "token": "q25", "on": "twenty-five is five" }
+            { "do": "highlight", "token": ["q5", "q25"], "on": "The bases are" },
+            { "do": "note", "text": "$25=5^2$", "near": "q25", "on": "twenty-five is five" }
           ]
         },
         {
@@ -106,30 +93,22 @@
           "say": "Times power: a power of a power means multiply the two powers.",
           "asks": ["Which law is this?", "Why multiply the powers?"],
           "do": [
-            { "do": "highlight", "token": ["sq", "pw"], "on": "a power of" },
-            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "pw", "on": "multiply the two" }
+            { "do": "highlight", "token": "b5", "on": "a power of" },
+            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "b5", "on": "multiply the two" }
           ]
         },
         {
-          "say": "So the two joins the power: five to the power two times X minus one.",
-          "asks": ["Where does the 2 go?"],
+          "say": "So five squared, to the power X minus one, is five to the power two X minus two.",
+          "asks": ["How do I multiply 2 by x − 1?"],
           "do": [
-            { "do": "write", "step": 3, "on": "So the two" },
-            { "do": "move", "from": "sq", "on": "joins the power" }
-          ]
-        },
-        {
-          "say": "Expand the bracket: two X minus two. Now both sides are five to a power.",
-          "asks": ["How do I expand 2(x − 1)?"],
-          "do": [
-            { "do": "write", "step": 4, "on": "Expand the bracket" }
+            { "do": "write", "token": "b2", "on": "is five to" },
+            { "do": "write", "token": "e4", "on": "two X minus two" }
           ]
         },
         {
           "say": "Step two, compare powers. The bases match: five on the left, five on the right.",
           "asks": ["What does compare powers mean?"],
           "do": [
-            { "do": "pin", "lit": 2, "on": "Step two" },
             { "do": "highlight", "token": ["b1", "b2"], "on": "The bases match" }
           ]
         },
@@ -152,7 +131,8 @@
           "say": "Take X from both sides and add two. So X equals four, the answer.",
           "asks": ["Can I check x = 4?"],
           "do": [
-            { "do": "write", "step": 6, "on": "So X equals" },
+            { "do": "write", "step": 4, "on": "Take X from" },
+            { "do": "write", "step": 5, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "the answer" }
           ]
         }

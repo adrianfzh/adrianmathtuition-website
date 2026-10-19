@@ -1,25 +1,25 @@
-Verifying 20 clip(s) of solving-by-substitution-am by transcription (gemini-2.5-flash)…
+Verifying 19 clip(s) of solving-by-substitution-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 94% of narration words heard
+  scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
-  scene-01-b3: 95% of narration words heard
-  scene-01-b4: 88% of narration words heard
+  scene-01-b3: 100% of narration words heard
+  scene-01-b4: 94% of narration words heard
   scene-01-b5: 100% of narration words heard
-  scene-01-b6: 100% of narration words heard
+  scene-01-b6: 73% of narration words heard  ⚠ LOW
+      heard: So the equation becomes 2 ^ 2x - 3 * 2 ^ x + 2 = 0.
   scene-01-b7: 100% of narration words heard
   scene-01-b8: 100% of narration words heard
-  scene-01-b9: 100% of narration words heard
-  scene-01-b10: 64% of narration words heard  ⚠ LOW
-      heard: Step two, substitute. Let A = 2 ^ x.
+  scene-01-b9: 91% of narration words heard
+  scene-01-b10: 100% of narration words heard
   scene-01-b11: 100% of narration words heard
   scene-01-b12: 100% of narration words heard
-  scene-01-b13: 100% of narration words heard
-  scene-01-b14: 93% of narration words heard
+  scene-01-b13: 93% of narration words heard
+  scene-01-b14: 100% of narration words heard
   scene-01-b15: 100% of narration words heard
   scene-01-b16: 100% of narration words heard
   scene-01-b17: 100% of narration words heard
-  scene-01-b18: 100% of narration words heard
+  scene-01-b18: 71% of narration words heard  ⚠ LOW
+      heard: A = 1, 2 ^ x is 1, which is 2 ^ 0. So x = 0.
   scene-01-b19: 100% of narration words heard
-  scene-01-b20: 100% of narration words heard
 
-1 clip(s) below 85% — listen to those.
+2 clip(s) below 85% — listen to those.

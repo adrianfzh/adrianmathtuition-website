@@ -35,7 +35,9 @@ You get:
    starts or ends in the wrong place. **For WHAT is lit, trust the storyboard** ("light {b1, b2}" =
    both are lit) — small screenshots make colours hard to read; use the frames for layout only.
    (18 Oct 2026: twice a frame was read as "only the left 5 lit" when both were.)
-10. Anything else in the house rules this clip breaks.
+10. Do NOT ask for a separate line showing a power of a power being multiplied (2(x−1), x×2): Adrian
+   multiplies straight away on the same line ("just multiply directly").
+11. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

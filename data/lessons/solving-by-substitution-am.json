@@ -21,6 +21,11 @@
         },
         {
           "tokens": [
+            { "id": "plan", "tex": "\\text{base }2\\;\\Rightarrow\\;\\text{a quadratic in }2^x", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "b1", "tex": "4^x=(2^2)^x" },
             { "id": "b2", "tex": "=2^{2x}" }
           ]
@@ -35,7 +40,7 @@
         },
         {
           "tokens": [
-            { "id": "k1", "tex": "2^{2x}=2^{x\\times 2}=(2^x)^2" },
+            { "id": "k1", "tex": "2^{2x}=(2^x)^2" },
             { "id": "k2", "tex": "=a^2" }
           ]
         },
@@ -92,10 +97,10 @@
           "timing": "/lessons/solving-by-substitution-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Four steps: first the same base, then substitute, then solve the quadratic, and last bring back X.",
-          "asks": ["Why these four steps?"],
+          "say": "The plan: write everything with base two. Then it becomes a quadratic in two to the power X.",
+          "asks": ["Why change to base two?", "What is a quadratic in disguise?"],
           "do": [
-            { "do": "highlight", "token": ["q4", "qr"], "on": "Four steps" }
+            { "do": "write", "step": 1, "on": "The plan" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b2.mp3",
           "timing": "/lessons/solving-by-substitution-am/scene-01-b2.timing.json"
@@ -133,29 +138,21 @@
           "say": "So the equation becomes two to the power two X, minus three times two to the power X, plus two, equals zero.",
           "asks": ["Why rewrite the whole equation?"],
           "do": [
-            { "do": "write", "step": 2, "on": "So the equation" }
+            { "do": "write", "step": 3, "on": "So the equation" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b6.mp3",
           "timing": "/lessons/solving-by-substitution-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Look at the powers: two X is the same as X times two.",
-          "asks": ["Why is 2x the same as x times 2?"],
+          "say": "Look at the powers: by times power, two to the power two X is two to the power X, all squared.",
+          "asks": ["Why is 2 to the 2x the same as (2 to the x) squared?"],
           "do": [
-            { "do": "highlight", "token": "r1", "on": "Look at the powers" }
+            { "do": "highlight", "token": "r1", "on": "Look at the powers" },
+            { "do": "write", "step": 4, "on": "by times power" },
+            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "k1", "on": "all squared" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b7.mp3",
           "timing": "/lessons/solving-by-substitution-am/scene-01-b7.timing.json"
-        },
-        {
-          "say": "So by times power, two to the power two X is two to the power X, all squared.",
-          "asks": ["Why is 2 to the 2x the same as (2 to the x) squared?"],
-          "do": [
-            { "do": "write", "step": 3, "on": "So by times" },
-            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$, here $m=x$, $n=2$", "near": "k1", "on": "all squared" }
-          ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b8.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b8.timing.json"
         },
         {
           "say": "Now the equation has two to the power X, and two to the power X, all squared. A quadratic in disguise.",
@@ -163,17 +160,17 @@
           "do": [
             { "do": "highlight", "token": ["r2x", "k1"], "on": "two to the power X, and" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b9.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b9.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b8.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b8.timing.json"
         },
         {
           "say": "Step two, substitute: let A equal two to the power X.",
           "asks": ["Why use a letter?", "Can I use u instead of a?"],
           "do": [
-            { "do": "write", "step": 4, "on": "let A equal" }
+            { "do": "write", "step": 5, "on": "let A equal" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b10.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b10.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b9.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b9.timing.json"
         },
         {
           "say": "Then two to the power X, all squared, is A squared.",
@@ -182,46 +179,46 @@
             { "do": "highlight", "token": "k1", "on": "Then two to" },
             { "do": "write", "token": "k2", "on": "is A squared" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b11.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b11.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b10.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b10.timing.json"
         },
         {
           "say": "And three times two to the power X is three times A.",
           "asks": ["Why is 3 times 2 to the x equal to 3a?"],
           "do": [
             { "do": "highlight", "token": "r2x", "on": "two to the power" },
-            { "do": "write", "step": 5, "on": "is three times A" }
+            { "do": "write", "step": 6, "on": "is three times A" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b12.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b12.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b11.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b11.timing.json"
         },
         {
           "say": "So the equation becomes A squared minus three A plus two equals zero.",
           "asks": ["Is this a normal quadratic now?"],
           "do": [
-            { "do": "write", "step": 6, "on": "the equation becomes" }
+            { "do": "write", "step": 7, "on": "the equation becomes" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b13.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b13.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b12.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b12.timing.json"
         },
         {
           "say": "Step three, solve the quadratic. It factorises into A minus two, times A minus one.",
           "asks": ["How do I factorise it?"],
           "do": [
-            { "do": "write", "step": 7, "on": "It factorises into" }
+            { "do": "write", "step": 8, "on": "It factorises into" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b14.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b14.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b13.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b13.timing.json"
         },
         {
           "say": "So A equals two, or A equals one. Both are positive, as two to the power X always is.",
           "asks": ["Are these the answers?"],
           "do": [
-            { "do": "write", "step": 8, "on": "So A equals" },
+            { "do": "write", "step": 9, "on": "So A equals" },
             { "do": "note", "text": "$2^x>0$: both allowed", "near": "rts", "on": "Both are positive" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b15.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b15.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b14.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b14.timing.json"
         },
         {
           "say": "Step four, bring back X. The question asks for X, so each value of A gives a value of X.",
@@ -229,17 +226,17 @@
           "do": [
             { "do": "highlight", "token": "rts", "on": "each value of" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b16.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b16.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b15.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b15.timing.json"
         },
         {
           "say": "A equals two: two to the power X is two, which is two to the power one.",
           "asks": ["Why write 2 as 2 to the power 1?"],
           "do": [
-            { "do": "write", "step": 9, "on": "two to the power X is two" }
+            { "do": "write", "step": 10, "on": "two to the power X is two" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b17.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b17.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b16.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b16.timing.json"
         },
         {
           "say": "Both sides have base two, so the powers are equal: X equals one.",
@@ -248,27 +245,27 @@
             { "do": "highlight", "token": "x1", "on": "Both sides have" },
             { "do": "write", "token": "x1b", "on": "the powers are equal" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b18.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b18.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b17.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b17.timing.json"
         },
         {
           "say": "A equals one: two to the power X is one, which is two to the power zero. So X equals zero.",
           "asks": ["Why is 1 the same as 2 to the power 0?"],
           "do": [
-            { "do": "write", "step": 10, "on": "two to the power X is one" }
+            { "do": "write", "step": 11, "on": "two to the power X is one" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b19.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b19.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b18.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b18.timing.json"
         },
         {
           "say": "So X equals one, or X equals zero.",
           "asks": ["Can I check these answers?"],
           "do": [
-            { "do": "write", "step": 11, "on": "So X equals" },
+            { "do": "write", "step": 12, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals zero" }
           ],
-          "audio": "/lessons/solving-by-substitution-am/scene-01-b20.mp3",
-          "timing": "/lessons/solving-by-substitution-am/scene-01-b20.timing.json"
+          "audio": "/lessons/solving-by-substitution-am/scene-01-b19.mp3",
+          "timing": "/lessons/solving-by-substitution-am/scene-01-b19.timing.json"
         }
       ]
     }
