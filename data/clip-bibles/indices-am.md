@@ -16,9 +16,11 @@ from the teaching-knowledge layer. Nothing in a clip may teach a method these do
 - A subtracted power is always written in brackets on the board: `a^{(2x+2)-(3-y)}`,
   then the tidy line after. The bracket line and the tidy line are two lines.
 - Two bases → two compare lines, one per base, each labelled with its base (`a:`, `b:`).
-- Graph clips: the board has no exponential-curve drawing yet (graph-morph draws polynomials
-  only). Teach shape, asymptote and intercepts in words and working lines; a live graph is a
-  later build.
+- Graph clips DRAW the graph (since 18 Oct 2026): copy `sketching-log-graphs-am` — the four basic
+  shapes small in the board's corner (`sketch.inset`, each curve lit as it is named), empty axes at the
+  side, the asymptote dashed on its word, the basic shape lifted from the corner onto the axes and slid
+  to its place, each intercept marked as it is found, the method's steps pinned and lit in turn (a
+  graph clip is the one kind that numbers its steps). Any curve in x draws: `exp(x)`, `2^x`, `-3*2^(-x)`.
 
 ## 2. Notation on the board, words in the voice
 
