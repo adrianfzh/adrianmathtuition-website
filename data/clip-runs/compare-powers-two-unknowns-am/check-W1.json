@@ -27,7 +27,7 @@
           ]
         },
         {
-          "heading": "Step 1: do the power first",
+          "heading": "Do the power first",
           "tokens": [
             { "id": "s1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
             { "id": "s1b", "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}" },
@@ -41,7 +41,7 @@
           ]
         },
         {
-          "heading": "Step 2: group the same bases",
+          "heading": "Group the same bases",
           "tokens": [
             {
               "id": "g1",
@@ -51,7 +51,7 @@
           ]
         },
         {
-          "heading": "Step 3: divide, minus the powers",
+          "heading": "Divide, minus the powers",
           "tokens": [
             { "id": "d1", "tex": "a^{(2x+2)-(3-y)}" },
             { "id": "d2", "tex": "\\times b^{(x+2)-(2y-4)}" },
@@ -59,7 +59,7 @@
           ]
         },
         {
-          "heading": "Step 4: tidy up each power",
+          "heading": "Tidy up each power",
           "tokens": [
             { "id": "ta1", "tex": "a:\\;(2x+2)-(3-y)" },
             { "id": "ta2", "tex": "=2x+2-3+y" }
@@ -81,7 +81,7 @@
           ]
         },
         {
-          "heading": "Step 5: compare powers of each base",
+          "heading": "Compare powers of each base",
           "tokens": [
             { "id": "ca", "tex": "a:" },
             { "id": "ca2", "tex": "2x+y-1", "from": "u2" },
@@ -96,7 +96,7 @@
           ]
         },
         {
-          "heading": "Step 6: solve simultaneously",
+          "heading": "Solve simultaneously",
           "tokens": [
             { "id": "ans", "tex": "x=3,\\;y=4", "hl": "emerald" }
           ]
@@ -141,10 +141,10 @@
           ]
         },
         {
-          "say": "Step one, do the power first: the bracket must go before we can group the bases.",
+          "say": "Do the power first: the bracket must go before we can group the bases.",
           "asks": ["Why do the power first?"],
           "do": [
-            { "do": "write", "token": "s1", "on": "do the power" }
+            { "do": "write", "token": "s1", "on": "the power first" }
           ]
         },
         {
@@ -179,7 +179,7 @@
           ]
         },
         {
-          "say": "Step two, group the same bases. Multiplying fractions: tops together, bottoms together.",
+          "say": "Now group the same bases. Multiplying fractions: tops together, bottoms together.",
           "asks": ["Why can I join the two fractions?"],
           "do": [
             { "do": "write", "step": 4, "on": "Multiplying fractions" },
@@ -187,7 +187,7 @@
           ]
         },
         {
-          "say": "Step three, divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
+          "say": "Then divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
           "asks": ["Which law is this?", "Why minus the powers?"],
           "do": [
             { "do": "highlight", "token": "g1", "inside": "a", "tone": "orange", "on": "The same base" },
@@ -205,7 +205,7 @@
           ]
         },
         {
-          "say": "Step four, tidy each power. For A: two X plus two, minus the bracket three minus Y.",
+          "say": "Now tidy each power. For A: two X plus two, minus the bracket three minus Y.",
           "asks": ["Why tidy one power at a time?"],
           "do": [
             { "do": "highlight", "token": "d1", "on": "tidy each power" },
@@ -260,7 +260,7 @@
           ]
         },
         {
-          "say": "Step five, compare the powers of each base. First the base A.",
+          "say": "Now compare the powers of each base. First the base A.",
           "asks": ["What does compare powers mean?"],
           "aside": {
             "text": "Why can we compare powers?",
@@ -306,7 +306,7 @@
           ]
         },
         {
-          "say": "Step six, solve the two equations together: X equals three and Y equals four.",
+          "say": "Solve the two equations together: X equals three and Y equals four.",
           "asks": ["How do I solve them together?", "Can I check the answer?"],
           "do": [
             { "do": "write", "step": 11, "on": "X equals three" },

@@ -68,7 +68,7 @@
       ]
     },
     {
-      "heading": "Step 1: do the power first",
+      "heading": "Do the power first",
       "tokens": [
         {
           "id": "s1",
@@ -110,7 +110,7 @@
       ]
     },
     {
-      "heading": "Step 2: group the same bases",
+      "heading": "Group the same bases",
       "tokens": [
         {
           "id": "g1",
@@ -128,7 +128,7 @@
       ]
     },
     {
-      "heading": "Step 3: divide, minus the powers",
+      "heading": "Divide, minus the powers",
       "tokens": [
         {
           "id": "d1",
@@ -150,7 +150,7 @@
       ]
     },
     {
-      "heading": "Step 4: tidy up each power",
+      "heading": "Tidy up each power",
       "tokens": [
         {
           "id": "ta1",
@@ -219,7 +219,7 @@
       ]
     },
     {
-      "heading": "Step 5: compare powers of each base",
+      "heading": "Compare powers of each base",
       "tokens": [
         {
           "id": "ca",
@@ -286,7 +286,7 @@
           }
         }
       ],
-      "heading": "Step 6: solve simultaneously"
+      "heading": "Solve simultaneously"
     }
   ],
   "scroll": true

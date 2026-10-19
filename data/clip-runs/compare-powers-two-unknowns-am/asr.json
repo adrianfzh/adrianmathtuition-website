@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "worst": 0.9,
+ "worst": 0.93,
  "lines": [
   {
    "beat": 1,
@@ -100,15 +100,16 @@
   },
   {
    "beat": 17,
-   "bag": 0.9,
-   "score": 0.9,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 18,
-   "bag": 1,
+   "bag": 0.82,
    "score": 1,
-   "heard": null
+   "heard": "Collect the terms. The left side is a ^ 2x + y - 1.",
+   "said": "Collect the terms: the left side is A to the power two X plus Y minus one,"
   },
   {
    "beat": 19,
@@ -118,8 +119,8 @@
   },
   {
    "beat": 20,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {

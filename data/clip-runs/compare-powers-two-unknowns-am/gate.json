@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T03:10:38.318Z",
+ "at": "2026-10-19T03:23:47.520Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,11 +8,11 @@
   },
   "maths": {
    "ok": true,
-   "detail": "23/23 line checks"
+   "detail": "18/18 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "17 lines = the checked plan"
+   "detail": "12 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,11 +20,11 @@
   },
   "look": {
    "ok": true,
-   "detail": "54/54 actions on the voice · cues worst 0.26 s (gate 0.3 s) · look problems 0"
+   "detail": "48/48 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": false,
-   "detail": "1 must, 0 should · 31 frames · b25 Beats 25 to 30 work through the pair of linear equations line by line (make y the subject, substitute, expand, collect), but A Math students already know this, and the house rule forbids substitute-and-expand lines for a pair of linear equations."
+   "detail": "6 must, 1 should · 25 frames · b6 The voice numbers the steps ('Step one, do the power first'). Adrian allows step numbers only in graph-sketching clips, where the steps are pinned on screen. | b11 The voice says 'Step two, group the same bases.' | b12 The voice says 'Step three, divide.' | b14 The voice says 'Step four, tidy each power.' | b21 The voice says 'Step five, compare the powers of each base.' | b25 The voice says 'Step six, solve the two equations together.'"
   }
  },
  "pass": false

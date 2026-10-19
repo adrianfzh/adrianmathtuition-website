@@ -82,7 +82,7 @@
    ]
   },
   {
-   "say": "Step one, do the power first: the bracket must go before we can group the bases.",
+   "say": "Do the power first: the bracket must go before we can group the bases.",
    "asks": [
     "Why do the power first?"
    ],
@@ -90,7 +90,7 @@
     {
      "do": "write",
      "token": "s1",
-     "on": "do the power"
+     "on": "the power first"
     }
    ]
   },
@@ -163,7 +163,7 @@
    ]
   },
   {
-   "say": "Step two, group the same bases. Multiplying fractions: tops together, bottoms together.",
+   "say": "Now group the same bases. Multiplying fractions: tops together, bottoms together.",
    "asks": [
     "Why can I join the two fractions?"
    ],
@@ -181,7 +181,7 @@
    ]
   },
   {
-   "say": "Step three, divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
+   "say": "Then divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
    "asks": [
     "Which law is this?",
     "Why minus the powers?"
@@ -235,7 +235,7 @@
    ]
   },
   {
-   "say": "Step four, tidy each power. For A: two X plus two, minus the bracket three minus Y.",
+   "say": "Now tidy each power. For A: two X plus two, minus the bracket three minus Y.",
    "asks": [
     "Why tidy one power at a time?"
    ],
@@ -356,7 +356,7 @@
    ]
   },
   {
-   "say": "Step five, compare the powers of each base. First the base A.",
+   "say": "Now compare the powers of each base. First the base A.",
    "asks": [
     "What does compare powers mean?"
    ],
@@ -458,7 +458,7 @@
    ]
   },
   {
-   "say": "Step six, solve the two equations together: X equals three and Y equals four.",
+   "say": "Solve the two equations together: X equals three and Y equals four.",
    "asks": [
     "How do I solve them together?",
     "Can I check the answer?"
