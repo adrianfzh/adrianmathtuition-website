@@ -221,10 +221,14 @@
    ],
    "do": [
     {
-     "do": "note",
-     "text": "x = 1: 0.1    x = 2: 0.005",
-     "near": "tz",
-     "on": "Try some values"
+     "do": "write",
+     "token": "v1",
+     "on": "When X is one"
+    },
+    {
+     "do": "write",
+     "token": "v2",
+     "on": "When X is two"
     }
    ]
   },

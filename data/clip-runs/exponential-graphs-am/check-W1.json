@@ -68,6 +68,12 @@
         },
         {
           "tokens": [
+            { "id": "v1", "tex": "x=1:\\ 0.1," },
+            { "id": "v2", "tex": "x=2:\\ 0.005" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "yt", "tex": "y\\to 0+1=1" },
             { "id": "asy", "tex": "\\Rightarrow\\ \\text{asymptote }y=1", "hl": "sky" }
           ]
@@ -191,7 +197,8 @@
           "say": "Try some values. When X is one, it is about zero point one. When X is two, about zero point zero zero five.",
           "asks": ["Why does it get smaller as x grows?", "Will it ever reach zero?"],
           "do": [
-            { "do": "note", "text": "x = 1: 0.1    x = 2: 0.005", "near": "tz", "on": "Try some values" }
+            { "do": "write", "token": "v1", "on": "When X is one" },
+            { "do": "write", "token": "v2", "on": "When X is two" }
           ]
         },
         {

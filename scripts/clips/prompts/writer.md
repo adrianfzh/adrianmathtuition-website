@@ -70,7 +70,7 @@ no focus, no clear.
   words — always with `near` = the token it explains (the board draws an ↑ under it; write no
   arrow). A note is plain handwriting text, not TeX: write × for times (never · — the hand font
   has no dot), ² ³ ˣ for powers (raised letters like ʳ ⁿ ᵏ draw as ticks; write the power out or
-  leave it off), √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
+  leave it off), √ for roots, ⇒ for gives. **No decimals in a note** — the hand font drops the decimal point ("0.005" drew as "0 005", 20 Oct 2026); put numbers with a point on a board line instead. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
 - **No "Step one / Step two" in the voice** except a graph-sketching clip (its steps are pinned): say the move.
 - **Two answers side by side**: `"cols": true` lines — each answer worked straight down its own column.

@@ -394,6 +394,8 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
   a resize re-lays the ink at once; a re-fit re-lays it in the next frame, never wiping first). →
   while a piece moves, check a frame at move + 0.7 s: every "Times power:" word and ↑ must be there.
 
+- **The hand font drops a decimal point** (20 Oct 2026, Exponential graphs: the note `x = 1: 0.1, x = 2: 0.005` drew as "0 1", "0 005"). → numbers with a point go on a board line (KaTeX), never in a note.
+
 - **A long chain on one line prints small on a phone** (19 Oct 2026, Compare powers: `a: (2x+2) − (3−y) = 2x+2−3+y = 2x+y−1` shrank to about 60 %). A line shrinks to fit the width, so keep a line to about 25 characters; put the result of a chain on the next line (or into the line that uses it).
 
 ### The redo recipe (each step, in order)
