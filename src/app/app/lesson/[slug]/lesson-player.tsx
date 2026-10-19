@@ -1067,7 +1067,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               {s.heading && (
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-1 lsn-step-heading">{s.heading}</p>
               )}
-              <div data-fit className="lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
+              <div data-fit data-cols={s.cols ? s.tokens.length : undefined} className={`lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5${s.cols ? ' lsn-cols' : ''}`}>
                 {s.tokens.map((t, ti) => (
                   <TokenSpan key={ti} t={t} away={!!board && tokenAway(board, scene, i, ti)}
                     bits={board ? { key: tokKey(i, ti), on: tokenShown(board, scene, i, ti), written: tokenWritten(board, i, ti) } : null} />
@@ -3160,6 +3160,10 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-scene .lsn-board { transition: opacity ${SCENE_LEAVE_MS}ms ease-in; }
 [data-lsn-clip] .lsn-scene[data-leaving] .lsn-board { opacity: 0; }
 .lsn-rise { animation: lsnRise 420ms ${EASE} both; }
+/* Two answers side by side, each worked straight down its own column (EquationStep.cols). */
+.lsn-line .lsn-tokrow.lsn-cols { display: grid; grid-template-columns: minmax(0, 1fr) 3.2em minmax(0, 1fr); justify-items: start; align-items: baseline; column-gap: 0.4em; }
+.lsn-line .lsn-tokrow.lsn-cols > :nth-child(2) { justify-self: center; }
+.lsn-line .lsn-tokrow.lsn-cols[data-cols="2"] > :nth-child(2) { grid-column: 3; justify-self: start; }
 .lsn-line { opacity: 0; transform: translateY(6px); transition: opacity 420ms ${EASE}, transform 420ms ${EASE}; }
 .lsn-line.on { opacity: 1; transform: none; }
 .lsn-tok { transition: opacity 180ms ease; }

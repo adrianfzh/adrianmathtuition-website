@@ -55,19 +55,32 @@
         },
         {
           "tokens": [
-            { "id": "rts", "tex": "a=2\\;\\text{ or }\\;a=1" }
-          ]
+            { "id": "ra", "tex": "a=2" },
+            { "id": "ror", "tex": "\\text{or}" },
+            { "id": "rb", "tex": "a=1" }
+          ],
+          "cols": true
         },
         {
           "tokens": [
-            { "id": "x1", "tex": "a=2:\\;\\;2^x=2=2^1" },
-            { "id": "x1b", "tex": "\\;\\Rightarrow\\;x=1" }
-          ]
+            { "id": "p1", "tex": "2^x=2" },
+            { "id": "p0", "tex": "2^x=1" }
+          ],
+          "cols": true
         },
         {
           "tokens": [
-            { "id": "x0", "tex": "a=1:\\;\\;2^x=1=2^0\\;\\Rightarrow\\;x=0" }
-          ]
+            { "id": "q1", "tex": "2^x=2^1" },
+            { "id": "q0", "tex": "2^x=2^0" }
+          ],
+          "cols": true
+        },
+        {
+          "tokens": [
+            { "id": "s1", "tex": "x=1" },
+            { "id": "s0", "tex": "x=0" }
+          ],
+          "cols": true
         },
         {
           "tokens": [
@@ -160,36 +173,39 @@
           "say": "Now bring back X. The question asks for X, so each value of A gives a value of X.",
           "asks": ["Why can't I stop at a?"],
           "do": [
-            { "do": "highlight", "token": "rts", "on": "each value of" }
+            { "do": "highlight", "token": ["ra", "rb"], "on": "each value of" }
           ]
         },
         {
           "say": "A equals two: two to the power X is two, which is two to the power one.",
           "asks": ["Why write 2 as 2 to the power 1?"],
           "do": [
-            { "do": "write", "step": 8, "on": "two to the power X is two" }
+            { "do": "write", "token": "p1", "on": "two to the power X is two" },
+            { "do": "write", "token": "q1", "on": "which is two" }
           ]
         },
         {
-          "say": "Since the base is the same, the powers must be the same: X equals one.",
-          "asks": ["Why can I compare the powers?"],
-          "do": [
-            { "do": "highlight", "token": "x1", "on": "Since the base" },
-            { "do": "write", "token": "x1b", "on": "the powers must" }
-          ]
-        },
-        {
-          "say": "A equals one: two to the power X is one, which is two to the power zero. So X equals zero.",
+          "say": "A equals one: two to the power X is one, which is two to the power zero.",
           "asks": ["Why is 1 the same as 2 to the power 0?"],
           "do": [
-            { "do": "write", "step": 9, "on": "two to the power X is one" }
+            { "do": "write", "token": "p0", "on": "two to the power X is one" },
+            { "do": "write", "token": "q0", "on": "which is two" }
+          ]
+        },
+        {
+          "say": "Since the base is the same, the powers must be the same: X equals one, and X equals zero.",
+          "asks": ["Why can I compare the powers?"],
+          "do": [
+            { "do": "highlight", "token": ["q1", "q0"], "on": "Since the base" },
+            { "do": "write", "token": "s1", "on": "X equals one" },
+            { "do": "write", "token": "s0", "on": "X equals zero" }
           ]
         },
         {
           "say": "So X equals one, or X equals zero.",
           "asks": ["Can I check these answers?"],
           "do": [
-            { "do": "write", "step": 10, "on": "So X equals" },
+            { "do": "write", "step": 11, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals zero" }
           ]
         }

@@ -175,7 +175,10 @@
    "do": [
     {
      "do": "highlight",
-     "token": "rts",
+     "token": [
+      "ra",
+      "rb"
+     ],
      "on": "each value of"
     }
    ]
@@ -188,39 +191,57 @@
    "do": [
     {
      "do": "write",
-     "step": 8,
+     "token": "p1",
      "on": "two to the power X is two"
-    }
-   ]
-  },
-  {
-   "say": "Since the base is the same, the powers must be the same: X equals one.",
-   "asks": [
-    "Why can I compare the powers?"
-   ],
-   "do": [
-    {
-     "do": "highlight",
-     "token": "x1",
-     "on": "Since the base"
     },
     {
      "do": "write",
-     "token": "x1b",
-     "on": "the powers must"
+     "token": "q1",
+     "on": "which is two"
     }
    ]
   },
   {
-   "say": "A equals one: two to the power X is one, which is two to the power zero. So X equals zero.",
+   "say": "A equals one: two to the power X is one, which is two to the power zero.",
    "asks": [
     "Why is 1 the same as 2 to the power 0?"
    ],
    "do": [
     {
      "do": "write",
-     "step": 9,
+     "token": "p0",
      "on": "two to the power X is one"
+    },
+    {
+     "do": "write",
+     "token": "q0",
+     "on": "which is two"
+    }
+   ]
+  },
+  {
+   "say": "Since the base is the same, the powers must be the same: X equals one, and X equals zero.",
+   "asks": [
+    "Why can I compare the powers?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "q1",
+      "q0"
+     ],
+     "on": "Since the base"
+    },
+    {
+     "do": "write",
+     "token": "s1",
+     "on": "X equals one"
+    },
+    {
+     "do": "write",
+     "token": "s0",
+     "on": "X equals zero"
     }
    ]
   },
@@ -232,7 +253,7 @@
    "do": [
     {
      "do": "write",
-     "step": 10,
+     "step": 11,
      "on": "So X equals"
     },
     {

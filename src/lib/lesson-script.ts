@@ -81,6 +81,11 @@ export interface EquationStep {
    *  need to include diagrams in the clips, please do so"): any curve y = fn(x), its asymptote and
    *  labelled points, in chalk. */
   graph?: StepGraph;
+  /** Two answers worked side by side, each straight down its own column (Adrian, 19 Oct 2026: "for
+   *  such working, put like this instead (directly below)": a = 1 or a = 1/4, then 2^{2x} = 1 under
+   *  the one and 2^{2x} = 1/4 under the other). Three tokens = left, middle ("or"), right; two
+   *  tokens = left, right. The columns line up from line to line. */
+  cols?: boolean;
 }
 
 /** A curve sketch on a clip board. `fn` is plain maths in x: + − * / ^ ( ) and ln, log (base 10),
@@ -897,6 +902,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           errors.push(`${sAt}: note must be a non-empty string when present`);
         }
         if (step.heading !== undefined && !nonEmptyString(step.heading)) errors.push(`${sAt}: heading must be a non-empty string when present`);
+        if (step.cols !== undefined && (step.cols !== true || !Array.isArray(step.tokens) || step.tokens.length < 2 || step.tokens.length > 3)) errors.push(`${sAt}: cols is true on a line of 2 tokens (left, right) or 3 (left, middle, right)`);
         if (step.graph !== undefined) {
           const g = step.graph as Record<string, unknown>;
           const nums = ['xMin', 'xMax', 'yMin', 'yMax'].every(k => typeof g?.[k] === 'number' && Number.isFinite(g[k] as number));
