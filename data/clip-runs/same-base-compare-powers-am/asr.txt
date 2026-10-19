@@ -1,6 +1,7 @@
 Verifying 10 clip(s) of same-base-compare-powers-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 100% of narration words heard
+  scene-01-b1: 65% of narration words heard  ⚠ LOW
+      heard: solve 5 ^ x + 2 = 25 ^ x - 1
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 100% of narration words heard
   scene-01-b4: 100% of narration words heard
@@ -11,4 +12,4 @@ Verifying 10 clip(s) of same-base-compare-powers-am by transcription (gemini-2.5
   scene-01-b9: 100% of narration words heard
   scene-01-b10: 100% of narration words heard
 
-All clips match their narration.
+1 clip(s) below 85% — listen to those.

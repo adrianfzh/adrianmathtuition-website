@@ -1,6 +1,6 @@
 {
  "slug": "solving-by-substitution-am",
- "worst": 0.91,
+ "worst": 0.92,
  "lines": [
   {
    "beat": 1,
@@ -16,14 +16,14 @@
   },
   {
    "beat": 3,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
    "beat": 4,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -34,10 +34,9 @@
   },
   {
    "beat": 6,
-   "bag": 0.73,
+   "bag": 1,
    "score": 1,
-   "heard": "So the equation becomes 2 ^ 2x - 3 * 2 ^ x + 2 = 0.",
-   "said": "So the equation becomes two to the power two X, minus three times two to the power X, plus two, equals zero."
+   "heard": null
   },
   {
    "beat": 7,
@@ -53,8 +52,8 @@
   },
   {
    "beat": 9,
-   "bag": 0.91,
-   "score": 0.91,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -77,8 +76,8 @@
   },
   {
    "beat": 13,
-   "bag": 0.93,
-   "score": 0.93,
+   "bag": 0.92,
+   "score": 0.92,
    "heard": null
   },
   {
@@ -107,10 +106,9 @@
   },
   {
    "beat": 18,
-   "bag": 0.71,
-   "score": 0.947,
-   "heard": "A = 1, 2 ^ x is 1, which is 2 ^ 0. So x = 0.",
-   "said": "A equals one: two to the power X is one, which is two to the power zero. So X equals zero."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 19,

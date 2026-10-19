@@ -106,7 +106,7 @@
           "timing": "/lessons/solving-by-substitution-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Step one, same base. The other term is two to the power X, so write four with base two too.",
+          "say": "The other term is two to the power X, so write four with base two too.",
           "asks": ["Why change 4 to base 2?"],
           "do": [
             { "do": "highlight", "token": "qr", "on": "The other term" }
@@ -164,7 +164,7 @@
           "timing": "/lessons/solving-by-substitution-am/scene-01-b8.timing.json"
         },
         {
-          "say": "Step two, substitute: let A equal two to the power X.",
+          "say": "So substitute: let A equal two to the power X.",
           "asks": ["Why use a letter?", "Can I use u instead of a?"],
           "do": [
             { "do": "write", "step": 5, "on": "let A equal" }
@@ -202,10 +202,10 @@
           "timing": "/lessons/solving-by-substitution-am/scene-01-b12.timing.json"
         },
         {
-          "say": "Step three, solve the quadratic. It factorises into A minus two, times A minus one.",
+          "say": "Solve the quadratic: it factorises into A minus two, times A minus one.",
           "asks": ["How do I factorise it?"],
           "do": [
-            { "do": "write", "step": 8, "on": "It factorises into" }
+            { "do": "write", "step": 8, "on": "it factorises into" }
           ],
           "audio": "/lessons/solving-by-substitution-am/scene-01-b13.mp3",
           "timing": "/lessons/solving-by-substitution-am/scene-01-b13.timing.json"
@@ -221,7 +221,7 @@
           "timing": "/lessons/solving-by-substitution-am/scene-01-b14.timing.json"
         },
         {
-          "say": "Step four, bring back X. The question asks for X, so each value of A gives a value of X.",
+          "say": "Now bring back X. The question asks for X, so each value of A gives a value of X.",
           "asks": ["Why can't I stop at a?"],
           "do": [
             { "do": "highlight", "token": "rts", "on": "each value of" }

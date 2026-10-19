@@ -1,12 +1,13 @@
 {
  "slug": "same-base-compare-powers-am",
- "worst": 1,
+ "worst": 0.846,
  "lines": [
   {
    "beat": 1,
-   "bag": 1,
-   "score": 1,
-   "heard": null
+   "bag": 0.65,
+   "score": 0.846,
+   "heard": "solve 5 ^ x + 2 = 25 ^ x - 1",
+   "said": "Solve five to the power X plus two equals twenty-five to the power X minus one."
   },
   {
    "beat": 2,

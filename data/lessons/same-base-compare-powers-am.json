@@ -14,9 +14,11 @@
       "steps": [
         {
           "tokens": [
-            { "id": "q5", "tex": "5^{x+2}" },
+            { "id": "q5", "tex": "5" },
+            { "id": "q5p", "tex": "{}^{x+2}", "tight": true },
             { "id": "qe", "tex": "=" },
-            { "id": "q25", "tex": "25^{x-1}" }
+            { "id": "q25", "tex": "25" },
+            { "id": "q25p", "tex": "{}^{x-1}", "tight": true }
           ]
         },
         {
@@ -26,10 +28,16 @@
         },
         {
           "tokens": [
-            { "id": "b1", "tex": "5" },
-            { "id": "e1", "tex": "{}^{x+2}", "tight": true },
+            { "id": "a2", "tex": "5^{x+2}" },
             { "id": "e2", "tex": "=" },
             { "id": "b5", "tex": "(5^2)^{x-1}" },
+            { "id": "r3", "tex": "=5^{2x-2}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "b1", "tex": "5" },
+            { "id": "e1", "tex": "{}^{x+2}", "tight": true },
             { "id": "b2", "tex": "=5" },
             { "id": "e4", "tex": "{}^{2x-2}", "tight": true }
           ]
@@ -57,10 +65,10 @@
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b1.timing.json"
         },
         {
-          "say": "X is in the power. Two steps: first make the same base, then compare the powers.",
+          "say": "X is in the power. The plan: make the bases the same, then compare the powers.",
           "asks": ["Why can't I just solve for X directly?"],
           "do": [
-            { "do": "highlight", "token": ["q5", "q25"], "on": "X is in" }
+            { "do": "highlight", "token": ["q5p", "q25p"], "on": "X is in" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b2.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b2.timing.json"
@@ -76,7 +84,7 @@
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Step one, same base. The bases are five and twenty-five, and twenty-five is five squared.",
+          "say": "The bases are five and twenty-five, and twenty-five is five squared.",
           "asks": ["How do I spot that 25 is 5 squared?"],
           "do": [
             { "do": "highlight", "token": ["q5", "q25"], "on": "The bases are" },
@@ -108,17 +116,17 @@
           "say": "So five squared, to the power X minus one, is five to the power two X minus two.",
           "asks": ["How do I multiply 2 by x − 1?"],
           "do": [
-            { "do": "write", "token": "b2", "on": "is five to" },
-            { "do": "write", "token": "e4", "on": "two X minus two" }
+            { "do": "write", "token": "r3", "on": "is five to" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b7.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b7.timing.json"
         },
         {
-          "say": "Step two, compare powers. The bases match: five on the left, five on the right.",
-          "asks": ["What does compare powers mean?"],
+          "say": "So five to the power X plus two equals five to the power two X minus two. Five on both sides.",
+          "asks": ["Why write it again on its own line?"],
           "do": [
-            { "do": "highlight", "token": ["b1", "b2"], "on": "The bases match" }
+            { "do": "write", "step": 3, "on": "So five to" },
+            { "do": "highlight", "token": ["b1", "b2"], "on": "Five on both" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b8.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b8.timing.json"
@@ -138,7 +146,7 @@
           "say": "Solve it: X equals four.",
           "asks": ["Can I check x = 4?"],
           "do": [
-            { "do": "write", "step": 4, "on": "Solve it" },
+            { "do": "write", "step": 5, "on": "Solve it" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals four" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b10.mp3",

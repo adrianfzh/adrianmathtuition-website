@@ -30,7 +30,7 @@
    ]
   },
   {
-   "say": "Step one, same base. The other term is two to the power X, so write four with base two too.",
+   "say": "The other term is two to the power X, so write four with base two too.",
    "asks": [
     "Why change 4 to base 2?"
    ],
@@ -133,7 +133,7 @@
    ]
   },
   {
-   "say": "Step two, substitute: let A equal two to the power X.",
+   "say": "So substitute: let A equal two to the power X.",
    "asks": [
     "Why use a letter?",
     "Can I use u instead of a?"
@@ -196,7 +196,7 @@
    ]
   },
   {
-   "say": "Step three, solve the quadratic. It factorises into A minus two, times A minus one.",
+   "say": "Solve the quadratic: it factorises into A minus two, times A minus one.",
    "asks": [
     "How do I factorise it?"
    ],
@@ -204,7 +204,7 @@
     {
      "do": "write",
      "step": 8,
-     "on": "It factorises into"
+     "on": "it factorises into"
     }
    ]
   },
@@ -228,7 +228,7 @@
    ]
   },
   {
-   "say": "Step four, bring back X. The question asks for X, so each value of A gives a value of X.",
+   "say": "Now bring back X. The question asks for X, so each value of A gives a value of X.",
    "asks": [
     "Why can't I stop at a?"
    ],

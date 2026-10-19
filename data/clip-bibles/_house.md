@@ -171,6 +171,12 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **No "Step one / Step two" in the voice** (19 Oct 2026: "don't have to say step 1 and step 2"): say
+  the move itself ("The bases are…", "So substitute…", "Solve the quadratic…"). Only a graph-sketching
+  clip, whose steps are pinned on screen, numbers them.
+- **The result of a chain gets its own line** (19 Oct 2026: "put 5^(x+2) = 5^(2x-2) as another
+  line"): after `5^{x+2} = (5^2)^{x-1} = 5^{2x-2}`, write `5^{x+2} = 5^{2x-2}` on the next line — that
+  is the line the powers are compared from.
 - **Comparing powers: "since the base is the same, the powers must be the same"** (19 Oct 2026:
   "instead of a different power of five gives a different number.. and instead of saying bring the
   powers down … say since base is the same, hence the power must be the same, etc hence x+2 = 2x-2").

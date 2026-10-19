@@ -16,7 +16,7 @@
    ]
   },
   {
-   "say": "X is in the power. Two steps: first make the same base, then compare the powers.",
+   "say": "X is in the power. The plan: make the bases the same, then compare the powers.",
    "asks": [
     "Why can't I just solve for X directly?"
    ],
@@ -24,8 +24,8 @@
     {
      "do": "highlight",
      "token": [
-      "q5",
-      "q25"
+      "q5p",
+      "q25p"
      ],
      "on": "X is in"
     }
@@ -50,7 +50,7 @@
    ]
   },
   {
-   "say": "Step one, same base. The bases are five and twenty-five, and twenty-five is five squared.",
+   "say": "The bases are five and twenty-five, and twenty-five is five squared.",
    "asks": [
     "How do I spot that 25 is 5 squared?"
    ],
@@ -112,29 +112,29 @@
    "do": [
     {
      "do": "write",
-     "token": "b2",
+     "token": "r3",
      "on": "is five to"
-    },
-    {
-     "do": "write",
-     "token": "e4",
-     "on": "two X minus two"
     }
    ]
   },
   {
-   "say": "Step two, compare powers. The bases match: five on the left, five on the right.",
+   "say": "So five to the power X plus two equals five to the power two X minus two. Five on both sides.",
    "asks": [
-    "What does compare powers mean?"
+    "Why write it again on its own line?"
    ],
    "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So five to"
+    },
     {
      "do": "highlight",
      "token": [
       "b1",
       "b2"
      ],
-     "on": "The bases match"
+     "on": "Five on both"
     }
    ]
   },
@@ -169,7 +169,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 5,
      "on": "Solve it"
     },
     {
