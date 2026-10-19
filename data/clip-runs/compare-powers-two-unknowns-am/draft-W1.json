@@ -42,7 +42,16 @@
     {
      "do": "highlight",
      "token": "q3",
+     "inside": "a",
+     "tone": "orange",
      "on": "the bases A"
+    },
+    {
+     "do": "highlight",
+     "token": "q3",
+     "inside": "b",
+     "tone": "sky",
+     "on": "B give one"
     }
    ]
   },
@@ -180,7 +189,16 @@
     {
      "do": "highlight",
      "token": "g1",
+     "inside": "a",
+     "tone": "orange",
      "on": "The same base"
+    },
+    {
+     "do": "highlight",
+     "token": "g1",
+     "inside": "b",
+     "tone": "sky",
+     "on": "on top and"
     },
     {
      "do": "write",
@@ -203,11 +221,15 @@
    "do": [
     {
      "do": "highlight",
-     "token": [
-      "d1",
-      "d2"
-     ],
+     "token": "d1",
+     "tone": "orange",
      "on": "Keep the brackets"
+    },
+    {
+     "do": "highlight",
+     "token": "d2",
+     "tone": "sky",
+     "on": "whole bottom power"
     }
    ]
   },

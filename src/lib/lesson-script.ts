@@ -276,7 +276,7 @@ export type BeatAction =
   /** The target appears by the plain reveal (fade/rise) — no pen. */
   | ({ do: 'reveal' } & BeatTarget & Timed)
   /** Pulse a token (or several) — the eye goes there. */
-  | ({ do: 'highlight'; token: string | string[]; /** `sub` lights only the small subscript — a log's base (Adrian, 15 Oct 2026: "emphasize on the base 3 … with a different colour"). */ part?: 'sub' | 'num' | 'den'; /** A clip: the colour it lights in — orange / sky match a law's x / y (Adrian, 16 Oct 2026: "highlight the x and the y, then the xy when explaining 5 x 6"). Default yellow. */ tone?: 'orange' | 'sky' } & Timed)
+  | ({ do: 'highlight'; token: string | string[]; /** `sub` lights only the small subscript — a log's base (Adrian, 15 Oct 2026: "emphasize on the base 3 … with a different colour"). */ part?: 'sub' | 'num' | 'den'; /** A clip: light only the pieces of the token wrapped in `\\htmlClass{lsn-pc-<piece>}{…}` — e.g. the a on top and the a below inside one fraction (Adrian, 19 Oct 2026: "do it", of "light which a sits over which a"). */ inside?: string; /** A clip: the colour it lights in — orange / sky match a law's x / y (Adrian, 16 Oct 2026: "highlight the x and the y, then the xy when explaining 5 x 6"). Default yellow. */ tone?: 'orange' | 'sky' } & Timed)
   /** Fly the earlier token with this id onto the later line that declared `from` for it (the FLIP). */
   | ({ do: 'move'; from: string } & Timed)
   /** graph-morph: ease the curve to states[state]. */
@@ -712,6 +712,8 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       tokens('token');
       if (a.part !== undefined && !['sub', 'num', 'den'].includes(String(a.part))) errors.push(`${where}: part must be "sub" (the subscript — a log's base), "num" or "den" (a fraction's top / bottom)`);
       if (a.tone !== undefined && a.tone !== 'orange' && a.tone !== 'sky') errors.push(`${where}: tone must be "orange" or "sky"`);
+      if (a.inside !== undefined && (typeof a.inside !== 'string' || !/^[a-z0-9-]+$/.test(a.inside))) errors.push(`${where}: inside is a name like "a" or "b-top" (the token's tex wraps it in \\htmlClass{lsn-pc-<piece>}{…})`);
+      if (a.inside !== undefined && a.part !== undefined) errors.push(`${where}: give part or inside, not both`);
       break;
     case 'move':
       if (scope.type !== 'equation-steps') errors.push(`${where}: move only applies to equation-steps scenes`);

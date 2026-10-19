@@ -17,7 +17,7 @@
           "tokens": [
             { "id": "q1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
             { "id": "q2", "tex": "\\times\\dfrac{b^{x+2}}{a^{3-y}}" },
-            { "id": "q3", "tex": "=a^9b" }
+            { "id": "q3", "tex": "=\\htmlClass{lsn-pc-a}{a^9}\\htmlClass{lsn-pc-b}{b}" }
           ]
         },
         {
@@ -47,7 +47,10 @@
         {
           "heading": "Step 2: group the same bases",
           "tokens": [
-            { "id": "g1", "tex": "\\dfrac{a^{2x+2}\\times b^{x+2}}{a^{3-y}\\times b^{2y-4}}" },
+            {
+              "id": "g1",
+              "tex": "\\dfrac{\\htmlClass{lsn-pc-a}{a^{2x+2}}\\times \\htmlClass{lsn-pc-b}{b^{x+2}}}{\\htmlClass{lsn-pc-a}{a^{3-y}}\\times \\htmlClass{lsn-pc-b}{b^{2y-4}}}"
+            },
             { "id": "g2", "tex": "=a^9b" }
           ]
         },
@@ -153,7 +156,8 @@
           "say": "Find X and Y. Two unknowns need two equations: the bases A and B give one each.",
           "asks": ["How can one equation give two answers?", "Why do the bases matter?"],
           "do": [
-            { "do": "highlight", "token": "q3", "on": "the bases A" }
+            { "do": "highlight", "token": "q3", "inside": "a", "tone": "orange", "on": "the bases A" },
+            { "do": "highlight", "token": "q3", "inside": "b", "tone": "sky", "on": "B give one" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b3.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b3.timing.json"
@@ -238,7 +242,8 @@
           "say": "Step three, divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
           "asks": ["Which law is this?", "Why minus the powers?"],
           "do": [
-            { "do": "highlight", "token": "g1", "on": "The same base" },
+            { "do": "highlight", "token": "g1", "inside": "a", "tone": "orange", "on": "The same base" },
+            { "do": "highlight", "token": "g1", "inside": "b", "tone": "sky", "on": "on top and" },
             { "do": "write", "step": 6, "on": "so minus the" },
             { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "d1", "on": "top power minus" }
           ],
@@ -249,7 +254,8 @@
           "say": "Keep the brackets: the whole bottom power is taken away.",
           "asks": ["Why do I need the brackets?"],
           "do": [
-            { "do": "highlight", "token": ["d1", "d2"], "on": "Keep the brackets" }
+            { "do": "highlight", "token": "d1", "tone": "orange", "on": "Keep the brackets" },
+            { "do": "highlight", "token": "d2", "tone": "sky", "on": "whole bottom power" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b13.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b13.timing.json"

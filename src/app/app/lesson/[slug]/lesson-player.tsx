@@ -2894,16 +2894,20 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               more elegant way?"): a small 💡 chip in the board's top corner; a tap lays the
               explanation over the board, the clip paused behind it. Closed until asked for. */}
           {clip && hasBeats(scene) && (() => {
-            const reads = scene.beats.slice(0, step + 1).map(b => b.aside).filter((a): a is { text: string; slug: string; read: string[] } => !!a?.read?.length);
-            const a = reads[reads.length - 1];
+            const reads = scene.beats.slice(0, step + 1).map((b, i) => ({ a: b.aside, i })).filter((r): r is { a: { text: string; slug: string; read: string[] }; i: number } => !!r.a?.read?.length);
+            const a = reads[reads.length - 1]?.a;
             if (!a) return null;
             const open = readOpen === a.slug;
+            // Once its step has passed, the chip shrinks to a small 💡 so it does not sit on the maths
+            // scrolling past the corner (19 Oct 2026, seen in Compare powers: it hid "y = 10 − 2x").
+            const small = step - reads[reads.length - 1].i > 1;
             return (<>
               {!open && (
                 <button key={`chip-${a.slug}`} type="button" data-aside-read-chip aria-expanded={false} aria-label={a.text}
                   onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
-                  className="lsn-read-chip absolute top-2.5 right-2.5 z-20 inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy text-[13px] font-bold px-3 py-1.5 shadow-md">
-                  💡 Why?
+                  data-small={small || undefined}
+                  className={`lsn-read-chip absolute z-20 inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy font-bold shadow-md transition-all duration-300 ${small ? 'top-1.5 right-1.5 text-[12px] px-1.5 py-1' : 'top-2.5 right-2.5 text-[13px] px-3 py-1.5'}`}>
+                  {small ? '💡' : '💡 Why?'}
                 </button>
               )}
               {open && (
@@ -3387,6 +3391,10 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-lit-den .mfrac > .vlist-t > .vlist-r:first-child > .vlist > span:nth-child(1) { color: var(--lsn-hl-amber); text-shadow: 0 0 8px rgba(252,211,77,0.65); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-orange, [data-lsn-clip] .lsn-lit-orange .katex { color: #ff9a3c; text-shadow: 0 0 8px rgba(255,154,60,0.6); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-blue, [data-lsn-clip] .lsn-lit-blue .katex { color: #a8ecfb; text-shadow: 0 0 8px rgba(168,236,251,0.6); transition: color 250ms ease; }
+/* A piece inside a token (\htmlClass{lsn-pc-…}) lit on its own (19 Oct 2026). */
+[data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc * { color: var(--lsn-hl-amber); text-shadow: 0 0 8px rgba(252,211,77,0.65); transition: color 250ms ease; }
+[data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-orange * { color: #ff9a3c; text-shadow: 0 0 8px rgba(255,154,60,0.6); transition: color 250ms ease; }
+[data-lsn-clip] .lsn-lit-pc-blue, [data-lsn-clip] .lsn-lit-pc-blue * { color: #a8ecfb; text-shadow: 0 0 8px rgba(168,236,251,0.6); transition: color 250ms ease; }
 [data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
 [data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
 [data-lsn-themed] .lsn-hl-emerald { color: var(--lsn-hl-emerald); }
@@ -3523,6 +3531,8 @@ const PLAYER_CSS = `
 .lsn-read-chip { animation: lsnFade 240ms ease both; }
 /* The 💡 Why? chip owns the top corner; the Paused chip steps left of it. */
 .lsn-scene:has([data-aside-read-chip]) .lsn-paused-chip { right: 6rem; }
+.lsn-scene:has([data-aside-read-chip][data-small]) .lsn-paused-chip { right: 3rem; }
+.lsn-read-chip[data-small] { opacity: 0.6 !important; }
 .lsn-read-veil { animation: lsnFade 180ms ease both; }
 .lsn-read-card { animation: lsnReadUp 240ms cubic-bezier(.2,.8,.2,1) both; }
 @keyframes lsnReadUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }

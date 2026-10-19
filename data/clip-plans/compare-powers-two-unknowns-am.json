@@ -39,7 +39,7 @@
         },
         {
           "id": "q3",
-          "tex": "=a^9b"
+          "tex": "=\\htmlClass{lsn-pc-a}{a^9}\\htmlClass{lsn-pc-b}{b}"
         }
       ],
       "checks": [
@@ -120,7 +120,7 @@
       "tokens": [
         {
           "id": "g1",
-          "tex": "\\dfrac{a^{2x+2}\\times b^{x+2}}{a^{3-y}\\times b^{2y-4}}"
+          "tex": "\\dfrac{\\htmlClass{lsn-pc-a}{a^{2x+2}}\\times \\htmlClass{lsn-pc-b}{b^{x+2}}}{\\htmlClass{lsn-pc-a}{a^{3-y}}\\times \\htmlClass{lsn-pc-b}{b^{2y-4}}}"
         },
         {
           "id": "g2",

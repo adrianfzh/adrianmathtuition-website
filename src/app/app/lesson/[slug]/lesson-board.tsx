@@ -469,7 +469,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       const live = last && (board.beat ?? 0) - (last.beat ?? 0) <= 1 ? pulses.filter(p => p.beat === last.beat) : [];
       // part 'sub' lights only the base (the subscript) — its own colour (Adrian, 15 Oct 2026).
       const want = new Map<string, string>();
-      for (const p of live) for (const id of p.tokens) want.set(id, p.part === 'sub' ? 'lsn-lit-sub' : p.part === 'num' ? 'lsn-lit-num' : p.part === 'den' ? 'lsn-lit-den' : p.tone === 'orange' ? 'lsn-lit-orange' : p.tone === 'sky' ? 'lsn-lit-blue' : 'lsn-lit');
+      for (const p of live) if (!p.inside) for (const id of p.tokens) want.set(id, p.part === 'sub' ? 'lsn-lit-sub' : p.part === 'num' ? 'lsn-lit-num' : p.part === 'den' ? 'lsn-lit-den' : p.tone === 'orange' ? 'lsn-lit-orange' : p.tone === 'sky' ? 'lsn-lit-blue' : 'lsn-lit');
       const ALL = ['lsn-lit', 'lsn-lit-sub', 'lsn-lit-num', 'lsn-lit-den', 'lsn-lit-orange', 'lsn-lit-blue'];
       // The scene card, not only the board: the side sketch's corner shapes light by id too.
       const litRoot = zoom.closest<HTMLElement>('.lsn-scene') ?? zoom;
@@ -478,6 +478,22 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         for (const c of ALL) if (c !== w) el.classList.remove(c);
       });
       for (const [id, c] of want) (zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`) ?? litRoot.querySelector(`[data-token-id="${CSS.escape(id)}"]`))?.classList.add(c);
+      // A piece inside a token (\htmlClass{lsn-pc-a}{…}): only those glyphs light — the a on top and
+      // the a below in one fraction (Adrian, 19 Oct 2026). Each piece keeps its own colour.
+      const PC = ['lsn-lit-pc', 'lsn-lit-pc-orange', 'lsn-lit-pc-blue'];
+      const pcWant = new Map<HTMLElement, string>();
+      for (const p of live) {
+        if (!p.inside) continue;
+        const c = p.tone === 'orange' ? 'lsn-lit-pc-orange' : p.tone === 'sky' ? 'lsn-lit-pc-blue' : 'lsn-lit-pc';
+        for (const id of p.tokens) {
+          const tok = zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`) ?? litRoot.querySelector(`[data-token-id="${CSS.escape(id)}"]`);
+          tok?.querySelectorAll<HTMLElement>(`.lsn-pc-${CSS.escape(p.inside)}`).forEach(el => pcWant.set(el, c));
+        }
+      }
+      litRoot.querySelectorAll<HTMLElement>('.lsn-lit-pc, .lsn-lit-pc-orange, .lsn-lit-pc-blue').forEach(el => {
+        for (const c of PC) if (c !== pcWant.get(el)) el.classList.remove(c);
+      });
+      for (const [el, c] of pcWant) el.classList.add(c);
     }
 
     // 3. Marks: draw new ones, drop cleared ones.
