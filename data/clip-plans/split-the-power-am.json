@@ -20,7 +20,7 @@
     "display": "−1/3"
   },
   "outline": [
-    "Built 19 Oct 2026 (Indices clip 4) from 108.15 with 108.13's words: the question read top then bottom; why nothing cancels yet (the powers differ; only a factor of the whole top and bottom cancels — a written drop-down); the plan as maths (3^n(□)/3^n(△) = □/△); split every power — Add power in reverse, a^{x+k} = a^x × a^k — each of the four terms lit as it is named; a split is always a times (the common mistake 3^n + 3, at the step); every term has 3^n, take it out top and bottom; 3^n multiplies the whole top and bottom, so it cancels; only numbers left — a negative power is one over (3 − 1/9)/(1/3 − 9), then the calculator: 26/9 over −26/3; = −1/3, boxed. One expression line by line, no headings, no step numbers, no Watch out."
+    "Built 19 Oct 2026 (Indices clip 4) from 108.15 with 108.13's words: the question read top then bottom; why nothing cancels yet (the powers differ; only a factor of the whole top and bottom cancels — a written drop-down); the plan as maths (3^n(□)/3^n(△) = □/△); split every power — Add power in reverse, a^{x+k} = a^x × a^k — each of the four terms lit as it is named; a split is always a times (the common mistake 3^n + 3, at the step); every term has 3^n, take it out top and bottom; 3^n multiplies the whole top and bottom, so it cancels; only numbers left — a negative power is one over (3 − 1/9)/(1/3 − 9), then the calculator: 26/9 over −26/3; times its flip 26/9 × (−3/26); = −1/3, boxed. One expression line by line, no headings, no step numbers, no Watch out."
   ],
   "question": "Simplify $\\dfrac{3^{n+1}-3^{n-2}}{3^{n-1}-3^{n+2}}$.",
   "minutes": 2,
@@ -119,6 +119,19 @@
       "checks": [
         {
           "identity": "Rational(26,9)/(-Rational(26,3)) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "m1",
+          "tex": "=\\dfrac{26}{9}\\times\\left(-\\dfrac{3}{26}\\right)"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "Rational(26,9)*(-Rational(3,26)) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
         }
       ]
     },

@@ -57,6 +57,11 @@
         },
         {
           "tokens": [
+            { "id": "m1", "tex": "=\\dfrac{26}{9}\\times\\left(-\\dfrac{3}{26}\\right)" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "ans", "tex": "=-\\dfrac{1}{3}", "hl": "emerald" }
           ]
         }
@@ -136,8 +141,7 @@
           "say": "In the same way, three to the power N minus two is three to the power N times three to the power negative two.",
           "asks": ["Where does negative two come from?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "b", "tone": "orange" },
-            { "do": "highlight", "token": "s1", "inside": "b", "tone": "orange", "on": "is three to" }
+            { "do": "highlight", "token": "s1", "inside": "b", "tone": "orange" }
           ],
           "audio": "/lessons/split-the-power-am/scene-01-b7.mp3",
           "timing": "/lessons/split-the-power-am/scene-01-b7.timing.json"
@@ -146,8 +150,7 @@
           "say": "Below, three to the power N minus one is three to the power N times three to the power negative one.",
           "asks": ["Why is it negative one?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "c", "tone": "sky" },
-            { "do": "highlight", "token": "s1", "inside": "c", "tone": "sky", "on": "is three to" }
+            { "do": "highlight", "token": "s1", "inside": "c", "tone": "sky" }
           ],
           "audio": "/lessons/split-the-power-am/scene-01-b8.mp3",
           "timing": "/lessons/split-the-power-am/scene-01-b8.timing.json"
@@ -156,8 +159,7 @@
           "say": "And three to the power N plus two is three to the power N times three squared.",
           "asks": ["Why is it three squared?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "d", "tone": "sky" },
-            { "do": "highlight", "token": "s1", "inside": "d", "tone": "sky", "on": "is three to" }
+            { "do": "highlight", "token": "s1", "inside": "d", "tone": "sky" }
           ],
           "audio": "/lessons/split-the-power-am/scene-01-b9.mp3",
           "timing": "/lessons/split-the-power-am/scene-01-b9.timing.json"
@@ -235,6 +237,7 @@
           "say": "Dividing by a fraction is times its flip, so the twenty-sixes cancel. The answer is negative one third.",
           "asks": ["How do I divide the two fractions?"],
           "do": [
+            { "do": "write", "token": "m1", "on": "times its flip" },
             { "do": "write", "token": "ans", "on": "The answer is" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "negative one third" }
           ],

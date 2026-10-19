@@ -129,16 +129,9 @@
    "do": [
     {
      "do": "highlight",
-     "token": "q1",
-     "inside": "b",
-     "tone": "orange"
-    },
-    {
-     "do": "highlight",
      "token": "s1",
      "inside": "b",
-     "tone": "orange",
-     "on": "is three to"
+     "tone": "orange"
     }
    ]
   },
@@ -150,16 +143,9 @@
    "do": [
     {
      "do": "highlight",
-     "token": "q1",
-     "inside": "c",
-     "tone": "sky"
-    },
-    {
-     "do": "highlight",
      "token": "s1",
      "inside": "c",
-     "tone": "sky",
-     "on": "is three to"
+     "tone": "sky"
     }
    ]
   },
@@ -171,16 +157,9 @@
    "do": [
     {
      "do": "highlight",
-     "token": "q1",
-     "inside": "d",
-     "tone": "sky"
-    },
-    {
-     "do": "highlight",
      "token": "s1",
      "inside": "d",
-     "tone": "sky",
-     "on": "is three to"
+     "tone": "sky"
     }
    ]
   },
@@ -322,6 +301,11 @@
     "How do I divide the two fractions?"
    ],
    "do": [
+    {
+     "do": "write",
+     "token": "m1",
+     "on": "times its flip"
+    },
     {
      "do": "write",
      "token": "ans",
