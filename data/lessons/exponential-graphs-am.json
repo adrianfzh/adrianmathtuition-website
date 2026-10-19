@@ -11,7 +11,6 @@
     {
       "type": "equation-steps",
       "heading": "Exponential graphs",
-      "scroll": true,
       "pinned": ["shape", "shift up", "intercepts"],
       "sketch": {
         "inset": {
@@ -62,23 +61,6 @@
         },
         {
           "tokens": [
-            { "id": "xg", "tex": "\\text{As }x\\text{ grows: }" },
-            { "id": "tz", "tex": "2e^{-3x}\\to 0" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "v1", "tex": "x=1:\\ 0.1," },
-            { "id": "v2", "tex": "x=2:\\ 0.005" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "yt", "tex": "y\\to 0\\htmlClass{lsn-pc-p}{+1}=1" }
-          ]
-        },
-        {
-          "tokens": [
             { "id": "asy", "tex": "\\text{asymptote: }y=1", "hl": "sky" }
           ]
         },
@@ -104,11 +86,6 @@
           "tokens": [
             { "id": "se", "tex": "e^{-3x}=-\\tfrac{1}{2}" },
             { "id": "ns", "tex": "\\text{(no solutions)}", "hl": "emerald" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "sum", "tex": "\\text{through }(0,3),\\ \\text{above }y=1", "hl": "emerald" }
           ]
         }
       ],
@@ -214,45 +191,25 @@
           "timing": "/lessons/exponential-graphs-am/scene-01-b10.timing.json"
         },
         {
-          "say": "Step two, shift it up. As X grows, two E to the power minus three X gets closer and closer to zero.",
-          "asks": ["Why does it get closer to zero?", "What happens when x is negative?"],
+          "say": "Step two, shift it up. Plus one means shift the graph up by one.",
+          "asks": ["Does the shape change when we shift?"],
           "do": [
             { "do": "pin", "lit": 2 },
-            { "do": "write", "step": 2, "on": "As X grows" },
-            { "do": "sketch", "show": "asymptote", "on": "closer and closer" }
+            { "do": "sketch", "show": "asymptote", "on": "shift it up" },
+            { "do": "highlight", "token": "p1", "tone": "orange", "on": "Plus one means" },
+            { "do": "sketch", "show": "shift", "on": "up by one" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b11.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b11.timing.json"
         },
         {
-          "say": "Try some values. When X is one, it is about zero point one. When X is two, about zero point zero zero five.",
-          "asks": ["Why does it get smaller as x grows?", "Will it ever reach zero?"],
+          "say": "So the dashed asymptote moves up too. It is now Y equals one.",
+          "asks": ["Why does the asymptote move too?"],
           "do": [
-            { "do": "write", "token": "v1", "on": "When X is one" },
-            { "do": "write", "token": "v2", "on": "When X is two" }
+            { "do": "write", "token": "asy", "on": "Y equals one" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b12.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b12.timing.json"
-        },
-        {
-          "say": "Without the plus one, the asymptote would be Y equals zero. With it, Y gets closer to zero plus one, which is one.",
-          "asks": ["Why do we add the 1?"],
-          "do": [
-            { "do": "write", "token": "yt", "on": "zero plus one" }
-          ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b13.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b13.timing.json"
-        },
-        {
-          "say": "Plus one shifts the whole graph up by one unit. The asymptote moves up from Y equals zero to Y equals one.",
-          "asks": ["Does the shape change when we shift?", "Why does the asymptote move too?"],
-          "do": [
-            { "do": "highlight", "token": "yt", "inside": "p", "tone": "orange" },
-            { "do": "sketch", "show": "shift", "on": "up by one" },
-            { "do": "write", "token": "asy", "on": "to Y equals one" }
-          ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b14.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b14.timing.json"
         },
         {
           "say": "Step three, the intercepts. For the Y intercept, sub X equals zero into the full equation.",
@@ -261,8 +218,8 @@
             { "do": "pin", "lit": 3 },
             { "do": "write", "token": "x0", "on": "Sub X equals" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b15.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b15.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b13.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b13.timing.json"
         },
         {
           "say": "Y equals two E to the power negative three times zero, plus one.",
@@ -270,8 +227,8 @@
           "do": [
             { "do": "write", "token": "ys" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b16.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b16.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b14.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b14.timing.json"
         },
         {
           "say": "Negative three times zero is zero, so we get two E to the power zero, plus one.",
@@ -279,8 +236,8 @@
           "do": [
             { "do": "write", "token": "y0e", "on": "two E to" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b17.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b17.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b15.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b15.timing.json"
         },
         {
           "say": "E to the power zero is one. So Y equals two times one, plus one, which is three.",
@@ -289,8 +246,8 @@
             { "do": "write", "token": "yv", "on": "two times one" },
             { "do": "sketch", "point": 0, "on": "which is three" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b18.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b18.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b16.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b16.timing.json"
         },
         {
           "say": "For the X intercept, sub Y equals zero into the full equation.",
@@ -299,8 +256,8 @@
             { "do": "write", "token": "s0", "on": "sub Y equals" },
             { "do": "write", "token": "s3", "on": "the full equation" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b19.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b19.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b17.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b17.timing.json"
         },
         {
           "say": "Then solve for E to the power minus three X. It equals negative one half.",
@@ -308,8 +265,8 @@
           "do": [
             { "do": "write", "token": "se", "on": "It equals negative" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b20.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b20.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b18.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b18.timing.json"
         },
         {
           "say": "But E to any power is always positive, never negative. So there are no solutions, and no X intercept.",
@@ -330,17 +287,18 @@
             { "do": "write", "token": "ns", "on": "no solutions" },
             { "do": "mark", "kind": "box", "token": "ns", "on": "no X intercept" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b21.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b21.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b19.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b19.timing.json"
         },
         {
           "say": "So the sketch has the shape of E to the power minus X, through zero, three, above the asymptote Y equals one.",
           "asks": ["Do I need to label the asymptote?", "Why is there no x-intercept on the sketch?"],
           "do": [
-            { "do": "write", "token": "sum", "on": "through zero, three" }
+            { "do": "highlight", "token": "shape" },
+            { "do": "highlight", "token": "asy", "on": "the asymptote Y" }
           ],
-          "audio": "/lessons/exponential-graphs-am/scene-01-b22.mp3",
-          "timing": "/lessons/exponential-graphs-am/scene-01-b22.timing.json"
+          "audio": "/lessons/exponential-graphs-am/scene-01-b20.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b20.timing.json"
         }
       ]
     }

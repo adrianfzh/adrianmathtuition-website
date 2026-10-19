@@ -68,9 +68,10 @@ You get:
    separate "draw it" step at the end ("Just 3 steps will do. Draw the graph as you go through each step").
 16. **Graph clips, Adrian's second watch (20 Oct 2026)** — each a must: a corner-shape label cut off or
    overlapped by the box edge ("the equations of the graphs are covered in the mobile version"); a note
-   about some numbers whose ↑ points at another line ("it's pointing at y=e^x?"); why the curve has its
-   asymptote given only in the voice ("its just narration > hardly any explanation effect") — the board
-   must show what the term tends to, with values; a shift (+c) said but not drawn on the sketch.
+   about some numbers whose ↑ points at another line ("it's pointing at y=e^x?"); a shift (+c) said but
+   not drawn on the sketch. Do NOT ask for "as x grows" lines or a table of values to explain an
+   asymptote after a shift — Adrian (20 Oct 2026): "don't have to say as x grows... just say +1 means
+   shift the graph up by 1".
 17. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?

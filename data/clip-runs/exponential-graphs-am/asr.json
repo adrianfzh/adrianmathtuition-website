@@ -22,8 +22,8 @@
   },
   {
    "beat": 4,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -34,9 +34,10 @@
   },
   {
    "beat": 6,
-   "bag": 0.95,
-   "score": 0.95,
-   "heard": null
+   "bag": 0.81,
+   "score": 1,
+   "heard": "Now, sketch y = 2e ^ -3x + 1. Start with empty axes at the side.",
+   "said": "Now sketch Y equals two E to the power minus three X, plus one. Start with empty axes at the side."
   },
   {
    "beat": 7,
@@ -70,10 +71,9 @@
   },
   {
    "beat": 12,
-   "bag": 0.83,
+   "bag": 1,
    "score": 1,
-   "heard": "Try some values. When x is 1, it is about 0.1. When x is 2, about 0.005.",
-   "said": "Try some values. When X is one, it is about zero point one. When X is two, about zero point zero zero five."
+   "heard": null
   },
   {
    "beat": 13,
@@ -83,20 +83,20 @@
   },
   {
    "beat": 14,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.92,
+   "score": 0.92,
    "heard": null
   },
   {
    "beat": 15,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
    "beat": 16,
-   "bag": 0.92,
-   "score": 0.92,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -107,8 +107,8 @@
   },
   {
    "beat": 18,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -119,21 +119,8 @@
   },
   {
    "beat": 20,
-   "bag": 0.8,
-   "score": 0.974,
-   "heard": "Then solve for e to the power minus 3x. It equals -12.",
-   "said": "Then solve for E to the power minus three X. It equals negative one half."
-  },
-  {
-   "beat": 21,
    "bag": 1,
    "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 22,
-   "bag": 0.95,
-   "score": 0.95,
    "heard": null
   }
  ]

@@ -196,11 +196,11 @@ the history.
     player 20 Oct 2026 — the maths was being rebuilt every tick). Watch a lit piece for a few seconds.
   - "3 and 2 don't change the shape, but it's pointing at y=e^x?": a note about some numbers points
     at THOSE numbers (its `near` is the token holding them), never at another line.
-  - "3 times a number close to zero is still close to zero > students will be confused by this.
-    your previous statement explains the asymptote, but its just narration > hardly any explanation
-    effect": why a curve has its asymptote is SHOWN on the board — write what the term tends to
-    (`As x grows: 2e^{-3x} → 0`), a few values as a note (`x = 1: 0.1, x = 2: 0.005, x = 3: 0.0002`),
-    then the result (`y → 0 + 1 = 1`). No clever sentence the student only hears.
+  - **The asymptote after a shift: just say the shift** (20 Oct 2026, replacing that night's "explain
+    the asymptote with values" — Adrian, watching it: "don't have to say as x grows... just say +1 means
+    shift the graph up by 1"). No "as x grows" line, no table of values, no "three times a number close
+    to zero" sentence. Say "Plus one means shift the graph up by one", show the curve AND the dashed
+    asymptote slide up on the sketch, and write `asymptote: y = 1`.
 - **Two answers: work each straight down its own column** (19 Oct 2026: "for such working, put like
   this instead (directly below)" — his notes' layout `a = 1  or  a = 1/4`, then `2^{2x} = 1` under the
   one and `2^{2x} = 1/4` under the other). Give those lines `"cols": true` (tokens: left, "or", right;
