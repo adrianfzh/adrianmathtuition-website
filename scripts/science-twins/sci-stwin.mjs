@@ -127,7 +127,8 @@ function triedHere() {
   const dir = argOf('--done-dir', process.env.SCI_TWINS_RUNS_DIR || '/data/science-twins');
   if (!dir || !existsSync(dir)) return { seed: () => false, unit: () => false };
   return {
-    seed: (pool, sid) => existsSync(join(dir, `S-${pool}-${sid}`, 'parked')) || existsSync(join(dir, `S-${pool}-${sid}`, 'published')),
+    // a "~2" seed's folder is "__2" since 18 Oct 2026 (Claude Code refuses writes into "~" folders) — check both names
+    seed: (pool, sid) => [sid, String(sid).replace(/~/g, '__')].some((x) => existsSync(join(dir, `S-${pool}-${x}`, 'parked')) || existsSync(join(dir, `S-${pool}-${x}`, 'published'))),
     unit: (pool, sg) => existsSync(join(dir, 'skip', `S-${pool}-${sg}`)),
   };
 }

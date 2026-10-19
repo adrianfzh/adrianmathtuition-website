@@ -210,7 +210,8 @@ function triedHere() {
   if (!dir || !existsSync(dir)) return { seed: () => false, unit: () => false };
   const mark = (d, f) => existsSync(join(dir, d, f));
   return {
-    seed: (pool, sid) => mark(`${pool}-${sid}`, 'parked') || mark(`${pool}-${sid}`, 'published') || mark(sid, 'parked') || mark(sid, 'published'),
+    // a "~2" seed's folder is "__2" since 18 Oct 2026 (Claude Code refuses writes into "~" folders) — check both names
+    seed: (pool, sid) => [sid, String(sid).replace(/~/g, '__')].some((x) => mark(`${pool}-${x}`, 'parked') || mark(`${pool}-${x}`, 'published') || mark(x, 'parked') || mark(x, 'published')),
     unit: (pool, sg) => existsSync(join(dir, 'skip', `${pool}-${sg}`)),
   };
 }
