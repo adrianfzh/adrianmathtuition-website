@@ -11,27 +11,27 @@
     {
       "type": "equation-steps",
       "heading": "Exponential graphs",
-      "pinned": ["shape", "asymptote", "intercepts", "draw"],
+      "pinned": ["shape", "asymptote", "intercepts"],
       "sketch": {
         "inset": {
           "fn": "exp(x)",
           "id": "c1",
-          "label": "eˣ",
+          "label": "e^x",
           "labelAt": 1.25,
           "xMin": -3,
           "xMax": 3,
           "yMin": -4,
           "yMax": 4,
           "curves": [
-            { "fn": "exp(-x)", "id": "c2", "label": "e⁻ˣ", "labelAt": -1.25 },
-            { "fn": "-exp(x)", "id": "c3", "label": "−eˣ", "labelAt": 1.25 },
-            { "fn": "-exp(-x)", "id": "c4", "label": "−e⁻ˣ", "labelAt": -1.25 }
+            { "fn": "exp(-x)", "id": "c2", "label": "e^−x", "labelAt": -1.25 },
+            { "fn": "-exp(x)", "id": "c3", "label": "−e^x", "labelAt": 1.25 },
+            { "fn": "-exp(-x)", "id": "c4", "label": "−e^−x", "labelAt": -1.25 }
           ]
         },
-        "xMin": -3,
-        "xMax": 1.6,
-        "yMin": -1.2,
-        "yMax": 6,
+        "xMin": -1.1,
+        "xMax": 1.1,
+        "yMin": -0.8,
+        "yMax": 6.5,
         "shape": "exp(x)",
         "from": "c1",
         "to": "3*exp(2*x)",
@@ -140,13 +140,12 @@
           "timing": "/lessons/exponential-graphs-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Four steps: first the shape, then the asymptote, then the intercepts, and last draw it.",
-          "asks": ["Why these four steps?", "Why find the shape first?"],
+          "say": "Three steps: first the shape, then the asymptote, and last the intercepts. We draw the graph as we go.",
+          "asks": ["Why these three steps?", "Why find the shape first?"],
           "do": [
             { "do": "pin", "show": 1, "on": "first the shape" },
             { "do": "pin", "show": 2, "on": "then the asymptote" },
-            { "do": "pin", "show": 3, "on": "then the intercepts" },
-            { "do": "pin", "show": 4, "on": "last draw it" }
+            { "do": "pin", "show": 3, "on": "last the intercepts" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b7.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b7.timing.json"
@@ -179,6 +178,7 @@
           "do": [
             { "do": "highlight", "token": "e3", "tone": "orange", "on": "The three" },
             { "do": "highlight", "token": "ee", "inside": "n", "tone": "orange", "on": "the two" },
+            { "do": "sketch", "show": "shift", "on": "only stretch it" },
             { "do": "note", "text": "3 and 2 don't change the shape", "near": "shape", "on": "Only a minus" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b10.mp3",
@@ -292,11 +292,10 @@
           "timing": "/lessons/exponential-graphs-am/scene-01-b20.timing.json"
         },
         {
-          "say": "Step four, draw it. Stretch the shape through zero, three. It stays above the asymptote, and never cuts the X axis.",
-          "asks": ["Why is the curve steeper than e to the x?"],
+          "say": "So the sketch has the shape of E to the X, through zero, three, above the asymptote Y equals zero.",
+          "asks": ["Do I need to label the asymptote?", "Why is there no x-intercept on the sketch?"],
           "do": [
-            { "do": "pin", "lit": 4 },
-            { "do": "sketch", "show": "shift", "on": "Stretch the shape" }
+            { "do": "highlight", "token": "shape", "on": "the shape of" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b21.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b21.timing.json"

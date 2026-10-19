@@ -703,19 +703,41 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
   );
 }
 
+/** A graph label with its power raised: "e^−x" draws e with −x up as a power (the font has no
+ *  raised minus, so "e⁻ˣ" lost its minus on a phone, 20 Oct 2026). */
+function SvgPower({ text }: { text: string }) {
+  const k = text.indexOf('^');
+  if (k < 0) return <>{text}</>;
+  return <>{text.slice(0, k)}<tspan dy="-0.45em" fontSize="0.72em">{text.slice(k + 1)}</tspan></>;
+}
+
 /** One curve as an SVG path in a W×H box over the window. */
 function plotPath(fn: string, w: { xMin: number; xMax: number; yMin: number; yMax: number }, W: number, H: number, P: number): string {
   const f = graphFn(fn);
   if (!f) return '';
   const sx = (x: number) => P + ((x - w.xMin) / (w.xMax - w.xMin)) * (W - 2 * P);
   const sy = (y: number) => H - P - ((y - w.yMin) / (w.yMax - w.yMin)) * (H - 2 * P);
-  let path = '', pen = false;
+  // The curve stops where it leaves the window — cut at the edge, never run flat along it (the
+  // flat hooks at the corner shapes' ends, 20 Oct 2026).
+  let path = '', pen = false, px = NaN, py = NaN;
+  const inside = (y: number) => Number.isFinite(y) && y >= w.yMin && y <= w.yMax;
+  const edge = (x0: number, y0: number, x1: number, y1: number) => {
+    const b = (y0 > w.yMax || y1 > w.yMax) ? w.yMax : w.yMin;
+    const t = (b - y0) / (y1 - y0);
+    return `${sx(x0 + (x1 - x0) * t).toFixed(1)} ${sy(b).toFixed(1)}`;
+  };
   for (let i = 0; i <= 240; i++) {
     const x = w.xMin + ((w.xMax - w.xMin) * i) / 240;
     const y = f(x);
-    if (!Number.isFinite(y) || y < w.yMin - 0.5 || y > w.yMax + 0.5) { pen = false; continue; }
-    path += `${pen ? 'L' : 'M'}${sx(x).toFixed(1)} ${sy(Math.max(w.yMin, Math.min(w.yMax, y))).toFixed(1)} `;
-    pen = true;
+    if (inside(y)) {
+      if (!pen) path += `M${Number.isFinite(py) && !inside(py) ? edge(px, py, x, y) : `${sx(x).toFixed(1)} ${sy(y).toFixed(1)}`} `;
+      path += `L${sx(x).toFixed(1)} ${sy(y).toFixed(1)} `;
+      pen = true;
+    } else {
+      if (pen && Number.isFinite(y)) path += `L${edge(px, py, x, y)} `;
+      pen = false;
+    }
+    px = x; py = y;
   }
   return path;
 }
@@ -726,8 +748,10 @@ function plotPath(fn: string, w: { xMin: number; xMax: number; yMin: number; yMa
 function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
   const has = (s: string) => stages.includes(s);
   const iw = { xMin: sk.inset.xMin, xMax: sk.inset.xMax, yMin: sk.inset.yMin, yMax: sk.inset.yMax };
-  const IW = 180, IH = 104, IP = 6;
-  const W = 200, H = 170, P = 12;
+  // Big enough to read on a phone (Adrian, 20 Oct 2026: "graph is hard to see, y=e^x can hardly been
+  // seen (too small) - make sure graphs are clearly seen").
+  const IW = 180, IH = 118, IP = 8;
+  const W = 200, H = 230, P = 14;
   const sx = (x: number) => P + ((x - sk.xMin) / (sk.xMax - sk.xMin)) * (W - 2 * P);
   const sy = (y: number) => H - P - ((y - sk.yMin) / (sk.yMax - sk.yMin)) * (H - 2 * P);
   const isx = (x: number) => IP + ((x - iw.xMin) / (iw.xMax - iw.xMin)) * (IW - 2 * IP);
@@ -798,8 +822,8 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               <g key={i} data-token-id={c.id} data-ci={i} className="lsn-graph-c">
                 <path d={plotPath(c.fn, iw, IW, IH, IP)} pathLength={1} className="lsn-graph-curve" />
                 {c.label && Number.isFinite(ly) && (
-                  <text x={isx(c.labelAt!)} y={isy(Math.max(iw.yMin + 0.3, Math.min(iw.yMax - 0.3, ly))) + (ly < 0 ? 13 : -5)}
-                    textAnchor={isx(c.labelAt!) > IW / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab">{c.label}</text>
+                  <text x={isx(c.labelAt!)} y={isy(Math.max(iw.yMin + 0.3, Math.min(iw.yMax - 0.3, ly))) + (ly < 0 ? 17 : -6)}
+                    textAnchor={isx(c.labelAt!) > IW / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab"><SvgPower text={c.label} /></text>
                 )}
               </g>
             );
@@ -3584,10 +3608,13 @@ const PLAYER_CSS = `
 .lsn-sketch { position: absolute; top: calc(100% + 4px); right: 0; width: 46%; pointer-events: none; }
 .lsn-sketch svg { display: block; width: 100%; height: auto; overflow: visible; }
 .lsn-sketch-inset { background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; }
-.lsn-sketch-inset .lsn-graph-lab { font-size: 10px; }
-.lsn-sketch-inset .lsn-graph-curve { stroke-width: 2; }
+.lsn-sketch-inset .lsn-graph-lab { font-size: 15px; font-weight: 600; }
+.lsn-sketch-inset .lsn-graph-curve { stroke-width: 3.2; }
+.lsn-sketch-inset .lsn-graph-c.lsn-lit .lsn-graph-curve { stroke-width: 4.6; }
+.lsn-sketch-main .lsn-graph-lab { font-size: 14px; }
+.lsn-sketch-main .lsn-graph-axis { stroke-width: 1.8; }
 .lsn-sketch-main { margin-top: 8px; animation: lsnFade 400ms ease both; }
-.lsn-sketch-curve { fill: none; stroke: #ffe89a; stroke-width: 2.6; stroke-linecap: round; }
+.lsn-sketch-curve { fill: none; stroke: #ffe89a; stroke-width: 3.6; stroke-linecap: round; }
 /* The lifted shape keeps the colour it had in the corner (a moving piece keeps its colour). */
 .lsn-sketch-curve[data-ci="1"] { stroke: #a8ecfb; } .lsn-sketch-curve[data-ci="2"] { stroke: #fda4af; } .lsn-sketch-curve[data-ci="3"] { stroke: #c4b5fd; }
 .lsn-sketch-asy { animation: lsnFade 500ms ease both; }

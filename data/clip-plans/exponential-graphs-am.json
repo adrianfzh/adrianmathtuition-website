@@ -154,24 +154,23 @@
   ],
   "outline": [
     "The four basic shapes first, in the corner: e^x, e^(-x) (minus in front of x flips in the y-axis), -e^x (minus in front of the graph flips in the x-axis), -e^(-x) (both minuses flip twice).",
-    "The question (line 0), empty axes at the side. Four steps pinned: shape, asymptote, intercepts, draw.",
-    "Step one, shape: it is the minus sign that matters; there is none, so the shape of e^x (line 1), lit in the question, lifted from the corner onto the axes. The numbers 3 and 2 do not change the shape.",
+    "The question (line 0), empty axes at the side. Three steps pinned: shape, asymptote, intercepts — the graph drawn as we go.",
+    "Step one, shape: it is the minus sign that matters; there is none, so the shape of e^x (line 1), lit in the question, lifted from the corner onto the axes. The numbers 3 and 2 do not change the shape. On 'only stretch it' the lifted e^x stretches into 3e^(2x), so (0, 3) later lands on the curve.",
     "Step two, asymptote: e^x gets closer and closer to the x-axis, never touches it: y = 0 (line 2), dashed.",
     "Step three, intercepts: sub x = 0 (lines 3, 4): y = 3e^(2(0)) = 3e^0 = 3(1) = 3, mark (0, 3). Sub y = 0 (lines 5, 6): e^(2x) = 0, no solutions — an exponential is never zero — no x-intercept.",
-    "Step four, draw: the shape stretched through (0, 3), above its asymptote."
+    "Last: the sketch in full — the shape of e^x through (0, 3), above the asymptote y = 0, no x-intercept."
   ],
   "question": "Sketch the graph of $y = 3e^{2x}$, labelling any intercepts and the asymptote.",
   "pinned": [
     "shape",
     "asymptote",
-    "intercepts",
-    "draw"
+    "intercepts"
   ],
   "sketch": {
     "inset": {
       "fn": "exp(x)",
       "id": "c1",
-      "label": "eˣ",
+      "label": "e^x",
       "labelAt": 1.25,
       "xMin": -3,
       "xMax": 3,
@@ -181,27 +180,27 @@
         {
           "fn": "exp(-x)",
           "id": "c2",
-          "label": "e⁻ˣ",
+          "label": "e^−x",
           "labelAt": -1.25
         },
         {
           "fn": "-exp(x)",
           "id": "c3",
-          "label": "−eˣ",
+          "label": "−e^x",
           "labelAt": 1.25
         },
         {
           "fn": "-exp(-x)",
           "id": "c4",
-          "label": "−e⁻ˣ",
+          "label": "−e^−x",
           "labelAt": -1.25
         }
       ]
     },
-    "xMin": -3,
-    "xMax": 1.6,
-    "yMin": -1.2,
-    "yMax": 6,
+    "xMin": -1.1,
+    "xMax": 1.1,
+    "yMin": -0.8,
+    "yMax": 6.5,
     "shape": "exp(x)",
     "from": "c1",
     "to": "3*exp(2*x)",

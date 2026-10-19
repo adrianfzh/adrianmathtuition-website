@@ -9,10 +9,10 @@ Verifying 21 clip(s) of exponential-graphs-am by transcription (gemini-2.5-flash
   scene-01-b7: 100% of narration words heard
   scene-01-b8: 100% of narration words heard
   scene-01-b9: 83% of narration words heard  ⚠ LOW
-      heard: So it has the shape of E to the X from the corner lifted onto the axis
+      heard: So it has the shape of E to the X from the corner lifted onto the axis.
   scene-01-b10: 100% of narration words heard
   scene-01-b11: 100% of narration words heard
-  scene-01-b12: 100% of narration words heard
+  scene-01-b12: 94% of narration words heard
   scene-01-b13: 100% of narration words heard
   scene-01-b14: 100% of narration words heard
   scene-01-b15: 100% of narration words heard

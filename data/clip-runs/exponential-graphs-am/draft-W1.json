@@ -87,9 +87,9 @@
    ]
   },
   {
-   "say": "Four steps: first the shape, then the asymptote, then the intercepts, and last draw it.",
+   "say": "Three steps: first the shape, then the asymptote, and last the intercepts. We draw the graph as we go.",
    "asks": [
-    "Why these four steps?",
+    "Why these three steps?",
     "Why find the shape first?"
    ],
    "do": [
@@ -106,12 +106,7 @@
     {
      "do": "pin",
      "show": 3,
-     "on": "then the intercepts"
-    },
-    {
-     "do": "pin",
-     "show": 4,
-     "on": "last draw it"
+     "on": "last the intercepts"
     }
    ]
   },
@@ -179,6 +174,11 @@
      "inside": "n",
      "tone": "orange",
      "on": "the two"
+    },
+    {
+     "do": "sketch",
+     "show": "shift",
+     "on": "only stretch it"
     },
     {
      "do": "note",
@@ -362,19 +362,16 @@
    }
   },
   {
-   "say": "Step four, draw it. Stretch the shape through zero, three. It stays above the asymptote, and never cuts the X axis.",
+   "say": "So the sketch has the shape of E to the X, through zero, three, above the asymptote Y equals zero.",
    "asks": [
-    "Why is the curve steeper than e to the x?"
+    "Do I need to label the asymptote?",
+    "Why is there no x-intercept on the sketch?"
    ],
    "do": [
     {
-     "do": "pin",
-     "lit": 4
-    },
-    {
-     "do": "sketch",
-     "show": "shift",
-     "on": "Stretch the shape"
+     "do": "highlight",
+     "token": "shape",
+     "on": "the shape of"
     }
    ]
   }
