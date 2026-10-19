@@ -6,79 +6,93 @@
   "minutes": 2,
   "kind": "clip",
   "theme": "chalk",
-  "question": "Sketch the graph of $y = 3e^{2x}$, labelling any intercepts and the asymptote.",
+  "question": "Sketch the graph of $y = 2e^{-3x} + 1$, labelling any intercepts and the asymptote.",
   "scenes": [
     {
       "type": "equation-steps",
       "heading": "Exponential graphs",
-      "pinned": ["shape", "asymptote", "intercepts"],
+      "scroll": true,
+      "pinned": ["shape", "shift up", "intercepts"],
       "sketch": {
         "inset": {
           "fn": "exp(x)",
           "id": "c1",
           "label": "e^x",
-          "labelAt": 1.25,
+          "labelAt": 0.9,
           "xMin": -3,
           "xMax": 3,
           "yMin": -4,
           "yMax": 4,
           "curves": [
-            { "fn": "exp(-x)", "id": "c2", "label": "e^−x", "labelAt": -1.25 },
-            { "fn": "-exp(x)", "id": "c3", "label": "−e^x", "labelAt": 1.25 },
-            { "fn": "-exp(-x)", "id": "c4", "label": "−e^−x", "labelAt": -1.25 }
+            { "fn": "exp(-x)", "id": "c2", "label": "e^−x", "labelAt": -0.9 },
+            { "fn": "-exp(x)", "id": "c3", "label": "−e^x", "labelAt": 0.9 },
+            { "fn": "-exp(-x)", "id": "c4", "label": "−e^−x", "labelAt": -0.9 }
           ]
         },
-        "xMin": -1.1,
-        "xMax": 1.1,
-        "yMin": -0.8,
-        "yMax": 6.5,
-        "shape": "exp(x)",
-        "from": "c1",
-        "to": "3*exp(2*x)",
-        "asymptote": { "y": 0, "label": "y = 0" },
+        "xMin": -0.8,
+        "xMax": 0.8,
+        "yMin": -0.6,
+        "yMax": 5,
+        "shape": "exp(-x)",
+        "from": "c2",
+        "to": "2*exp(-3*x)",
+        "asymptote": { "y": 0, "label": "y = 0", "labelAfter": "y = 1" },
         "points": [
           { "x": 0, "y": 3, "label": "(0, 3)" }
-        ]
+        ],
+        "shift": { "dy": 1 }
       },
       "steps": [
         {
           "tokens": [
             { "id": "ey", "tex": "y=" },
-            { "id": "e3", "tex": "3" },
-            { "id": "ee", "tex": "\\htmlClass{lsn-pc-s}{e}^{\\htmlClass{lsn-pc-n}{2}\\htmlClass{lsn-pc-s}{x}}", "tight": true }
+            { "id": "k2", "tex": "2" },
+            {
+              "id": "ee",
+              "tex": "\\htmlClass{lsn-pc-s}{e}^{\\htmlClass{lsn-pc-s}{-}\\htmlClass{lsn-pc-n}{3}\\htmlClass{lsn-pc-s}{x}}",
+              "tight": true
+            },
+            { "id": "p1", "tex": "+1" }
           ]
         },
         {
           "tokens": [
-            { "id": "shape", "tex": "\\text{shape of }y=e^{x}", "hl": "amber" }
+            { "id": "shape", "tex": "\\text{shape of }y=e^{-x}", "hl": "amber" }
           ]
         },
         {
           "tokens": [
-            { "id": "asy", "tex": "\\text{asymptote: }y=0", "hl": "sky" }
+            { "id": "xg", "tex": "\\text{As }x\\text{ grows: }" },
+            { "id": "tz", "tex": "2e^{-3x}\\to 0" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "yt", "tex": "y\\to 0+1=1" },
+            { "id": "asy", "tex": "\\Rightarrow\\ \\text{asymptote }y=1", "hl": "sky" }
           ]
         },
         {
           "tokens": [
             { "id": "x0", "tex": "\\text{Sub }x=0:" },
-            { "id": "ys", "tex": "y=3e^{2(0)}" }
+            { "id": "ys", "tex": "y=2e^{-3(0)}+1" }
           ]
         },
         {
           "tokens": [
-            { "id": "ye0", "tex": "y=3e^{0}" },
-            { "id": "yv", "tex": "=3(1)=3" }
+            { "id": "y0e", "tex": "y=2e^{0}+1" },
+            { "id": "yv", "tex": "=2(1)+1=3" }
           ]
         },
         {
           "tokens": [
             { "id": "s0", "tex": "\\text{Sub }y=0:" },
-            { "id": "s3", "tex": "3e^{2x}=0" }
+            { "id": "s3", "tex": "0=2e^{-3x}+1" }
           ]
         },
         {
           "tokens": [
-            { "id": "se", "tex": "e^{2x}=0" },
+            { "id": "se", "tex": "e^{-3x}=-\\tfrac{1}{2}" },
             { "id": "ns", "tex": "\\text{(no solutions)}", "hl": "emerald" }
           ]
         }
@@ -130,7 +144,7 @@
           "timing": "/lessons/exponential-graphs-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Now sketch Y equals three E to the power two X. Start with empty axes at the side.",
+          "say": "Now sketch Y equals two E to the power minus three X, plus one. Start with empty axes at the side.",
           "asks": ["Why start with empty axes?"],
           "do": [
             { "do": "write", "step": 0, "on": "Now sketch Y" },
@@ -140,166 +154,178 @@
           "timing": "/lessons/exponential-graphs-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Three steps: first the shape, then the asymptote, and last the intercepts. We draw the graph as we go.",
+          "say": "Three steps: first the shape, then shift it up, and last the intercepts. We draw the graph as we go.",
           "asks": ["Why these three steps?", "Why find the shape first?"],
           "do": [
             { "do": "pin", "show": 1, "on": "first the shape" },
-            { "do": "pin", "show": 2, "on": "then the asymptote" },
+            { "do": "pin", "show": 2, "on": "then shift it" },
             { "do": "pin", "show": 3, "on": "last the intercepts" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b7.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b7.timing.json"
         },
         {
-          "say": "Step one, the shape. It is the minus sign that matters. Here there is no minus sign at all.",
-          "asks": ["Where would a minus sign be?"],
+          "say": "Step one, the shape. It is the minus sign that matters. Here the minus is in front of X.",
+          "asks": ["Where else could a minus sign be?"],
           "do": [
             { "do": "pin", "lit": 1 },
-            { "do": "highlight", "token": "ee", "inside": "s", "on": "no minus sign" }
+            { "do": "highlight", "token": "ee", "inside": "s", "tone": "sky", "on": "minus is in front" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b8.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b8.timing.json"
         },
         {
-          "say": "So it has the shape of E to the X, from the corner. Lift it onto the axes.",
-          "asks": ["Why the shape of e to the x?"],
+          "say": "So it has the shape of E to the power minus X, from the corner. Lift it onto the axes.",
+          "asks": ["Why the shape of e to the power minus x?"],
           "do": [
             { "do": "write", "step": 1 },
-            { "do": "highlight", "token": "ee", "inside": "s", "on": "E to the X" },
-            { "do": "highlight", "token": "c1", "on": "from the corner" },
+            { "do": "highlight", "token": "ee", "inside": "s", "tone": "sky", "on": "E to the power" },
+            { "do": "highlight", "token": "c2", "on": "from the corner" },
             { "do": "sketch", "show": "shape", "on": "Lift it onto" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b9.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b9.timing.json"
         },
         {
-          "say": "The three and the two do not change the shape. They only stretch it, higher and steeper. Only a minus sign would flip it.",
-          "asks": ["What do the 3 and the 2 do then?"],
+          "say": "The two and the three do not change the shape. They only stretch it. Only a minus sign would flip it.",
+          "asks": ["What do the 2 and the 3 do then?"],
           "do": [
-            { "do": "highlight", "token": "e3", "tone": "orange", "on": "The three" },
-            { "do": "highlight", "token": "ee", "inside": "n", "tone": "orange", "on": "the two" },
-            { "do": "sketch", "show": "shift", "on": "only stretch it" },
-            { "do": "note", "text": "3 and 2 don't change the shape", "near": "shape", "on": "Only a minus" }
+            { "do": "highlight", "token": "k2", "tone": "orange", "on": "The two" },
+            { "do": "highlight", "token": "ee", "inside": "n", "tone": "orange", "on": "the three" },
+            { "do": "sketch", "show": "stretch", "on": "only stretch it" },
+            { "do": "note", "text": "2 and 3 don't change the shape", "near": "k2", "on": "Only a minus" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b10.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b10.timing.json"
         },
         {
-          "say": "Step two, the asymptote. As X goes left, E to the X gets closer and closer to the X axis, but never touches it.",
-          "asks": ["What is an asymptote?", "Why does it never touch the x-axis?"],
+          "say": "Step two, shift it up. As X grows, two E to the power minus three X gets closer and closer to zero.",
+          "asks": ["Why does it get closer to zero?", "What happens when x is negative?"],
           "do": [
-            { "do": "pin", "lit": 2 }
+            { "do": "pin", "lit": 2 },
+            { "do": "write", "step": 2, "on": "As X grows" },
+            { "do": "sketch", "show": "asymptote", "on": "closer and closer" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b11.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b11.timing.json"
         },
         {
-          "say": "So the asymptote is Y equals zero, the X axis. Draw it as a dashed line.",
-          "asks": ["Why is the asymptote dashed?"],
+          "say": "Try some values. When X is one, it is about zero point one. When X is two, about zero point zero zero five.",
+          "asks": ["Why does it get smaller as x grows?", "Will it ever reach zero?"],
           "do": [
-            { "do": "write", "step": 2, "on": "the asymptote is" },
-            { "do": "sketch", "show": "asymptote", "on": "as a dashed line" }
+            { "do": "note", "text": "x = 1: 0.1,  x = 2: 0.005,  x = 3: 0.0002", "near": "tz", "on": "Try some values" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b12.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b12.timing.json"
         },
         {
-          "say": "Three times a number close to zero is still close to zero. So our curve also hugs the X axis.",
-          "asks": ["Does the 3 move the asymptote?"],
+          "say": "Without the plus one, the asymptote would be Y equals zero. With it, Y gets closer to zero plus one, which is one.",
+          "asks": ["Why do we add the 1?"],
           "do": [
-            { "do": "highlight", "token": "e3", "tone": "orange", "on": "Three times a" }
+            { "do": "write", "token": "yt", "on": "zero plus one" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b13.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b13.timing.json"
         },
         {
-          "say": "Step three, the intercepts. For the Y intercept, sub X equals zero.",
-          "asks": ["Why put x = 0 for the y-intercept?"],
+          "say": "Plus one shifts the whole graph up by one unit. The asymptote moves up from Y equals zero to Y equals one.",
+          "asks": ["Does the shape change when we shift?", "Why does the asymptote move too?"],
           "do": [
-            { "do": "pin", "lit": 3 },
-            { "do": "write", "token": "x0", "on": "sub X equals" }
+            { "do": "highlight", "token": "p1", "tone": "orange" },
+            { "do": "sketch", "show": "shift", "on": "up by one" },
+            { "do": "write", "token": "asy", "on": "to Y equals one" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b14.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b14.timing.json"
         },
         {
-          "say": "Y equals three E to the power two times zero.",
-          "asks": ["Why is it 2 times 0?"],
+          "say": "Step three, the intercepts. For the Y intercept, sub X equals zero into the full equation.",
+          "asks": ["Why the full equation, with the plus one?"],
           "do": [
-            { "do": "write", "token": "ys" }
+            { "do": "pin", "lit": 3 },
+            { "do": "write", "token": "x0", "on": "Sub X equals" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b15.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b15.timing.json"
         },
         {
-          "say": "Two times zero is zero, so we get three E to the power zero.",
-          "asks": ["Why is 2 times 0 zero?"],
+          "say": "Y equals two E to the power negative three times zero, plus one.",
+          "asks": ["Why do we put 0 into the power?"],
           "do": [
-            { "do": "write", "token": "ye0", "on": "three E to" }
+            { "do": "write", "token": "ys" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b16.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b16.timing.json"
         },
         {
-          "say": "E to the power zero is one. So Y equals three times one, which is three.",
-          "asks": ["Why is e to the power 0 one?"],
+          "say": "Negative three times zero is zero, so we get two E to the power zero, plus one.",
+          "asks": ["Why is negative three times zero zero?"],
           "do": [
-            { "do": "write", "token": "yv", "on": "three times one" },
-            { "do": "sketch", "point": 0, "on": "which is three" }
+            { "do": "write", "token": "y0e", "on": "two E to" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b17.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b17.timing.json"
         },
         {
-          "say": "For the X intercept, sub Y equals zero. Three E to the power two X equals zero.",
-          "asks": ["Why put y = 0 for the x-intercept?"],
+          "say": "E to the power zero is one. So Y equals two times one, plus one, which is three.",
+          "asks": ["Why is e to the power 0 one?"],
           "do": [
-            { "do": "write", "token": "s0", "on": "sub Y equals" },
-            { "do": "write", "token": "s3", "on": "Three E to" }
+            { "do": "write", "token": "yv", "on": "two times one" },
+            { "do": "sketch", "point": 0, "on": "which is three" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b18.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b18.timing.json"
         },
         {
-          "say": "Three times something is zero only if E to the power two X is zero. But a power of E is never zero.",
-          "asks": ["Why can we divide by 3?", "Why is e to a power never zero?"],
+          "say": "For the X intercept, sub Y equals zero into the full equation.",
+          "asks": ["Why put y = 0 for the x-intercept?"],
           "do": [
-            { "do": "write", "token": "se", "on": "only if E" },
-            { "do": "note", "text": "e to any power is never zero", "near": "se", "on": "never zero" }
+            { "do": "write", "token": "s0", "on": "sub Y equals" },
+            { "do": "write", "token": "s3", "on": "the full equation" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b19.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b19.timing.json"
         },
         {
-          "say": "So there are no solutions, and no X intercept. The curve never meets the X axis.",
-          "asks": ["Does no solutions mean I made a mistake?"],
-          "aside": {
-            "text": "Why is it never zero?",
-            "slug": "indices-exponential-never-zero",
-            "read": [
-              "$e$ is a positive number, about $2.718$.",
-              "A positive number to any power is still positive.",
-              "So $e^{2x} > 0$ for every $x$.",
-              "It can get very close to $0$, but never reach it.",
-              "**So $e^{2x} = 0$ has no solutions: the curve never meets the $x$-axis.**"
-            ]
-          },
+          "say": "Then solve for E to the power minus three X. It equals negative one half.",
+          "asks": ["How do we get negative one half?"],
           "do": [
-            { "do": "write", "token": "ns", "on": "no solutions" },
-            { "do": "mark", "kind": "box", "token": "ns", "on": "no X intercept" }
+            { "do": "write", "token": "se", "on": "It equals negative" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b20.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b20.timing.json"
         },
         {
-          "say": "So the sketch has the shape of E to the X, through zero, three, above the asymptote Y equals zero.",
-          "asks": ["Do I need to label the asymptote?", "Why is there no x-intercept on the sketch?"],
+          "say": "But E to any power is always positive, never negative. So there are no solutions, and no X intercept.",
+          "asks": ["Does no solutions mean I made a mistake?"],
+          "aside": {
+            "text": "Why is it never negative?",
+            "slug": "indices-exponential-never-negative",
+            "read": [
+              "$e$ is a positive number, about $2.718$.",
+              "A positive number to any power is still positive.",
+              "So $e^{-3x} > 0$ for every $x$.",
+              "It can never equal $-\\tfrac{1}{2}$, or any negative number.",
+              "**So $e^{-3x} = -\\tfrac{1}{2}$ has no solutions: the curve never meets the $x$-axis.**"
+            ]
+          },
           "do": [
-            { "do": "highlight", "token": "shape", "on": "the shape of" },
-            { "do": "highlight", "token": "asy", "on": "the asymptote Y" }
+            { "do": "note", "text": "e to a power is always positive", "near": "se", "on": "always positive" },
+            { "do": "write", "token": "ns", "on": "no solutions" },
+            { "do": "mark", "kind": "box", "token": "ns", "on": "no X intercept" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b21.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b21.timing.json"
+        },
+        {
+          "say": "So the sketch has the shape of E to the power minus X, through zero, three, above the asymptote Y equals one.",
+          "asks": ["Do I need to label the asymptote?", "Why is there no x-intercept on the sketch?"],
+          "do": [
+            { "do": "highlight", "token": "shape" },
+            { "do": "highlight", "token": "asy", "on": "the asymptote Y" }
+          ],
+          "audio": "/lessons/exponential-graphs-am/scene-01-b22.mp3",
+          "timing": "/lessons/exponential-graphs-am/scene-01-b22.timing.json"
         }
       ]
     }

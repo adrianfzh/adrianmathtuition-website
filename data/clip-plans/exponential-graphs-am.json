@@ -10,7 +10,9 @@
     "unit": "1081.04",
     "also": [
       "1081.01",
-      "1081.02"
+      "1081.02",
+      "1081.08",
+      "1081.09"
     ]
   },
   "bible": "data/clip-bibles/indices-am.md",
@@ -28,19 +30,23 @@
           "tex": "y="
         },
         {
-          "id": "e3",
-          "tex": "3"
+          "id": "k2",
+          "tex": "2"
         },
         {
           "id": "ee",
-          "tex": "\\htmlClass{lsn-pc-s}{e}^{\\htmlClass{lsn-pc-n}{2}\\htmlClass{lsn-pc-s}{x}}",
+          "tex": "\\htmlClass{lsn-pc-s}{e}^{\\htmlClass{lsn-pc-s}{-}\\htmlClass{lsn-pc-n}{3}\\htmlClass{lsn-pc-s}{x}}",
           "tight": true
+        },
+        {
+          "id": "p1",
+          "tex": "+1"
         }
       ],
       "checks": [
         {
           "model": {
-            "y": "3*exp(2*x)"
+            "y": "2*exp(-3*x) + 1"
           }
         }
       ]
@@ -49,31 +55,55 @@
       "tokens": [
         {
           "id": "shape",
-          "tex": "\\text{shape of }y=e^{x}",
+          "tex": "\\text{shape of }y=e^{-x}",
           "hl": "amber"
         }
       ],
       "checks": [
         {
-          "shape": "3*exp(2*x)",
-          "family": "e^x"
+          "shape": "2*exp(-3*x)",
+          "family": "e^(-x)"
         }
       ]
     },
     {
       "tokens": [
         {
+          "id": "xg",
+          "tex": "\\text{As }x\\text{ grows: }"
+        },
+        {
+          "id": "tz",
+          "tex": "2e^{-3x}\\to 0"
+        }
+      ],
+      "checks": [
+        {
+          "limit": "2*exp(-3*x)",
+          "var": "x",
+          "at": "oo",
+          "gives": 0
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "yt",
+          "tex": "y\\to 0+1=1"
+        },
+        {
           "id": "asy",
-          "tex": "\\text{asymptote: }y=0",
+          "tex": "\\Rightarrow\\ \\text{asymptote }y=1",
           "hl": "sky"
         }
       ],
       "checks": [
         {
-          "limit": "3*exp(2*x)",
+          "limit": "2*exp(-3*x) + 1",
           "var": "x",
-          "at": "-oo",
-          "gives": 0
+          "at": "oo",
+          "gives": 1
         }
       ]
     },
@@ -85,29 +115,29 @@
         },
         {
           "id": "ys",
-          "tex": "y=3e^{2(0)}"
+          "tex": "y=2e^{-3(0)}+1"
         }
       ],
       "checks": [
         {
-          "fact": "yi = 3*exp(2*0)"
+          "fact": "yi = 2*exp(-3*0) + 1"
         }
       ]
     },
     {
       "tokens": [
         {
-          "id": "ye0",
-          "tex": "y=3e^{0}"
+          "id": "y0e",
+          "tex": "y=2e^{0}+1"
         },
         {
           "id": "yv",
-          "tex": "=3(1)=3"
+          "tex": "=2(1)+1=3"
         }
       ],
       "checks": [
         {
-          "fact": "3*exp(0) = 3*1"
+          "fact": "2*exp(0) + 1 = 2*1 + 1"
         },
         {
           "fact": "yi = 3"
@@ -122,12 +152,12 @@
         },
         {
           "id": "s3",
-          "tex": "3e^{2x}=0"
+          "tex": "0=2e^{-3x}+1"
         }
       ],
       "checks": [
         {
-          "none": "3*exp(2*x) = 0",
+          "none": "2*exp(-3*x) + 1 = 0",
           "var": "x"
         }
       ]
@@ -136,7 +166,7 @@
       "tokens": [
         {
           "id": "se",
-          "tex": "e^{2x}=0"
+          "tex": "e^{-3x}=-\\tfrac{1}{2}"
         },
         {
           "id": "ns",
@@ -146,7 +176,7 @@
       ],
       "checks": [
         {
-          "none": "exp(2*x) = 0",
+          "none": "exp(-3*x) = -1/2",
           "var": "x"
         }
       ]
@@ -154,16 +184,16 @@
   ],
   "outline": [
     "The four basic shapes first, in the corner: e^x, e^(-x) (minus in front of x flips in the y-axis), -e^x (minus in front of the graph flips in the x-axis), -e^(-x) (both minuses flip twice).",
-    "The question (line 0), empty axes at the side. Three steps pinned: shape, asymptote, intercepts — the graph drawn as we go.",
-    "Step one, shape: it is the minus sign that matters; there is none, so the shape of e^x (line 1), lit in the question, lifted from the corner onto the axes. The numbers 3 and 2 do not change the shape. On 'only stretch it' the lifted e^x stretches into 3e^(2x), so (0, 3) later lands on the curve.",
-    "Step two, asymptote: e^x gets closer and closer to the x-axis, never touches it: y = 0 (line 2), dashed.",
-    "Step three, intercepts: sub x = 0 (lines 3, 4): y = 3e^(2(0)) = 3e^0 = 3(1) = 3, mark (0, 3). Sub y = 0 (lines 5, 6): e^(2x) = 0, no solutions — an exponential is never zero — no x-intercept.",
-    "Last: the sketch in full — the shape of e^x through (0, 3), above the asymptote y = 0, no x-intercept."
+    "The question (line 0), empty axes at the side. Three steps pinned: shape, shift up, intercepts — the graph drawn as we go.",
+    "Step one, shape: it is the minus sign that matters; the minus is in front of x, so the shape of e^(-x) (line 1), the e, minus and x lit in the question, lifted from the corner onto the axes. The 2 and the 3 only stretch it (the curve stretches into 2e^(-3x)); a note under the 2.",
+    "Step two, shift up (1081.08 'draw the basic curve first, then shift it by c'): as x grows 2e^(-3x) -> 0 (line 2), dashed y = 0; so y -> 0 + 1 (line 3); +1 shifts the whole graph up by one — the curve and the dashed asymptote slide up, asymptote y = 1.",
+    "Step three, intercepts, the FULL equation: Sub x = 0: y = 2e^0 + 1 = 2(1) + 1 = 3, mark (0, 3) on the curve. Sub y = 0: 2e^(-3x) + 1 = 0, e^(-3x) = -1/2 (no solutions) — a power of e is always positive — no x-intercept.",
+    "Last: the sketch in full — the shape of e^(-x) through (0, 3), above the asymptote y = 1."
   ],
-  "question": "Sketch the graph of $y = 3e^{2x}$, labelling any intercepts and the asymptote.",
+  "question": "Sketch the graph of $y = 2e^{-3x} + 1$, labelling any intercepts and the asymptote.",
   "pinned": [
     "shape",
-    "asymptote",
+    "shift up",
     "intercepts"
   ],
   "sketch": {
@@ -171,7 +201,7 @@
       "fn": "exp(x)",
       "id": "c1",
       "label": "e^x",
-      "labelAt": 1.25,
+      "labelAt": 0.9,
       "xMin": -3,
       "xMax": 3,
       "yMin": -4,
@@ -181,32 +211,33 @@
           "fn": "exp(-x)",
           "id": "c2",
           "label": "e^−x",
-          "labelAt": -1.25
+          "labelAt": -0.9
         },
         {
           "fn": "-exp(x)",
           "id": "c3",
           "label": "−e^x",
-          "labelAt": 1.25
+          "labelAt": 0.9
         },
         {
           "fn": "-exp(-x)",
           "id": "c4",
           "label": "−e^−x",
-          "labelAt": -1.25
+          "labelAt": -0.9
         }
       ]
     },
-    "xMin": -1.1,
-    "xMax": 1.1,
-    "yMin": -0.8,
-    "yMax": 6.5,
-    "shape": "exp(x)",
-    "from": "c1",
-    "to": "3*exp(2*x)",
+    "xMin": -0.8,
+    "xMax": 0.8,
+    "yMin": -0.6,
+    "yMax": 5,
+    "shape": "exp(-x)",
+    "from": "c2",
+    "to": "2*exp(-3*x)",
     "asymptote": {
       "y": 0,
-      "label": "y = 0"
+      "label": "y = 0",
+      "labelAfter": "y = 1"
     },
     "points": [
       {
@@ -214,7 +245,10 @@
         "y": 3,
         "label": "(0, 3)"
       }
-    ]
+    ],
+    "shift": {
+      "dy": 1
+    }
   },
-  "scroll": false
+  "scroll": true
 }

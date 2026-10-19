@@ -106,11 +106,15 @@ import { ChalkWriter } from './chalk-writer';
 
 /** One KaTeX fragment (no $ delimiters). */
 function Tex({ tex, className }: { tex: string; className?: string }) {
+  // The SAME object each render: React 19 re-sets innerHTML whenever the dangerouslySetInnerHTML
+  // object changes, so a fresh { __html } rebuilt the maths on every player tick — a lit piece
+  // (\htmlClass) lost its colour and faded back in about once a second (Adrian, 20 Oct 2026: "the
+  // highlight for e and x flickers (some bug?)").
   const html = useMemo(
-    () => katex.renderToString(tex, { ...katexOptions, displayMode: false }),
+    () => ({ __html: katex.renderToString(tex, { ...katexOptions, displayMode: false }) }),
     [tex],
   );
-  return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+  return <span className={className} dangerouslySetInnerHTML={html} />;
 }
 
 // Inline prose with $…$ math — same guard as practice-flow's MathText: plain
@@ -783,12 +787,12 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
       { transform: 'none', opacity: 1 },
     ], { duration: 1300, easing: 'cubic-bezier(0.45, 0, 0.3, 1)' });
   }, [shapeOn]);
-  // The stretch (`to`): on the shift stage the lifted shape becomes the question's own curve, drawn
-  // as a blend of the two so it grows into place (y = eˣ → y = 3e²ˣ through (0, 3)).
+  // The stretch (`to`): on the stretch stage the lifted shape becomes the stretched curve, drawn as a
+  // blend of the two so it grows into place (y = e⁻ˣ → y = 2e⁻³ˣ); the shift stage then slides it.
   const toD = useMemo(() => (sk.to ? plotPath(sk.to, sk, W, H, P) : ''), [sk]);
   const curveRef = useRef<SVGPathElement>(null);
   const stretched = useRef<boolean | null>(null);
-  const shiftOn = has('shift');
+  const shiftOn = has('stretch');
   useIsoLayoutEffect(() => {
     if (!sk.to) return;
     if (stretched.current === null || !shapeOn) { stretched.current = shiftOn; return; }   // drawn afresh: no stretch
@@ -822,7 +826,11 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               <g key={i} data-token-id={c.id} data-ci={i} className="lsn-graph-c">
                 <path d={plotPath(c.fn, iw, IW, IH, IP)} pathLength={1} className="lsn-graph-curve" />
                 {c.label && Number.isFinite(ly) && (
-                  <text x={isx(c.labelAt!)} y={isy(Math.max(iw.yMin + 0.3, Math.min(iw.yMax - 0.3, ly))) + (ly < 0 ? 17 : -6)}
+                  // Kept INSIDE the box, top to bottom (Adrian, 20 Oct 2026: "the equations of the graphs
+                  // are covered in the mobile version"): a label is set beside its curve, on the outer
+                  // side, and clamped so its whole height sits in the box.
+                  <text x={isx(c.labelAt!) + (isx(c.labelAt!) > IW / 2 ? -9 : 9)}
+                    y={Math.max(IP + 15, Math.min(IH - IP - 3, isy(Math.max(iw.yMin, Math.min(iw.yMax, ly))) + (ly < 0 ? 15 : -4)))}
                     textAnchor={isx(c.labelAt!) > IW / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab"><SvgPower text={c.label} /></text>
                 )}
               </g>
@@ -843,9 +851,9 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
             </g>
           )}
           {has('asymptote') && sk.asymptote?.y !== undefined && (
-            <g className="lsn-sketch-asy">
+            <g className="lsn-sketch-asy" style={{ transform: has('shift') ? `translate(0px, ${dy}px)` : 'none', transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
               <line x1={P - 4} y1={sy(sk.asymptote.y)} x2={W - P + 4} y2={sy(sk.asymptote.y)} />
-              {sk.asymptote.label && <text x={P} y={sy(sk.asymptote.y) + 13} className="lsn-graph-lab">{sk.asymptote.label}</text>}
+              {sk.asymptote.label && <text x={P} y={sy(sk.asymptote.y) + 15} className="lsn-graph-lab">{has('shift') && sk.asymptote.labelAfter ? sk.asymptote.labelAfter : sk.asymptote.label}</text>}
             </g>
           )}
           {shapeOn && (

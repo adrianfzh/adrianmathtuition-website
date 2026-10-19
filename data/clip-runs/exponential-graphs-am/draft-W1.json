@@ -1,7 +1,7 @@
 {
  "slug": "exponential-graphs-am",
  "draft": "W1",
- "by": "session, 19 Oct 2026: Indices clip 6 (note 1081.04), copied from the Sketching clip — four shapes in the corner, empty axes, steps pinned and lit, the shape lifted and stretched through (0, 3)",
+ "by": "session, 20 Oct 2026: Adrian's second notes — question now y = 2e^{-3x} + 1 (the minus effect and the shift up), labels inside the corner box, note under the 2, the asymptote explained on the board",
  "beats": [
   {
    "say": "First, the four basic shapes of exponential graphs. Most importantly, learn each shape, and which axis it is flipped in.",
@@ -69,7 +69,7 @@
    ]
   },
   {
-   "say": "Now sketch Y equals three E to the power two X. Start with empty axes at the side.",
+   "say": "Now sketch Y equals two E to the power minus three X, plus one. Start with empty axes at the side.",
    "asks": [
     "Why start with empty axes?"
    ],
@@ -87,7 +87,7 @@
    ]
   },
   {
-   "say": "Three steps: first the shape, then the asymptote, and last the intercepts. We draw the graph as we go.",
+   "say": "Three steps: first the shape, then shift it up, and last the intercepts. We draw the graph as we go.",
    "asks": [
     "Why these three steps?",
     "Why find the shape first?"
@@ -101,7 +101,7 @@
     {
      "do": "pin",
      "show": 2,
-     "on": "then the asymptote"
+     "on": "then shift it"
     },
     {
      "do": "pin",
@@ -111,9 +111,9 @@
    ]
   },
   {
-   "say": "Step one, the shape. It is the minus sign that matters. Here there is no minus sign at all.",
+   "say": "Step one, the shape. It is the minus sign that matters. Here the minus is in front of X.",
    "asks": [
-    "Where would a minus sign be?"
+    "Where else could a minus sign be?"
    ],
    "do": [
     {
@@ -124,14 +124,15 @@
      "do": "highlight",
      "token": "ee",
      "inside": "s",
-     "on": "no minus sign"
+     "tone": "sky",
+     "on": "minus is in front"
     }
    ]
   },
   {
-   "say": "So it has the shape of E to the X, from the corner. Lift it onto the axes.",
+   "say": "So it has the shape of E to the power minus X, from the corner. Lift it onto the axes.",
    "asks": [
-    "Why the shape of e to the x?"
+    "Why the shape of e to the power minus x?"
    ],
    "do": [
     {
@@ -142,11 +143,12 @@
      "do": "highlight",
      "token": "ee",
      "inside": "s",
-     "on": "E to the X"
+     "tone": "sky",
+     "on": "E to the power"
     },
     {
      "do": "highlight",
-     "token": "c1",
+     "token": "c2",
      "on": "from the corner"
     },
     {
@@ -157,86 +159,116 @@
    ]
   },
   {
-   "say": "The three and the two do not change the shape. They only stretch it, higher and steeper. Only a minus sign would flip it.",
+   "say": "The two and the three do not change the shape. They only stretch it. Only a minus sign would flip it.",
    "asks": [
-    "What do the 3 and the 2 do then?"
+    "What do the 2 and the 3 do then?"
    ],
    "do": [
     {
      "do": "highlight",
-     "token": "e3",
+     "token": "k2",
      "tone": "orange",
-     "on": "The three"
+     "on": "The two"
     },
     {
      "do": "highlight",
      "token": "ee",
      "inside": "n",
      "tone": "orange",
-     "on": "the two"
+     "on": "the three"
     },
     {
      "do": "sketch",
-     "show": "shift",
+     "show": "stretch",
      "on": "only stretch it"
     },
     {
      "do": "note",
-     "text": "3 and 2 don't change the shape",
-     "near": "shape",
+     "text": "2 and 3 don't change the shape",
+     "near": "k2",
      "on": "Only a minus"
     }
    ]
   },
   {
-   "say": "Step two, the asymptote. As X goes left, E to the X gets closer and closer to the X axis, but never touches it.",
+   "say": "Step two, shift it up. As X grows, two E to the power minus three X gets closer and closer to zero.",
    "asks": [
-    "What is an asymptote?",
-    "Why does it never touch the x-axis?"
+    "Why does it get closer to zero?",
+    "What happens when x is negative?"
    ],
    "do": [
     {
      "do": "pin",
      "lit": 2
-    }
-   ]
-  },
-  {
-   "say": "So the asymptote is Y equals zero, the X axis. Draw it as a dashed line.",
-   "asks": [
-    "Why is the asymptote dashed?"
-   ],
-   "do": [
+    },
     {
      "do": "write",
      "step": 2,
-     "on": "the asymptote is"
+     "on": "As X grows"
     },
     {
      "do": "sketch",
      "show": "asymptote",
-     "on": "as a dashed line"
+     "on": "closer and closer"
     }
    ]
   },
   {
-   "say": "Three times a number close to zero is still close to zero. So our curve also hugs the X axis.",
+   "say": "Try some values. When X is one, it is about zero point one. When X is two, about zero point zero zero five.",
    "asks": [
-    "Does the 3 move the asymptote?"
+    "Why does it get smaller as x grows?",
+    "Will it ever reach zero?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "x = 1: 0.1,  x = 2: 0.005,  x = 3: 0.0002",
+     "near": "tz",
+     "on": "Try some values"
+    }
+   ]
+  },
+  {
+   "say": "Without the plus one, the asymptote would be Y equals zero. With it, Y gets closer to zero plus one, which is one.",
+   "asks": [
+    "Why do we add the 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "yt",
+     "on": "zero plus one"
+    }
+   ]
+  },
+  {
+   "say": "Plus one shifts the whole graph up by one unit. The asymptote moves up from Y equals zero to Y equals one.",
+   "asks": [
+    "Does the shape change when we shift?",
+    "Why does the asymptote move too?"
    ],
    "do": [
     {
      "do": "highlight",
-     "token": "e3",
-     "tone": "orange",
-     "on": "Three times a"
+     "token": "p1",
+     "tone": "orange"
+    },
+    {
+     "do": "sketch",
+     "show": "shift",
+     "on": "up by one"
+    },
+    {
+     "do": "write",
+     "token": "asy",
+     "on": "to Y equals one"
     }
    ]
   },
   {
-   "say": "Step three, the intercepts. For the Y intercept, sub X equals zero.",
+   "say": "Step three, the intercepts. For the Y intercept, sub X equals zero into the full equation.",
    "asks": [
-    "Why put x = 0 for the y-intercept?"
+    "Why the full equation, with the plus one?"
    ],
    "do": [
     {
@@ -246,14 +278,14 @@
     {
      "do": "write",
      "token": "x0",
-     "on": "sub X equals"
+     "on": "Sub X equals"
     }
    ]
   },
   {
-   "say": "Y equals three E to the power two times zero.",
+   "say": "Y equals two E to the power negative three times zero, plus one.",
    "asks": [
-    "Why is it 2 times 0?"
+    "Why do we put 0 into the power?"
    ],
    "do": [
     {
@@ -263,20 +295,20 @@
    ]
   },
   {
-   "say": "Two times zero is zero, so we get three E to the power zero.",
+   "say": "Negative three times zero is zero, so we get two E to the power zero, plus one.",
    "asks": [
-    "Why is 2 times 0 zero?"
+    "Why is negative three times zero zero?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "ye0",
-     "on": "three E to"
+     "token": "y0e",
+     "on": "two E to"
     }
    ]
   },
   {
-   "say": "E to the power zero is one. So Y equals three times one, which is three.",
+   "say": "E to the power zero is one. So Y equals two times one, plus one, which is three.",
    "asks": [
     "Why is e to the power 0 one?"
    ],
@@ -284,7 +316,7 @@
     {
      "do": "write",
      "token": "yv",
-     "on": "three times one"
+     "on": "two times one"
     },
     {
      "do": "sketch",
@@ -294,7 +326,7 @@
    ]
   },
   {
-   "say": "For the X intercept, sub Y equals zero. Three E to the power two X equals zero.",
+   "say": "For the X intercept, sub Y equals zero into the full equation.",
    "asks": [
     "Why put y = 0 for the x-intercept?"
    ],
@@ -307,36 +339,35 @@
     {
      "do": "write",
      "token": "s3",
-     "on": "Three E to"
+     "on": "the full equation"
     }
    ]
   },
   {
-   "say": "Three times something is zero only if E to the power two X is zero. But a power of E is never zero.",
+   "say": "Then solve for E to the power minus three X. It equals negative one half.",
    "asks": [
-    "Why can we divide by 3?",
-    "Why is e to a power never zero?"
+    "How do we get negative one half?"
    ],
    "do": [
     {
      "do": "write",
      "token": "se",
-     "on": "only if E"
-    },
-    {
-     "do": "note",
-     "text": "e to any power is never zero",
-     "near": "se",
-     "on": "never zero"
+     "on": "It equals negative"
     }
    ]
   },
   {
-   "say": "So there are no solutions, and no X intercept. The curve never meets the X axis.",
+   "say": "But E to any power is always positive, never negative. So there are no solutions, and no X intercept.",
    "asks": [
     "Does no solutions mean I made a mistake?"
    ],
    "do": [
+    {
+     "do": "note",
+     "text": "e to a power is always positive",
+     "near": "se",
+     "on": "always positive"
+    },
     {
      "do": "write",
      "token": "ns",
@@ -350,19 +381,19 @@
     }
    ],
    "aside": {
-    "text": "Why is it never zero?",
-    "slug": "indices-exponential-never-zero",
+    "text": "Why is it never negative?",
+    "slug": "indices-exponential-never-negative",
     "read": [
      "$e$ is a positive number, about $2.718$.",
      "A positive number to any power is still positive.",
-     "So $e^{2x} > 0$ for every $x$.",
-     "It can get very close to $0$, but never reach it.",
-     "**So $e^{2x} = 0$ has no solutions: the curve never meets the $x$-axis.**"
+     "So $e^{-3x} > 0$ for every $x$.",
+     "It can never equal $-\\tfrac{1}{2}$, or any negative number.",
+     "**So $e^{-3x} = -\\tfrac{1}{2}$ has no solutions: the curve never meets the $x$-axis.**"
     ]
    }
   },
   {
-   "say": "So the sketch has the shape of E to the X, through zero, three, above the asymptote Y equals zero.",
+   "say": "So the sketch has the shape of E to the power minus X, through zero, three, above the asymptote Y equals one.",
    "asks": [
     "Do I need to label the asymptote?",
     "Why is there no x-intercept on the sketch?"
@@ -370,8 +401,7 @@
    "do": [
     {
      "do": "highlight",
-     "token": "shape",
-     "on": "the shape of"
+     "token": "shape"
     },
     {
      "do": "highlight",

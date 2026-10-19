@@ -316,11 +316,11 @@ export type BeatAction =
   | ({ do: 'sketch'; show?: SketchStage; point?: number } & Timed)
   /** The scene's `pinned` steps: `show` n writes the first n (as the voice lists them), `lit` n lights step n. */
   | ({ do: 'pin'; show?: number; lit?: number } & Timed);
-export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'shift';
+export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'stretch' | 'shift';
 
 export type BeatActionKind = BeatAction['do'];
 export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin'];
-export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'shift'];
+export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'stretch', 'shift'];
 
 export interface Beat {
   /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
@@ -374,13 +374,14 @@ export interface SceneSketch {
   xMin: number; xMax: number; yMin: number; yMax: number;
   /** The basic shape lifted from the corner (its fn on the big axes), and the inset curve it comes from. */
   shape: string; from?: string;
-  /** Where the shape slides to (the `shift` stage): right by dx, up by dy. */
+  /** Where the shape slides to (the `shift` stage): right by dx, up by dy. A horizontal asymptote
+   *  slides up with it ("draw the basic curve first, then shift it by c", Indices 1081.08). */
   shift?: { dx?: number; dy?: number };
-  /** The question's own curve (fn in x): on the `shift` stage the lifted shape stretches into it —
-   *  y = eˣ becomes y = 3e²ˣ through (0, 3), "the numbers don't change the shape" (Indices 1081.04,
-   *  19 Oct 2026). */
+  /** The stretched curve (fn in x), BEFORE any shift: on the `stretch` stage the lifted shape grows
+   *  into it — y = e⁻ˣ becomes y = 2e⁻³ˣ, "the numbers don't change the shape" (Indices 1081.04). */
   to?: string;
-  asymptote?: { x?: number; y?: number; label?: string };
+  /** `labelAfter`: the asymptote's label once the `shift` stage has moved it (y = 0 → y = 1). */
+  asymptote?: { x?: number; y?: number; label?: string; labelAfter?: string };
   points?: { x: number; y: number; label: string }[];
 }
 export type GraphMorphScene = NarrationFields & BeatFields & {

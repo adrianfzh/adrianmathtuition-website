@@ -1,26 +1,28 @@
-Verifying 21 clip(s) of exponential-graphs-am by transcription (gemini-2.5-flash)…
+Verifying 22 clip(s) of exponential-graphs-am by transcription (gemini-2.5-flash)…
 
   scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 100% of narration words heard
   scene-01-b4: 100% of narration words heard
   scene-01-b5: 89% of narration words heard
-  scene-01-b6: 100% of narration words heard
+  scene-01-b6: 95% of narration words heard
   scene-01-b7: 100% of narration words heard
   scene-01-b8: 100% of narration words heard
-  scene-01-b9: 83% of narration words heard  ⚠ LOW
-      heard: So it has the shape of E to the X from the corner lifted onto the axis.
+  scene-01-b9: 95% of narration words heard
   scene-01-b10: 100% of narration words heard
   scene-01-b11: 100% of narration words heard
-  scene-01-b12: 94% of narration words heard
+  scene-01-b12: 83% of narration words heard  ⚠ LOW
+      heard: Try some values. When x is 1, it is about 0.1. When x is 2, about 0.005.
   scene-01-b13: 100% of narration words heard
   scene-01-b14: 100% of narration words heard
   scene-01-b15: 100% of narration words heard
-  scene-01-b16: 100% of narration words heard
+  scene-01-b16: 92% of narration words heard
   scene-01-b17: 100% of narration words heard
-  scene-01-b18: 100% of narration words heard
+  scene-01-b18: 94% of narration words heard
   scene-01-b19: 100% of narration words heard
-  scene-01-b20: 100% of narration words heard
+  scene-01-b20: 80% of narration words heard  ⚠ LOW
+      heard: Then solve for e to the power minus 3x. It equals -12.
   scene-01-b21: 100% of narration words heard
+  scene-01-b22: 95% of narration words heard
 
-1 clip(s) below 85% — listen to those.
+2 clip(s) below 85% — listen to those.
