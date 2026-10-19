@@ -110,7 +110,9 @@ no focus, no clear.
   never fly from a far line: write the equation again as the line's first tokens, and let the fraction
   token `replaces` them (`from` the moving term, `into` its landing piece) — rewritten in place. Every piece that changes
   place moves (`"also": [{"from": "<id>", "into": "<piece>"}]` for the others — "the animation … is not
-  smooth" when they jumped); keep the = its own token so it slides. Say WHY the
+  smooth" when they jumped); keep the = its own token so it slides. This move is APPROVED as the reference
+  (Adrian, 19 Oct 2026: "good, this animation is good. remember it for future clips") — copy line 4 of
+  `data/clip-plans/evaluate-10-to-the-x-am.json` for any term divided across into a fraction. Say WHY the
   step is done ("To simplify the expression, …") and name the property ("since it is divide, the powers minus").
 - **While a piece moves, nothing else is written**: the `move` is the only action on its words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
