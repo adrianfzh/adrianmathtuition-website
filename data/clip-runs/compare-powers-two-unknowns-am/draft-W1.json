@@ -101,13 +101,13 @@
    ],
    "do": [
     {
-     "do": "write",
-     "token": "s1b"
+     "do": "highlight",
+     "token": "s1"
     },
     {
      "do": "note",
      "text": "$\\left(\\frac{M}{N}\\right)^2=\\frac{M^2}{N^2}$",
-     "near": "s1b",
+     "near": "s1",
      "on": "its top and"
     }
    ]
@@ -120,13 +120,13 @@
    "do": [
     {
      "do": "highlight",
-     "token": "s1b",
+     "token": "s1",
      "on": "a power of"
     },
     {
      "do": "note",
      "text": "Times power: $(a^m)^n=a^{mn}$",
-     "near": "s1b",
+     "near": "s1",
      "on": "multiply the powers"
     }
    ]

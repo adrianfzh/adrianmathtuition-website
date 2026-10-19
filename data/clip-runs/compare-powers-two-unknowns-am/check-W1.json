@@ -30,7 +30,6 @@
           "heading": "Do the power first",
           "tokens": [
             { "id": "s1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
-            { "id": "s1b", "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}" },
             { "id": "s2", "tex": "=\\dfrac{a^{2x+2}}{b^{2y-4}}" }
           ]
         },
@@ -151,16 +150,16 @@
           "say": "Squaring a fraction squares its top and its bottom.",
           "asks": ["Does the square go to the top and bottom?"],
           "do": [
-            { "do": "write", "token": "s1b" },
-            { "do": "note", "text": "$\\left(\\frac{M}{N}\\right)^2=\\frac{M^2}{N^2}$", "near": "s1b", "on": "its top and" }
+            { "do": "highlight", "token": "s1" },
+            { "do": "note", "text": "$\\left(\\frac{M}{N}\\right)^2=\\frac{M^2}{N^2}$", "near": "s1", "on": "its top and" }
           ]
         },
         {
           "say": "Now times power: a power of a power, multiply the powers.",
           "asks": ["Which law is this?"],
           "do": [
-            { "do": "highlight", "token": "s1b", "on": "a power of" },
-            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "s1b", "on": "multiply the powers" }
+            { "do": "highlight", "token": "s1", "on": "a power of" },
+            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "s1", "on": "multiply the powers" }
           ]
         },
         {
