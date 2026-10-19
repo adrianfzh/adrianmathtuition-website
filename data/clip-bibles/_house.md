@@ -171,6 +171,10 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **Two answers: work each straight down its own column** (19 Oct 2026: "for such working, put like
+  this instead (directly below)" — his notes' layout `a = 1  or  a = 1/4`, then `2^{2x} = 1` under the
+  one and `2^{2x} = 1/4` under the other). Give those lines `"cols": true` (tokens: left, "or", right;
+  then left, right on each line after); the final answer line after them is boxed.
 - **A condition only where it decides something** (19 Oct 2026, Solving by substitution: "introducing
   2^x>0 at this stage seems premature"): say "2^x is always positive" only on a question where it
   REJECTS a root (u = −2). When every value is allowed, say nothing about it.

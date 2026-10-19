@@ -73,6 +73,7 @@ no focus, no clear.
   leave it off), √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
 - **No "Step one / Step two" in the voice** except a graph-sketching clip (its steps are pinned): say the move.
+- **Two answers side by side**: `"cols": true` lines — each answer worked straight down its own column.
 - **Pinned steps only for graph sketching** (or when Adrian asks): the plan's `pinned` + `pin` actions
   (`show` as the voice lists them, `lit` on each step's turn). An ordinary solve has no strip.
 - **A set of basic shapes first**: one `graph` with `curves` (each `id` + `label` + `labelAt`), a beat
