@@ -627,6 +627,30 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     CHECK` over `92 of 90`, never a slash) and the cover badge (no percentage, red `needs a check`
     tag, verdict line: "the marked pages are right; the total is not final"). Triage's `paperTotalsMismatch`
     still blocks release; the bot's bracket re-read collapses page-spanning fragments (separate note in the bot).
+  - **🧮 A total no real paper has is caught (17 Oct 2026, Eva's St Gabriel's 2025 E Math P2
+    went out 76/91; Adrian: *"total score should be 90? seems like errors keep coming up"* /
+    *"aren't there autocheckers and autofixers?"*).** Every check above compares against a
+    KNOWN total; nothing recognised her paper (`max_source: counted`), so a sum of 91 had
+    nothing to disagree with. Q5(e)'s printed `[1]` was cut off the photo and assumed `[2]`,
+    and the run also saved a 91-mark derived split for the next student. Three fixes in the
+    bot (cf04f95f, `test/paper-total-plausible.test.js`): **(1)** a school prelim's printed
+    header that names a plain maths subject + paper number ("SGSS/MathP2/4E5N4NA(OOS)/Prelim/2025",
+    "Math P2", "EMath P1", "AMath P2", "E-Math Paper 2", "Add Maths P1") is now RECOGNISED
+    (`lib/paper-key` `prelimSubjectPaper`, via `seabFrom`) → the SEAB total for that syllabus
+    and paper (E Math 4052 90/90, A Math 4049 90/90). Plain "Math" = E Math. Only on a page
+    that says "prelim"; never with a science word, H1/H2/JC, both maths subjects or two
+    paper numbers; never for a science run. **(2)** a COUNTED total one or two marks off
+    40/50/80/90/100 (91, 89, 48, 98…) sets `review.recommended` with *"The questions add up
+    to 91 — not a real paper total … a printed [n] was probably misread. Check the
+    brackets."* → Adrian's watch-outs (`implausibleCountedTotal`; a Practice Again sheet is
+    never flagged; a partial like 47 is not). **(3)** a derived split whose sum fails the
+    same test is never saved to `paper_schemes` (`plausiblePaperTotal`, handlers/webchat.js).
+    **Eva's paper (19 Oct):** Q5(e) set to out of 1 (the bank's St Gabriel 2025 EM P2 copy
+    adds to exactly 90 and differs only there), `total_max_override` 90, page 10 redrawn,
+    re-issued on the app channel as `total-corrected` (fromMax 91) → **76/90**; the saved
+    split `ed52fb75` re-derived from her corrected run (90). Backups in `_backups/eva-stgab-p2-*`.
+    **Not done:** "st gab" is not a school alias and "pp2" is not read as Paper 2, so the
+    typed name still finds no bank paper on its own — the printed header now carries it.
 - **🔁 Cross-photo reconciliation — the "92/90" double-marking fix (2026-08-28):** photos
   are marked independently, so a question appearing on TWO photos (half-page re-shot,
   cross-page continuation, crossed-out reattempt marked where it lies) landed in
