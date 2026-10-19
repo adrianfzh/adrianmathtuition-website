@@ -36,7 +36,8 @@ You get:
    both are lit) — small screenshots make colours hard to read; use the frames for layout only.
    (18 Oct 2026: twice a frame was read as "only the left 5 lit" when both were.)
 10. Do NOT ask for a separate line showing a power of a power being multiplied (2(x−1), x×2): Adrian
-   multiplies straight away on the same line ("just multiply directly").
+   multiplies straight away ("just multiply directly"), and he may end the line at (5^2)^{x-1} with the
+   result written as the NEXT line — do not ask for "= 5^{2x-2}" back on the long line.
 11. Do NOT ask for the working of a simple linear or simultaneous solve at A Math ("AM students know
    this well"): one line, "Solve it: X equals four", is Adrian's standard.
 12. Anything else in the house rules this clip breaks.

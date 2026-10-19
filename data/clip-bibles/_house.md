@@ -177,6 +177,10 @@ the history.
 - **The result of a chain gets its own line** (19 Oct 2026: "put 5^(x+2) = 5^(2x-2) as another
   line"): after `5^{x+2} = (5^2)^{x-1} = 5^{2x-2}`, write `5^{x+2} = 5^{2x-2}` on the next line — that
   is the line the powers are compared from.
+  When the long line ends at `(5^2)^{x-1}` (19 Oct 2026: "remove the part = 5^(2x-2), since the next
+  line already has it, still make the narration smooth"), the voice says the result only on the beat
+  that writes the next line ("Times power: multiply the two powers, two times the bracket X minus one."
+  → "So five to the power X plus two equals five to the power two X minus two.").
 - **Comparing powers: "since the base is the same, the powers must be the same"** (19 Oct 2026:
   "instead of a different power of five gives a different number.. and instead of saying bring the
   powers down … say since base is the same, hence the power must be the same, etc hence x+2 = 2x-2").

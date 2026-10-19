@@ -85,7 +85,7 @@
    ]
   },
   {
-   "say": "Times power: a power of a power means multiply the two powers.",
+   "say": "Times power: multiply the two powers, two times the bracket X minus one.",
    "asks": [
     "Which law is this?",
     "Why multiply the powers?"
@@ -94,47 +94,26 @@
     {
      "do": "highlight",
      "token": "b5",
-     "on": "a power of"
+     "on": "multiply the two"
     },
     {
      "do": "note",
      "text": "Times power: $(a^m)^n=a^{mn}$",
      "near": "b5",
-     "on": "multiply the two"
+     "on": "two times the"
     }
    ]
   },
   {
-   "say": "So five squared, to the power X minus one, is five to the power two X minus two.",
+   "say": "So five to the power X plus two equals five to the power two X minus two.",
    "asks": [
     "How do I multiply 2 by x − 1?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "r3",
-     "on": "is five to"
-    }
-   ]
-  },
-  {
-   "say": "So five to the power X plus two equals five to the power two X minus two. Five on both sides.",
-   "asks": [
-    "Why write it again on its own line?"
-   ],
-   "do": [
-    {
-     "do": "write",
      "step": 3,
      "on": "So five to"
-    },
-    {
-     "do": "highlight",
-     "token": [
-      "b1",
-      "b2"
-     ],
-     "on": "Five on both"
     }
    ]
   },
@@ -146,7 +125,10 @@
    "do": [
     {
      "do": "highlight",
-     "token": "p1",
+     "token": [
+      "b1",
+      "b2"
+     ],
      "on": "Since the base"
     },
     {

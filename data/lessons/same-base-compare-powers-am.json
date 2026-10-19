@@ -30,8 +30,7 @@
           "tokens": [
             { "id": "a2", "tex": "5^{x+2}" },
             { "id": "e2", "tex": "=" },
-            { "id": "b5", "tex": "(5^2)^{x-1}" },
-            { "id": "r3", "tex": "=5^{2x-2}" }
+            { "id": "b5", "tex": "(5^2)^{x-1}" }
           ]
         },
         {
@@ -103,44 +102,34 @@
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Times power: a power of a power means multiply the two powers.",
+          "say": "Times power: multiply the two powers, two times the bracket X minus one.",
           "asks": ["Which law is this?", "Why multiply the powers?"],
           "do": [
-            { "do": "highlight", "token": "b5", "on": "a power of" },
-            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "b5", "on": "multiply the two" }
+            { "do": "highlight", "token": "b5", "on": "multiply the two" },
+            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "b5", "on": "two times the" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b6.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b6.timing.json"
         },
         {
-          "say": "So five squared, to the power X minus one, is five to the power two X minus two.",
+          "say": "So five to the power X plus two equals five to the power two X minus two.",
           "asks": ["How do I multiply 2 by x − 1?"],
           "do": [
-            { "do": "write", "token": "r3", "on": "is five to" }
+            { "do": "write", "step": 3, "on": "So five to" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b7.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b7.timing.json"
         },
         {
-          "say": "So five to the power X plus two equals five to the power two X minus two. Five on both sides.",
-          "asks": ["Why write it again on its own line?"],
-          "do": [
-            { "do": "write", "step": 3, "on": "So five to" },
-            { "do": "highlight", "token": ["b1", "b2"], "on": "Five on both" }
-          ],
-          "audio": "/lessons/same-base-compare-powers-am/scene-01-b8.mp3",
-          "timing": "/lessons/same-base-compare-powers-am/scene-01-b8.timing.json"
-        },
-        {
           "say": "Since the base is the same, the powers must be the same. Hence X plus two equals two X minus two.",
           "asks": ["Why must the powers be the same?"],
           "do": [
-            { "do": "highlight", "token": "p1", "on": "Since the base" },
+            { "do": "highlight", "token": ["b1", "b2"], "on": "Since the base" },
             { "do": "move", "from": "e1", "on": "Hence X plus" },
             { "do": "move", "from": "e4", "on": "two X minus" }
           ],
-          "audio": "/lessons/same-base-compare-powers-am/scene-01-b9.mp3",
-          "timing": "/lessons/same-base-compare-powers-am/scene-01-b9.timing.json"
+          "audio": "/lessons/same-base-compare-powers-am/scene-01-b8.mp3",
+          "timing": "/lessons/same-base-compare-powers-am/scene-01-b8.timing.json"
         },
         {
           "say": "Solve it: X equals four.",
@@ -149,8 +138,8 @@
             { "do": "write", "step": 5, "on": "Solve it" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals four" }
           ],
-          "audio": "/lessons/same-base-compare-powers-am/scene-01-b10.mp3",
-          "timing": "/lessons/same-base-compare-powers-am/scene-01-b10.timing.json"
+          "audio": "/lessons/same-base-compare-powers-am/scene-01-b9.mp3",
+          "timing": "/lessons/same-base-compare-powers-am/scene-01-b9.timing.json"
         }
       ]
     }
