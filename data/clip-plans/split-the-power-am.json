@@ -1,0 +1,141 @@
+{
+  "slug": "split-the-power-am",
+  "title": "Split the power, then factorise",
+  "heading": "Split the power, then factorise",
+  "intro": null,
+  "level": "AM",
+  "topic": "Indices",
+  "subgroup": null,
+  "source": {
+    "unit": "108.15",
+    "also": [
+      "108.13"
+    ]
+  },
+  "bible": "data/clip-bibles/indices-am.md",
+  "answer": {
+    "facts": [
+      "(3**1 - 3**(-2))/(3**(-1) - 3**2) = -1/3"
+    ],
+    "display": "−1/3"
+  },
+  "outline": [
+    "Built 19 Oct 2026 (Indices clip 4) from 108.15 with 108.13's words: the question read top then bottom; why nothing cancels yet (the powers differ; only a factor of the whole top and bottom cancels — a written drop-down); the plan as maths (3^n(□)/3^n(△) = □/△); split every power — Add power in reverse, a^{x+k} = a^x × a^k — each of the four terms lit as it is named; a split is always a times (the common mistake 3^n + 3, at the step); every term has 3^n, take it out top and bottom; 3^n multiplies the whole top and bottom, so it cancels; only numbers left — a negative power is one over (3 − 1/9)/(1/3 − 9), then the calculator: 26/9 over −26/3; = −1/3, boxed. One expression line by line, no headings, no step numbers, no Watch out."
+  ],
+  "question": "Simplify $\\dfrac{3^{n+1}-3^{n-2}}{3^{n-1}-3^{n+2}}$.",
+  "minutes": 2,
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "q1",
+          "tex": "\\dfrac{\\htmlClass{lsn-pc-a}{3^{n+1}}-\\htmlClass{lsn-pc-b}{3^{n-2}}}{\\htmlClass{lsn-pc-c}{3^{n-1}}-\\htmlClass{lsn-pc-d}{3^{n+2}}}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the question: an expression in n, simplified to a number"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "p1",
+          "tex": "\\text{Plan: }\\dfrac{3^n(\\,\\square\\,)}{3^n(\\,\\triangle\\,)}",
+          "hl": "sky"
+        },
+        {
+          "id": "p2",
+          "tex": "=\\dfrac{\\square}{\\triangle}",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: take 3^n out of the top and the bottom, then cancel it"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s1",
+          "tex": "=\\dfrac{\\htmlClass{lsn-pc-a}{\\htmlClass{lsn-pc-n}{3^n}\\times 3^1}-\\htmlClass{lsn-pc-b}{\\htmlClass{lsn-pc-n}{3^n}\\times 3^{-2}}}{\\htmlClass{lsn-pc-c}{\\htmlClass{lsn-pc-n}{3^n}\\times 3^{-1}}-\\htmlClass{lsn-pc-d}{\\htmlClass{lsn-pc-n}{3^n}\\times 3^2}}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "(3**n*3**1 - 3**n*3**(-2))/(3**n*3**(-1) - 3**n*3**2) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "f1",
+          "tex": "=\\dfrac{\\htmlClass{lsn-pc-n}{3^n}(3^1-3^{-2})}{\\htmlClass{lsn-pc-n}{3^n}(3^{-1}-3^2)}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "(3**n*(3**1 - 3**(-2)))/(3**n*(3**(-1) - 3**2)) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "c1",
+          "tex": "=\\dfrac{3^1-3^{-2}}{3^{-1}-3^2}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "(3**1 - 3**(-2))/(3**(-1) - 3**2) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "v1",
+          "tex": "=\\dfrac{3-\\frac{1}{9}}{\\frac{1}{3}-9}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "(3 - Rational(1,9))/(Rational(1,3) - 9) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "k1",
+          "tex": "=\\dfrac{\\frac{26}{9}}{-\\frac{26}{3}}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "Rational(26,9)/(-Rational(26,3)) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ans",
+          "tex": "=-\\dfrac{1}{3}",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "-Rational(1,3) = (3**(n+1) - 3**(n-2))/(3**(n-1) - 3**(n+2))"
+        }
+      ]
+    }
+  ],
+  "scroll": true
+}

@@ -172,6 +172,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 2,
   },
   {
+    slug: 'split-the-power-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Split the power, then factorise',
+    minutes: 2,
+  },
+  {
     slug: 'growth-and-decay-am',
     level: 'AM',
     topic: 'Logarithms',

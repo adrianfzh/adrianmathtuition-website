@@ -1,0 +1,339 @@
+{
+ "slug": "split-the-power-am",
+ "draft": "W1",
+ "by": "session, 19 Oct 2026, Indices clip 4 to the house rules",
+ "beats": [
+  {
+   "say": "Simplify: on top, three to the power N plus one, minus three to the power N minus two,",
+   "asks": [
+    "What is N here?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "q1"
+    },
+    {
+     "do": "highlight",
+     "token": "q1",
+     "part": "num",
+     "on": "on top"
+    }
+   ]
+  },
+  {
+   "say": "all over three to the power N minus one, minus three to the power N plus two.",
+   "asks": [
+    "Which part is the bottom?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "part": "den",
+     "on": "all over three"
+    }
+   ]
+  },
+  {
+   "say": "Every power is N plus or minus a number. The powers are different, so nothing cancels yet.",
+   "asks": [
+    "Why can't I cancel the threes now?",
+    "Why are the powers different?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "on": "Every power is"
+    }
+   ],
+   "aside": {
+    "text": "Why can't we cancel yet?",
+    "slug": "indices-cancel-only-a-factor",
+    "read": [
+     "We can only cancel a factor: something that multiplies the WHOLE top and the WHOLE bottom.",
+     "The top is $3^{n+1} - 3^{n-2}$, two terms taken away.",
+     "$3^{n+1}$ is only one of those terms, so it cannot cancel on its own.",
+     "So first make $3^n$ multiply every term: split each power.",
+     "Then take $3^n$ out of the top and out of the bottom.",
+     "**Cancel only what multiplies the whole top and the whole bottom.**"
+    ]
+   }
+  },
+  {
+   "say": "The plan: make every term show three to the power N. Then take it out, top and bottom, and cancel it.",
+   "asks": [
+    "Why three to the power N?",
+    "What do the box and triangle mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "take it out"
+    },
+    {
+     "do": "write",
+     "token": "p2",
+     "on": "and cancel it"
+    }
+   ]
+  },
+  {
+   "say": "Split the power: three to the power N plus one is three to the power N times three to the power one.",
+   "asks": [
+    "Why can I split the power?",
+    "Is it times or plus?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "a",
+     "tone": "orange"
+    },
+    {
+     "do": "write",
+     "token": "s1",
+     "on": "is three to"
+    },
+    {
+     "do": "highlight",
+     "token": "s1",
+     "inside": "a",
+     "tone": "orange",
+     "on": "times three to"
+    }
+   ]
+  },
+  {
+   "say": "This is Add power in reverse: multiplying adds the powers, N plus one, back to the question.",
+   "asks": [
+    "Which law is this?",
+    "How do I check a split?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Add power, in reverse: $a^{x+k}=a^x\\times a^k$",
+     "near": "s1"
+    }
+   ]
+  },
+  {
+   "say": "In the same way, three to the power N minus two is three to the power N times three to the power negative two.",
+   "asks": [
+    "Where does negative two come from?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "b",
+     "tone": "orange"
+    },
+    {
+     "do": "highlight",
+     "token": "s1",
+     "inside": "b",
+     "tone": "orange",
+     "on": "is three to"
+    }
+   ]
+  },
+  {
+   "say": "Below, three to the power N minus one is three to the power N times three to the power negative one.",
+   "asks": [
+    "Why is it negative one?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "c",
+     "tone": "sky"
+    },
+    {
+     "do": "highlight",
+     "token": "s1",
+     "inside": "c",
+     "tone": "sky",
+     "on": "is three to"
+    }
+   ]
+  },
+  {
+   "say": "And three to the power N plus two is three to the power N times three squared.",
+   "asks": [
+    "Why is it three squared?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "d",
+     "tone": "sky"
+    },
+    {
+     "do": "highlight",
+     "token": "s1",
+     "inside": "d",
+     "tone": "sky",
+     "on": "is three to"
+    }
+   ]
+  },
+  {
+   "say": "A split is always a times. A common mistake is writing three to the power N plus three.",
+   "asks": [
+    "Why is it not plus three?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "✗ Common mistake: $3^{n+1}=3^n+3$",
+     "near": "s1",
+     "on": "A common mistake"
+    }
+   ]
+  },
+  {
+   "say": "Now every term has three to the power N, so take it out of the top and out of the bottom.",
+   "asks": [
+    "How do I take it out?",
+    "Is this factorising?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "s1",
+     "inside": "n",
+     "tone": "orange"
+    },
+    {
+     "do": "write",
+     "token": "f1",
+     "on": "so take it"
+    }
+   ]
+  },
+  {
+   "say": "Each bracket keeps what is left of its terms: the powers one and negative two on top, negative one and two below.",
+   "asks": [
+    "What goes inside the brackets?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "f1",
+     "part": "num",
+     "on": "the powers one"
+    },
+    {
+     "do": "highlight",
+     "token": "f1",
+     "part": "den",
+     "on": "negative one and"
+    }
+   ]
+  },
+  {
+   "say": "Three to the power N multiplies the whole top and the whole bottom. Divide both by it, so it cancels.",
+   "asks": [
+    "Why can I cancel it now?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "f1",
+     "inside": "n",
+     "tone": "orange"
+    },
+    {
+     "do": "write",
+     "token": "c1",
+     "on": "so it cancels"
+    }
+   ]
+  },
+  {
+   "say": "Only numbers are left. A negative power is one over: three to the power negative two is one over nine.",
+   "asks": [
+    "Why is a negative power one over?",
+    "Can I use the calculator now?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Negative power: $a^{-k}=\\dfrac{1}{a^k}$",
+     "near": "v1",
+     "on": "A negative power"
+    },
+    {
+     "do": "write",
+     "token": "v1",
+     "on": "is one over nine"
+    }
+   ]
+  },
+  {
+   "say": "And three to the power negative one is one third. Three squared is nine.",
+   "asks": [
+    "Where does the nine below come from?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "v1",
+     "part": "den"
+    }
+   ]
+  },
+  {
+   "say": "Now the calculator: the top is twenty-six over nine, the bottom is negative twenty-six over three.",
+   "asks": [
+    "How is the top twenty-six over nine?",
+    "Why is the bottom negative?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "k1",
+     "on": "the top is"
+    },
+    {
+     "do": "highlight",
+     "token": "k1",
+     "part": "num",
+     "on": "twenty-six over nine,"
+    },
+    {
+     "do": "highlight",
+     "token": "k1",
+     "part": "den",
+     "on": "the bottom is"
+    }
+   ]
+  },
+  {
+   "say": "Dividing by a fraction is times its flip, so the twenty-sixes cancel. The answer is negative one third.",
+   "asks": [
+    "How do I divide the two fractions?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ans",
+     "on": "The answer is"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "negative one third"
+    }
+   ]
+  }
+ ]
+}
