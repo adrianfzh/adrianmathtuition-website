@@ -297,7 +297,19 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   const t = offsetRect(target, container);
   if (s.width === 0 || t.width === 0) return;
 
-  const clone = source.cloneNode(true) as HTMLElement;
+  const raw = source.cloneNode(true) as HTMLElement;
+  // A piece cut from inside a KaTeX token (`into` / `fromPiece`) needs its .katex ancestors, or its
+  // power drops to the line ("5x" for 5^x): wrap the copy in them.
+  let clone = raw;
+  if (!raw.classList.contains('katex') && !raw.querySelector('.katex') && source.closest('.katex')) {
+    clone = document.createElement('span');
+    clone.className = 'katex';
+    const html = document.createElement('span');
+    html.className = 'katex-html';
+    html.appendChild(raw);
+    clone.appendChild(html);
+    raw.classList.remove('lsn-into-wait', 'lsn-landing');
+  }
   clone.removeAttribute('data-gone');
   clone.removeAttribute('data-held');
   clone.removeAttribute('data-token-id');

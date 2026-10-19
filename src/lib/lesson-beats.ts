@@ -264,6 +264,8 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
         if (key.startsWith('line:')) {
           const line = Number(key.slice(5));
           show(key, write);
+          // An `into` token is written with its line; only its piece waits for the move.
+          for (const ref of tokens) if (ref.line === line && ref.into) show(tokKey(ref.line, ref.index), write);
           // A from-token with no move of its own flies with its line.
           for (const ref of tokens) {
             if (ref.line !== line || ref.from === undefined || board.movable.has(ref.from)) continue;

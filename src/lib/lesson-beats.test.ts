@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  tokenPieceWaiting,
   resolveActionTimes, firedCountAt, beatAutoMs, boardStateAt, emptyBoard, sceneTargets, sceneNotes,
   targetKeys, tokenShown, tokenWritten, lineOn, elementShown, elementStatic, proseGroup, beatTimeline,
   sceneTokens, paragraphCount, tokKey, lineKey, FOCUS_HOLD_S, scenesHaveCharacter, applyAction,
@@ -362,5 +363,28 @@ describe('sticker state', () => {
   it('validates as a whole script', () => {
     const r = validateLessonScript({ slug: 't', title: 'T', level: 'AM', topic: 'Quadratic Functions', minutes: 1, theme: 'chalk', scenes: [stuck] });
     expect(r.ok, JSON.stringify(r)).toBe(true);
+  });
+});
+
+// Adrian, 19 Oct 2026: "should show the animation of 5^(2x-1) flying down underneath 5^(x-1)".
+describe('into: a piece flies into part of the next line', () => {
+  const scene = {
+    type: 'equation-steps',
+    steps: [
+      { tokens: [{ id: 'a', tex: '2^{x+2}' }, { id: 'b', tex: '5^{2x-1}' }] },
+      { tokens: [{ tex: '2^{x+2}' }, { tex: '=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}', from: 'b', into: 'd' }, { tex: '+0' }] },
+    ],
+    beats: [
+      { say: 'The question.', do: [{ do: 'write', step: 0 }] },
+      { say: 'Group the fives.', do: [{ do: 'write', step: 1 }] },
+      { say: 'It moves down.', do: [{ do: 'move', from: 'b' }] },
+    ],
+  } as unknown as PlayScene;
+  it('writes the token with its line and keeps only the piece waiting for the move', () => {
+    const b1 = boardStateAt(scene, 1, 1);
+    expect(tokenShown(b1, scene, 1, 1)).toBe(true);
+    expect(tokenShown(b1, scene, 1, 2)).toBe(true);
+    expect(tokenPieceWaiting(b1, scene, 1, 1)).toBe('d');
+    expect(tokenPieceWaiting(boardStateAt(scene, 2, 1), scene, 1, 1)).toBe(null);
   });
 });
