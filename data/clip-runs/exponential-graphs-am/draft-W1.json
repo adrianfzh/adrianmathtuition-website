@@ -253,6 +253,12 @@
    ],
    "do": [
     {
+     "do": "highlight",
+     "token": "yt",
+     "inside": "p",
+     "tone": "orange"
+    },
+    {
      "do": "sketch",
      "show": "shift",
      "on": "up by one"

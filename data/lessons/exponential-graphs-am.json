@@ -74,7 +74,7 @@
         },
         {
           "tokens": [
-            { "id": "yt", "tex": "y\\to 0+1=1" }
+            { "id": "yt", "tex": "y\\to 0\\htmlClass{lsn-pc-p}{+1}=1" }
           ]
         },
         {
@@ -247,6 +247,7 @@
           "say": "Plus one shifts the whole graph up by one unit. The asymptote moves up from Y equals zero to Y equals one.",
           "asks": ["Does the shape change when we shift?", "Why does the asymptote move too?"],
           "do": [
+            { "do": "highlight", "token": "yt", "inside": "p", "tone": "orange" },
             { "do": "sketch", "show": "shift", "on": "up by one" },
             { "do": "write", "token": "asy", "on": "to Y equals one" }
           ],

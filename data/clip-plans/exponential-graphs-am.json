@@ -110,7 +110,7 @@
       "tokens": [
         {
           "id": "yt",
-          "tex": "y\\to 0+1=1"
+          "tex": "y\\to 0\\htmlClass{lsn-pc-p}{+1}=1"
         }
       ],
       "checks": [

@@ -1,6 +1,6 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T18:42:48.339Z",
+ "at": "2026-10-19T18:53:15.303Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,23 +8,23 @@
   },
   "maths": {
    "ok": true,
-   "detail": "13/13 line checks"
+   "detail": "14/14 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "10 lines = the checked plan"
+   "detail": "11 lines = the checked plan"
   },
   "read": {
    "ok": true,
    "detail": "one draft — the stand-in reviewer judges it (see review)"
   },
   "look": {
-   "ok": false,
-   "detail": "43/43 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 3"
+   "ok": true,
+   "detail": "41/41 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": false,
-   "detail": "2 must, 1 should · 24 frames · b22 To light the old 'shape of y = e^{-x}' line, the board scrolls back up. The last working lines, e^{-3x} = -1/2 and the boxed '(no solutions)', drop out of view, and the question line is half-cut at the top. | b11 In the frames for beats 10–13, the stretched curve's right-hand tail runs into the x-axis and the dashed y = 0 line, and it runs under the 'x' label. A student sees it touching its asymptote."
+   "detail": "1 must, 0 should · 24 frames · b14 The voice says \"Plus one shifts the whole graph up\", but the question line has scrolled half off the top, so the +1 is cut off and never lit."
   }
  },
  "pass": false
