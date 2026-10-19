@@ -196,6 +196,7 @@ function TokenSpan({ t, bits, away = false, wait = null }: { t: StepToken; bits?
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
       data-into={t.into ? [t.into, ...(t.also ?? []).map(a => a.into)].join(',') : undefined}
+      data-rewrite={t.replaces ? '1' : undefined}
       data-also={t.also?.length ? t.also.map(a => `${a.from}:${a.into}`).join(',') : undefined}
       data-from-piece={t.fromPiece || undefined}
       data-into-wait={wait || undefined}
@@ -290,6 +291,8 @@ function CaptionView({ scene, timed, board }: { scene: CaptionScene; timed: bool
 // ── Scene: equation-steps (with moved-term FLIP) ─────────────────────────────
 
 type Rect = ReturnType<typeof offsetRect>;
+/** Where a piece's source sat (box + letters), kept for when it has left the line. */
+type PieceSpot = { box: Rect; glyph: { left: number; top: number } | null };
 /** A clip's finished board fades for this long before the next board comes in. */
 const SCENE_LEAVE_MS = 700;
 
@@ -311,10 +314,24 @@ function glyphOffset(el: HTMLElement): { left: number; top: number } | null {
   return { left: (g.left - b.left) / k, top: (g.top - b.top) / k };
 }
 
+/** A box in the container's own pixels, from the screen rects: offset sums go wrong for a piece
+ *  deep inside a KaTeX fraction (its inline box is a sliver), so piece flights measure this way. */
+function boxIn(el: HTMLElement, container: HTMLElement): Rect {
+  const c = container.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const z = container.offsetWidth ? c.width / container.offsetWidth : 1;
+  return { left: (r.left - c.left) / z, top: (r.top - c.top) / z, width: r.width / z, height: r.height / z };
+}
+const mathText = (el: HTMLElement) => ((el.querySelector('.katex-html') ?? el).textContent ?? '').replace(/\s+/g, '');
+
 function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement, was?: Rect,
-  align?: { from?: { left: number; top: number } | null }) {
-  const s = was ?? offsetRect(source, container);
-  const t = offsetRect(target, container);
+  align?: { from?: PieceSpot | null }) {
+  let s = was ?? offsetRect(source, container);
+  let t = offsetRect(target, container);
+  if (align) {
+    s = align.from?.box ?? boxIn(source, container);
+    t = boxIn(target, container);
+  }
   if (s.width === 0 || t.width === 0) return;
 
   const raw = source.cloneNode(true) as HTMLElement;
@@ -389,7 +406,9 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   };
   const fs = letter(source);
   const ft = letter(target);
-  const k = fs > 0 && ft > 0 ? ft / fs : t.height / Math.max(s.height, 1);
+  // A piece moving inside the working keeps its own size (5^{2x-1} down under 5^{x-1}).
+  const k = align && mathText(source) === mathText(target) ? 1
+    : fs > 0 && ft > 0 ? ft / fs : t.height / Math.max(s.height, 1);
   const w = s.width * k;
   const seen = (el: HTMLElement) => Array.from(el.querySelectorAll('.katex-html')).map(n => n.textContent ?? '').join('')
     .replace(/\s+/g, '');
@@ -402,7 +421,7 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   let ddx = dx;
   if (align) {
     // A piece flight: land letter on letter, not box on box.
-    const gs = align.from ?? glyphOffset(source);
+    const gs = align.from?.glyph ?? glyphOffset(source);
     const gt = glyphOffset(target);
     if (gs && gt) {
       ddx = t.left + gt.left - s.left - k * gs.left;
@@ -1020,7 +1039,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
   // room by the time it flies, so it flies from where it was.
   const lastAt = useRef<Map<Element, Rect>>(new Map());
   // …and where its letters sat inside that box, for the tokens a piece flies from (see glyphOffset).
-  const lastGlyph = useRef<Map<Element, { left: number; top: number } | null>>(new Map());
+  const lastGlyph = useRef<Map<Element, PieceSpot>>(new Map());
   const pieceSources = useMemo(() => new Set(scene.steps.flatMap(st => st.tokens.flatMap(t =>
     t.into || t.fromPiece ? [t.from ?? '', ...(t.also ?? []).map(a => a.from)] : []))), [scene.steps]);
   // Fly a token from the earlier line that declared its `from` id.
@@ -1029,7 +1048,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     if (!line) return;
     for (const tok of Array.from(line.querySelectorAll<HTMLElement>(`[data-from="${CSS.escape(fromId)}"]`))) {
       // An `into` token: only its piece flies in (5^{2x-1} down under 5^{x-1}).
-      const into = tok.dataset.into;
+      const into = tok.dataset.into?.split(',')[0]; // the first piece is this token's own; the rest are `also`
       const target = (into && tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(into)}`)) || tok;
       const source = Array.from(cont.querySelectorAll<HTMLElement>(`[data-token-id="${CSS.escape(fromId)}"]`))
         .find(el => {
@@ -1052,8 +1071,25 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
         const g = !!src.dataset.gone;
         flyClone(cont, src, dst, g ? lastAt.current.get(src) : undefined, { from: g ? lastGlyph.current.get(src) : undefined });
       }
-      // A rewrite in place: what stays on the line slides to its new place instead of jumping.
-      if (tok.dataset.into) {
+      // A rewrite in place: the new token (its fraction bar) shows only once the pieces have landed,
+      // so nothing flies across it; what stays on the line slides to its new place instead of jumping.
+      if (tok.dataset.into && tok.dataset.rewrite) {
+        tok.classList.add('lsn-landing');
+        window.setTimeout(() => tok.classList.remove('lsn-landing'), 1050);
+        // What the rewrite drops and nothing carries (the ×) fades where it stood, never blinks out.
+        const flown = new Set([tok.dataset.from, ...(tok.dataset.also ?? '').split(',').map(p => p.split(':')[0])]);
+        for (const el of Array.from(line.querySelectorAll<HTMLElement>('.lsn-tok[data-token-id][data-gone]'))) {
+          const at = lastAt.current.get(el);
+          if (!at || flown.has(el.dataset.tokenId)) continue;
+          const ghost = el.cloneNode(true) as HTMLElement;
+          for (const a of ['data-gone', 'data-held', 'data-token-id', 'data-key']) ghost.removeAttribute(a);
+          ghost.setAttribute('aria-hidden', 'true');
+          Object.assign(ghost.style, { position: 'absolute', left: `${at.left}px`, top: `${at.top}px`, width: `${at.width}px`,
+            height: `${at.height}px`, margin: '0', pointerEvents: 'none', fontSize: getComputedStyle(el).fontSize });
+          cont.appendChild(ghost);
+          const fade = ghost.animate?.([{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'ease-out', fill: 'forwards' });
+          if (fade) fade.onfinish = () => ghost.remove(); else ghost.remove();
+        }
         for (const el of Array.from(line.querySelectorAll<HTMLElement>('.lsn-tok[data-token-id]'))) {
           if (el === tok || el.dataset.gone || el.dataset.held) continue;
           const was = lastAt.current.get(el);
@@ -1110,7 +1146,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     for (const el of Array.from(cont.querySelectorAll<HTMLElement>('[data-token-id]'))) {
       if (el.dataset.gone) continue;
       lastAt.current.set(el, offsetRect(el, cont));
-      if (pieceSources.has(el.dataset.tokenId ?? '')) lastGlyph.current.set(el, glyphOffset(el));
+      if (pieceSources.has(el.dataset.tokenId ?? '')) lastGlyph.current.set(el, { box: boxIn(el, cont), glyph: glyphOffset(el) });
     }
   });
 
