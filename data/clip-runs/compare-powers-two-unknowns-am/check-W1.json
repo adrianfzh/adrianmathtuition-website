@@ -181,12 +181,7 @@
           "say": "A common mistake is leaving out the brackets. Then the signs inside come out wrong.",
           "asks": ["What goes wrong without brackets?"],
           "do": [
-            {
-              "do": "note",
-              "text": "✗ Common mistake: no brackets, so the signs come out wrong",
-              "near": "d2",
-              "on": "leaving out the"
-            }
+            { "do": "note", "text": "✗ Common mistake: no brackets", "near": "d2", "on": "leaving out the" }
           ]
         },
         {
@@ -272,8 +267,7 @@
           "asks": ["Where did the 1 come from?"],
           "do": [
             { "do": "move", "from": "u4", "on": "Hence X minus" },
-            { "do": "write", "token": "cb3", "on": "equals one" },
-            { "do": "highlight", "token": "u5", "inside": "b", "tone": "sky", "on": "the bare B" }
+            { "do": "write", "token": "cb3", "on": "equals one" }
           ]
         },
         {

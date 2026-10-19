@@ -207,7 +207,7 @@
    "do": [
     {
      "do": "note",
-     "text": "✗ Common mistake: no brackets, so the signs come out wrong",
+     "text": "✗ Common mistake: no brackets",
      "near": "d2",
      "on": "leaving out the"
     }
@@ -402,13 +402,6 @@
      "do": "write",
      "token": "cb3",
      "on": "equals one"
-    },
-    {
-     "do": "highlight",
-     "token": "u5",
-     "inside": "b",
-     "tone": "sky",
-     "on": "the bare B"
     }
    ]
   },
