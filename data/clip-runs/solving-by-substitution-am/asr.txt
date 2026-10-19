@@ -14,7 +14,7 @@ Verifying 16 clip(s) of solving-by-substitution-am by transcription (gemini-2.5-
   scene-01-b12: 95% of narration words heard
   scene-01-b13: 100% of narration words heard
   scene-01-b14: 100% of narration words heard
-  scene-01-b15: 100% of narration words heard
+  scene-01-b15: 95% of narration words heard
   scene-01-b16: 100% of narration words heard
 
 All clips match their narration.

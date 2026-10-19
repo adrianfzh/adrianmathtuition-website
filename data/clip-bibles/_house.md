@@ -171,6 +171,9 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **A condition only where it decides something** (19 Oct 2026, Solving by substitution: "introducing
+  2^x>0 at this stage seems premature"): say "2^x is always positive" only on a question where it
+  REJECTS a root (u = −2). When every value is allowed, say nothing about it.
 - **No "Step one / Step two" in the voice** (19 Oct 2026: "don't have to say step 1 and step 2"): say
   the move itself ("The bases are…", "So substitute…", "Solve the quadratic…"). Only a graph-sketching
   clip, whose steps are pinned on screen, numbers them.

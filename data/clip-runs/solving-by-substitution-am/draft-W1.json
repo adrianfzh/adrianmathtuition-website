@@ -155,7 +155,7 @@
    ]
   },
   {
-   "say": "So A equals two, or A equals one. Both are positive, as two to the power X always is.",
+   "say": "So A equals two, or A equals one.",
    "asks": [
     "Are these the answers?"
    ],
@@ -164,12 +164,6 @@
      "do": "write",
      "step": 7,
      "on": "So A equals"
-    },
-    {
-     "do": "note",
-     "text": "$2^x>0$: both allowed",
-     "near": "rts",
-     "on": "Both are positive"
     }
    ]
   },

@@ -38,7 +38,8 @@ You get:
 10. Do NOT ask for a separate line showing a power of a power being multiplied (2(x−1), x×2): Adrian
    multiplies straight away ("just multiply directly"), and he may end the line at (5^2)^{x-1} with the
    result written as the NEXT line — do not ask for "= 5^{2x-2}" back on the long line.
-11. Do NOT ask for the working of a simple linear or simultaneous solve at A Math ("AM students know
+11. Do NOT ask for a condition ("2^x > 0") to be stated when it rejects nothing — Adrian: "premature".
+    Do NOT ask for the working of a simple linear or simultaneous solve at A Math ("AM students know
    this well"): one line, "Solve it: X equals four", is Adrian's standard.
 12. A must: a side line that works on one piece of the equation alone (`(a/b)² = …`, `a: (2x+2) − (3−y)
    = …`) or a section title, when the move could be done in the next line of the whole equation

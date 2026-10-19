@@ -1,53 +1,53 @@
 {
  "slug": "solving-by-substitution-am",
- "at": "2026-10-19T04:15:19.888Z",
+ "at": "2026-10-19T04:25:43.091Z",
  "model": "claude-opus-5-5",
- "frames": 24,
+ "frames": 22,
  "usage": {
-  "input_tokens": 39032,
+  "input_tokens": 36857,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1731,
+  "output_tokens": 1969,
   "output_tokens_details": {
-   "thinking_tokens": 918
+   "thinking_tokens": 1300
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "fix",
+ "verdict": "pass",
  "findings": [
   {
-   "beat": 4,
-   "rule": "one equation, line by line (no side workings)",
-   "severity": "must",
-   "problem": "Line 2 (4^x = (2^2)^x = 2^{2x}) works on the 4^x piece alone, away from the equation, which breaks the flow Adrian asked for.",
-   "fix": "Write the whole equation instead: (2^2)^x − 3(2^x) + 2 = 0 on 'so four to the power X', ending at = 2^{2x} − 3(2^x) + 2 = 0 or with that result as the next line, the Times power note under (2^2)^x; drop the separate line 2."
-  },
-  {
-   "beat": 7,
-   "rule": "one equation, line by line (no side workings)",
-   "severity": "must",
-   "problem": "Lines 4 (2^{2x} = (2^x)^2 = a^2) and 6 (3(2^x) = 3a) rework single pieces on side lines, when each move fits in the next line of the whole equation.",
-   "fix": "Write (2^x)^2 − 3(2^x) + 2 = 0 as the next whole line, with the Times power note under (2^x)^2. Keep 'Let a = 2^x'. Then write a^2 − 3a + 2 = 0 directly, lighting (2^x)^2 → a^2 and 3(2^x) → 3a in the voice. Drop lines 4 and 6."
-  },
-  {
-   "beat": 18,
-   "rule": "what, how and why / every beat makes sense on its own",
+   "beat": 5,
+   "rule": "said = shown",
    "severity": "should",
-   "problem": "'So X equals zero' jumps from 2^x = 2^0 to x = 0 with no reason, and the reason given in beat 17 is not there for a student who jumps to this beat.",
-   "fix": "Say 'Since the base is the same, the powers must be the same, hence X equals zero', writing ⇒ x = 0 on 'hence'."
+   "problem": "The voice says the middle step 'two to the power two X', but it is never on the board. That step is where the order of the powers swaps, so a student may not see how (2^2)^x turns into (2^x)^2.",
+   "fix": "Start line 3 with the chain on one line, (2^2)^x = 2^{2x} = (2^x)^2, and write 2^{2x} on 'two to the power two X'; or drop that phrase from the voice."
   },
   {
-   "beat": 17,
-   "rule": "comparing powers wording",
+   "beat": 5,
+   "rule": "every move says what, how, and why",
    "severity": "should",
-   "problem": "The voice says 'Both sides have base two, so the powers are equal' instead of Adrian's set phrase for comparing powers.",
-   "fix": "Say 'Since the base is the same, the powers must be the same, hence X equals one', writing ⇒ x = 1 on 'hence'."
+   "problem": "The Times power note uses the letter a as its base, and two beats later a is defined as 2^x. A student may mix up the law's a with the substitution's a.",
+   "fix": "Write the law note with a different base letter, for example (b^m)^n = b^{mn} = (b^n)^m, so a only ever means 2^x."
+  },
+  {
+   "beat": 8,
+   "rule": "a moving piece moves",
+   "severity": "should",
+   "problem": "The voice says (2^x)^2 becomes A squared and 3(2^x) becomes three A, but nothing changes on the board until the next beat. The highlights repeat the ones already lit in beat 6.",
+   "fix": "Write line 5 on this beat, or move a into place of each lit 2^x piece as it is named, so the swap is seen as it is said."
+  },
+  {
+   "beat": 15,
+   "rule": "every move says what, how, and why",
+   "severity": "should",
+   "problem": "'Which is two to the power zero' gives no reason why 1 equals 2^0. The step 'the powers must be the same' that gives x = 0 is also not said, unlike the x = 1 case.",
+   "fix": "Add 'any number to the power zero is one' at 2^0, and 'same base, so the powers are the same' before 'X equals zero'."
   }
  ]
 }
