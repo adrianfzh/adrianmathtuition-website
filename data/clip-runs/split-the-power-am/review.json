@@ -1,19 +1,19 @@
 {
  "slug": "split-the-power-am",
- "at": "2026-10-19T06:10:29.929Z",
+ "at": "2026-10-19T06:23:56.692Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 43618,
+  "input_tokens": 43900,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1840,
+  "output_tokens": 1983,
   "output_tokens_details": {
-   "thinking_tokens": 1476
+   "thinking_tokens": 1596
   },
   "service_tier": "standard",
   "inference_geo": "global",
@@ -22,18 +22,16 @@
  "verdict": "pass",
  "findings": [
   {
-   "beat": 17,
-   "rule": "said = shown",
-   "severity": "should",
-   "problem": "The voice says dividing by a fraction is times its flip and the twenty-sixes cancel, but the board jumps from (26/9)/(−26/3) straight to −1/3, so the student never sees the flip or the cancelling.",
-   "fix": "Before the answer line, write = \\dfrac{26}{9}\\times\\left(-\\dfrac{3}{26}\\right) on \"times its flip\", then write the boxed −1/3 on \"The answer is\"."
+   "beat": 7,
+   "rule": "the part talked about is lit",
+   "problem": "Beat 5 lit 3^{n+1} in the question and its split together, so the student saw which term became which. Beats 7–9 light only the split on the working line, not the question term the voice names first (3^{n-2}, 3^{n-1}, 3^{n+2}), so the student has to find where each split came from.",
+   "fix": "In beats 7, 8 and 9, light the matching piece of {q1} ('b' orange, 'c' sky, 'd' sky) as the beat starts, as beat 5 does for 'a', before lighting the split on {s1}."
   },
   {
-   "beat": 6,
+   "beat": 16,
    "rule": "layout",
-   "severity": "should",
-   "problem": "The board scrolls up for the Add power note, hiding the title, then scrolls back down at beat 7. It does the same again at beat 10 and beat 11, so the screen shifts up and down.",
-   "fix": "Keep the board fixed through beats 6–10, or scroll only forward so the eye moves down and never jumps back."
+   "problem": "In the frame where the voice says 'negative twenty-six over three', the line 26/9 over −26/3 is still a faint blur, so the student cannot read the numbers being named.",
+   "fix": "Write {k1} a little earlier (as the beat starts, or on 'Now the calculator'), so it is fully drawn before its top and bottom are lit and named."
   }
  ]
 }

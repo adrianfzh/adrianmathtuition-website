@@ -196,7 +196,7 @@
           "say": "Now the calculator: the top is twenty-six over nine, the bottom is negative twenty-six over three.",
           "asks": ["How is the top twenty-six over nine?", "Why is the bottom negative?"],
           "do": [
-            { "do": "write", "token": "k1", "on": "the top is" },
+            { "do": "write", "token": "k1" },
             { "do": "highlight", "token": "k1", "part": "num", "on": "twenty-six over nine," },
             { "do": "highlight", "token": "k1", "part": "den", "on": "the bottom is" }
           ]

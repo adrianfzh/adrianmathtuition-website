@@ -278,8 +278,7 @@
    "do": [
     {
      "do": "write",
-     "token": "k1",
-     "on": "the top is"
+     "token": "k1"
     },
     {
      "do": "highlight",
