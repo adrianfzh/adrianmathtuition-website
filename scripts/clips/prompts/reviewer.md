@@ -40,7 +40,11 @@ You get:
    result written as the NEXT line — do not ask for "= 5^{2x-2}" back on the long line.
 11. Do NOT ask for the working of a simple linear or simultaneous solve at A Math ("AM students know
    this well"): one line, "Solve it: X equals four", is Adrian's standard.
-12. Anything else in the house rules this clip breaks.
+12. A must: a side line that works on one piece of the equation alone (`(a/b)² = …`, `a: (2x+2) − (3−y)
+   = …`) or a section title, when the move could be done in the next line of the whole equation
+   (Adrian, 19 Oct 2026: "just make the equation go line by line … separate explanations break the
+   flow"). Do NOT ask for such a side line yourself.
+13. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 
