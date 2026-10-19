@@ -1126,10 +1126,37 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
           { transform: at(0, 0), offset: 0.55, easing: E },
           { transform: at(dP.x, dP.y) },
         ], { duration: T, fill: 'forwards' });
+        // The fraction line is drawn as soon as the piece is under its partner (Adrian, 19 Oct 2026:
+        // "Can we have the line between fraction once the 5^(2x-1) goes underneath 5^(x-1)?"), and
+        // slides with the fraction in the second step.
+        const fracLine = tok.querySelector<HTMLElement>('.frac-line');
+        let bar: HTMLElement | null = null;
+        if (fracLine) {
+          const b = boxIn(fracLine, cont);
+          // Its height comes from the two pieces (the line's own box reads low while the line settles):
+          // midway between the top piece's bottom and the bottom piece's top.
+          const up = boxIn(partnerDst, cont), down = boxIn(target, cont);
+          const thick = Math.max(1, parseFloat(getComputedStyle(fracLine).borderBottomWidth) || b.height);
+          b.top = (up.top + up.height + down.top) / 2 - thick / 2;
+          b.height = thick;
+          bar = document.createElement('div');
+          bar.setAttribute('aria-hidden', 'true');
+          Object.assign(bar.style, { position: 'absolute', left: `${b.left - dP.x}px`, top: `${b.top - dP.y}px`, width: `${b.width}px`,
+            height: `${Math.max(1, b.height)}px`, margin: '0', background: getComputedStyle(partner).color, opacity: '0', pointerEvents: 'none', zIndex: '20',
+            transformOrigin: 'left center' });
+          cont.appendChild(bar);
+          bar.animate?.([
+            { opacity: 0, transform: 'translate(0, 0) scaleX(0)', offset: 0 },
+            { opacity: 0, transform: 'translate(0, 0) scaleX(0)', offset: 0.4 },
+            { opacity: 1, transform: 'translate(0, 0) scaleX(1)', offset: 0.48 },
+            { opacity: 1, transform: 'translate(0, 0) scaleX(1)', offset: 0.55, easing: E },
+            { opacity: 1, transform: `${at(dP.x, dP.y)} scaleX(1)` },
+          ], { duration: T, fill: 'forwards' });
+        }
         tok.classList.add('lsn-landing');
         window.setTimeout(() => {
           tok.classList.remove('lsn-landing');
-          for (const f of [fM, fP]) {
+          for (const f of bar ? [fM, fP, bar] : [fM, fP]) {
             const out = f.animate?.([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
             if (out) out.onfinish = () => f.remove(); else f.remove();
           }

@@ -247,8 +247,10 @@ the history.
   under 5^(x-1) first, with 2^(x+2) and 5^(x-1), once its under, THEN move the expressions to make it
   nicer (to the end stage)"): the piece goes under its partner WHERE THE PARTNER STANDS while the
   rest of the line keeps still (it drops below the line first, then slides along — never through the
-  =); a short pause; then the made fraction and the = slide together to the final line, and the
-  fraction bar fades in. The player does this for any in-place rewrite with an `also` partner.
+  =); **the fraction line is drawn as soon as it is under** (19 Oct 2026: "Can we have the line
+  between fraction once the 5^(2x-1) goes underneath 5^(x-1)?"); a short pause; then the made
+  fraction (both pieces and its line) and the = slide together to the final line. The player does
+  this for any in-place rewrite with an `also` partner.
 - **Say WHY the step is done, and name the property of indices it uses** (19 Oct 2026: "instead of
   saying: first, group the fives on one side…, say : To simplify the expression, we can group the
   fives on one side.. and we can apply property of indices, since its divide, the powers minus.. and
