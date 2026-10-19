@@ -118,19 +118,6 @@
     {
       "tokens": [
         {
-          "id": "sv",
-          "tex": "2+2=2x-x"
-        }
-      ],
-      "checks": [
-        {
-          "step": "2 + 2 = 2*x - x"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
           "id": "ans",
           "tex": "x=4",
           "hl": "emerald"

@@ -42,11 +42,6 @@
         },
         {
           "tokens": [
-            { "id": "sv", "tex": "2+2=2x-x" }
-          ]
-        },
-        {
-          "tokens": [
             { "id": "ans", "tex": "x=4", "hl": "emerald" }
           ]
         }
@@ -129,34 +124,25 @@
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b8.timing.json"
         },
         {
-          "say": "A different power of five gives a different number, so equal sides need equal powers.",
-          "asks": ["Why do equal sides need equal powers?"],
+          "say": "Since the base is the same, the powers must be the same. Hence X plus two equals two X minus two.",
+          "asks": ["Why must the powers be the same?"],
           "do": [
-            { "do": "highlight", "token": "p1", "on": "equal sides need" }
+            { "do": "highlight", "token": "p1", "on": "Since the base" },
+            { "do": "move", "from": "e1", "on": "Hence X plus" },
+            { "do": "move", "from": "e4", "on": "two X minus" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b9.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b9.timing.json"
         },
         {
-          "say": "Bring the powers down: X plus two equals two X minus two.",
-          "asks": ["Why can I drop the fives?"],
+          "say": "Solve it: X equals four.",
+          "asks": ["Can I check x = 4?"],
           "do": [
-            { "do": "move", "from": "e1", "on": "X plus two" },
-            { "do": "move", "from": "e4", "on": "two X minus" }
+            { "do": "write", "step": 4, "on": "Solve it" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals four" }
           ],
           "audio": "/lessons/same-base-compare-powers-am/scene-01-b10.mp3",
           "timing": "/lessons/same-base-compare-powers-am/scene-01-b10.timing.json"
-        },
-        {
-          "say": "Take X from both sides and add two. So X equals four, the answer.",
-          "asks": ["Can I check x = 4?"],
-          "do": [
-            { "do": "write", "step": 4, "on": "Take X from" },
-            { "do": "write", "step": 5, "on": "So X equals" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "the answer" }
-          ],
-          "audio": "/lessons/same-base-compare-powers-am/scene-01-b11.mp3",
-          "timing": "/lessons/same-base-compare-powers-am/scene-01-b11.timing.json"
         }
       ]
     }

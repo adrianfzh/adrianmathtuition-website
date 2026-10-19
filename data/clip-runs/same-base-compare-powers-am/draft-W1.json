@@ -139,28 +139,20 @@
    ]
   },
   {
-   "say": "A different power of five gives a different number, so equal sides need equal powers.",
+   "say": "Since the base is the same, the powers must be the same. Hence X plus two equals two X minus two.",
    "asks": [
-    "Why do equal sides need equal powers?"
+    "Why must the powers be the same?"
    ],
    "do": [
     {
      "do": "highlight",
      "token": "p1",
-     "on": "equal sides need"
-    }
-   ]
-  },
-  {
-   "say": "Bring the powers down: X plus two equals two X minus two.",
-   "asks": [
-    "Why can I drop the fives?"
-   ],
-   "do": [
+     "on": "Since the base"
+    },
     {
      "do": "move",
      "from": "e1",
-     "on": "X plus two"
+     "on": "Hence X plus"
     },
     {
      "do": "move",
@@ -170,7 +162,7 @@
    ]
   },
   {
-   "say": "Take X from both sides and add two. So X equals four, the answer.",
+   "say": "Solve it: X equals four.",
    "asks": [
     "Can I check x = 4?"
    ],
@@ -178,18 +170,13 @@
     {
      "do": "write",
      "step": 4,
-     "on": "Take X from"
-    },
-    {
-     "do": "write",
-     "step": 5,
-     "on": "So X equals"
+     "on": "Solve it"
     },
     {
      "do": "mark",
      "kind": "box",
      "token": "ans",
-     "on": "the answer"
+     "on": "X equals four"
     }
    ]
   }

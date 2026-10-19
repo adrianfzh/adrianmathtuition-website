@@ -171,6 +171,14 @@ the history.
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
   against its dashed asymptote, the finished sketch with every label. Never "draw it on your paper".
+- **Comparing powers: "since the base is the same, the powers must be the same"** (19 Oct 2026:
+  "instead of a different power of five gives a different number.. and instead of saying bring the
+  powers down … say since base is the same, hence the power must be the same, etc hence x+2 = 2x-2").
+  The equation of powers is written on "hence", the powers moving down from the line above.
+- **A simple linear (or simultaneous) solve is ONE step** (19 Oct 2026: "don't have to get into the
+  nitty gritty of solving a linear equation > AM students know this well > going to details of solving
+  a simple linear equation is not effective here"): "Solve it: X equals four." — the answer line, boxed.
+  No `2 + 2 = 2x − x` line, no substitute-and-expand lines for a pair of linear equations.
 - **A power of a power: multiply straight away, on the same line** (19 Oct 2026: "a power of a power
   means multiply the two powers, just multiply directly, show the continuation of the equation, don't
   have to separately show the multiplying of the two powers"): `5^{x+2} = (5^2)^{x-1} = 5^{2x-2}` —

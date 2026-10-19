@@ -37,7 +37,9 @@ You get:
    (18 Oct 2026: twice a frame was read as "only the left 5 lit" when both were.)
 10. Do NOT ask for a separate line showing a power of a power being multiplied (2(x−1), x×2): Adrian
    multiplies straight away on the same line ("just multiply directly").
-11. Anything else in the house rules this clip breaks.
+11. Do NOT ask for the working of a simple linear or simultaneous solve at A Math ("AM students know
+   this well"): one line, "Solve it: X equals four", is Adrian's standard.
+12. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 
