@@ -21,7 +21,8 @@
   },
   "outline": [
     "Built 19 Oct 2026 (Indices clip 5) from 108.23 with 108.22's words: the question read; we want 10^x, not x — don't chase x, it is usually not a nice number (a written drop-down); the plan as maths: the key fact 10^x = 2^x × 5^x, so get 2^x and 5^x side by side and glue them; group base 5 on one side (divide both sides by 5^{2x−1}); Minus power with brackets, why the brackets (the common mistake, at the step); open the brackets, add up like terms → 5^{−x}; split the power of 2 (Add power in reverse) and a negative power flips; cross multiply (times both sides by 5^x) so 2^x and 5^x sit side by side; same power, multiply the bases: 10^x, the piece moving; 2² = 4; divide by four: 10^x = 1/4, boxed. One equation line by line, no headings, no step numbers, no Watch out.",
-    "19 Oct 2026, Adrian's first notes: \"we have to find the value of 10^x, not x … without solving for x\"; \"to find 10^x, we need 2^x times 5^x. Note the base is 2 and the other base is 5\"; 5^(2x−1) moves down under 5^(x−1) (token `into`); \"To simplify the expression, we can group the fives on one side … since its divide, the powers minus\"."
+    "19 Oct 2026, Adrian's first notes: \"we have to find the value of 10^x, not x … without solving for x\"; \"to find 10^x, we need 2^x times 5^x. Note the base is 2 and the other base is 5\"; 5^(2x−1) moves down under 5^(x−1) (token `into`); \"To simplify the expression, we can group the fives on one side … since its divide, the powers minus\".",
+    "19 Oct 2026, Adrian: \"the previous equation can't be seen here … have another line 2^(x+2) x 5^(2x-1) = 5^(x-1) <- then from that equation, animated moving 5^(2x-1) underneath 5^(x-1) at the same line\": the grouping line starts as the equation again and is rewritten in place, 5^(2x−1) moving down under 5^(x−1)."
   ],
   "question": "Without the use of a calculator, evaluate $10^x$, given that $2^{x+2} \\times 5^{2x-1} = 5^{x-1}$.",
   "minutes": 3,
@@ -34,11 +35,7 @@
         },
         {
           "id": "q2",
-          "tex": "\\times"
-        },
-        {
-          "id": "q2b",
-          "tex": "5^{2x-1}"
+          "tex": "\\times 5^{2x-1}"
         },
         {
           "id": "q3",
@@ -92,10 +89,27 @@
           "tex": "2^{x+2}"
         },
         {
+          "id": "gx",
+          "tex": "\\times"
+        },
+        {
+          "id": "g5",
+          "tex": "5^{2x-1}"
+        },
+        {
+          "id": "ge",
+          "tex": "=5^{x-1}"
+        },
+        {
           "id": "g2",
           "tex": "=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}",
-          "from": "q2b",
-          "into": "d"
+          "from": "g5",
+          "into": "d",
+          "replaces": [
+            "gx",
+            "g5",
+            "ge"
+          ]
         }
       ],
       "checks": [

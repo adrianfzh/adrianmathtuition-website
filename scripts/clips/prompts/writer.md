@@ -106,7 +106,9 @@ no focus, no clear.
   — up to 10 lines, one idea a line, inline `$…$` maths, the last line bold. No side clip is made.
 - **A term the voice moves is seen moving** (Adrian, 19 Oct 2026): into a fraction's bottom too — the
   next line's token wraps the landing place in `\htmlClass{lsn-pc-<p>}{…}` and carries `"from"` + `"into": "<p>"`;
-  write that line first (the bottom stays empty), then `move` on the words that say it. Say WHY the
+  write that line first (the bottom stays empty), then `move` on the words that say it. On a scrolling board
+  never fly from a far line: write the equation again as the line's first tokens, and let the fraction
+  token `replaces` them (`from` the moving term, `into` its landing piece) — rewritten in place. Say WHY the
   step is done ("To simplify the expression, …") and name the property ("since it is divide, the powers minus").
 - **While a piece moves, nothing else is written**: the `move` is the only action on its words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own

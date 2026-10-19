@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  tokenPieceWaiting,
+  tokenPieceWaiting, tokenAway,
   resolveActionTimes, firedCountAt, beatAutoMs, boardStateAt, emptyBoard, sceneTargets, sceneNotes,
   targetKeys, tokenShown, tokenWritten, lineOn, elementShown, elementStatic, proseGroup, beatTimeline,
   sceneTokens, paragraphCount, tokKey, lineKey, FOCUS_HOLD_S, scenesHaveCharacter, applyAction,
@@ -386,5 +386,30 @@ describe('into: a piece flies into part of the next line', () => {
     expect(tokenShown(b1, scene, 1, 2)).toBe(true);
     expect(tokenPieceWaiting(b1, scene, 1, 1)).toBe('d');
     expect(tokenPieceWaiting(boardStateAt(scene, 2, 1), scene, 1, 1)).toBe(null);
+  });
+});
+
+// Adrian, 19 Oct 2026: "have another line 2^(x+2) x 5^(2x-1) = 5^(x-1) <- then from that equation,
+// animated moving 5^(2x-1) underneath 5^(x-1) at the same line".
+describe('into + replaces: the line is rewritten in place as the piece moves inside it', () => {
+  const scene = {
+    type: 'equation-steps',
+    steps: [
+      { tokens: [{ id: 'g1', tex: '2^{x+2}' }, { id: 'gx', tex: '\\times' }, { id: 'g5', tex: '5^{2x-1}' }, { id: 'ge', tex: '=5^{x-1}' },
+        { id: 'g2', tex: '=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}', from: 'g5', into: 'd', replaces: ['gx', 'g5', 'ge'] }] },
+    ],
+    beats: [
+      { say: 'Write it again.', do: [{ do: 'write', step: 0 }] },
+      { say: 'It moves down.', do: [{ do: 'move', from: 'g5' }] },
+    ],
+  } as unknown as PlayScene;
+  it('shows the equation first, then the fraction with the piece landed and no space left', () => {
+    const b0 = boardStateAt(scene, 0, 1);
+    expect(tokenShown(b0, scene, 0, 2)).toBe(true);
+    expect(tokenAway(b0, scene, 0, 4)).toBe('gone');
+    const b1 = boardStateAt(scene, 1, 1);
+    expect(tokenShown(b1, scene, 0, 4)).toBe(true);
+    expect(tokenAway(b1, scene, 0, 2)).toBe('gone');
+    expect(tokenPieceWaiting(b1, scene, 0, 4)).toBe(null);
   });
 });

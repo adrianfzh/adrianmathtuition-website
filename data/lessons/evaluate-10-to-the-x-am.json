@@ -16,8 +16,7 @@
         {
           "tokens": [
             { "id": "q1", "tex": "2^{x+2}" },
-            { "id": "q2", "tex": "\\times" },
-            { "id": "q2b", "tex": "5^{2x-1}" },
+            { "id": "q2", "tex": "\\times 5^{2x-1}" },
             { "id": "q3", "tex": "=5^{x-1}" }
           ]
         },
@@ -35,7 +34,16 @@
         {
           "tokens": [
             { "id": "g1", "tex": "2^{x+2}" },
-            { "id": "g2", "tex": "=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}", "from": "q2b", "into": "d" }
+            { "id": "gx", "tex": "\\times" },
+            { "id": "g5", "tex": "5^{2x-1}" },
+            { "id": "ge", "tex": "=5^{x-1}" },
+            {
+              "id": "g2",
+              "tex": "=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}",
+              "from": "g5",
+              "into": "d",
+              "replaces": ["gx", "g5", "ge"]
+            }
           ]
         },
         {
@@ -100,8 +108,7 @@
           "say": "times five to the power two X minus one,",
           "asks": ["Which bases are there?"],
           "do": [
-            { "do": "write", "token": "q2" },
-            { "do": "write", "token": "q2b", "on": "the power two" }
+            { "do": "write", "token": "q2", "on": "times five to" }
           ],
           "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b2.mp3",
           "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b2.timing.json"
@@ -196,7 +203,7 @@
           "say": "Divide both sides by five to the power two X minus one, so it moves down, under five to the power X minus one.",
           "asks": ["Why divide by that?", "Where did it go on the left?"],
           "do": [
-            { "do": "move", "from": "q2b" },
+            { "do": "move", "from": "g5" },
             { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "so it moves" }
           ],
           "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b11.mp3",

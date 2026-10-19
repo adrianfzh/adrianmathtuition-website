@@ -54,7 +54,9 @@ You get:
    "Watch out" step goes after the answer.
 14. A must: the voice says a term moves (to the other side, down under another term, "divide both
    sides by …") and the board only shows it appear (Adrian, 19 Oct 2026: "should show the animation of
-   5^(2x-1) flying down underneath 5^(x-1)"). A should: a step done without saying why ("To simplify
+   5^(2x-1) flying down underneath 5^(x-1)"). Also a must: a piece flown from a line far up a scrolling board
+   (the question line) — write the equation again and move inside that line ("have another line …
+   then from that equation, animated moving 5^(2x-1) underneath 5^(x-1) at the same line"). A should: a step done without saying why ("To simplify
    the expression, …") or a law used without naming it ("since it is divide, the powers minus").
 15. Anything else in the house rules this clip breaks.
 

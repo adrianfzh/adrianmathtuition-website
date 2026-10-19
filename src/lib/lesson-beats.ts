@@ -265,7 +265,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
           const line = Number(key.slice(5));
           show(key, write);
           // An `into` token is written with its line; only its piece waits for the move.
-          for (const ref of tokens) if (ref.line === line && ref.into) show(tokKey(ref.line, ref.index), write);
+          for (const ref of tokens) if (ref.line === line && ref.into && !ref.replaces) show(tokKey(ref.line, ref.index), write);
           // A from-token with no move of its own flies with its line.
           for (const ref of tokens) {
             if (ref.line !== line || ref.from === undefined || board.movable.has(ref.from)) continue;
@@ -429,7 +429,8 @@ export function tokenAway(board: BoardState, scene: Scene | PlayScene, line: num
   if (!me.id) return false;
   const by = row.filter(r => r.replaces?.includes(me.id!) && tokenShown(board, scene, line, r.index));
   if (!by.length) return false;
-  return by.every(r => r.from === me.id) ? 'held' : 'gone';
+  // A piece that lands INSIDE the rewrite (`into`: 5^{2x-1} down under 5^{x-1}) leaves no space.
+  return by.every(r => r.from === me.id && !r.into) ? 'held' : 'gone';
 }
 
 /** Does this token take no room on the board right now? (See tokenAway.) */

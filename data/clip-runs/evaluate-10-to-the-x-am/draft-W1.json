@@ -23,12 +23,8 @@
    "do": [
     {
      "do": "write",
-     "token": "q2"
-    },
-    {
-     "do": "write",
-     "token": "q2b",
-     "on": "the power two"
+     "token": "q2",
+     "on": "times five to"
     }
    ]
   },
@@ -180,7 +176,7 @@
    "do": [
     {
      "do": "move",
-     "from": "q2b"
+     "from": "g5"
     },
     {
      "do": "note",
