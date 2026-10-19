@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T03:44:32.940Z",
+ "at": "2026-10-19T04:10:40.090Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,11 +8,11 @@
   },
   "maths": {
    "ok": true,
-   "detail": "17/17 line checks"
+   "detail": "15/15 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "12 lines = the checked plan"
+   "detail": "10 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,11 +20,11 @@
   },
   "look": {
    "ok": true,
-   "detail": "48/48 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
+   "detail": "42/42 actions on the voice · cues worst 0.19 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
-   "detail": "0 must, 1 should · 25 frames"
+   "detail": "0 must, 0 should · 24 frames"
   }
  },
  "pass": true
