@@ -30,7 +30,7 @@
    ]
   },
   {
-   "say": "The other term is two to the power X, so write four with base two too.",
+   "say": "The other term is two to the power X, so write four with base two: four is two squared.",
    "asks": [
     "Why change 4 to base 2?"
    ],
@@ -39,80 +39,44 @@
      "do": "highlight",
      "token": "qr",
      "on": "The other term"
-    }
-   ]
-  },
-  {
-   "say": "Four is two squared, so four to the power X is two squared, to the power X.",
-   "asks": [
-    "Why change 4 to 2 squared?"
-   ],
-   "do": [
-    {
-     "do": "highlight",
-     "token": "q4",
-     "on": "Four is two"
     },
-    {
-     "do": "write",
-     "token": "b1",
-     "on": "so four to"
-    }
-   ]
-  },
-  {
-   "say": "Times power: multiply the powers, two times X. That gives two to the power two X.",
-   "asks": [
-    "Which law is this?"
-   ],
-   "do": [
     {
      "do": "note",
-     "text": "Times power: $(a^m)^n=a^{mn}$",
-     "near": "b1",
-     "on": "Times power"
-    },
-    {
-     "do": "write",
-     "token": "b2",
-     "on": "That gives two"
+     "text": "$4=2^2$",
+     "near": "q4",
+     "on": "four is two"
     }
    ]
   },
   {
-   "say": "So the equation becomes two to the power two X, minus three times two to the power X, plus two, equals zero.",
+   "say": "So the equation becomes two squared to the power X, minus three times two to the power X, plus two, equals zero.",
    "asks": [
     "Why rewrite the whole equation?"
    ],
    "do": [
     {
      "do": "write",
-     "step": 3,
+     "step": 2,
      "on": "So the equation"
     }
    ]
   },
   {
-   "say": "Look at the powers: by times power, two to the power two X is two to the power X, all squared.",
+   "say": "Times power: two squared to the power X is two to the power two X, which is two to the power X, all squared.",
    "asks": [
-    "Why is 2 to the 2x the same as (2 to the x) squared?"
+    "Why can I swap the powers?"
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "r1",
-     "on": "Look at the powers"
+     "do": "note",
+     "text": "Times power: $(a^m)^n=a^{mn}=(a^n)^m$",
+     "near": "l2a",
+     "on": "Times power"
     },
     {
      "do": "write",
-     "step": 4,
-     "on": "by times power"
-    },
-    {
-     "do": "note",
-     "text": "Times power: $(a^m)^n=a^{mn}$",
-     "near": "k1",
-     "on": "all squared"
+     "step": 3,
+     "on": "which is two"
     }
    ]
   },
@@ -125,8 +89,8 @@
     {
      "do": "highlight",
      "token": [
-      "r2x",
-      "k1"
+      "tx",
+      "sq"
      ],
      "on": "two to the power X, and"
     }
@@ -141,44 +105,26 @@
    "do": [
     {
      "do": "write",
-     "step": 5,
+     "step": 4,
      "on": "let A equal"
     }
    ]
   },
   {
-   "say": "Then two to the power X, all squared, is A squared.",
+   "say": "Then two to the power X, all squared, becomes A squared, and three times two to the power X becomes three A.",
    "asks": [
-    "Where does a squared come from?"
+    "Where do a squared and 3a come from?"
    ],
    "do": [
     {
      "do": "highlight",
-     "token": "k1",
+     "token": "sq",
      "on": "Then two to"
     },
     {
-     "do": "write",
-     "token": "k2",
-     "on": "is A squared"
-    }
-   ]
-  },
-  {
-   "say": "And three times two to the power X is three times A.",
-   "asks": [
-    "Why is 3 times 2 to the x equal to 3a?"
-   ],
-   "do": [
-    {
      "do": "highlight",
-     "token": "r2x",
-     "on": "two to the power"
-    },
-    {
-     "do": "write",
-     "step": 6,
-     "on": "is three times A"
+     "token": "tx",
+     "on": "three times two"
     }
    ]
   },
@@ -190,7 +136,7 @@
    "do": [
     {
      "do": "write",
-     "step": 7,
+     "step": 5,
      "on": "the equation becomes"
     }
    ]
@@ -203,7 +149,7 @@
    "do": [
     {
      "do": "write",
-     "step": 8,
+     "step": 6,
      "on": "it factorises into"
     }
    ]
@@ -216,7 +162,7 @@
    "do": [
     {
      "do": "write",
-     "step": 9,
+     "step": 7,
      "on": "So A equals"
     },
     {
@@ -248,13 +194,13 @@
    "do": [
     {
      "do": "write",
-     "step": 10,
+     "step": 8,
      "on": "two to the power X is two"
     }
    ]
   },
   {
-   "say": "Both sides have base two, so the powers are equal: X equals one.",
+   "say": "Since the base is the same, the powers must be the same: X equals one.",
    "asks": [
     "Why can I compare the powers?"
    ],
@@ -262,12 +208,12 @@
     {
      "do": "highlight",
      "token": "x1",
-     "on": "Both sides have"
+     "on": "Since the base"
     },
     {
      "do": "write",
      "token": "x1b",
-     "on": "the powers are equal"
+     "on": "the powers must"
     }
    ]
   },
@@ -279,7 +225,7 @@
    "do": [
     {
      "do": "write",
-     "step": 11,
+     "step": 9,
      "on": "two to the power X is one"
     }
    ]
@@ -292,7 +238,7 @@
    "do": [
     {
      "do": "write",
-     "step": 12,
+     "step": 10,
      "on": "So X equals"
     },
     {

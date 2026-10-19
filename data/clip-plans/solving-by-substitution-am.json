@@ -62,61 +62,44 @@
     {
       "tokens": [
         {
-          "id": "b1",
-          "tex": "4^x=(2^2)^x"
+          "id": "l2a",
+          "tex": "(2^2)^x"
         },
         {
-          "id": "b2",
-          "tex": "=2^{2x}"
+          "id": "l2b",
+          "tex": "-3(2^x)+2=0"
         }
       ],
       "checks": [
         {
-          "identity": "4**x = 2**(2*x)"
+          "step": "(2**2)**x - 3*2**x + 2 = 0"
         }
       ]
     },
     {
       "tokens": [
         {
-          "id": "r1",
-          "tex": "2^{2x}"
+          "id": "sq",
+          "tex": "(2^x)^2"
         },
         {
-          "id": "r2a",
+          "id": "l3a",
           "tex": "-3("
         },
         {
-          "id": "r2x",
+          "id": "tx",
           "tex": "2^x",
           "tight": true
         },
         {
-          "id": "r2b",
+          "id": "l3b",
           "tex": ")+2=0",
           "tight": true
         }
       ],
       "checks": [
         {
-          "step": "2**(2*x) - 3*2**x + 2 = 0"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "k1",
-          "tex": "2^{2x}=(2^x)^2"
-        },
-        {
-          "id": "k2",
-          "tex": "=a^2"
-        }
-      ],
-      "checks": [
-        {
-          "identity": "2**(2*x) = (2**x)**2"
+          "step": "(2**x)**2 - 3*2**x + 2 = 0"
         }
       ]
     },
@@ -130,19 +113,6 @@
       "checks": [
         {
           "form": "the substitution a = 2^x"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "t3",
-          "tex": "3(2^x)=3a"
-        }
-      ],
-      "checks": [
-        {
-          "form": "with a = 2^x, 3(2^x) is 3a"
         }
       ]
     },

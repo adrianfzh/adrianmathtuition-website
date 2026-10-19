@@ -1,39 +1,53 @@
 {
  "slug": "solving-by-substitution-am",
- "at": "2026-10-19T02:17:12.148Z",
+ "at": "2026-10-19T04:15:19.888Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 37804,
+  "input_tokens": 39032,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1486,
+  "output_tokens": 1731,
   "output_tokens_details": {
-   "thinking_tokens": 1121
+   "thinking_tokens": 918
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "pass",
+ "verdict": "fix",
  "findings": [
   {
-   "beat": 18,
-   "rule": "every move says what, how, and why",
-   "severity": "should",
-   "problem": "For a = 1 the clip goes from 2^x = 1 straight to 2^0 and x = 0. It does not say why 1 is 2 to the power zero, or why the powers can be set equal, as beat 17 did for x = 1.",
-   "fix": "Add a short note under 2^0 (\"Zero power: a^0 = 1\") and say \"same base, so the powers are equal\" as ⇒ x = 0 is written, with line 11 lit on that word."
+   "beat": 4,
+   "rule": "one equation, line by line (no side workings)",
+   "severity": "must",
+   "problem": "Line 2 (4^x = (2^2)^x = 2^{2x}) works on the 4^x piece alone, away from the equation, which breaks the flow Adrian asked for.",
+   "fix": "Write the whole equation instead: (2^2)^x − 3(2^x) + 2 = 0 on 'so four to the power X', ending at = 2^{2x} − 3(2^x) + 2 = 0 or with that result as the next line, the Times power note under (2^2)^x; drop the separate line 2."
   },
   {
-   "beat": 12,
-   "rule": "a picture where a picture teaches",
+   "beat": 7,
+   "rule": "one equation, line by line (no side workings)",
+   "severity": "must",
+   "problem": "Lines 4 (2^{2x} = (2^x)^2 = a^2) and 6 (3(2^x) = 3a) rework single pieces on side lines, when each move fits in the next line of the whole equation.",
+   "fix": "Write (2^x)^2 − 3(2^x) + 2 = 0 as the next whole line, with the Times power note under (2^x)^2. Keep 'Let a = 2^x'. Then write a^2 − 3a + 2 = 0 directly, lighting (2^x)^2 → a^2 and 3(2^x) → 3a in the voice. Drop lines 4 and 6."
+  },
+  {
+   "beat": 18,
+   "rule": "what, how and why / every beat makes sense on its own",
    "severity": "should",
-   "problem": "a^2 and 3a appear in the new equation without the board showing where each came from, so a student may not link them to the two lines above.",
-   "fix": "Light =a^2 (line 4) and 3a (line 6) as the voice says them, or move each down into line 7, in the same colour as on the line it came from."
+   "problem": "'So X equals zero' jumps from 2^x = 2^0 to x = 0 with no reason, and the reason given in beat 17 is not there for a student who jumps to this beat.",
+   "fix": "Say 'Since the base is the same, the powers must be the same, hence X equals zero', writing ⇒ x = 0 on 'hence'."
+  },
+  {
+   "beat": 17,
+   "rule": "comparing powers wording",
+   "severity": "should",
+   "problem": "The voice says 'Both sides have base two, so the powers are equal' instead of Adrian's set phrase for comparing powers.",
+   "fix": "Say 'Since the base is the same, the powers must be the same, hence X equals one', writing ⇒ x = 1 on 'hence'."
   }
  ]
 }
