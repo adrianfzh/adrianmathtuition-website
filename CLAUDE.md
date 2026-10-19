@@ -132,6 +132,9 @@ This binds every session, every model and every account, in both repos.
    can't see it when i click the link?"*). Give the full link (test site or main site), which
    login (his admin or the test student), where to tap and what he should see. Open it yourself
    first the same way; if he cannot see it yet (switched off, still building), say that instead.
+   **A student page (`/app/…`) needs the test student, not his admin** (19 Oct 2026: *"i can't see
+   /app/submit"* … *"still asked me to login"* — a login link failed twice). Sign the test student
+   in for him in the browser pane beside the chat, open the page there, then tell him to look.
 6. If he says he does not understand, **start again from the problem** — do not repeat the
    same explanation with more detail.
 
