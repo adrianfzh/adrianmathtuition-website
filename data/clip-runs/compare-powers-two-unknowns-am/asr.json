@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "worst": 0.89,
+ "worst": 0.9,
  "lines": [
   {
    "beat": 1,
@@ -76,8 +76,8 @@
   },
   {
    "beat": 13,
-   "bag": 0.9,
-   "score": 0.9,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -118,8 +118,8 @@
   },
   {
    "beat": 20,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -136,54 +136,18 @@
   },
   {
    "beat": 23,
-   "bag": 0.89,
-   "score": 0.89,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 24,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
    "beat": 25,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 26,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 27,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 28,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 29,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 30,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 31,
    "bag": 1,
    "score": 1,
    "heard": null

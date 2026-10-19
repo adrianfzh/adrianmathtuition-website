@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-18T16:33:25.218Z",
+ "at": "2026-10-19T03:10:38.318Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -12,7 +12,7 @@
   },
   "board": {
    "ok": true,
-   "detail": "18 lines = the checked plan"
+   "detail": "17 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,12 +20,12 @@
   },
   "look": {
    "ok": true,
-   "detail": "51/51 actions on the voice · cues worst 0.21 s (gate 0.3 s) · look problems 0"
+   "detail": "54/54 actions on the voice · cues worst 0.26 s (gate 0.3 s) · look problems 0"
   },
   "review": {
-   "ok": true,
-   "detail": "0 must, 2 should · 31 frames"
+   "ok": false,
+   "detail": "1 must, 0 should · 31 frames · b25 Beats 25 to 30 work through the pair of linear equations line by line (make y the subject, substitute, expand, collect), but A Math students already know this, and the house rule forbids substitute-and-expand lines for a pair of linear equations."
   }
  },
- "pass": true
+ "pass": false
 }

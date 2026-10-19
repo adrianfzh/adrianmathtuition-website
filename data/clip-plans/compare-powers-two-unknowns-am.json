@@ -22,7 +22,7 @@
     "display": "x = 3, y = 4"
   },
   "outline": [
-    "Built 18 Oct 2026 one step at a time to the house rules (Indices clip 3): the question; the plan as maths (one power of a and one of b each side, then match the powers); Step 1 do the power first — square top and bottom, then Times power multiplied straight away on the same line (Adrian, 19 Oct 2026); Step 2 group the same bases into one fraction; Step 3 divide: Minus power, the brackets kept; Step 4 tidy each power on its own line, minus a bracket flips every sign inside; the tidy line with the bare b written as b to the power 1; Step 5 compare powers of each base (the powers moved down, why in a written drop-down); Step 6 solve simultaneously, fast; the answer boxed. No Watch out, no steps strip."
+    "Built 18 Oct 2026 one step at a time to the house rules (Indices clip 3): the question; the plan as maths (one power of a and one of b each side, then match the powers); Step 1 do the power first — square top and bottom, then Times power multiplied straight away on the same line (Adrian, 19 Oct 2026); Step 2 group the same bases into one fraction; Step 3 divide: Minus power, the brackets kept; Step 4 tidy each power on its own line, minus a bracket flips every sign inside; the tidy line with the bare b written as b to the power 1; Step 5 compare powers of each base (the powers moved down, why in a written drop-down); Step 6 solved together in one step (Adrian, 19 Oct 2026: AM students know this); the answer boxed. No Watch out, no steps strip."
   ],
   "question": "Given that $\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2 \\times \\dfrac{b^{x+2}}{a^{3-y}} = a^9 b$, find the value of $x$ and of $y$.",
   "minutes": 3,
@@ -271,91 +271,6 @@
       ]
     },
     {
-      "heading": "Step 6: solve simultaneously",
-      "tokens": [
-        {
-          "id": "e1",
-          "tex": "2x+y=10"
-        },
-        {
-          "id": "e1b",
-          "tex": "\\;\\Rightarrow\\;y=10-2x"
-        }
-      ],
-      "checks": [
-        {
-          "system_step": [
-            "y = 10 - 2*x",
-            "x - 2*y + 6 = 1"
-          ]
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "e3",
-          "tex": "x-2(10-2x)+6=1"
-        }
-      ],
-      "checks": [
-        {
-          "system_step": [
-            "y = 10 - 2*x",
-            "x - 2*(10 - 2*x) + 6 = 1"
-          ]
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "e3b",
-          "tex": "x-20+4x+6=1"
-        }
-      ],
-      "checks": [
-        {
-          "system_step": [
-            "y = 10 - 2*x",
-            "x - 20 + 4*x + 6 = 1"
-          ]
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "e4",
-          "tex": "5x=15\\;\\Rightarrow\\;x=3"
-        }
-      ],
-      "checks": [
-        {
-          "system_step": [
-            "y = 10 - 2*x",
-            "x = 3"
-          ]
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "e5",
-          "tex": "y=10-2(3)=4"
-        }
-      ],
-      "checks": [
-        {
-          "system_step": [
-            "y = 4",
-            "x = 3"
-          ]
-        }
-      ]
-    },
-    {
       "tokens": [
         {
           "id": "ans",
@@ -370,7 +285,8 @@
             "y": 4
           }
         }
-      ]
+      ],
+      "heading": "Step 6: solve simultaneously"
     }
   ],
   "scroll": true

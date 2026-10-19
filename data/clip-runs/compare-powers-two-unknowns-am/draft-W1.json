@@ -389,9 +389,9 @@
    }
   },
   {
-   "say": "Same base A on both sides, so the powers are equal: two X plus Y minus one equals nine.",
+   "say": "Since the base A is the same, the powers must be the same. Hence two X plus Y minus one equals nine.",
    "asks": [
-    "Why are the powers equal?"
+    "Why must the powers be the same?"
    ],
    "do": [
     {
@@ -400,12 +400,12 @@
       "u1",
       "u5"
      ],
-     "on": "Same base A"
+     "on": "Since the base"
     },
     {
      "do": "move",
      "from": "u2",
-     "on": "two X plus"
+     "on": "Hence two X"
     },
     {
      "do": "write",
@@ -415,7 +415,7 @@
    ]
   },
   {
-   "say": "Now the base B: its powers are equal too.",
+   "say": "The base B is the same too, so its powers must be the same.",
    "asks": [
     "Why are the b powers equal?"
    ],
@@ -430,12 +430,12 @@
       "u3",
       "u5"
      ],
-     "on": "its powers are"
+     "on": "so its powers"
     }
    ]
   },
   {
-   "say": "X minus two Y plus six equals one, the one from the bare B.",
+   "say": "Hence X minus two Y plus six equals one, the one from the bare B.",
    "asks": [
     "Where did the 1 come from?"
    ],
@@ -443,7 +443,7 @@
     {
      "do": "move",
      "from": "u4",
-     "on": "X minus two"
+     "on": "Hence X minus"
     },
     {
      "do": "write",
@@ -458,93 +458,16 @@
    ]
   },
   {
-   "say": "Step six, solve together. Add one to the A equation: two X plus Y equals ten.",
+   "say": "Step six, solve the two equations together: X equals three and Y equals four.",
    "asks": [
-    "How do I solve two equations together?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "e1",
-     "on": "two X plus"
-    }
-   ]
-  },
-  {
-   "say": "Make Y the subject, so it can go into the B equation: Y equals ten minus two X.",
-   "asks": [
-    "Why make y the subject?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "e1b",
-     "on": "Y equals ten"
-    }
-   ]
-  },
-  {
-   "say": "Substitute: X minus two times, ten minus two X, plus six equals one.",
-   "asks": [
-    "Why substitute for y?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "step": 12,
-     "on": "X minus two"
-    }
-   ]
-  },
-  {
-   "say": "Expand: X minus twenty plus four X plus six equals one.",
-   "asks": [
-    "Why plus four X?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "step": 13,
-     "on": "X minus twenty"
-    }
-   ]
-  },
-  {
-   "say": "Collect: five X equals fifteen, so X equals three.",
-   "asks": [
-    "How do I get 5x?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "step": 14,
-     "on": "five X equals"
-    }
-   ]
-  },
-  {
-   "say": "Then Y equals ten minus two times three: four.",
-   "asks": [
-    "How do I find y?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "step": 15,
-     "on": "Y equals ten"
-    }
-   ]
-  },
-  {
-   "say": "So X equals three and Y equals four.",
-   "asks": [
+    "How do I solve them together?",
     "Can I check the answer?"
    ],
    "do": [
     {
      "do": "write",
-     "step": 16,
-     "on": "So X equals"
+     "step": 11,
+     "on": "X equals three"
     },
     {
      "do": "mark",

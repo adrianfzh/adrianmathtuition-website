@@ -98,32 +98,6 @@
         {
           "heading": "Step 6: solve simultaneously",
           "tokens": [
-            { "id": "e1", "tex": "2x+y=10" },
-            { "id": "e1b", "tex": "\\;\\Rightarrow\\;y=10-2x" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "e3", "tex": "x-2(10-2x)+6=1" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "e3b", "tex": "x-20+4x+6=1" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "e4", "tex": "5x=15\\;\\Rightarrow\\;x=3" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "e5", "tex": "y=10-2(3)=4" }
-          ]
-        },
-        {
-          "tokens": [
             { "id": "ans", "tex": "x=3,\\;y=4", "hl": "emerald" }
           ]
         }
@@ -306,78 +280,36 @@
           ]
         },
         {
-          "say": "Same base A on both sides, so the powers are equal: two X plus Y minus one equals nine.",
-          "asks": ["Why are the powers equal?"],
+          "say": "Since the base A is the same, the powers must be the same. Hence two X plus Y minus one equals nine.",
+          "asks": ["Why must the powers be the same?"],
           "do": [
-            { "do": "highlight", "token": ["u1", "u5"], "on": "Same base A" },
-            { "do": "move", "from": "u2", "on": "two X plus" },
+            { "do": "highlight", "token": ["u1", "u5"], "on": "Since the base" },
+            { "do": "move", "from": "u2", "on": "Hence two X" },
             { "do": "write", "token": "ca3", "on": "equals nine" }
           ]
         },
         {
-          "say": "Now the base B: its powers are equal too.",
+          "say": "The base B is the same too, so its powers must be the same.",
           "asks": ["Why are the b powers equal?"],
           "do": [
             { "do": "write", "token": "cb" },
-            { "do": "highlight", "token": ["u3", "u5"], "on": "its powers are" }
+            { "do": "highlight", "token": ["u3", "u5"], "on": "so its powers" }
           ]
         },
         {
-          "say": "X minus two Y plus six equals one, the one from the bare B.",
+          "say": "Hence X minus two Y plus six equals one, the one from the bare B.",
           "asks": ["Where did the 1 come from?"],
           "do": [
-            { "do": "move", "from": "u4", "on": "X minus two" },
+            { "do": "move", "from": "u4", "on": "Hence X minus" },
             { "do": "write", "token": "cb3", "on": "equals one" },
             { "do": "highlight", "token": "u5", "on": "the bare B" }
           ]
         },
         {
-          "say": "Step six, solve together. Add one to the A equation: two X plus Y equals ten.",
-          "asks": ["How do I solve two equations together?"],
+          "say": "Step six, solve the two equations together: X equals three and Y equals four.",
+          "asks": ["How do I solve them together?", "Can I check the answer?"],
           "do": [
-            { "do": "write", "token": "e1", "on": "two X plus" }
-          ]
-        },
-        {
-          "say": "Make Y the subject, so it can go into the B equation: Y equals ten minus two X.",
-          "asks": ["Why make y the subject?"],
-          "do": [
-            { "do": "write", "token": "e1b", "on": "Y equals ten" }
-          ]
-        },
-        {
-          "say": "Substitute: X minus two times, ten minus two X, plus six equals one.",
-          "asks": ["Why substitute for y?"],
-          "do": [
-            { "do": "write", "step": 12, "on": "X minus two" }
-          ]
-        },
-        {
-          "say": "Expand: X minus twenty plus four X plus six equals one.",
-          "asks": ["Why plus four X?"],
-          "do": [
-            { "do": "write", "step": 13, "on": "X minus twenty" }
-          ]
-        },
-        {
-          "say": "Collect: five X equals fifteen, so X equals three.",
-          "asks": ["How do I get 5x?"],
-          "do": [
-            { "do": "write", "step": 14, "on": "five X equals" }
-          ]
-        },
-        {
-          "say": "Then Y equals ten minus two times three: four.",
-          "asks": ["How do I find y?"],
-          "do": [
-            { "do": "write", "step": 15, "on": "Y equals ten" }
-          ]
-        },
-        {
-          "say": "So X equals three and Y equals four.",
-          "asks": ["Can I check the answer?"],
-          "do": [
-            { "do": "write", "step": 16, "on": "So X equals" },
+            { "do": "write", "step": 11, "on": "X equals three" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "Y equals four" }
           ]
         }
