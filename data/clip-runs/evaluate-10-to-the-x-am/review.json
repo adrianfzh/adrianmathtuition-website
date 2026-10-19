@@ -1,32 +1,24 @@
 {
  "slug": "evaluate-10-to-the-x-am",
- "at": "2026-10-19T14:40:06.984Z",
+ "at": "2026-10-19T15:05:58.722Z",
  "model": "claude-opus-5-5",
  "frames": 27,
  "usage": {
-  "input_tokens": 50002,
+  "input_tokens": 50070,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1138,
+  "output_tokens": 928,
   "output_tokens_details": {
-   "thinking_tokens": 949
+   "thinking_tokens": 901
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
  "verdict": "pass",
- "findings": [
-  {
-   "beat": 22,
-   "rule": "said = shown",
-   "severity": "should",
-   "problem": "The voice says \"times both sides by five to the power X\" in beat 22, but the note \"× both sides by 5^x\" only appears at the start of beat 23, after the move has already happened.",
-   "fix": "Write the note \"× both sides by $5^x$\" under {m1} in beat 22, on the words \"times both sides\", and keep beat 23 for lighting the 1."
-  }
- ]
+ "findings": []
 }

@@ -1,6 +1,6 @@
 {
  "slug": "evaluate-10-to-the-x-am",
- "at": "2026-10-19T14:44:09.608Z",
+ "at": "2026-10-19T15:05:58.783Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -24,7 +24,7 @@
   },
   "review": {
    "ok": true,
-   "detail": "0 must, 1 should · 27 frames"
+   "detail": "0 must, 0 should · 27 frames"
   }
  },
  "pass": true
