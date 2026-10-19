@@ -594,8 +594,11 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   questions. give that option to me as well, in mark papers in admin"*. **Where:** the hand-in
   page (`/app/submit` and `/app/science/submit`, one `submit-client.tsx`) shows a checkbox **"I
   only did some questions"** (hidden on work from the tutor — that sheet IS the selection);
-  `/admin/mark-paper` shows **"Selected questions only"** beside "out of" (▶ Mark and 🌙 Queue
-  both carry it). It is stamped `result_json.selected_only = true` (site route stamp / bot
+  `/admin/mark-paper` shows **"Selected questions only"** as a boxed tick box under Paper name
+  (▶ Mark and 🌙 Queue both carry it). **It REPLACED the "out of ___" box the same evening**
+  (Adrian: *"i also want a checkbox like that instead of the box out of"*): the number box is
+  gone from the page, the total comes from the paper itself (cover, recognised paper, name), and
+  an `total_max_override` stored on an older run is still loaded and re-grounds that run. It is stamped `result_json.selected_only = true` (site route stamp / bot
   `savePaper` / `direct` body `selectedOnly`) and survives the fill and a re-mark like
   `total_max_override`. **The marker** (bot `lib/selected-only.js`, wired in
   `ai/marker-assemble.js reconcileStep`): after reconcile, every QUESTION with no working on any

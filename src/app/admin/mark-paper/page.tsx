@@ -2244,23 +2244,16 @@ export default function MarkPaperPage() {
             placeholder={autoPaperLabel()}
             style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, flex: 1, minWidth: 240 }}
           />
-          <label htmlFor="paper-outof" style={{ fontSize: 13, color: '#374151', fontWeight: 600 }}>out of</label>
-          <input
-            id="paper-outof"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={200}
-            value={outOf}
-            onChange={(e) => setOutOf(e.target.value)}
-            placeholder="auto"
-            title="Official paper total for the red badge. Blank = auto: named prelim sets ground to the syllabus total (EM/AM 90, JC 100); anything else uses the counted sum."
-            style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, width: 76 }}
-          />
-          <label style={{ fontSize: 13, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
-            title="Only the questions with working on them are marked and counted. Blank questions are left out — no 0 marks, no 'not attempted'. The total is the attempted questions' marks.">
-            <input type="checkbox" checked={selectedOnly} onChange={(e) => setSelectedOnly(e.target.checked)} />
-            Selected questions only
+          {/* ☑️ The tick box REPLACED the "out of ___" box (Adrian, 19 Oct 2026: "i also want a
+              checkbox like that instead of the box out of"). The paper's total now comes from the
+              paper itself (cover, recognised paper, name); a half paper is a tick here. An "out
+              of" stored on an older run still re-grounds that run (outOf is loaded with it). */}
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', border: '1px solid #d1d5db', borderRadius: 10, padding: '8px 12px', background: '#fff', flexBasis: '100%' }}>
+            <input type="checkbox" checked={selectedOnly} onChange={(e) => setSelectedOnly(e.target.checked)} style={{ marginTop: 3, width: 16, height: 16 }} />
+            <span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Selected questions only</span>
+              <span style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Only the questions with working are marked and counted. Blank questions are left out.</span>
+            </span>
           </label>
         </div>
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
