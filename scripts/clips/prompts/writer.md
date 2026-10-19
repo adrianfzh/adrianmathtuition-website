@@ -104,6 +104,10 @@ no focus, no clear.
 - **A "why" detour is written, in a drop-down**: one line on the board states the fact, and the beat
   carries `"aside": {"text": "Why …?", "slug": "<topic>-<point>", "read": ["…", "…", "**takeaway**"]}`
   — up to 10 lines, one idea a line, inline `$…$` maths, the last line bold. No side clip is made.
+- **A term the voice moves is seen moving** (Adrian, 19 Oct 2026): into a fraction's bottom too — the
+  next line's token wraps the landing place in `\htmlClass{lsn-pc-<p>}{…}` and carries `"from"` + `"into": "<p>"`;
+  write that line first (the bottom stays empty), then `move` on the words that say it. Say WHY the
+  step is done ("To simplify the expression, …") and name the property ("since it is divide, the powers minus").
 - **While a piece moves, nothing else is written**: the `move` is the only action on its words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.

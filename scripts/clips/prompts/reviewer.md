@@ -52,7 +52,11 @@ You get:
 13. Do NOT ask to move a "✗ Common mistake:" note to the end: Adrian wants a common mistake that is the
    REASON for a step explained at that step (19 Oct 2026, the brackets when minusing powers). Only a
    "Watch out" step goes after the answer.
-14. Anything else in the house rules this clip breaks.
+14. A must: the voice says a term moves (to the other side, down under another term, "divide both
+   sides by …") and the board only shows it appear (Adrian, 19 Oct 2026: "should show the animation of
+   5^(2x-1) flying down underneath 5^(x-1)"). A should: a step done without saying why ("To simplify
+   the expression, …") or a law used without naming it ("since it is divide, the powers minus").
+15. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

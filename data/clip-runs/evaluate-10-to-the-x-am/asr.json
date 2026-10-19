@@ -76,14 +76,14 @@
   },
   {
    "beat": 13,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 14,
-   "bag": 0.88,
-   "score": 0.88,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -100,14 +100,14 @@
   },
   {
    "beat": 17,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.88,
+   "score": 0.88,
    "heard": null
   },
   {
    "beat": 18,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -124,8 +124,8 @@
   },
   {
    "beat": 21,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -144,6 +144,24 @@
    "beat": 24,
    "bag": 1,
    "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 25,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 26,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 27,
+   "bag": 0.92,
+   "score": 0.92,
    "heard": null
   }
  ]

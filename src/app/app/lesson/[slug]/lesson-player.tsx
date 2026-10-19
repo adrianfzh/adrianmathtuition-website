@@ -88,7 +88,7 @@ import {
 } from '@/lib/lesson-speech';
 import {
   beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, pieceKey, proseGroup, sceneNotes, scenesHaveCharacter,
-  tokKey, tokenAway, tokenGone, tokenShown, tokenWritten, type BoardState,
+  tokKey, tokenAway, tokenGone, tokenPieceWaiting, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
 import {
   HAND_FONT_FACES, HAND_FONT_FAMILY, HAND_FONT_URL, THEME_TOKENS, TITLE_FONT_FAMILY, TITLE_FONT_URL,
@@ -190,11 +190,14 @@ const TONE = {
   emerald: { hl: 'lsn-hl-emerald', chip: 'lsn-chip-emerald bg-emerald-50 border-emerald-200 text-emerald-900', stroke: '#10b981' },
 } as const satisfies Record<LessonTone, { hl: string; chip: string; stroke: string }>;
 
-function TokenSpan({ t, bits, away = false }: { t: StepToken; bits?: ElementBits | null; away?: false | 'gone' | 'held' }) {
+function TokenSpan({ t, bits, away = false, wait = null }: { t: StepToken; bits?: ElementBits | null; away?: false | 'gone' | 'held'; wait?: string | null }) {
   return (
     <span data-gone={away === 'gone' ? '1' : undefined} data-held={away === 'held' ? '1' : undefined}
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
+      data-into={t.into || undefined}
+      data-from-piece={t.fromPiece || undefined}
+      data-into-wait={wait || undefined}
       data-key={bits?.key}
       className={`lsn-tok inline-block ${t.tight ? 'lsn-tok-tight' : ''} ${t.hl ? `lsn-hl ${TONE[t.hl].hl}` : ''} ${elCls(bits ?? null)}`}
     >
@@ -978,14 +981,19 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
   const fly = useCallback((cont: HTMLElement, fromId: string, lineIdx: number) => {
     const line = cont.querySelector<HTMLElement>(`[data-line="${lineIdx}"]`);
     if (!line) return;
-    for (const target of Array.from(line.querySelectorAll<HTMLElement>(`[data-from="${CSS.escape(fromId)}"]`))) {
+    for (const tok of Array.from(line.querySelectorAll<HTMLElement>(`[data-from="${CSS.escape(fromId)}"]`))) {
+      // An `into` token: only its piece flies in (5^{2x-1} down under 5^{x-1}).
+      const into = tok.dataset.into;
+      const target = (into && tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(into)}`)) || tok;
       const source = Array.from(cont.querySelectorAll<HTMLElement>(`[data-token-id="${CSS.escape(fromId)}"]`))
         .find(el => {
           const l = el.closest('[data-line]');
           // An earlier line, or an earlier token of the same line (the 2 going up into the power).
-          return l && Number(l.getAttribute('data-line')) <= lineIdx && el !== target;
+          return l && Number(l.getAttribute('data-line')) <= lineIdx && el !== tok;
         });
-      if (source) flyClone(cont, source, target, source.dataset.gone ? lastAt.current.get(source) : undefined);
+      const fp = tok.dataset.fromPiece;
+      const start = (source && fp && source.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(fp)}`)) || source;
+      if (source && start) flyClone(cont, start, target, start === source && source.dataset.gone ? lastAt.current.get(source) : undefined);
     }
   }, []);
 
@@ -1016,6 +1024,15 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
       if (fromId) fly(cont, fromId, lineIdx);
     }
   }, [revealed, reduced, board, scene.steps, fly]);
+  // An `into` token's piece stays empty until its move fires (and again after a seek back).
+  useIsoLayoutEffect(() => {
+    const cont = containerRef.current;
+    if (!cont) return;
+    for (const tok of Array.from(cont.querySelectorAll<HTMLElement>('[data-into]'))) {
+      const piece = tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(tok.dataset.into ?? '')}`);
+      piece?.classList.toggle('lsn-into-wait', !!tok.dataset.intoWait);
+    }
+  });
   // After any flight: note where each token on the board now sits (see lastAt).
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
@@ -1069,7 +1086,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               )}
               <div data-fit data-cols={s.cols ? s.tokens.length : undefined} className={`lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5${s.cols ? ' lsn-cols' : ''}`}>
                 {s.tokens.map((t, ti) => (
-                  <TokenSpan key={ti} t={t} away={!!board && tokenAway(board, scene, i, ti)}
+                  <TokenSpan key={ti} t={t} away={!!board && tokenAway(board, scene, i, ti)} wait={board ? tokenPieceWaiting(board, scene, i, ti) : null}
                     bits={board ? { key: tokKey(i, ti), on: tokenShown(board, scene, i, ti), written: tokenWritten(board, i, ti) } : null} />
                 ))}
               </div>
@@ -3168,6 +3185,7 @@ const PLAYER_CSS = `
 .lsn-line.on { opacity: 1; transform: none; }
 .lsn-tok { transition: opacity 180ms ease; }
 .lsn-landing { opacity: 0 !important; }
+.lsn-into-wait { opacity: 0 !important; }
 .lsn-hl { border-radius: 0.375rem; padding: 0 0.25rem; margin: 0 -0.125rem; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .lsn-hl-amber { background: #fef3c7; }
 .lsn-hl-sky { background: #e0f2fe; }

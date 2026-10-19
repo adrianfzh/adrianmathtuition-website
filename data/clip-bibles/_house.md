@@ -224,6 +224,25 @@ the history.
   have to separately show the multiplying of the two powers"): `5^{x+2} = (5^2)^{x-1} = 5^{2x-2}` —
   no separate `5^{2(x-1)}` line, no moving 2, no `2^{x\times2}` middle step. Times power is named in
   the note under it. (The reviewer once asked for that middle step — Adrian's rule wins.)
+- **A term the voice moves is SEEN moving there** (19 Oct 2026, Evaluate 10ˣ: "when the narrator says
+  first, group the fives on one side, but the screen doesn't show that > should show the animation of
+  5^(2x-1) flying down underneath 5^(x-1)"): when a term goes to the other side or under another term,
+  the board moves it — into a fraction's bottom too: wrap the landing place in the next line's tex,
+  `\dfrac{5^{x-1}}{\htmlClass{lsn-pc-d}{5^{2x-1}}}`, give that token `"from": "<the term's id>",
+  "into": "d"`, write the line, then `move` on the words that say it (the term its own token in the
+  line it leaves).
+- **Say WHY the step is done, and name the property of indices it uses** (19 Oct 2026: "instead of
+  saying: first, group the fives on one side…, say : To simplify the expression, we can group the
+  fives on one side.. and we can apply property of indices, since its divide, the powers minus.. and
+  so on"): "To simplify the expression, we can group the fives on one side." … "We can apply a
+  property of indices: since it is divide, the powers minus."
+- **Say what we are finding, and why we need not find x** (19 Oct 2026: "instead of saying leave x
+  alone, say we have to find the value of 10^x, not x. while it is possible to solve for x, we can
+  manipulate the equation to solve for 10^x, without solving for x").
+- **The plan says what we need, and names the bases** (19 Oct 2026: "instead of saying The plan: put
+  two to the power X..., say to find 10^x, we need 2^x times 5^x. Note the base is 2 and the other
+  base is 5"): no "The plan:" opener and no "glue them" — say what the answer is built from, then
+  name each base, each lit as it is named.
 - **Show which parts make the shape** (18 Oct 2026, Sketching: "highlight ln(-x) in ln (2-x) when
   saying that is the shape"): when the voice says the question's curve "has the shape of" a basic one,
   light those parts in the question's equation (`ln(` `−x` `)`, not the 2), in the colour of that

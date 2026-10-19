@@ -53,13 +53,13 @@ import {
 export type ElementKey = string;
 
 /** Where a token sits, for the tok:n:i key. */
-export interface TokenRef { line: number; index: number; id?: string; from?: string; replaces?: string[] }
+export interface TokenRef { line: number; index: number; id?: string; from?: string; replaces?: string[]; into?: string }
 
 /** Every token of a scene in writing order (equation-steps lines / annotate's one row). */
 export function sceneTokens(scene: Scene | PlayScene): TokenRef[] {
   if (scene.type === 'equation-steps' || scene.type === 'motion-graph') {
     if (scene.type === 'motion-graph' && !scene.steps) return [];
-    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from, ...(t.replaces ? { replaces: t.replaces } : {}) })));
+    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from, ...(t.replaces ? { replaces: t.replaces } : {}), ...(t.into ? { into: t.into } : {}) })));
   }
   if (scene.type === 'annotate') return scene.tokens.map((t, index) => ({ line: 0, index, id: t.id, from: t.from }));
   return [];
@@ -273,7 +273,8 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
           const ref = tokens.find(r => tokKey(r.line, r.index) === key);
           if (ref) {
             show(lineKey(ref.line), false);
-            if (ref.from !== undefined) board.moved.add(ref.from);
+            // An `into` token is written now; only its piece waits for the move.
+            if (ref.from !== undefined && !ref.into) board.moved.add(ref.from);
           }
           show(key, write);
         } else show(key, write);
@@ -381,6 +382,12 @@ export function sceneNotes(scene: Scene | PlayScene): NoteSlot[] {
 }
 
 // ── Reading a board ──────────────────────────────────────────────────────────
+
+/** An `into` token whose piece has not flown in yet: the piece stays empty (lesson-script `into`). */
+export function tokenPieceWaiting(board: BoardState, scene: Scene | PlayScene, line: number, index: number): string | null {
+  const ref = sceneTokens(scene).find(r => r.line === line && r.index === index);
+  return ref?.into && ref.from !== undefined && !board.moved.has(ref.from) ? ref.into : null;
+}
 
 export function lineOn(board: BoardState, line: number): boolean {
   return board.shown.has(lineKey(line));

@@ -60,6 +60,14 @@ export interface StepToken {
   id?: string;
   /** Fly in from the earlier-revealed token with this id (moved-term FLIP). */
   from?: string;
+  /** With `from`: only the piece of this token wrapped in `\\htmlClass{lsn-pc-<into>}{…}` flies in —
+   *  the rest of the token is written by its own `write`, and the piece stays empty until the `move`
+   *  (Adrian, 19 Oct 2026: "should show the animation of 5^(2x-1) flying down underneath 5^(x-1)" —
+   *  a term moving into the bottom of a fraction). */
+  into?: string;
+  /** With `from`: the flight starts at the piece of the `from` token wrapped in
+   *  `\\htmlClass{lsn-pc-<fromPiece>}{…}` (the 5^x in the bottom of 1/5^x, cross multiplied up beside 2^x). */
+  fromPiece?: string;
   /** Sits right against the token before it, no gap — a power or a base that flies into place
    *  (Adrian, 16 Oct 2026: "perhaps the 2 can move to the power position? its an animation right?"). */
   tight?: boolean;
@@ -529,6 +537,12 @@ function validateToken(
     if (!nonEmptyString(t.id)) errors.push(`${where}: token id must be a non-empty string`);
     else if (seenIds.has(t.id)) errors.push(`${where}: duplicate token id "${t.id}" in this scene`);
     else seenIds.add(t.id);
+  }
+  if (t.fromPiece !== undefined && (t.from === undefined || typeof t.fromPiece !== 'string' || !/^[a-z0-9-]+$/.test(t.fromPiece))) {
+    errors.push(`${where}: "fromPiece" names a piece of the "from" token (\\htmlClass{lsn-pc-<fromPiece>}) and needs "from"`);
+  }
+  if (t.into !== undefined && (t.from === undefined || typeof t.into !== 'string' || !/^[a-z0-9-]+$/.test(t.into))) {
+    errors.push(`${where}: "into" names a piece (\\htmlClass{lsn-pc-<into>}) and needs "from"`);
   }
   if (t.from !== undefined) {
     if (earlierIds === null) {

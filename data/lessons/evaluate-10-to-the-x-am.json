@@ -16,7 +16,8 @@
         {
           "tokens": [
             { "id": "q1", "tex": "2^{x+2}" },
-            { "id": "q2", "tex": "\\times 5^{2x-1}" },
+            { "id": "q2", "tex": "\\times" },
+            { "id": "q2b", "tex": "5^{2x-1}" },
             { "id": "q3", "tex": "=5^{x-1}" }
           ]
         },
@@ -34,7 +35,7 @@
         {
           "tokens": [
             { "id": "g1", "tex": "2^{x+2}" },
-            { "id": "g2", "tex": "=\\dfrac{5^{x-1}}{5^{2x-1}}" }
+            { "id": "g2", "tex": "=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}", "from": "q2b", "into": "d" }
           ]
         },
         {
@@ -58,12 +59,18 @@
         {
           "tokens": [
             { "id": "s1", "tex": "2^x\\times 2^2" },
-            { "id": "s2", "tex": "=\\dfrac{1}{5^x}" }
+            { "id": "s2", "tex": "=\\dfrac{1}{\\htmlClass{lsn-pc-e}{5^x}}" }
           ]
         },
         {
           "tokens": [
-            { "id": "m1", "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times \\htmlClass{lsn-pc-b}{5^x}" },
+            {
+              "id": "m1",
+              "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times \\htmlClass{lsn-pc-b}{5^x}",
+              "from": "s2",
+              "fromPiece": "e",
+              "into": "b"
+            },
             { "id": "m2", "tex": "\\times 2^2=1" }
           ]
         },
@@ -81,14 +88,23 @@
       ],
       "beats": [
         {
-          "say": "Two to the power X plus two, times five to the power two X minus one,",
+          "say": "Two to the power X plus two,",
           "asks": ["What does the question give us?"],
           "do": [
-            { "do": "write", "token": "q1" },
-            { "do": "write", "token": "q2", "on": "times five to" }
+            { "do": "write", "token": "q1" }
           ],
           "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b1.mp3",
           "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "times five to the power two X minus one,",
+          "asks": ["Which bases are there?"],
+          "do": [
+            { "do": "write", "token": "q2" },
+            { "do": "write", "token": "q2b", "on": "the power two" }
+          ],
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b2.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b2.timing.json"
         },
         {
           "say": "equals five to the power X minus one.",
@@ -96,21 +112,21 @@
           "do": [
             { "do": "write", "token": "q3" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b2.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b2.timing.json"
-        },
-        {
-          "say": "Without a calculator, find the value of ten to the power X.",
-          "asks": ["Do I need to find X?", "Why no calculator?"],
-          "do": [
-            { "do": "write", "token": "w1", "on": "ten to the" }
-          ],
           "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b3.mp3",
           "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Leave X alone: it is usually an awkward number. Treat ten to the power X as one block.",
-          "asks": ["Why not find X first?", "What does one block mean?"],
+          "say": "Without a calculator, we have to find the value of ten to the power X, not X.",
+          "asks": ["Do I need to find X?", "Why no calculator?"],
+          "do": [
+            { "do": "write", "token": "w1", "on": "ten to the" }
+          ],
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b4.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "While it is possible to solve for X, we can manipulate the equation to get ten to the power X without solving for X.",
+          "asks": ["Why not find X first?", "What does manipulate mean here?"],
           "aside": {
             "text": "Why not find X first?",
             "slug": "indices-dont-chase-x",
@@ -123,10 +139,10 @@
             ]
           },
           "do": [
-            { "do": "highlight", "token": "w1", "on": "Treat ten to" }
+            { "do": "highlight", "token": "w1", "on": "get ten to" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b4.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b4.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b5.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b5.timing.json"
         },
         {
           "say": "The key fact: ten to the power X equals two to the power X times five to the power X.",
@@ -135,8 +151,8 @@
             { "do": "write", "token": "k1" },
             { "do": "write", "token": "k2", "on": "equals two to" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b5.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b5.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b6.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b6.timing.json"
         },
         {
           "say": "Same power, so multiply the bases: two times five is ten.",
@@ -144,28 +160,47 @@
           "do": [
             { "do": "note", "text": "Same power: $2^x\\times5^x=(2\\times5)^x$", "near": "k2" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b6.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b6.timing.json"
-        },
-        {
-          "say": "The plan: put two to the power X beside five to the power X. Then glue them into ten to the power X.",
-          "asks": ["Why do we want them side by side?"],
-          "do": [
-            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "put two to" },
-            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "beside five to" }
-          ],
           "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b7.mp3",
           "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b7.timing.json"
         },
         {
-          "say": "First, group the fives on one side. Divide both sides by five to the power two X minus one.",
-          "asks": ["Why divide by that?", "Why put the fives together?"],
+          "say": "To find ten to the power X, we need two to the power X times five to the power X.",
+          "asks": ["Why do we need these two?"],
           "do": [
-            { "do": "write", "step": 3, "on": "Divide both sides" },
-            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "power two X" }
+            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "need two to" },
+            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "times five to" }
           ],
           "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b8.mp3",
           "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b8.timing.json"
+        },
+        {
+          "say": "Note the base is two, and the other base is five.",
+          "asks": ["Why do the bases matter?"],
+          "do": [
+            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "base is two" },
+            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "other base is" }
+          ],
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b9.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "To simplify the expression, we can group the fives on one side.",
+          "asks": ["Why put the fives together?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "group the fives" }
+          ],
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b10.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b10.timing.json"
+        },
+        {
+          "say": "Divide both sides by five to the power two X minus one, so it moves down, under five to the power X minus one.",
+          "asks": ["Why divide by that?", "Where did it go on the left?"],
+          "do": [
+            { "do": "move", "from": "q2b" },
+            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "so it moves" }
+          ],
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b11.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b11.timing.json"
         },
         {
           "say": "Now the twos are on the left and the fives are on the right.",
@@ -174,19 +209,19 @@
             { "do": "highlight", "token": "g1", "tone": "orange" },
             { "do": "highlight", "token": "g2", "tone": "sky", "on": "the fives are" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b9.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b9.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b12.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b12.timing.json"
         },
         {
-          "say": "Same base five, top and bottom, so minus the powers: top power minus bottom power.",
+          "say": "We can apply a property of indices: since it is divide, the powers minus. Top power minus bottom power.",
           "asks": ["Which law is this?", "Why minus the powers?"],
           "do": [
             { "do": "highlight", "token": "g2", "tone": "sky" },
-            { "do": "write", "step": 4, "on": "so minus the" },
-            { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "b2", "on": "top power minus" }
+            { "do": "write", "step": 4, "on": "the powers minus" },
+            { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "b2", "on": "Top power minus" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b10.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b10.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b13.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b13.timing.json"
         },
         {
           "say": "Make sure you put brackets, because we minus the whole bottom power.",
@@ -194,8 +229,8 @@
           "do": [
             { "do": "highlight", "token": "b2", "tone": "sky" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b11.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b11.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b14.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b14.timing.json"
         },
         {
           "say": "A common mistake is leaving out the brackets. Then the signs inside come out wrong.",
@@ -203,8 +238,8 @@
           "do": [
             { "do": "note", "text": "✗ Common mistake: no brackets", "near": "b2", "on": "leaving out the" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b12.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b12.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b15.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b15.timing.json"
         },
         {
           "say": "Open the brackets. Minus a bracket flips every sign inside: minus two X, and plus one.",
@@ -213,8 +248,8 @@
             { "do": "write", "step": 5 },
             { "do": "note", "text": "Minus a bracket flips every sign inside", "near": "o2", "on": "flips every sign" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b13.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b13.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b16.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b16.timing.json"
         },
         {
           "say": "Add up like terms: X minus two X is negative X, and negative one plus one cancels. So five to the power negative X.",
@@ -223,8 +258,8 @@
             { "do": "highlight", "token": "o2", "tone": "sky" },
             { "do": "write", "step": 6, "on": "So five to" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b14.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b14.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b17.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b17.timing.json"
         },
         {
           "say": "Now split the power of two. We want two to the power X on its own, to pair with five to the power X.",
@@ -232,8 +267,8 @@
           "do": [
             { "do": "highlight", "token": "n1", "tone": "orange" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b15.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b15.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b18.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b18.timing.json"
         },
         {
           "say": "Two to the power X plus two is two to the power X times two squared.",
@@ -241,8 +276,8 @@
           "do": [
             { "do": "write", "token": "s1", "on": "is two to" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b16.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b16.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b19.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b19.timing.json"
         },
         {
           "say": "This is Add power in reverse: multiplying adds the powers, back to X plus two.",
@@ -250,8 +285,8 @@
           "do": [
             { "do": "note", "text": "Add power, in reverse: $a^{x+k}=a^x\\times a^k$", "near": "s1" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b17.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b17.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b20.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b20.timing.json"
         },
         {
           "say": "On the right, a negative power flips: five to the power negative X is one over five to the power X.",
@@ -261,27 +296,28 @@
             { "do": "write", "token": "s2", "on": "is one over" },
             { "do": "note", "text": "Negative power flips: $5^{-x}=\\frac{1}{5^x}$", "near": "s2", "on": "five to the power X" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b18.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b18.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b21.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b21.timing.json"
         },
         {
-          "say": "Cross multiply: times both sides by five to the power X, so it joins two to the power X.",
+          "say": "Cross multiply: times both sides by five to the power X, so it moves up and joins two to the power X.",
           "asks": ["What is cross multiply?", "Why times by five to the power X?"],
           "do": [
-            { "do": "write", "step": 8, "on": "times both sides" },
-            { "do": "note", "text": "× both sides by $5^x$", "near": "m1", "on": "five to the" }
+            { "do": "write", "step": 8 },
+            { "do": "move", "from": "s2", "on": "so it moves" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b19.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b19.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b22.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b22.timing.json"
         },
         {
           "say": "On the right, one over five to the power X, times five to the power X, is one.",
           "asks": ["Why is the right side one?"],
           "do": [
+            { "do": "note", "text": "× both sides by $5^x$", "near": "m1" },
             { "do": "highlight", "token": "m2", "tone": "sky", "on": "is one" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b20.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b20.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b23.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b23.timing.json"
         },
         {
           "say": "Now two to the power X and five to the power X sit side by side, both to the power X.",
@@ -290,18 +326,18 @@
             { "do": "highlight", "token": "m1", "inside": "a", "tone": "orange" },
             { "do": "highlight", "token": "m1", "inside": "b", "tone": "sky", "on": "five to the" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b21.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b21.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b24.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b24.timing.json"
         },
         {
-          "say": "They glue into ten to the power X. Same power, so multiply the bases: two times five is ten.",
+          "say": "They combine into ten to the power X. Same power, so multiply the bases: two times five is ten.",
           "asks": ["How do they become ten to the power X?", "Which law is this?"],
           "do": [
             { "do": "move", "from": "m1" },
             { "do": "note", "text": "Same power: $2^x\\times5^x=(2\\times5)^x$", "near": "r1", "on": "multiply the bases" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b22.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b22.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b25.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b25.timing.json"
         },
         {
           "say": "And two squared is four. So ten to the power X times four equals one.",
@@ -309,8 +345,8 @@
           "do": [
             { "do": "write", "token": "r2", "on": "two squared is" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b23.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b23.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b26.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b26.timing.json"
         },
         {
           "say": "Divide both sides by four. Ten to the power X equals one quarter.",
@@ -319,8 +355,8 @@
             { "do": "write", "step": 10, "on": "Ten to the" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "one quarter" }
           ],
-          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b24.mp3",
-          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b24.timing.json"
+          "audio": "/lessons/evaluate-10-to-the-x-am/scene-01-b27.mp3",
+          "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b27.timing.json"
         }
       ]
     }

@@ -16,7 +16,8 @@
         {
           "tokens": [
             { "id": "q1", "tex": "2^{x+2}" },
-            { "id": "q2", "tex": "\\times 5^{2x-1}" },
+            { "id": "q2", "tex": "\\times" },
+            { "id": "q2b", "tex": "5^{2x-1}" },
             { "id": "q3", "tex": "=5^{x-1}" }
           ]
         },
@@ -34,7 +35,7 @@
         {
           "tokens": [
             { "id": "g1", "tex": "2^{x+2}" },
-            { "id": "g2", "tex": "=\\dfrac{5^{x-1}}{5^{2x-1}}" }
+            { "id": "g2", "tex": "=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}", "from": "q2b", "into": "d" }
           ]
         },
         {
@@ -58,12 +59,18 @@
         {
           "tokens": [
             { "id": "s1", "tex": "2^x\\times 2^2" },
-            { "id": "s2", "tex": "=\\dfrac{1}{5^x}" }
+            { "id": "s2", "tex": "=\\dfrac{1}{\\htmlClass{lsn-pc-e}{5^x}}" }
           ]
         },
         {
           "tokens": [
-            { "id": "m1", "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times \\htmlClass{lsn-pc-b}{5^x}" },
+            {
+              "id": "m1",
+              "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times \\htmlClass{lsn-pc-b}{5^x}",
+              "from": "s2",
+              "fromPiece": "e",
+              "into": "b"
+            },
             { "id": "m2", "tex": "\\times 2^2=1" }
           ]
         },
@@ -81,11 +88,18 @@
       ],
       "beats": [
         {
-          "say": "Two to the power X plus two, times five to the power two X minus one,",
+          "say": "Two to the power X plus two,",
           "asks": ["What does the question give us?"],
           "do": [
-            { "do": "write", "token": "q1" },
-            { "do": "write", "token": "q2", "on": "times five to" }
+            { "do": "write", "token": "q1" }
+          ]
+        },
+        {
+          "say": "times five to the power two X minus one,",
+          "asks": ["Which bases are there?"],
+          "do": [
+            { "do": "write", "token": "q2" },
+            { "do": "write", "token": "q2b", "on": "the power two" }
           ]
         },
         {
@@ -96,15 +110,15 @@
           ]
         },
         {
-          "say": "Without a calculator, find the value of ten to the power X.",
+          "say": "Without a calculator, we have to find the value of ten to the power X, not X.",
           "asks": ["Do I need to find X?", "Why no calculator?"],
           "do": [
             { "do": "write", "token": "w1", "on": "ten to the" }
           ]
         },
         {
-          "say": "Leave X alone: it is usually an awkward number. Treat ten to the power X as one block.",
-          "asks": ["Why not find X first?", "What does one block mean?"],
+          "say": "While it is possible to solve for X, we can manipulate the equation to get ten to the power X without solving for X.",
+          "asks": ["Why not find X first?", "What does manipulate mean here?"],
           "aside": {
             "text": "Why not find X first?",
             "slug": "indices-dont-chase-x",
@@ -117,7 +131,7 @@
             ]
           },
           "do": [
-            { "do": "highlight", "token": "w1", "on": "Treat ten to" }
+            { "do": "highlight", "token": "w1", "on": "get ten to" }
           ]
         },
         {
@@ -136,19 +150,34 @@
           ]
         },
         {
-          "say": "The plan: put two to the power X beside five to the power X. Then glue them into ten to the power X.",
-          "asks": ["Why do we want them side by side?"],
+          "say": "To find ten to the power X, we need two to the power X times five to the power X.",
+          "asks": ["Why do we need these two?"],
           "do": [
-            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "put two to" },
-            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "beside five to" }
+            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "need two to" },
+            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "times five to" }
           ]
         },
         {
-          "say": "First, group the fives on one side. Divide both sides by five to the power two X minus one.",
-          "asks": ["Why divide by that?", "Why put the fives together?"],
+          "say": "Note the base is two, and the other base is five.",
+          "asks": ["Why do the bases matter?"],
           "do": [
-            { "do": "write", "step": 3, "on": "Divide both sides" },
-            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "power two X" }
+            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "base is two" },
+            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "other base is" }
+          ]
+        },
+        {
+          "say": "To simplify the expression, we can group the fives on one side.",
+          "asks": ["Why put the fives together?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "group the fives" }
+          ]
+        },
+        {
+          "say": "Divide both sides by five to the power two X minus one, so it moves down, under five to the power X minus one.",
+          "asks": ["Why divide by that?", "Where did it go on the left?"],
+          "do": [
+            { "do": "move", "from": "q2b" },
+            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "so it moves" }
           ]
         },
         {
@@ -160,12 +189,12 @@
           ]
         },
         {
-          "say": "Same base five, top and bottom, so minus the powers: top power minus bottom power.",
+          "say": "We can apply a property of indices: since it is divide, the powers minus. Top power minus bottom power.",
           "asks": ["Which law is this?", "Why minus the powers?"],
           "do": [
             { "do": "highlight", "token": "g2", "tone": "sky" },
-            { "do": "write", "step": 4, "on": "so minus the" },
-            { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "b2", "on": "top power minus" }
+            { "do": "write", "step": 4, "on": "the powers minus" },
+            { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "b2", "on": "Top power minus" }
           ]
         },
         {
@@ -229,17 +258,18 @@
           ]
         },
         {
-          "say": "Cross multiply: times both sides by five to the power X, so it joins two to the power X.",
+          "say": "Cross multiply: times both sides by five to the power X, so it moves up and joins two to the power X.",
           "asks": ["What is cross multiply?", "Why times by five to the power X?"],
           "do": [
-            { "do": "write", "step": 8, "on": "times both sides" },
-            { "do": "note", "text": "× both sides by $5^x$", "near": "m1", "on": "five to the" }
+            { "do": "write", "step": 8 },
+            { "do": "move", "from": "s2", "on": "so it moves" }
           ]
         },
         {
           "say": "On the right, one over five to the power X, times five to the power X, is one.",
           "asks": ["Why is the right side one?"],
           "do": [
+            { "do": "note", "text": "× both sides by $5^x$", "near": "m1" },
             { "do": "highlight", "token": "m2", "tone": "sky", "on": "is one" }
           ]
         },
@@ -252,7 +282,7 @@
           ]
         },
         {
-          "say": "They glue into ten to the power X. Same power, so multiply the bases: two times five is ten.",
+          "say": "They combine into ten to the power X. Same power, so multiply the bases: two times five is ten.",
           "asks": ["How do they become ten to the power X?", "Which law is this?"],
           "do": [
             { "do": "move", "from": "m1" },

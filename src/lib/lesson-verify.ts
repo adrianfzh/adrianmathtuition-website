@@ -755,7 +755,7 @@ export function motionIssues(script: LessonScript): Issue[] {
 /** Words that name a mistake in a clip's voice ("is not", "never", "mistake") — the board must show it. */
 export const CLIP_TRAP_WORDS = /\b(not|never|isn't|aren't|don't|mistake)\b/i;
 /** …except phrases that are not a mistake ("cannot be made the same base", "does not change"). */
-export const CLIP_TRAP_EXEMPT = /cannot be made|does not change|do not change|never negative|never zero|never needed|not needed|does not exist|not defined/i;
+export const CLIP_TRAP_EXEMPT = /value of [^.]*, not [A-Z]\b|cannot be made|does not change|do not change|never negative|never zero|never needed|not needed|does not exist|not defined/i;
 /** Words about the base itself — the bases light up as they are said. */
 export const CLIP_BASE_WORDS = /\b(same base|base matches|have base|the base)\b/i;
 
