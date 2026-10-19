@@ -22,3 +22,9 @@ select t.question_id, t.level as tree, t.topic,
 from top t
 where exists (select 1 from filed f where f.question_id=t.question_id and f.topic=t.topic and f.level=t.level)
   and not exists (select 1 from filed f where f.question_id=t.question_id and f.topic=t.topic and f.level=t.level and f.pmarks = t.top_marks);
+
+-- 19 Oct 2026: the daily leak test found this view readable by a signed-out visitor (50 rows).
+-- It is an admin check view only (nothing in the app reads it): run as the caller, no anon/authenticated access.
+-- Applied to both projects (maths nempslbewxtlikfzachi, science eaxnstsecxmqdobfvmjh).
+alter view public.question_main_vs_parts set (security_invoker = true);
+revoke all on public.question_main_vs_parts from anon, authenticated;
