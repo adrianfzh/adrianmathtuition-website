@@ -213,7 +213,7 @@
           "say": "Try some values. When X is one, it is about zero point one. When X is two, about zero point zero zero five.",
           "asks": ["Why does it get smaller as x grows?", "Will it ever reach zero?"],
           "do": [
-            { "do": "note", "text": "x = 1: 0.1,  x = 2: 0.005,  x = 3: 0.0002", "near": "tz", "on": "Try some values" }
+            { "do": "note", "text": "x = 1: 0.1    x = 2: 0.005", "near": "tz", "on": "Try some values" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b12.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b12.timing.json"

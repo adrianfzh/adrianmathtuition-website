@@ -716,7 +716,9 @@ function SvgPower({ text }: { text: string }) {
 }
 
 /** One curve as an SVG path in a W×H box over the window. */
-function plotPath(fn: string, w: { xMin: number; xMax: number; yMin: number; yMax: number }, W: number, H: number, P: number): string {
+function plotPath(fn: string, win: { xMin: number; xMax: number; yMin: number; yMax: number }, W: number, H: number, P: number, clip?: { yMin: number; yMax: number }): string {
+  const w = win;
+  const lo = clip?.yMin ?? win.yMin, hi = clip?.yMax ?? win.yMax;
   const f = graphFn(fn);
   if (!f) return '';
   const sx = (x: number) => P + ((x - w.xMin) / (w.xMax - w.xMin)) * (W - 2 * P);
@@ -724,9 +726,9 @@ function plotPath(fn: string, w: { xMin: number; xMax: number; yMin: number; yMa
   // The curve stops where it leaves the window — cut at the edge, never run flat along it (the
   // flat hooks at the corner shapes' ends, 20 Oct 2026).
   let path = '', pen = false, px = NaN, py = NaN;
-  const inside = (y: number) => Number.isFinite(y) && y >= w.yMin && y <= w.yMax;
+  const inside = (y: number) => Number.isFinite(y) && y >= lo && y <= hi;
   const edge = (x0: number, y0: number, x1: number, y1: number) => {
-    const b = (y0 > w.yMax || y1 > w.yMax) ? w.yMax : w.yMin;
+    const b = (y0 > hi || y1 > hi) ? hi : lo;
     const t = (b - y0) / (y1 - y0);
     return `${sx(x0 + (x1 - x0) * t).toFixed(1)} ${sy(b).toFixed(1)}`;
   };
@@ -761,7 +763,9 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
   const isx = (x: number) => IP + ((x - iw.xMin) / (iw.xMax - iw.xMin)) * (IW - 2 * IP);
   const isy = (y: number) => IH - IP - ((y - iw.yMin) / (iw.yMax - iw.yMin)) * (IH - 2 * IP);
   const insetCurves = [{ fn: sk.inset.fn, id: sk.inset.id, label: sk.inset.label, labelAt: sk.inset.labelAt }, ...(sk.inset.curves ?? [])];
-  const shapeD = useMemo(() => plotPath(sk.shape, sk, W, H, P), [sk]);
+  // The shape is cut where it would leave the window AFTER its shift (it slides up by dy).
+  const cut = { yMin: sk.yMin - (sk.shift?.dy ?? 0), yMax: sk.yMax - (sk.shift?.dy ?? 0) };
+  const shapeD = useMemo(() => plotPath(sk.shape, sk, W, H, P, cut), [sk]);   // eslint-disable-line react-hooks/exhaustive-deps
   const dx = sk.shift?.dx ? sx(sk.shift.dx) - sx(0) : 0;
   const dy = sk.shift?.dy ? sy(sk.shift.dy) - sy(0) : 0;
   // The lift: the shape starts exactly over its curve in the corner and grows onto the big axes.
@@ -789,7 +793,7 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
   }, [shapeOn]);
   // The stretch (`to`): on the stretch stage the lifted shape becomes the stretched curve, drawn as a
   // blend of the two so it grows into place (y = e⁻ˣ → y = 2e⁻³ˣ); the shift stage then slides it.
-  const toD = useMemo(() => (sk.to ? plotPath(sk.to, sk, W, H, P) : ''), [sk]);
+  const toD = useMemo(() => (sk.to ? plotPath(sk.to, sk, W, H, P, cut) : ''), [sk]);   // eslint-disable-line react-hooks/exhaustive-deps
   const curveRef = useRef<SVGPathElement>(null);
   const stretched = useRef<boolean | null>(null);
   const shiftOn = has('stretch');
@@ -806,7 +810,7 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
     const step = (now: number) => {
       const t = Math.min(1, (now - t0) / MS);
       const e = t < 0.5 ? 2 * t * t : 1 - (2 - 2 * t) ** 2 / 2;
-      path.setAttribute('d', t >= 1 ? toD : plotPath(`(${(1 - e).toFixed(4)})*(${sk.shape})+(${e.toFixed(4)})*(${sk.to})`, sk, W, H, P));
+      path.setAttribute('d', t >= 1 ? toD : plotPath(`(${(1 - e).toFixed(4)})*(${sk.shape})+(${e.toFixed(4)})*(${sk.to})`, sk, W, H, P, cut));
       if (t < 1) raf = requestAnimationFrame(step);
     };
     path.setAttribute('d', shapeD);
@@ -826,12 +830,12 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               <g key={i} data-token-id={c.id} data-ci={i} className="lsn-graph-c">
                 <path d={plotPath(c.fn, iw, IW, IH, IP)} pathLength={1} className="lsn-graph-curve" />
                 {c.label && Number.isFinite(ly) && (
-                  // Kept INSIDE the box, top to bottom (Adrian, 20 Oct 2026: "the equations of the graphs
-                  // are covered in the mobile version"): a label is set beside its curve, on the outer
-                  // side, and clamped so its whole height sits in the box.
-                  <text x={isx(c.labelAt!) + (isx(c.labelAt!) > IW / 2 ? -9 : 9)}
-                    y={Math.max(IP + 15, Math.min(IH - IP - 3, isy(Math.max(iw.yMin, Math.min(iw.yMax, ly))) + (ly < 0 ? 15 : -4)))}
-                    textAnchor={isx(c.labelAt!) > IW / 2 ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab"><SvgPower text={c.label} /></text>
+                  // Each label in its own corner of the box — the corner its curve heads for (right or
+                  // left of the y-axis, above or below the x-axis), wholly inside the box (Adrian, 20 Oct
+                  // 2026: "the equations of the graphs are covered in the mobile version").
+                  <text x={isx(c.labelAt!) > isx(0) ? IW - IP - 3 : IP + 3}
+                    y={ly > 0 ? IP + 14 : IH - IP - 4}
+                    textAnchor={isx(c.labelAt!) > isx(0) ? 'end' : 'start'} className="lsn-graph-lab lsn-graph-clab"><SvgPower text={c.label} /></text>
                 )}
               </g>
             );

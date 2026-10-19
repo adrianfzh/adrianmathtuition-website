@@ -222,7 +222,7 @@
    "do": [
     {
      "do": "note",
-     "text": "x = 1: 0.1,  x = 2: 0.005,  x = 3: 0.0002",
+     "text": "x = 1: 0.1    x = 2: 0.005",
      "near": "tz",
      "on": "Try some values"
     }
