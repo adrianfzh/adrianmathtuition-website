@@ -180,7 +180,7 @@
    ]
   },
   {
-   "say": "Keep the brackets: the whole bottom power is taken away.",
+   "say": "Make sure you put brackets, because we minus the whole bottom power.",
    "asks": [
     "Why do I need the brackets?"
    ],
@@ -189,13 +189,27 @@
      "do": "highlight",
      "token": "d1",
      "tone": "orange",
-     "on": "Keep the brackets"
+     "on": "Make sure you"
     },
     {
      "do": "highlight",
      "token": "d2",
      "tone": "sky",
-     "on": "whole bottom power"
+     "on": "the whole bottom"
+    }
+   ]
+  },
+  {
+   "say": "A common mistake is leaving out the brackets. Then the signs inside come out wrong.",
+   "asks": [
+    "What goes wrong without brackets?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "✗ Common mistake: no brackets, so the signs come out wrong",
+     "near": "d2",
+     "on": "leaving out the"
     }
    ]
   },
@@ -232,9 +246,9 @@
    ]
   },
   {
-   "say": "Collect the terms: the left side is A to the power two X plus Y minus one,",
+   "say": "Add up like terms: the left side is A to the power two X plus Y minus one,",
    "asks": [
-    "How do I collect the terms?"
+    "How do I add up like terms?"
    ],
    "do": [
     {
@@ -407,7 +421,7 @@
    "do": [
     {
      "do": "write",
-     "step": 9,
+     "step": 11,
      "on": "X equals three"
     },
     {

@@ -177,8 +177,17 @@
       "tokens": [
         {
           "id": "ca",
-          "tex": "a:"
-        },
+          "tex": "\\text{Comparing powers of }a:"
+        }
+      ],
+      "checks": [
+        {
+          "form": "label: comparing the powers of a"
+        }
+      ]
+    },
+    {
+      "tokens": [
         {
           "id": "ca2",
           "tex": "2x+y-1",
@@ -199,8 +208,17 @@
       "tokens": [
         {
           "id": "cb",
-          "tex": "b:"
-        },
+          "tex": "\\text{Comparing powers of }b:"
+        }
+      ],
+      "checks": [
+        {
+          "form": "label: comparing the powers of b"
+        }
+      ]
+    },
+    {
+      "tokens": [
         {
           "id": "cb2",
           "tex": "x-2y+6",

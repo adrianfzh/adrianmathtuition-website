@@ -65,14 +65,22 @@
         },
         {
           "tokens": [
-            { "id": "ca", "tex": "a:" },
+            { "id": "ca", "tex": "\\text{Comparing powers of }a:" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "ca2", "tex": "2x+y-1", "from": "u2" },
             { "id": "ca3", "tex": "=9" }
           ]
         },
         {
           "tokens": [
-            { "id": "cb", "tex": "b:" },
+            { "id": "cb", "tex": "\\text{Comparing powers of }b:" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "cb2", "tex": "x-2y+6", "from": "u4" },
             { "id": "cb3", "tex": "=1" }
           ]
@@ -162,11 +170,23 @@
           ]
         },
         {
-          "say": "Keep the brackets: the whole bottom power is taken away.",
+          "say": "Make sure you put brackets, because we minus the whole bottom power.",
           "asks": ["Why do I need the brackets?"],
           "do": [
-            { "do": "highlight", "token": "d1", "tone": "orange", "on": "Keep the brackets" },
-            { "do": "highlight", "token": "d2", "tone": "sky", "on": "whole bottom power" }
+            { "do": "highlight", "token": "d1", "tone": "orange", "on": "Make sure you" },
+            { "do": "highlight", "token": "d2", "tone": "sky", "on": "the whole bottom" }
+          ]
+        },
+        {
+          "say": "A common mistake is leaving out the brackets. Then the signs inside come out wrong.",
+          "asks": ["What goes wrong without brackets?"],
+          "do": [
+            {
+              "do": "note",
+              "text": "✗ Common mistake: no brackets, so the signs come out wrong",
+              "near": "d2",
+              "on": "leaving out the"
+            }
           ]
         },
         {
@@ -185,8 +205,8 @@
           ]
         },
         {
-          "say": "Collect the terms: the left side is A to the power two X plus Y minus one,",
-          "asks": ["How do I collect the terms?"],
+          "say": "Add up like terms: the left side is A to the power two X plus Y minus one,",
+          "asks": ["How do I add up like terms?"],
           "do": [
             { "do": "write", "token": "u1", "on": "the left side" },
             { "do": "write", "token": "u2", "on": "two X plus" }
@@ -260,7 +280,7 @@
           "say": "Solve the two equations together: X equals three and Y equals four.",
           "asks": ["How do I solve them together?", "Can I check the answer?"],
           "do": [
-            { "do": "write", "step": 9, "on": "X equals three" },
+            { "do": "write", "step": 11, "on": "X equals three" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "Y equals four" }
           ]
         }

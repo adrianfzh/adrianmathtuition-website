@@ -43,8 +43,12 @@ You get:
 12. A must: a side line that works on one piece of the equation alone (`(a/b)² = …`, `a: (2x+2) − (3−y)
    = …`) or a section title, when the move could be done in the next line of the whole equation
    (Adrian, 19 Oct 2026: "just make the equation go line by line … separate explanations break the
-   flow"). Do NOT ask for such a side line yourself.
-13. Anything else in the house rules this clip breaks.
+   flow"). Do NOT ask for such a side line yourself. NOT a section title: the label "Comparing powers of a:"
+   / "Comparing powers of b:" over each compare equation — Adrian asked for it (19 Oct 2026).
+13. Do NOT ask to move a "✗ Common mistake:" note to the end: Adrian wants a common mistake that is the
+   REASON for a step explained at that step (19 Oct 2026, the brackets when minusing powers). Only a
+   "Watch out" step goes after the answer.
+14. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

@@ -807,12 +807,14 @@ export function clipIssues(script: LessonScript): Issue[] {
     });
   });
   // Adrian, 16 Oct 2026: "put each common mistake at the end of its clip as a 'Watch out' step" —
-  // a ✗ note never comes before the answer is boxed.
+  // a ✗ Watch out note never comes before the answer is boxed. A "✗ Common mistake:" note may sit
+  // AT the step it explains (19 Oct 2026, the brackets in Compare powers: "make sure you put brackets
+  // because its minus (explain that? a common mistake is students not putting brackets …)").
   {
     const flat = script.scenes.flatMap((s, i) => (hasBeats(s) ? s.beats.map((b, k) => ({ b, at: `scenes[${i}].beats[${k}]` })) : []));
     const lastBox = flat.reduce((n, x, j) => (x.b.do.some(a => a.do === 'mark' && a.kind === 'box') ? j : n), -1);
     flat.forEach((x, j) => {
-      if (j < lastBox && x.b.do.some(a => a.do === 'note' && /^\s*✗/.test(a.text))) {
+      if (j < lastBox && x.b.do.some(a => a.do === 'note' && /^\s*✗/.test(a.text) && !/^\s*✗\s*Common mistake:/i.test(a.text))) {
         out.push(issue('warn', x.at, 'a common mistake goes at the END, after the answer is boxed — a "Watch out:" step'));
       }
     });

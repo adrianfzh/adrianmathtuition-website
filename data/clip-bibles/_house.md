@@ -196,6 +196,17 @@ the history.
   brackets opened inside the powers); its reason is the voice and a note under the line. No line that
   works on one piece alone (`(a/b)² = …`, `a: (2x+2) − (3−y) = …`), no section titles. A side line only
   for a really complex concept.
+- **Compare lines are labelled in words** (19 Oct 2026: "write comparing powers of a: instead of just
+  a :"): `Comparing powers of a:` on its own line, the equation `2x + y − 1 = 9` under it; same for b.
+  (A label, not a section title.)
+- **Brackets when minusing a power: say WHY, with the common mistake, at that step** (19 Oct 2026:
+  "instead of keep the brackets: the whole bottom power is taken away > say make sure you put brackets
+  because its minus (explain that? a common mistake is students not putting brackets so they got their
+  signs wrong)"): "Make sure you put brackets, because we minus the whole bottom power." then "A common
+  mistake is leaving out the brackets. Then the signs inside come out wrong." with a `✗ Common mistake:`
+  note under the line. A common mistake that is the REASON for a step is explained at that step; only a
+  "Watch out" goes after the answer.
+- **"Add up like terms"**, not "collect the terms" (19 Oct 2026).
 - **A power of a power: multiply straight away, on the same line** (19 Oct 2026: "a power of a power
   means multiply the two powers, just multiply directly, show the continuation of the equation, don't
   have to separately show the multiplying of the two powers"): `5^{x+2} = (5^2)^{x-1} = 5^{2x-2}` —
