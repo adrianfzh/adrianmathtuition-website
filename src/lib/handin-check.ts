@@ -85,6 +85,8 @@ export function missingAfterMarking(resultJson: unknown): HandinMissing[] {
   const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as Record<string, any>;
   if (!rj.portal_submission) return [];
   if (rj.assignment_id || rj.source?.paper_kind === 'practice-again') return [];
+  // ☑️ "I only did some questions" (19 Oct 2026): the blanks are the questions not set.
+  if (rj.selected_only === true) return [];
   // Maths only: a science paper's Section B is a choice ("answer one of Q10/Q11"), so a
   // question with no working there is usually the one they didn't pick.
   if (rj.subject && rj.subject !== 'math') return [];

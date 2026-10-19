@@ -32,6 +32,12 @@ Status: **BUILT 29–30 Sep 2026** (Adrian: "do the build order you suggest"), i
    `missing-questions` naming them for 3 days with ➕ Add missing pages under it, and a
    ⚠️ watch-out. Not built: the Monday count, the marker reading `answer:'not-done'`.
 
+**Skipped for "I only did some questions" (19 Oct 2026).** Adrian sets selected TYS questions,
+so the blanks are expected: a hand-in sent with the box ticked (`selected_only`) is not
+checked ①–⑤ (the route asks the bot nothing; only the duplicate ask stays), and the backstop ⑥
+(`missingAfterMarking`) names nothing. The marker counts only the attempted questions →
+`docs/MARKING.md` §☑️ Selected questions only.
+
 Follows the 5-step recipe in
 CLAUDE.md §Building doctrine. Owner of the standard: Adrian. Related:
 [`SPEC-PAPER-MATCH.md`](SPEC-PAPER-MATCH.md) (the paper key, bank, library and fingerprint

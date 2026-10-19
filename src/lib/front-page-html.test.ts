@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { partSuffix, analyse } from './paper-analysis';
-import { frontPageHtml, paperBar, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject, outOfSyllabusLine } from './front-page-html';
-import { changedPartCount, ungroundedFrontPage, lostPartsFromRun, outOfSyllabusFrontPage } from './front-page-build';
+import { frontPageHtml, paperBar, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject, outOfSyllabusLine, selectedLine } from './front-page-html';
+import { changedPartCount, ungroundedFrontPage, lostPartsFromRun, outOfSyllabusFrontPage, selectedFrontPage } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
@@ -731,6 +731,34 @@ describe('the cover names questions left out for the syllabus', () => {
     expect(html).toContain('class="oos-tag">Total marks reduced — some questions are not in the syllabus');
     expect(html).toMatch(/\.oos-tag\{[^}]*color:#c2410c/);
     expect(frontPageHtml({ ...base, awarded: 70, max: 80 })).not.toContain('oos-tag');
+  });
+});
+
+// ☑️ Selected questions only (Adrian, 19 Oct 2026: "a checkbox that says just selected questions,
+// then marker will know to mark attempted questions") — one plain line under the heading.
+describe('the cover names the selected questions', () => {
+  const rj = { selected_only: true, selected_questions: ['7', '2', '5'], totals: { awarded: 10, max: 14, counted_max: 14, max_source: 'counted' }, grounding: { source: 'none' } };
+
+  it('reads the list off result_json, only on a selected-questions run', () => {
+    expect(selectedFrontPage(rj)).toEqual({ questions: ['2', '5', '7'] });
+    expect(selectedFrontPage({ selected_questions: ['2'] })).toBeNull();
+    expect(selectedFrontPage({ selected_only: true, selected_questions: [] })).toBeNull();
+    expect(selectedFrontPage(null)).toBeNull();
+  });
+
+  it('one line: which questions and what it is out of — no disclaimers, no names', () => {
+    const line = selectedLine({ max: 14, selected: selectedFrontPage(rj) });
+    expect(line).toContain('<b>Selected questions: Q2, Q5 and Q7</b> — out of 14');
+    expect(line).not.toMatch(/Adrian|Claude|Opus|Sonnet|AI|not attempted/);
+    expect(selectedLine({ max: 14, selected: null })).toBe('');
+  });
+
+  it('on the page, with no "marked without the question paper" line and no grade band', () => {
+    expect(ungroundedFrontPage(rj)).toBeNull();
+    const html = frontPageHtml({ ...base, awarded: 10, max: 14, selected: selectedFrontPage(rj) });
+    expect(html).toContain('Selected questions: Q2, Q5 and Q7');
+    expect(kindsScore({ ...base, awarded: 10, max: 14, selected: { questions: ['2'] } }).official).toBe(false);
+    expect(frontPageHtml({ ...base, awarded: 70, max: 90 })).not.toContain('sel-line');
   });
 });
 

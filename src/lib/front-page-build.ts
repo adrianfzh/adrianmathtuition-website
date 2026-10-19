@@ -98,11 +98,14 @@ export async function buildFrontPage(
   const ungrounded = ungroundedFrontPage(run.result_json);
   // 📚 Questions no longer in the syllabus, left out of the total (17 Oct 2026).
   const outOfSyllabus = outOfSyllabusFrontPage(run.result_json);
+  // ☑️ Selected questions only (19 Oct 2026).
+  const selected = selectedFrontPage(run.result_json);
 
   return renderFrontPagePng({
     remarked,
     ungrounded,
     outOfSyllabus,
+    selected,
     errorKinds,
     remark,
     studentName: meta.studentName || run.student_name,
@@ -176,9 +179,12 @@ export function lostPartsFromRun(run: RunRow): LostPart[] {
  */
 export function ungroundedFrontPage(resultJson: unknown): { countedMax: number } | null {
   const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as {
+    selected_only?: unknown;
     grounding?: { source?: unknown } | null;
     totals?: { max?: unknown; counted_max?: unknown; max_source?: unknown } | null;
   };
+  // A selected-questions hand-in is out of what was done by design — no "official total" is coming.
+  if (rj.selected_only === true) return null;
   const t = rj.totals || {};
   const countedMax = Number(t.counted_max);
   const ok = isUngroundedTotal({
@@ -188,6 +194,18 @@ export function ungroundedFrontPage(resultJson: unknown): { countedMax: number }
     max: Number(t.max),
   });
   return ok ? { countedMax } : null;
+}
+
+/**
+ * ☑️ The cover's `selected` input: the questions a selected-questions hand-in was marked on
+ * (the bot's lib/selected-only writes `selected_only: true` + `selected_questions`), or null. Pure.
+ */
+export function selectedFrontPage(resultJson: unknown): { questions: string[] } | null {
+  const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as { selected_only?: unknown; selected_questions?: unknown };
+  if (rj.selected_only !== true || !Array.isArray(rj.selected_questions)) return null;
+  const questions = rj.selected_questions.map(q => String(q ?? '').trim()).filter(q => /^\d+$/.test(q))
+    .sort((a, b) => Number(a) - Number(b));
+  return questions.length ? { questions } : null;
 }
 
 /**

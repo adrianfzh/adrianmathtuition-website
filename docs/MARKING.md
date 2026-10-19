@@ -587,6 +587,34 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   never cut. **Not covered yet:** a single PART marked out of syllabus inside `parts`; a paper whose
   allocation is Adrian's APPROVED split (the bank is not asked then); papers already released
   (nothing was re-marked — a 🔁 Re-mark applies it).
+- **☑️ Selected questions only (19 Oct 2026, BUILT):** Adrian, 19 Oct 2026: *"i am letting
+  students do selected questions from tys 2016 to 2020, but when they submit for marking …
+  students will only do the selected questions and leave the other questions empty"* → *"how
+  about a checkbox that says just selected questions, then marker will know to mark attempted
+  questions. give that option to me as well, in mark papers in admin"*. **Where:** the hand-in
+  page (`/app/submit` and `/app/science/submit`, one `submit-client.tsx`) shows a checkbox **"I
+  only did some questions"** (hidden on work from the tutor — that sheet IS the selection);
+  `/admin/mark-paper` shows **"Selected questions only"** beside "out of" (▶ Mark and 🌙 Queue
+  both carry it). It is stamped `result_json.selected_only = true` (site route stamp / bot
+  `savePaper` / `direct` body `selectedOnly`) and survives the fill and a re-mark like
+  `total_max_override`. **The marker** (bot `lib/selected-only.js`, wired in
+  `ai/marker-assemble.js reconcileStep`): after reconcile, every QUESTION with no working on any
+  page is taken off the results — no 0/n row, no "not attempted", its chip and written-in
+  solution come off the page (dropped like a superseded read; a page with nothing else goes back
+  clean). A question with ANY part attempted counts whole — its blank parts stay 0/n, and the
+  allocation audit may add its missing parts (`allocationForSelected`), never a question that
+  was not attempted. **The total** is the sum of the attempted questions: `groundArgsFor
+  ({selectedOnly})` treats it like a Practice Again sheet — no override / cover / recognised /
+  registry total, no near-90 alarm, no "only N of M marks located", no trim, no allocation
+  re-read. `result_json.selected_questions = ['2','5','7']`. **Skipped:** the hand-in
+  completeness check ①–⑤ (only the duplicate ask remains) and the backstop ⑥
+  (`missingAfterMarking` returns nothing). **Cover:** one line under the heading, "Selected
+  questions: Q2, Q5 and Q7 — out of 14" (`front-page-html selectedLine`), no "marked without the
+  question paper" line, no grade band. The queue Telegram carries "☑️ Selected questions: … — out
+  of N.". Verified by a dry assembly of Lakshanya's VJC 2024 P2 (`b60a84cb`, 30/107 with Q2–Q5
+  and Q10 blank) → 30/56, Q1, Q6–Q9, Q11; nothing re-marked. **Not built:** ticking the box on
+  a paper already saved (▶ Mark of an old row uses what was stamped at hand-in); a selected
+  question the student skipped by mistake is simply not counted.
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was
   wrong most of the time on Adrian's compiled sets — a skipped-blank question never enters

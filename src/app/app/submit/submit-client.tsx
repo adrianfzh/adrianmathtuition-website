@@ -135,6 +135,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const [error, setError] = useState('');
   // What the pre-flight found wrong with the hand-in. Shown once; sending again
   // goes through regardless (see the route — this is advice, never a gate).
+  // ☑️ "I only did some questions" (Adrian, 19 Oct 2026 — selected TYS questions): the marker
+  // counts only the questions with working on them, and the missing-questions check is skipped.
+  const [selectedOnly, setSelectedOnly] = useState(false);
   const [findings, setFindings] = useState<{ kind: string; message: string; blocking?: boolean; missing?: unknown }[]>([]);
   // What the check asked about the first time (SPEC-HANDIN-COMPLETENESS ④) — echoed
   // back on the final send so the run records it (lib/handin-check).
@@ -328,6 +331,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         ...(schemeUrls.length ? { schemeUrls } : {}),
         ...(confirmed ? { confirmed: true, handinAnswer: answer ?? 'sent-anyway' } : {}),
         ...(askedCheck ? { handinCheck: askedCheck } : {}),
+        ...(selectedOnly && !assignment ? { selectedOnly: true } : {}),
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
       });
@@ -638,6 +642,23 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             </>
           )}
         </div>
+
+        {/* ☑️ Selected questions only (Adrian, 19 Oct 2026: "a checkbox that says just selected
+            questions, then marker will know to mark attempted questions"). Not on work from the
+            tutor — that sheet IS the selection. */}
+        {!assignment && (
+          <label className="flex items-start gap-2.5 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-navy cursor-pointer">
+            <input
+              type="checkbox" checked={selectedOnly} disabled={busy}
+              onChange={(e) => { setSelectedOnly(e.target.checked); if (e.target.checked) setFindings(f => f.filter(x => x.kind === 'duplicate')); }}
+              className="mt-0.5 h-4 w-4 accent-[hsl(220,60%,25%)]"
+            />
+            <span>
+              <b>I only did some questions</b>
+              <span className="block text-[12px] text-gray-500">Only the questions you answered are marked and counted.</span>
+            </span>
+          </label>
+        )}
 
         {error && <p className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">{error}</p>}
 

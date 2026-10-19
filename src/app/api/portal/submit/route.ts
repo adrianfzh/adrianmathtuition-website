@@ -99,7 +99,7 @@ export async function POST(req: Request) {
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown; handinCheck?: { asked?: unknown; list?: unknown; key?: unknown }; handinAnswer?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown; handinCheck?: { asked?: unknown; list?: unknown; key?: unknown }; handinAnswer?: unknown; selectedOnly?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -351,7 +351,13 @@ export async function POST(req: Request) {
   // hand-in is worse than the gap it catches — the paper gets marked with a
   // missing page either way, but a refused hand-in never arrives at all.
   let preflightResult: { list?: unknown; key?: unknown; missing?: unknown } | null = null;
-  if (!body.confirmed) {
+  // ☑️ "I only did some questions" (Adrian, 19 Oct 2026, lib/selected-only in the bot): the
+  // blanks are expected, so the missing-questions check is not asked at all. Never on a sheet
+  // from the tutor — that sheet IS the selection.
+  const selectedOnly = body.selectedOnly === true && !assignment;
+  if (!body.confirmed && selectedOnly) {
+    if (dupAsk) return NextResponse.json({ needsConfirm: true, findings: [{ kind: 'duplicate', blocking: true, message: duplicateMessage(dupAsk), runId: dupAsk.run.id }], list: 'none', key: null }, { status: 409 });
+  } else if (!body.confirmed) {
     // 40 s at most (29 Sep 2026): the check reads every page (in parallel batches,
     // ~15 s for 15 pages), and this route has 90 s in all — a slow read must never
     // cost the student their hand-in, so a timeout is simply "no findings".
@@ -446,6 +452,8 @@ export async function POST(req: Request) {
           ? { source: { ...(rj.source as Record<string, unknown>), scheme_source: { ...(((rj.source as { scheme_source?: Record<string, unknown> }).scheme_source) ?? {}), attached_by: 'student' } } }
           : {}),
         ...(assignment ? { assignment_id: assignment.id } : {}),
+        // ☑️ The marker counts only the questions with working on them (bot lib/selected-only).
+        ...(selectedOnly ? { selected_only: true } : {}),
         // Pre-registration (SPEC-PRINT-PAPER.md): the exact QB questions on
         // the printed sheet, in order — the marker can ground on their stored
         // solutions instead of working out what each question even is.

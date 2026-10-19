@@ -41,6 +41,9 @@ describe('missingAfterMarking — the backstop', () => {
   it('names questions the marker never found', () => {
     expect(missingAfterMarking({ ...base, unattempted_questions: ['4', '7'] })).toEqual([{ q: 4 }, { q: 7 }]);
   });
+  it('asks nothing on an "I only did some questions" hand-in (19 Oct 2026)', () => {
+    expect(missingAfterMarking({ ...base, selected_only: true, unattempted_questions: ['4', '7'], handin_check: { answer: 'sent-anyway', missing: [{ q: 1 }] } })).toEqual([]);
+  });
   it('adds parts the student was warned about and sent anyway', () => {
     expect(missingAfterMarking({ ...base, unattempted_questions: ['2'], handin_check: { answer: 'sent-anyway', missing: [{ q: 1, part: 'a' }, { q: 2 }] } }))
       .toEqual([{ q: 1, part: 'a' }, { q: 2 }]);

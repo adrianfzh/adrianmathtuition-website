@@ -304,6 +304,9 @@ export default function MarkPaperPage() {
   // auto (known sets ground via the bot's registry; anything else stays counted).
   // Only read at mark/queue time; a typed value always beats the registry.
   const [outOf, setOutOf] = useState('');
+  // ☑️ Selected questions only (Adrian, 19 Oct 2026: "give that option to me as well, in mark
+  // papers in admin"): the marker counts only the questions with working (bot lib/selected-only).
+  const [selectedOnly, setSelectedOnly] = useState(false);
   // iPad share-sheet inbox: files the "✍️ Mark paper" Shortcut posted from WhatsApp
   // (iPadOS keeps websites out of the share sheet; the Shortcut is the workaround).
   const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number; kind?: 'working' | 'paper' | null }[]>([]);
@@ -550,6 +553,7 @@ export default function MarkPaperPage() {
       // Surface a stored "out of" the same way the name prefills — a re-mark of
       // this run must ground against the same official total.
       setOutOf(rj.total_max_override ? String(rj.total_max_override) : '');
+      setSelectedOnly(rj.selected_only === true);
       setRunId(d.run.id);
       setLoadedName(d.run.paper_name || 'Paper');
       // The stored run doesn't carry its cost/time back, and leaving the last run's
@@ -792,7 +796,7 @@ export default function MarkPaperPage() {
         const sp = await fetch('/api/admin/mark-paper', {
           method: 'POST', headers: authHeaders,
           body: JSON.stringify({
-            phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(), subject: markSubject,
+            phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(), subject: markSubject, ...(selectedOnly ? { selectedOnly: true } : {}),
             source: {
               paper_pdf_url: paperPdfUrl || null,
               photos: originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean),
@@ -825,6 +829,7 @@ export default function MarkPaperPage() {
             runId: pendingId || undefined,
             images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
             paperName: paperLabel, totalMax: outOfValue(), model: markModel, style: markStyle, subject: markSubject,
+            ...(selectedOnly ? { selectedOnly: true } : {}),
           }),
       });
       await applyMarkResponse(resp);
@@ -1462,7 +1467,7 @@ export default function MarkPaperPage() {
     }
     const sp = await fetch('/api/admin/mark-paper', {
       method: 'POST', headers: authHeaders,
-      body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: opts?.totalMax, subject: markSubject, source: { paper_pdf_url: opts?.paperPdfUrl || null, photos } }),
+      body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: opts?.totalMax, subject: markSubject, ...(selectedOnly ? { selectedOnly: true } : {}), source: { paper_pdf_url: opts?.paperPdfUrl || null, photos } }),
     });
     const spd = await sp.json();
     if (!sp.ok || !spd.run_id) throw new Error(spd.error || 'could not save the paper');
@@ -1487,7 +1492,7 @@ export default function MarkPaperPage() {
       const { position, etaMinutes, batchDiscount } = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
-      setImages([]); setImgPreviews([]); setPdf(null); setSchemeFiles([]); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf('');
+      setImages([]); setImgPreviews([]); setPdf(null); setSchemeFiles([]); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf(''); setSelectedOnly(false);
       // Say the price route and the wait out loud (Adrian, 26 Aug 2026: "put it
       // clearly as queue markings at 50% discount … and mention roughly when").
       const eta = Array.isArray(etaMinutes) && etaMinutes.length === 2 ? ` — expect it marked in ~${etaMinutes[0]}–${etaMinutes[1]} min` : '';
@@ -2252,6 +2257,11 @@ export default function MarkPaperPage() {
             title="Official paper total for the red badge. Blank = auto: named prelim sets ground to the syllabus total (EM/AM 90, JC 100); anything else uses the counted sum."
             style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, width: 76 }}
           />
+          <label style={{ fontSize: 13, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+            title="Only the questions with working on them are marked and counted. Blank questions are left out — no 0 marks, no 'not attempted'. The total is the attempted questions' marks.">
+            <input type="checkbox" checked={selectedOnly} onChange={(e) => setSelectedOnly(e.target.checked)} />
+            Selected questions only
+          </label>
         </div>
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {/* 🌙 Queue is the DEFAULT path (Adrian, 2 Sep 2026): a queued paper is the

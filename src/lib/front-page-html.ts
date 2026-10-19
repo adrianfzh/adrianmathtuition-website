@@ -121,6 +121,13 @@ export type FrontPageInput = {
    */
   outOfSyllabus?: { questions: string[]; marks: number; paperMax: number | null } | null;
   /**
+   * ☑️ SELECTED QUESTIONS ONLY (Adrian, 19 Oct 2026: "a checkbox that says just selected
+   * questions, then marker will know to mark attempted questions"). The student did only some
+   * questions; the bot counted those alone (lib/selected-only) and listed them. One plain line
+   * under the heading names them. Absent → the cover is byte-identical to before.
+   */
+  selected?: { questions: string[] } | null;
+  /**
    * The paper's subject (`paper_marking_runs.paper_subject`: 'A Math' | 'E Math' |
    * 'H2 Math' | 'Physics' | 'Chemistry' | 'Biology' | 'Other'), 25 Sep 2026 —
    * Adrian: colour-code the cover "so it's easily recognizable". A FRAME, not a
@@ -503,12 +510,26 @@ border:1.5px solid var(--verdict);border-left:5px solid var(--verdict);padding:.
 }
 
 /**
+ * ☑️ The one line on a selected-questions hand-in: which questions were marked and what the
+ * score is out of — "Selected questions: Q2, Q5 and Q7 — out of 14". Pure; '' when absent.
+ */
+export function selectedLine(input: Pick<FrontPageInput, 'max' | 'selected'>): string {
+  const sel = input.selected;
+  if (!sel || !Array.isArray(sel.questions) || !sel.questions.length) return '';
+  return `<style>.sel-line{margin:-.15rem 0 .7rem;font-size:.88rem;color:var(--ink)}
+.sel-line b{font-weight:700}</style>`
+    + `<p class="sel-line"><b>Selected questions: ${esc(questionList(sel.questions))}</b> — out of ${input.max}</p>`;
+}
+
+/**
  * The score the MARKS LOST row reasons about. Normally the paper's own total.
  * On a paper marked without the question paper it is what the marker could see,
  * flagged `official: false` so no O-Level grade band is read off it — a band is
  * a promise, and this page cannot keep one until the paper is in. Pure.
  */
 export function kindsScore(input: FrontPageInput): { awarded: number; max: number; official?: boolean } {
+  // A few selected questions are not a paper: no grade band is read off them.
+  if (input.selected && input.selected.questions.length) return { awarded: input.awarded, max: input.max, official: false };
   if (input.ungrounded && input.ungrounded.countedMax > 0) {
     return { awarded: input.awarded, max: input.ungrounded.countedMax, official: false };
   }
@@ -689,7 +710,7 @@ h2::before{content:none}
   ${badge(input)}
   <div>
     <p class="student">${esc(input.studentName || '')}</p>
-    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}${ungroundedLine(input)}${outOfSyllabusLine(input)}
+    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}${ungroundedLine(input)}${outOfSyllabusLine(input)}${selectedLine(input)}
     <p class="verdict">${lead}</p>
   </div>
 </div>
