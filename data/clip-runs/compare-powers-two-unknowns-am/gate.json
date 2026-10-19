@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T03:34:40.320Z",
+ "at": "2026-10-19T03:44:32.940Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,7 +8,7 @@
   },
   "maths": {
    "ok": true,
-   "detail": "18/18 line checks"
+   "detail": "17/17 line checks"
   },
   "board": {
    "ok": true,

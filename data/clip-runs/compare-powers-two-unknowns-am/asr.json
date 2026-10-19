@@ -106,10 +106,9 @@
   },
   {
    "beat": 18,
-   "bag": 0.82,
+   "bag": 1,
    "score": 1,
-   "heard": "Collect the terms. The left side is a ^ 2x + y - 1.",
-   "said": "Collect the terms: the left side is A to the power two X plus Y minus one,"
+   "heard": null
   },
   {
    "beat": 19,
@@ -119,36 +118,12 @@
   },
   {
    "beat": 20,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 21,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 22,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 23,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 24,
    "bag": 0.93,
    "score": 0.93,
    "heard": null
   },
   {
-   "beat": 25,
+   "beat": 21,
    "bag": 1,
    "score": 1,
    "heard": null

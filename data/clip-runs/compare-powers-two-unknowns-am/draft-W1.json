@@ -82,83 +82,48 @@
    ]
   },
   {
-   "say": "Do the power first: the bracket must go before we can group the bases.",
+   "say": "Do the power first: the whole fraction is squared, so its top and its bottom are each squared.",
    "asks": [
-    "Why do the power first?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "s1",
-     "on": "the power first"
-    }
-   ]
-  },
-  {
-   "say": "Squaring a fraction squares its top and its bottom.",
-   "asks": [
+    "Why do the power first?",
     "Does the square go to the top and bottom?"
    ],
    "do": [
     {
      "do": "highlight",
-     "token": "s1"
-    },
-    {
-     "do": "note",
-     "text": "$\\left(\\frac{M}{N}\\right)^2=\\frac{M^2}{N^2}$",
-     "near": "s1",
-     "on": "its top and"
+     "token": "q1",
+     "on": "the whole fraction"
     }
    ]
   },
   {
-   "say": "Now times power: a power of a power, multiply the powers.",
+   "say": "Times power: multiply each power by two. Two X plus two on top, two Y minus four below.",
    "asks": [
-    "Which law is this?"
-   ],
-   "do": [
-    {
-     "do": "highlight",
-     "token": "s1",
-     "on": "a power of"
-    },
-    {
-     "do": "note",
-     "text": "Times power: $(a^m)^n=a^{mn}$",
-     "near": "s1",
-     "on": "multiply the powers"
-    }
-   ]
-  },
-  {
-   "say": "Two times X plus one is two X plus two. Two times Y minus two is two Y minus four.",
-   "asks": [
-    "Why multiply by two?",
-    "Why not write 2(x + 1) first?"
+    "Which law is this?",
+    "Why multiply by two?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "s2"
+     "token": "r1"
+    },
+    {
+     "do": "note",
+     "text": "Times power: $(a^m)^n=a^{mn}$",
+     "near": "r1",
+     "on": "each power by"
     }
    ]
   },
   {
-   "say": "Put this back into the equation, next to the other fraction.",
+   "say": "The other fraction and the right side stay as they are.",
    "asks": [
     "Where does the rest of the line come from?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "r1",
-     "on": "Put this back"
-    },
-    {
-     "do": "write",
      "token": "r2",
-     "on": "next to the"
+     "on": "The other fraction"
     }
    ]
   },
@@ -170,7 +135,7 @@
    "do": [
     {
      "do": "write",
-     "step": 4,
+     "step": 3,
      "on": "Multiplying fractions"
     },
     {
@@ -203,7 +168,7 @@
     },
     {
      "do": "write",
-     "step": 5,
+     "step": 4,
      "on": "so minus the"
     },
     {
@@ -235,69 +200,33 @@
    ]
   },
   {
-   "say": "Now tidy each power. For A: two X plus two, minus the bracket three minus Y.",
-   "asks": [
-    "Why tidy one power at a time?"
-   ],
-   "do": [
-    {
-     "do": "highlight",
-     "token": "d1",
-     "on": "tidy each power"
-    },
-    {
-     "do": "write",
-     "token": "ta1",
-     "on": "For A"
-    }
-   ]
-  },
-  {
-   "say": "Minus a bracket flips every sign inside: the three becomes minus three, and minus Y becomes plus Y.",
+   "say": "Now open the brackets. For A, minus a bracket flips every sign inside: minus three, and plus Y.",
    "asks": [
     "Why does minus Y become plus Y?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "ta2",
-     "on": "the three becomes"
+     "token": "t1",
+     "on": "For A"
     },
     {
      "do": "note",
      "text": "Minus a bracket flips every sign inside",
-     "near": "ta2",
-     "on": "minus Y becomes"
+     "near": "t1",
+     "on": "minus three, and"
     }
    ]
   },
   {
-   "say": "For B: X plus two, minus the bracket two Y minus four.",
-   "asks": [
-    "Which is the bottom power for b?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "tb1",
-     "on": "For B"
-    },
-    {
-     "do": "highlight",
-     "token": "d2",
-     "on": "X plus two"
-    }
-   ]
-  },
-  {
-   "say": "Again every sign flips: minus two Y, and plus four.",
+   "say": "For B, the same: minus two Y, and plus four.",
    "asks": [
     "Why does minus four become plus four?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "tb2",
+     "token": "t2",
      "on": "minus two Y"
     }
    ]
@@ -396,11 +325,16 @@
    "do": [
     {
      "do": "highlight",
-     "token": [
-      "u1",
-      "u5"
-     ],
+     "token": "u1",
+     "tone": "orange",
      "on": "Since the base"
+    },
+    {
+     "do": "highlight",
+     "token": "u5",
+     "inside": "a",
+     "tone": "orange",
+     "on": "the same, the"
     },
     {
      "do": "move",
@@ -426,10 +360,15 @@
     },
     {
      "do": "highlight",
-     "token": [
-      "u3",
-      "u5"
-     ],
+     "token": "u3",
+     "tone": "sky",
+     "on": "is the same"
+    },
+    {
+     "do": "highlight",
+     "token": "u5",
+     "inside": "b",
+     "tone": "sky",
      "on": "so its powers"
     }
    ]
@@ -453,6 +392,8 @@
     {
      "do": "highlight",
      "token": "u5",
+     "inside": "b",
+     "tone": "sky",
      "on": "the bare B"
     }
    ]
@@ -466,7 +407,7 @@
    "do": [
     {
      "do": "write",
-     "step": 11,
+     "step": 9,
      "on": "X equals three"
     },
     {

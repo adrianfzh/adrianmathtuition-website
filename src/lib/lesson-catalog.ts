@@ -169,7 +169,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Indices',
     title: 'Compare powers: two unknowns',
-    minutes: 3,
+    minutes: 2,
   },
   {
     slug: 'growth-and-decay-am',

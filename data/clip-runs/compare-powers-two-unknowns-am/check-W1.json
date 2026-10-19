@@ -3,7 +3,7 @@
   "title": "Compare powers: two unknowns",
   "level": "AM",
   "topic": "Indices",
-  "minutes": 3,
+  "minutes": 2,
   "kind": "clip",
   "theme": "chalk",
   "question": "Given that $\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2 \\times \\dfrac{b^{x+2}}{a^{3-y}} = a^9 b$, find the value of $x$ and of $y$.",
@@ -27,20 +27,12 @@
           ]
         },
         {
-          "heading": "Do the power first",
-          "tokens": [
-            { "id": "s1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
-            { "id": "s2", "tex": "=\\dfrac{a^{2x+2}}{b^{2y-4}}" }
-          ]
-        },
-        {
           "tokens": [
             { "id": "r1", "tex": "\\dfrac{a^{2x+2}}{b^{2y-4}}" },
             { "id": "r2", "tex": "\\times\\dfrac{b^{x+2}}{a^{3-y}}=a^9b" }
           ]
         },
         {
-          "heading": "Group the same bases",
           "tokens": [
             {
               "id": "g1",
@@ -50,7 +42,6 @@
           ]
         },
         {
-          "heading": "Divide, minus the powers",
           "tokens": [
             { "id": "d1", "tex": "a^{(2x+2)-(3-y)}" },
             { "id": "d2", "tex": "\\times b^{(x+2)-(2y-4)}" },
@@ -58,16 +49,9 @@
           ]
         },
         {
-          "heading": "Tidy up each power",
           "tokens": [
-            { "id": "ta1", "tex": "a:\\;(2x+2)-(3-y)" },
-            { "id": "ta2", "tex": "=2x+2-3+y" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "tb1", "tex": "b:\\;(x+2)-(2y-4)" },
-            { "id": "tb2", "tex": "=x+2-2y+4" }
+            { "id": "t1", "tex": "a^{2x+2-3+y}" },
+            { "id": "t2", "tex": "\\times b^{x+2-2y+4}=a^9b" }
           ]
         },
         {
@@ -76,11 +60,10 @@
             { "id": "u2", "tex": "{}^{2x+y-1}", "tight": true },
             { "id": "u3", "tex": "\\times b" },
             { "id": "u4", "tex": "{}^{x-2y+6}", "tight": true },
-            { "id": "u5", "tex": "=a^9b^1" }
+            { "id": "u5", "tex": "=\\htmlClass{lsn-pc-a}{a^9}\\htmlClass{lsn-pc-b}{b^1}" }
           ]
         },
         {
-          "heading": "Compare powers of each base",
           "tokens": [
             { "id": "ca", "tex": "a:" },
             { "id": "ca2", "tex": "2x+y-1", "from": "u2" },
@@ -95,7 +78,6 @@
           ]
         },
         {
-          "heading": "Solve simultaneously",
           "tokens": [
             { "id": "ans", "tex": "x=3,\\;y=4", "hl": "emerald" }
           ]
@@ -140,48 +122,32 @@
           ]
         },
         {
-          "say": "Do the power first: the bracket must go before we can group the bases.",
-          "asks": ["Why do the power first?"],
+          "say": "Do the power first: the whole fraction is squared, so its top and its bottom are each squared.",
+          "asks": ["Why do the power first?", "Does the square go to the top and bottom?"],
           "do": [
-            { "do": "write", "token": "s1", "on": "the power first" }
+            { "do": "highlight", "token": "q1", "on": "the whole fraction" }
           ]
         },
         {
-          "say": "Squaring a fraction squares its top and its bottom.",
-          "asks": ["Does the square go to the top and bottom?"],
+          "say": "Times power: multiply each power by two. Two X plus two on top, two Y minus four below.",
+          "asks": ["Which law is this?", "Why multiply by two?"],
           "do": [
-            { "do": "highlight", "token": "s1" },
-            { "do": "note", "text": "$\\left(\\frac{M}{N}\\right)^2=\\frac{M^2}{N^2}$", "near": "s1", "on": "its top and" }
+            { "do": "write", "token": "r1" },
+            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "r1", "on": "each power by" }
           ]
         },
         {
-          "say": "Now times power: a power of a power, multiply the powers.",
-          "asks": ["Which law is this?"],
-          "do": [
-            { "do": "highlight", "token": "s1", "on": "a power of" },
-            { "do": "note", "text": "Times power: $(a^m)^n=a^{mn}$", "near": "s1", "on": "multiply the powers" }
-          ]
-        },
-        {
-          "say": "Two times X plus one is two X plus two. Two times Y minus two is two Y minus four.",
-          "asks": ["Why multiply by two?", "Why not write 2(x + 1) first?"],
-          "do": [
-            { "do": "write", "token": "s2" }
-          ]
-        },
-        {
-          "say": "Put this back into the equation, next to the other fraction.",
+          "say": "The other fraction and the right side stay as they are.",
           "asks": ["Where does the rest of the line come from?"],
           "do": [
-            { "do": "write", "token": "r1", "on": "Put this back" },
-            { "do": "write", "token": "r2", "on": "next to the" }
+            { "do": "write", "token": "r2", "on": "The other fraction" }
           ]
         },
         {
           "say": "Now group the same bases. Multiplying fractions: tops together, bottoms together.",
           "asks": ["Why can I join the two fractions?"],
           "do": [
-            { "do": "write", "step": 4, "on": "Multiplying fractions" },
+            { "do": "write", "step": 3, "on": "Multiplying fractions" },
             { "do": "highlight", "token": "g1", "on": "bottoms together" }
           ]
         },
@@ -191,7 +157,7 @@
           "do": [
             { "do": "highlight", "token": "g1", "inside": "a", "tone": "orange", "on": "The same base" },
             { "do": "highlight", "token": "g1", "inside": "b", "tone": "sky", "on": "on top and" },
-            { "do": "write", "step": 5, "on": "so minus the" },
+            { "do": "write", "step": 4, "on": "so minus the" },
             { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "d1", "on": "top power minus" }
           ]
         },
@@ -204,34 +170,18 @@
           ]
         },
         {
-          "say": "Now tidy each power. For A: two X plus two, minus the bracket three minus Y.",
-          "asks": ["Why tidy one power at a time?"],
-          "do": [
-            { "do": "highlight", "token": "d1", "on": "tidy each power" },
-            { "do": "write", "token": "ta1", "on": "For A" }
-          ]
-        },
-        {
-          "say": "Minus a bracket flips every sign inside: the three becomes minus three, and minus Y becomes plus Y.",
+          "say": "Now open the brackets. For A, minus a bracket flips every sign inside: minus three, and plus Y.",
           "asks": ["Why does minus Y become plus Y?"],
           "do": [
-            { "do": "write", "token": "ta2", "on": "the three becomes" },
-            { "do": "note", "text": "Minus a bracket flips every sign inside", "near": "ta2", "on": "minus Y becomes" }
+            { "do": "write", "token": "t1", "on": "For A" },
+            { "do": "note", "text": "Minus a bracket flips every sign inside", "near": "t1", "on": "minus three, and" }
           ]
         },
         {
-          "say": "For B: X plus two, minus the bracket two Y minus four.",
-          "asks": ["Which is the bottom power for b?"],
-          "do": [
-            { "do": "write", "token": "tb1", "on": "For B" },
-            { "do": "highlight", "token": "d2", "on": "X plus two" }
-          ]
-        },
-        {
-          "say": "Again every sign flips: minus two Y, and plus four.",
+          "say": "For B, the same: minus two Y, and plus four.",
           "asks": ["Why does minus four become plus four?"],
           "do": [
-            { "do": "write", "token": "tb2", "on": "minus two Y" }
+            { "do": "write", "token": "t2", "on": "minus two Y" }
           ]
         },
         {
@@ -282,7 +232,8 @@
           "say": "Since the base A is the same, the powers must be the same. Hence two X plus Y minus one equals nine.",
           "asks": ["Why must the powers be the same?"],
           "do": [
-            { "do": "highlight", "token": ["u1", "u5"], "on": "Since the base" },
+            { "do": "highlight", "token": "u1", "tone": "orange", "on": "Since the base" },
+            { "do": "highlight", "token": "u5", "inside": "a", "tone": "orange", "on": "the same, the" },
             { "do": "move", "from": "u2", "on": "Hence two X" },
             { "do": "write", "token": "ca3", "on": "equals nine" }
           ]
@@ -292,7 +243,8 @@
           "asks": ["Why are the b powers equal?"],
           "do": [
             { "do": "write", "token": "cb" },
-            { "do": "highlight", "token": ["u3", "u5"], "on": "so its powers" }
+            { "do": "highlight", "token": "u3", "tone": "sky", "on": "is the same" },
+            { "do": "highlight", "token": "u5", "inside": "b", "tone": "sky", "on": "so its powers" }
           ]
         },
         {
@@ -301,14 +253,14 @@
           "do": [
             { "do": "move", "from": "u4", "on": "Hence X minus" },
             { "do": "write", "token": "cb3", "on": "equals one" },
-            { "do": "highlight", "token": "u5", "on": "the bare B" }
+            { "do": "highlight", "token": "u5", "inside": "b", "tone": "sky", "on": "the bare B" }
           ]
         },
         {
           "say": "Solve the two equations together: X equals three and Y equals four.",
           "asks": ["How do I solve them together?", "Can I check the answer?"],
           "do": [
-            { "do": "write", "step": 11, "on": "X equals three" },
+            { "do": "write", "step": 9, "on": "X equals three" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "Y equals four" }
           ]
         }

@@ -22,10 +22,10 @@
     "display": "x = 3, y = 4"
   },
   "outline": [
-    "Built 18 Oct 2026 one step at a time to the house rules (Indices clip 3): the question; the plan as maths (one power of a and one of b each side, then match the powers); Step 1 do the power first — square top and bottom, then Times power multiplied straight away on the same line (Adrian, 19 Oct 2026); Step 2 group the same bases into one fraction; Step 3 divide: Minus power, the brackets kept; Step 4 tidy each power on its own line, minus a bracket flips every sign inside; the tidy line with the bare b written as b to the power 1; Step 5 compare powers of each base (the powers moved down, why in a written drop-down); Step 6 solved together in one step (Adrian, 19 Oct 2026: AM students know this); the answer boxed. No Watch out, no steps strip."
+    "Built 19 Oct 2026; re-cut the same day to Adrian's note \"you don't have to do the powers first separate on another line, just make the equation go line by line, explaining along the way, having separate explanations break the flow > only do it if a concept is really complex\": the question; the plan as maths; then ONE equation, line by line — the power done in place (Times power), the bases grouped, Minus power with brackets kept, the brackets opened (minus a bracket flips every sign inside), collected, the bare b as b¹; since the base is the same the powers must be the same, hence one equation per base; solved together in one step; boxed. No headings, no side lines, no step numbers, no Watch out."
   ],
   "question": "Given that $\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2 \\times \\dfrac{b^{x+2}}{a^{3-y}} = a^9 b$, find the value of $x$ and of $y$.",
-  "minutes": 3,
+  "minutes": 2,
   "lines": [
     {
       "tokens": [
@@ -68,24 +68,6 @@
       ]
     },
     {
-      "heading": "Do the power first",
-      "tokens": [
-        {
-          "id": "s1",
-          "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2"
-        },
-        {
-          "id": "s2",
-          "tex": "=\\dfrac{a^{2x+2}}{b^{2y-4}}"
-        }
-      ],
-      "checks": [
-        {
-          "identity": "(a**(x+1)/b**(y-2))**2 = a**(2*x+2)/b**(2*y-4)"
-        }
-      ]
-    },
-    {
       "tokens": [
         {
           "id": "r1",
@@ -103,7 +85,6 @@
       ]
     },
     {
-      "heading": "Group the same bases",
       "tokens": [
         {
           "id": "g1",
@@ -121,7 +102,6 @@
       ]
     },
     {
-      "heading": "Divide, minus the powers",
       "tokens": [
         {
           "id": "d1",
@@ -143,37 +123,19 @@
       ]
     },
     {
-      "heading": "Tidy up each power",
       "tokens": [
         {
-          "id": "ta1",
-          "tex": "a:\\;(2x+2)-(3-y)"
+          "id": "t1",
+          "tex": "a^{2x+2-3+y}"
         },
         {
-          "id": "ta2",
-          "tex": "=2x+2-3+y"
+          "id": "t2",
+          "tex": "\\times b^{x+2-2y+4}=a^9b"
         }
       ],
       "checks": [
         {
-          "identity": "(2*x+2)-(3-y) = 2*x+2-3+y"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "tb1",
-          "tex": "b:\\;(x+2)-(2y-4)"
-        },
-        {
-          "id": "tb2",
-          "tex": "=x+2-2y+4"
-        }
-      ],
-      "checks": [
-        {
-          "identity": "(x+2)-(2*y-4) = x+2-2*y+4"
+          "identity": "a**(2*x+2-3+y) * b**(x+2-2*y+4) = a**((2*x+2)-(3-y)) * b**((x+2)-(2*y-4))"
         }
       ]
     },
@@ -199,12 +161,12 @@
         },
         {
           "id": "u5",
-          "tex": "=a^9b^1"
+          "tex": "=\\htmlClass{lsn-pc-a}{a^9}\\htmlClass{lsn-pc-b}{b^1}"
         }
       ],
       "checks": [
         {
-          "identity": "a**(2*x+y-1) * b**(x-2*y+6) = a**((2*x+2)-(3-y)) * b**((x+2)-(2*y-4))"
+          "identity": "a**(2*x+y-1) * b**(x-2*y+6) = a**(2*x+2-3+y) * b**(x+2-2*y+4)"
         },
         {
           "identity": "a**9*b**1 = a**9*b"
@@ -212,7 +174,6 @@
       ]
     },
     {
-      "heading": "Compare powers of each base",
       "tokens": [
         {
           "id": "ca",
@@ -278,8 +239,7 @@
             "y": 4
           }
         }
-      ],
-      "heading": "Solve simultaneously"
+      ]
     }
   ],
   "scroll": true
