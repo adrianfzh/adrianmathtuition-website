@@ -108,7 +108,9 @@ no focus, no clear.
   next line's token wraps the landing place in `\htmlClass{lsn-pc-<p>}{…}` and carries `"from"` + `"into": "<p>"`;
   write that line first (the bottom stays empty), then `move` on the words that say it. On a scrolling board
   never fly from a far line: write the equation again as the line's first tokens, and let the fraction
-  token `replaces` them (`from` the moving term, `into` its landing piece) — rewritten in place. Say WHY the
+  token `replaces` them (`from` the moving term, `into` its landing piece) — rewritten in place. Every piece that changes
+  place moves (`"also": [{"from": "<id>", "into": "<piece>"}]` for the others — "the animation … is not
+  smooth" when they jumped); keep the = its own token so it slides. Say WHY the
   step is done ("To simplify the expression, …") and name the property ("since it is divide, the powers minus").
 - **While a piece moves, nothing else is written**: the `move` is the only action on its words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own

@@ -195,7 +195,8 @@ function TokenSpan({ t, bits, away = false, wait = null }: { t: StepToken; bits?
     <span data-gone={away === 'gone' ? '1' : undefined} data-held={away === 'held' ? '1' : undefined}
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
-      data-into={t.into || undefined}
+      data-into={t.into ? [t.into, ...(t.also ?? []).map(a => a.into)].join(',') : undefined}
+      data-also={t.also?.length ? t.also.map(a => `${a.from}:${a.into}`).join(',') : undefined}
       data-from-piece={t.fromPiece || undefined}
       data-into-wait={wait || undefined}
       data-key={bits?.key}
@@ -292,7 +293,26 @@ type Rect = ReturnType<typeof offsetRect>;
 /** A clip's finished board fades for this long before the next board comes in. */
 const SCENE_LEAVE_MS = 700;
 
-function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement, was?: Rect) {
+/** Where the letters of `el` start inside its own box (layout px): a token's box also holds the
+ *  line's strut, a piece inside a fraction holds none, so boxes alone land a piece a little off
+ *  (Adrian, 19 Oct 2026: "the animation of moving the 5^(2x-1) is not smooth"). */
+function glyphOffset(el: HTMLElement): { left: number; top: number } | null {
+  const walk = document.createTreeWalker(el.querySelector('.katex-html') ?? el, NodeFilter.SHOW_TEXT);
+  let first: Text | null = null, last: Text | null = null;
+  for (let n = walk.nextNode(); n; n = walk.nextNode()) if ((n.textContent ?? '').trim()) { first ??= n as Text; last = n as Text; }
+  if (!first || !last) return null;
+  const range = document.createRange();
+  range.setStart(first, 0);
+  range.setEnd(last, last.length);
+  const g = range.getBoundingClientRect();
+  const b = el.getBoundingClientRect();
+  if (!g.width || !b.width) return null;
+  const k = el.offsetWidth ? b.width / el.offsetWidth : 1; // undo any scale on the board
+  return { left: (g.left - b.left) / k, top: (g.top - b.top) / k };
+}
+
+function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement, was?: Rect,
+  align?: { from?: { left: number; top: number } | null }) {
   const s = was ?? offsetRect(source, container);
   const t = offsetRect(target, container);
   if (s.width === 0 || t.width === 0) return;
@@ -378,9 +398,19 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   const dx = (t.width - w < 2 || !st ? (t.width - w) / 2
     : tt.endsWith(st) && !tt.startsWith(st) ? t.width - w
     : tt.startsWith(st) ? 0 : (t.width - w) / 2) + t.left - s.left;
-  const dy = t.top - s.top;
+  let dy = t.top - s.top;
+  let ddx = dx;
+  if (align) {
+    // A piece flight: land letter on letter, not box on box.
+    const gs = align.from ?? glyphOffset(source);
+    const gt = glyphOffset(target);
+    if (gs && gt) {
+      ddx = t.left + gt.left - s.left - k * gs.left;
+      dy = t.top + gt.top - s.top - k * gs.top;
+    }
+  }
   requestAnimationFrame(() => {
-    clone.style.transform = `translate(${dx}px, ${dy}px) scale(${k})`;
+    clone.style.transform = `translate(${ddx}px, ${dy}px) scale(${k})`;
     clone.style.opacity = '0';
   });
 
@@ -989,6 +1019,10 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
   // Where each token last sat: a piece rewritten out of its line ("2 log₃3" → "log₃3²") takes no
   // room by the time it flies, so it flies from where it was.
   const lastAt = useRef<Map<Element, Rect>>(new Map());
+  // …and where its letters sat inside that box, for the tokens a piece flies from (see glyphOffset).
+  const lastGlyph = useRef<Map<Element, { left: number; top: number } | null>>(new Map());
+  const pieceSources = useMemo(() => new Set(scene.steps.flatMap(st => st.tokens.flatMap(t =>
+    t.into || t.fromPiece ? [t.from ?? '', ...(t.also ?? []).map(a => a.from)] : []))), [scene.steps]);
   // Fly a token from the earlier line that declared its `from` id.
   const fly = useCallback((cont: HTMLElement, fromId: string, lineIdx: number) => {
     const line = cont.querySelector<HTMLElement>(`[data-line="${lineIdx}"]`);
@@ -1005,7 +1039,30 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
         });
       const fp = tok.dataset.fromPiece;
       const start = (source && fp && source.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(fp)}`)) || source;
-      if (source && start) flyClone(cont, start, target, start === source && source.dataset.gone ? lastAt.current.get(source) : undefined);
+      const piece = !!into || !!fp;
+      const gone = start === source && !!source?.dataset.gone;
+      if (source && start) flyClone(cont, start, target, gone ? lastAt.current.get(source) : undefined,
+        piece ? { from: gone ? lastGlyph.current.get(source) : undefined } : undefined);
+      // `also`: more pieces of the same rewrite fly at the same time (5^{x-1} up into the top).
+      for (const pair of (tok.dataset.also ?? '').split(',').filter(Boolean)) {
+        const [fromAlso, intoAlso] = pair.split(':');
+        const src = cont.querySelector<HTMLElement>(`[data-token-id="${CSS.escape(fromAlso)}"]`);
+        const dst = tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(intoAlso)}`);
+        if (!src || !dst) continue;
+        const g = !!src.dataset.gone;
+        flyClone(cont, src, dst, g ? lastAt.current.get(src) : undefined, { from: g ? lastGlyph.current.get(src) : undefined });
+      }
+      // A rewrite in place: what stays on the line slides to its new place instead of jumping.
+      if (tok.dataset.into) {
+        for (const el of Array.from(line.querySelectorAll<HTMLElement>('.lsn-tok[data-token-id]'))) {
+          if (el === tok || el.dataset.gone || el.dataset.held) continue;
+          const was = lastAt.current.get(el);
+          const now = offsetRect(el, cont);
+          if (!was || (Math.abs(was.left - now.left) < 1 && Math.abs(was.top - now.top) < 1)) continue;
+          el.animate?.([{ transform: `translate(${was.left - now.left}px, ${was.top - now.top}px)` }, { transform: 'none' }],
+            { duration: 1100, easing: 'cubic-bezier(0.45, 0, 0.25, 1)' });
+        }
+      }
     }
   }, []);
 
@@ -1041,8 +1098,9 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     const cont = containerRef.current;
     if (!cont) return;
     for (const tok of Array.from(cont.querySelectorAll<HTMLElement>('[data-into]'))) {
-      const piece = tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(tok.dataset.into ?? '')}`);
-      piece?.classList.toggle('lsn-into-wait', !!tok.dataset.intoWait);
+      for (const name of (tok.dataset.into ?? '').split(',').filter(Boolean)) {
+        tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(name)}`)?.classList.toggle('lsn-into-wait', !!tok.dataset.intoWait);
+      }
     }
   });
   // After any flight: note where each token on the board now sits (see lastAt).
@@ -1050,7 +1108,9 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     const cont = containerRef.current;
     if (!cont || !board) return;
     for (const el of Array.from(cont.querySelectorAll<HTMLElement>('[data-token-id]'))) {
-      if (!el.dataset.gone) lastAt.current.set(el, offsetRect(el, cont));
+      if (el.dataset.gone) continue;
+      lastAt.current.set(el, offsetRect(el, cont));
+      if (pieceSources.has(el.dataset.tokenId ?? '')) lastGlyph.current.set(el, glyphOffset(el));
     }
   });
 

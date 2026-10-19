@@ -41,7 +41,7 @@
    ]
   },
   {
-   "say": "Without a calculator, we have to find the value of ten to the power X, not X.",
+   "say": "Without a calculator, we have to find the value of ten to the power X.",
    "asks": [
     "Do I need to find X?",
     "Why no calculator?"

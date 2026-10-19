@@ -36,12 +36,16 @@
             { "id": "g1", "tex": "2^{x+2}" },
             { "id": "gx", "tex": "\\times" },
             { "id": "g5", "tex": "5^{2x-1}" },
-            { "id": "ge", "tex": "=5^{x-1}" },
+            { "id": "geq", "tex": "=" },
+            { "id": "ge", "tex": "5^{x-1}" },
             {
               "id": "g2",
-              "tex": "=\\dfrac{5^{x-1}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}",
+              "tex": "\\dfrac{\\htmlClass{lsn-pc-n}{5^{x-1}}}{\\htmlClass{lsn-pc-d}{5^{2x-1}}}",
               "from": "g5",
               "into": "d",
+              "also": [
+                { "from": "ge", "into": "n" }
+              ],
               "replaces": ["gx", "g5", "ge"]
             }
           ]
@@ -123,7 +127,7 @@
           "timing": "/lessons/evaluate-10-to-the-x-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Without a calculator, we have to find the value of ten to the power X, not X.",
+          "say": "Without a calculator, we have to find the value of ten to the power X.",
           "asks": ["Do I need to find X?", "Why no calculator?"],
           "do": [
             { "do": "write", "token": "w1", "on": "ten to the" }

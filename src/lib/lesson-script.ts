@@ -68,6 +68,10 @@ export interface StepToken {
   /** With `from`: the flight starts at the piece of the `from` token wrapped in
    *  `\\htmlClass{lsn-pc-<fromPiece>}{…}` (the 5^x in the bottom of 1/5^x, cross multiplied up beside 2^x). */
   fromPiece?: string;
+  /** With `into`: more pieces of the same rewrite that fly at the same move — each from an earlier
+   *  token of the line into the piece `\\htmlClass{lsn-pc-<into>}` (5^{x-1} up into the top while
+   *  5^{2x-1} goes under it; Adrian, 19 Oct 2026: "the animation … is not smooth"). */
+  also?: { from: string; into: string }[];
   /** Sits right against the token before it, no gap — a power or a base that flies into place
    *  (Adrian, 16 Oct 2026: "perhaps the 2 can move to the power position? its an animation right?"). */
   tight?: boolean;
@@ -540,6 +544,10 @@ function validateToken(
   }
   if (t.fromPiece !== undefined && (t.from === undefined || typeof t.fromPiece !== 'string' || !/^[a-z0-9-]+$/.test(t.fromPiece))) {
     errors.push(`${where}: "fromPiece" names a piece of the "from" token (\\htmlClass{lsn-pc-<fromPiece>}) and needs "from"`);
+  }
+  if (t.also !== undefined && (t.into === undefined || !Array.isArray(t.also)
+    || !t.also.every((a: { from?: unknown; into?: unknown }) => typeof a?.from === 'string' && earlierIds?.has(a.from) && typeof a.into === 'string' && /^[a-z0-9-]+$/.test(a.into)))) {
+    errors.push(`${where}: "also" is a list of {from: <earlier token id>, into: <piece>} and needs "into"`);
   }
   if (t.into !== undefined && (t.from === undefined || typeof t.into !== 'string' || !/^[a-z0-9-]+$/.test(t.into))) {
     errors.push(`${where}: "into" names a piece (\\htmlClass{lsn-pc-<into>}) and needs "from"`);

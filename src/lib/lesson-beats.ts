@@ -53,13 +53,13 @@ import {
 export type ElementKey = string;
 
 /** Where a token sits, for the tok:n:i key. */
-export interface TokenRef { line: number; index: number; id?: string; from?: string; replaces?: string[]; into?: string }
+export interface TokenRef { line: number; index: number; id?: string; from?: string; replaces?: string[]; into?: string; also?: { from: string; into: string }[] }
 
 /** Every token of a scene in writing order (equation-steps lines / annotate's one row). */
 export function sceneTokens(scene: Scene | PlayScene): TokenRef[] {
   if (scene.type === 'equation-steps' || scene.type === 'motion-graph') {
     if (scene.type === 'motion-graph' && !scene.steps) return [];
-    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from, ...(t.replaces ? { replaces: t.replaces } : {}), ...(t.into ? { into: t.into } : {}) })));
+    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from, ...(t.replaces ? { replaces: t.replaces } : {}), ...(t.into ? { into: t.into } : {}), ...(t.also ? { also: t.also } : {}) })));
   }
   if (scene.type === 'annotate') return scene.tokens.map((t, index) => ({ line: 0, index, id: t.id, from: t.from }));
   return [];
@@ -388,7 +388,8 @@ export function sceneNotes(scene: Scene | PlayScene): NoteSlot[] {
 /** An `into` token whose piece has not flown in yet: the piece stays empty (lesson-script `into`). */
 export function tokenPieceWaiting(board: BoardState, scene: Scene | PlayScene, line: number, index: number): string | null {
   const ref = sceneTokens(scene).find(r => r.line === line && r.index === index);
-  return ref?.into && ref.from !== undefined && !board.moved.has(ref.from) ? ref.into : null;
+  return ref?.into && ref.from !== undefined && !board.moved.has(ref.from)
+    ? [ref.into, ...(ref.also ?? []).map(a => a.into)].join(',') : null;
 }
 
 export function lineOn(board: BoardState, line: number): boolean {
