@@ -37,11 +37,11 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'trial-followup':    { kind: 'interval', hours: 2, label: 'every 30 min (bot)' },
   // 🗂 The sub-skill filer: on the Fly worker since 2 Oct 2026 (the Mac task had not run since
   // 9 Sep), maths 04:15 + 16:15, science 10:15 + 22:15 (bot worker/fly/jobs.sh job_file_subgroups).
-  'file-subgroups':    { kind: 'interval', hours: 36, label: 'every 3 hours at :55' },
+  'file-subgroups':    { kind: 'interval', hours: 36, label: 'every hour at :55 (19 Oct 2026, until the part-skill backlog is done; was every 3 hours)' },
   'file-subgroups-science': { kind: 'interval', hours: 12, label: 'every 2 hours at :15' },
   // 17 Oct 2026 (SPEC-PART-SKILLS.md §Twins): the PART skills of our own twins, four times a day per bank
   // (bot worker/fly/jobs.sh job_file_subgroups … twins); stamps also when nothing is waiting.
-  'file-twin-parts':   { kind: 'interval', hours: 12, label: '02:25, 08:25, 14:25, 20:25' },
+  'file-twin-parts':   { kind: 'interval', hours: 12, label: 'every hour at :25 (19 Oct 2026, until done; was 4 a day)' },
   'file-twin-parts-science': { kind: 'interval', hours: 12, label: '05:25, 11:25, 17:25, 23:25' },
   // Daily since 18 Sep 2026 (the Fly worker's scheduler, 05:45 after the day-review).
   'bot-review':        { kind: 'interval', hours: 36, label: 'daily 5:45am' },
