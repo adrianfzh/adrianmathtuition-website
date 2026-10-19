@@ -1,6 +1,6 @@
 {
  "slug": "evaluate-10-to-the-x-am",
- "at": "2026-10-19T13:37:43.078Z",
+ "at": "2026-10-19T14:24:53.159Z",
  "width": 390,
  "actions": {
   "expected": 43,
@@ -91,9 +91,9 @@
    "kind": "write",
    "on": "ten to the",
    "source": "clip",
-   "clipElapsed": 2.546734,
-   "wordStart": 2.69,
-   "offset": -0.143,
+   "clipElapsed": 2.563555,
+   "wordStart": 2.699,
+   "offset": -0.135,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -112,9 +112,9 @@
    "kind": "highlight",
    "on": "get ten to",
    "source": "clip",
-   "clipElapsed": 3.654471,
+   "clipElapsed": 3.645321,
    "wordStart": 3.795,
-   "offset": -0.141,
+   "offset": -0.15,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -154,9 +154,9 @@
    "kind": "write",
    "on": "equals two to",
    "source": "clip",
-   "clipElapsed": 2.967224,
+   "clipElapsed": 2.963672,
    "wordStart": 3.109,
-   "offset": -0.142,
+   "offset": -0.145,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -196,9 +196,9 @@
    "kind": "highlight",
    "on": "need two to",
    "source": "clip",
-   "clipElapsed": 1.726065,
+   "clipElapsed": 1.732306,
    "wordStart": 1.875,
-   "offset": -0.149,
+   "offset": -0.143,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -217,9 +217,9 @@
    "kind": "highlight",
    "on": "times five to",
    "source": "clip",
-   "clipElapsed": 3.010879,
+   "clipElapsed": 2.999166,
    "wordStart": 3.148,
-   "offset": -0.137,
+   "offset": -0.149,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -238,9 +238,9 @@
    "kind": "highlight",
    "on": "base is two",
    "source": "clip",
-   "clipElapsed": 0.509003,
+   "clipElapsed": 0.497033,
    "wordStart": 0.647,
-   "offset": -0.138,
+   "offset": -0.15,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -259,9 +259,9 @@
    "kind": "highlight",
    "on": "other base is",
    "source": "clip",
-   "clipElapsed": 1.976346,
+   "clipElapsed": 1.967853,
    "wordStart": 2.112,
-   "offset": -0.136,
+   "offset": -0.144,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -280,30 +280,9 @@
    "kind": "write",
    "on": "group the fives",
    "source": "clip",
-   "clipElapsed": 1.938779,
+   "clipElapsed": 1.942225,
    "wordStart": 2.086,
-   "offset": -0.147,
-   "cut": [],
-   "small": [],
-   "overlap": [],
-   "hidden": [],
-   "tall": [],
-   "subsHide": [],
-   "order": [],
-   "wrapped": [],
-   "shown": 11
-  },
-  {
-   "file": "evaluate-10-to-the-x-am/14-b11-move.png",
-   "scene": 1,
-   "beat": 11,
-   "index": 0,
-   "kind": "move",
-   "on": "so it moves",
-   "source": "clip",
-   "clipElapsed": 2.920034,
-   "wordStart": 3.063,
-   "offset": -0.143,
+   "offset": -0.144,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -315,16 +294,16 @@
    "shown": 12
   },
   {
-   "file": "evaluate-10-to-the-x-am/15-b11-note.png",
+   "file": "evaluate-10-to-the-x-am/14-b11-move.png",
    "scene": 1,
    "beat": 11,
-   "index": 1,
-   "kind": "note",
-   "on": "under five to",
+   "index": 0,
+   "kind": "move",
+   "on": "so it moves",
    "source": "clip",
-   "clipElapsed": 4.1187,
-   "wordStart": 4.26,
-   "offset": -0.141,
+   "clipElapsed": 2.91638,
+   "wordStart": 3.063,
+   "offset": -0.147,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -334,6 +313,27 @@
    "order": [],
    "wrapped": [],
    "shown": 13
+  },
+  {
+   "file": "evaluate-10-to-the-x-am/15-b11-note.png",
+   "scene": 1,
+   "beat": 11,
+   "index": 1,
+   "kind": "note",
+   "on": "under five to",
+   "source": "clip",
+   "clipElapsed": 4.115064,
+   "wordStart": 4.26,
+   "offset": -0.145,
+   "cut": [],
+   "small": [],
+   "overlap": [],
+   "hidden": [],
+   "tall": [],
+   "subsHide": [],
+   "order": [],
+   "wrapped": [],
+   "shown": 14
   },
   {
    "file": "evaluate-10-to-the-x-am/16-b12-highlight.png",
@@ -354,7 +354,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 13
+   "shown": 14
   },
   {
    "file": "evaluate-10-to-the-x-am/17-b12-highlight.png",
@@ -364,9 +364,9 @@
    "kind": "highlight",
    "on": "the fives are",
    "source": "clip",
-   "clipElapsed": 0.822578,
+   "clipElapsed": 0.879894,
    "wordStart": 0.97,
-   "offset": -0.147,
+   "offset": -0.09,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -375,7 +375,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 13
+   "shown": 14
   },
   {
    "file": "evaluate-10-to-the-x-am/18-b13-highlight.png",
@@ -396,7 +396,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 13
+   "shown": 14
   },
   {
    "file": "evaluate-10-to-the-x-am/19-b13-write.png",
@@ -406,30 +406,9 @@
    "kind": "write",
    "on": "the powers minus",
    "source": "clip",
-   "clipElapsed": 3.324689,
+   "clipElapsed": 3.323125,
    "wordStart": 3.465,
-   "offset": -0.14,
-   "cut": [],
-   "small": [],
-   "overlap": [],
-   "hidden": [],
-   "tall": [],
-   "subsHide": [],
-   "order": [],
-   "wrapped": [],
-   "shown": 15
-  },
-  {
-   "file": "evaluate-10-to-the-x-am/20-b13-note.png",
-   "scene": 1,
-   "beat": 13,
-   "index": 2,
-   "kind": "note",
-   "on": "Top power minus",
-   "source": "clip",
-   "clipElapsed": 4.492107,
-   "wordStart": 4.638,
-   "offset": -0.146,
+   "offset": -0.142,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -439,6 +418,27 @@
    "order": [],
    "wrapped": [],
    "shown": 16
+  },
+  {
+   "file": "evaluate-10-to-the-x-am/20-b13-note.png",
+   "scene": 1,
+   "beat": 13,
+   "index": 2,
+   "kind": "note",
+   "on": "Top power minus",
+   "source": "clip",
+   "clipElapsed": 4.489087,
+   "wordStart": 4.638,
+   "offset": -0.149,
+   "cut": [],
+   "small": [],
+   "overlap": [],
+   "hidden": [],
+   "tall": [],
+   "subsHide": [],
+   "order": [],
+   "wrapped": [],
+   "shown": 17
   },
   {
    "file": "evaluate-10-to-the-x-am/21-b14-highlight.png",
@@ -459,7 +459,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 16
+   "shown": 17
   },
   {
    "file": "evaluate-10-to-the-x-am/22-b15-note.png",
@@ -469,9 +469,9 @@
    "kind": "note",
    "on": "leaving out the",
    "source": "clip",
-   "clipElapsed": 0.656237,
+   "clipElapsed": 0.662014,
    "wordStart": 0.798,
-   "offset": -0.142,
+   "offset": -0.136,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -480,7 +480,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 17
+   "shown": 18
   },
   {
    "file": "evaluate-10-to-the-x-am/23-b16-write.png",
@@ -501,7 +501,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 19
+   "shown": 20
   },
   {
    "file": "evaluate-10-to-the-x-am/24-b16-note.png",
@@ -511,9 +511,9 @@
    "kind": "note",
    "on": "flips every sign",
    "source": "clip",
-   "clipElapsed": 2.345053,
+   "clipElapsed": 2.349981,
    "wordStart": 2.493,
-   "offset": -0.148,
+   "offset": -0.143,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -522,7 +522,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 20
+   "shown": 21
   },
   {
    "file": "evaluate-10-to-the-x-am/25-b17-highlight.png",
@@ -543,7 +543,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 20
+   "shown": 21
   },
   {
    "file": "evaluate-10-to-the-x-am/26-b17-write.png",
@@ -553,9 +553,9 @@
    "kind": "write",
    "on": "So five to",
    "source": "clip",
-   "clipElapsed": 5.99367,
+   "clipElapsed": 5.989856,
    "wordStart": 6.132,
-   "offset": -0.138,
+   "offset": -0.142,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -564,7 +564,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 22
+   "shown": 23
   },
   {
    "file": "evaluate-10-to-the-x-am/27-b18-highlight.png",
@@ -585,7 +585,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 22
+   "shown": 23
   },
   {
    "file": "evaluate-10-to-the-x-am/28-b19-write.png",
@@ -595,9 +595,9 @@
    "kind": "write",
    "on": "is two to",
    "source": "clip",
-   "clipElapsed": 1.4305,
+   "clipElapsed": 1.426266,
    "wordStart": 1.568,
-   "offset": -0.137,
+   "offset": -0.142,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -606,7 +606,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 23
+   "shown": 24
   },
   {
    "file": "evaluate-10-to-the-x-am/29-b20-note.png",
@@ -627,7 +627,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 24
+   "shown": 25
   },
   {
    "file": "evaluate-10-to-the-x-am/30-b21-highlight.png",
@@ -648,7 +648,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 24
+   "shown": 25
   },
   {
    "file": "evaluate-10-to-the-x-am/31-b21-write.png",
@@ -658,9 +658,9 @@
    "kind": "write",
    "on": "is one over",
    "source": "clip",
-   "clipElapsed": 4.053793,
+   "clipElapsed": 4.04433,
    "wordStart": 4.188,
-   "offset": -0.134,
+   "offset": -0.144,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -669,7 +669,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 26
+   "shown": 27
   },
   {
    "file": "evaluate-10-to-the-x-am/32-b21-note.png",
@@ -679,9 +679,9 @@
    "kind": "note",
    "on": "five to the power X",
    "source": "clip",
-   "clipElapsed": 4.532581,
+   "clipElapsed": 4.527874,
    "wordStart": 4.671,
-   "offset": -0.138,
+   "offset": -0.143,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -690,7 +690,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 26
+   "shown": 27
   },
   {
    "file": "evaluate-10-to-the-x-am/33-b22-write.png",
@@ -711,7 +711,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 28
+   "shown": 29
   },
   {
    "file": "evaluate-10-to-the-x-am/34-b22-move.png",
@@ -721,9 +721,9 @@
    "kind": "move",
    "on": "so it moves",
    "source": "clip",
-   "clipElapsed": 3.811381,
+   "clipElapsed": 3.811543,
    "wordStart": 3.961,
-   "offset": -0.15,
+   "offset": -0.149,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -732,7 +732,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 28
+   "shown": 29
   },
   {
    "file": "evaluate-10-to-the-x-am/35-b23-note.png",
@@ -753,7 +753,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 29
+   "shown": 30
   },
   {
    "file": "evaluate-10-to-the-x-am/36-b23-highlight.png",
@@ -763,9 +763,9 @@
    "kind": "highlight",
    "on": "is one",
    "source": "clip",
-   "clipElapsed": 5.32239,
+   "clipElapsed": 5.315163,
    "wordStart": 5.461,
-   "offset": -0.139,
+   "offset": -0.146,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -774,7 +774,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 29
+   "shown": 30
   },
   {
    "file": "evaluate-10-to-the-x-am/37-b24-highlight.png",
@@ -795,7 +795,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 29
+   "shown": 30
   },
   {
    "file": "evaluate-10-to-the-x-am/38-b24-highlight.png",
@@ -805,9 +805,9 @@
    "kind": "highlight",
    "on": "five to the",
    "source": "clip",
-   "clipElapsed": 1.644659,
+   "clipElapsed": 1.654599,
    "wordStart": 1.79,
-   "offset": -0.145,
+   "offset": -0.135,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -816,7 +816,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 29
+   "shown": 30
   },
   {
    "file": "evaluate-10-to-the-x-am/39-b25-move.png",
@@ -837,7 +837,7 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 30
+   "shown": 31
   },
   {
    "file": "evaluate-10-to-the-x-am/40-b25-note.png",
@@ -847,30 +847,9 @@
    "kind": "note",
    "on": "multiply the bases",
    "source": "clip",
-   "clipElapsed": 3.96603,
+   "clipElapsed": 3.970346,
    "wordStart": 4.105,
-   "offset": -0.139,
-   "cut": [],
-   "small": [],
-   "overlap": [],
-   "hidden": [],
-   "tall": [],
-   "subsHide": [],
-   "order": [],
-   "wrapped": [],
-   "shown": 31
-  },
-  {
-   "file": "evaluate-10-to-the-x-am/41-b26-write.png",
-   "scene": 1,
-   "beat": 26,
-   "index": 0,
-   "kind": "write",
-   "on": "two squared is",
-   "source": "clip",
-   "clipElapsed": 0.202172,
-   "wordStart": 0.349,
-   "offset": -0.147,
+   "offset": -0.135,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -882,16 +861,16 @@
    "shown": 32
   },
   {
-   "file": "evaluate-10-to-the-x-am/42-b27-write.png",
+   "file": "evaluate-10-to-the-x-am/41-b26-write.png",
    "scene": 1,
-   "beat": 27,
+   "beat": 26,
    "index": 0,
    "kind": "write",
-   "on": "Ten to the",
+   "on": "two squared is",
    "source": "clip",
-   "clipElapsed": 1.802726,
-   "wordStart": 1.948,
-   "offset": -0.145,
+   "clipElapsed": 0.207961,
+   "wordStart": 0.349,
+   "offset": -0.141,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -903,16 +882,16 @@
    "shown": 33
   },
   {
-   "file": "evaluate-10-to-the-x-am/43-b27-mark.png",
+   "file": "evaluate-10-to-the-x-am/42-b27-write.png",
    "scene": 1,
    "beat": 27,
-   "index": 1,
-   "kind": "mark",
-   "on": "one quarter",
+   "index": 0,
+   "kind": "write",
+   "on": "Ten to the",
    "source": "clip",
-   "clipElapsed": 3.303405,
-   "wordStart": 3.44,
-   "offset": -0.137,
+   "clipElapsed": 1.812987,
+   "wordStart": 1.948,
+   "offset": -0.135,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -921,7 +900,28 @@
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 33
+   "shown": 34
+  },
+  {
+   "file": "evaluate-10-to-the-x-am/43-b27-mark.png",
+   "scene": 1,
+   "beat": 27,
+   "index": 1,
+   "kind": "mark",
+   "on": "one quarter",
+   "source": "clip",
+   "clipElapsed": 3.299187,
+   "wordStart": 3.44,
+   "offset": -0.141,
+   "cut": [],
+   "small": [],
+   "overlap": [],
+   "hidden": [],
+   "tall": [],
+   "subsHide": [],
+   "order": [],
+   "wrapped": [],
+   "shown": 34
   }
  ],
  "picturesDir": "/var/folders/n6/2mg1mqg10flc_hf7q1vbnf4h0000gn/T/clip-look/evaluate-10-to-the-x-am"
