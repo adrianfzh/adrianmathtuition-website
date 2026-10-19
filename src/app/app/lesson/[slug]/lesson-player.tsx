@@ -324,6 +324,36 @@ function boxIn(el: HTMLElement, container: HTMLElement): Rect {
 }
 const mathText = (el: HTMLElement) => ((el.querySelector('.katex-html') ?? el).textContent ?? '').replace(/\s+/g, '');
 
+/** A copy of a piece standing exactly where it was, ready to be moved by keyframes (the two-step
+ *  rewrite below). Same look as flyClone's copy: the piece's colour, size, and KaTeX around it. */
+function makeFlyer(container: HTMLElement, source: HTMLElement, at: Rect): HTMLElement {
+  const raw = source.cloneNode(true) as HTMLElement;
+  for (const a of ['data-gone', 'data-held', 'data-token-id', 'data-key']) raw.removeAttribute(a);
+  raw.classList.remove('lsn-into-wait', 'lsn-landing');
+  let el = raw;
+  if (!raw.classList.contains('katex') && !raw.querySelector('.katex') && source.closest('.katex')) {
+    el = document.createElement('span');
+    el.className = 'katex';
+    const html = document.createElement('span');
+    html.className = 'katex-html';
+    html.appendChild(raw);
+    el.appendChild(html);
+  }
+  const css = getComputedStyle(source);
+  el.setAttribute('aria-hidden', 'true');
+  el.style.fontSize = css.fontSize;
+  el.style.lineHeight = css.lineHeight;
+  el.style.setProperty('color', css.color, 'important');
+  el.style.textShadow = `0 0 10px ${css.color}`;
+  for (const k of Array.from(el.querySelectorAll<HTMLElement>('.katex, .katex *'))) {
+    if (!k.getAttribute('style')?.includes('color')) k.style.setProperty('color', 'inherit', 'important');
+  }
+  Object.assign(el.style, { position: 'absolute', left: `${at.left}px`, top: `${at.top}px`, width: `${at.width}px`,
+    height: `${at.height}px`, margin: '0', whiteSpace: 'nowrap', opacity: '1', pointerEvents: 'none', zIndex: '20', transformOrigin: 'top left' });
+  container.appendChild(el);
+  return el;
+}
+
 function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement, was?: Rect,
   align?: { from?: PieceSpot | null }) {
   let s = was ?? offsetRect(source, container);
@@ -1060,6 +1090,70 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
       const start = (source && fp && source.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(fp)}`)) || source;
       const piece = !!into || !!fp;
       const gone = start === source && !!source?.dataset.gone;
+      // A rewrite in place with a partner piece moves in TWO steps (Adrian, 19 Oct 2026: "move
+      // 5^(2x-1) under 5^(x-1) first, with 2^(x+2) and 5^(x-1) [still], once its under, THEN move the
+      // expressions to make it nicer (to the end stage)"): the piece goes under its partner where
+      // the partner stands; then the made fraction and the = slide together to the final line.
+      const [pairFrom, pairInto] = (tok.dataset.also ?? '').split(',')[0]?.split(':') ?? [];
+      const partner = pairFrom ? cont.querySelector<HTMLElement>(`[data-token-id="${CSS.escape(pairFrom)}"]`) : null;
+      const partnerDst = pairInto ? tok.querySelector<HTMLElement>(`.lsn-pc-${CSS.escape(pairInto)}`) : null;
+      if (tok.dataset.rewrite && source && start === source && target !== tok && partner && partnerDst) {
+        const spot = (el: HTMLElement): PieceSpot => (el.dataset.gone ? lastGlyph.current.get(el) : undefined)
+          ?? { box: el.dataset.gone ? (lastAt.current.get(el) ?? offsetRect(el, cont)) : boxIn(el, cont), glyph: glyphOffset(el) };
+        const delta = (from: PieceSpot, dst: HTMLElement) => {
+          const t = boxIn(dst, cont);
+          const gt = glyphOffset(dst);
+          return from.glyph && gt
+            ? { x: t.left + gt.left - from.box.left - from.glyph.left, y: t.top + gt.top - from.box.top - from.glyph.top }
+            : { x: t.left - from.box.left, y: t.top - from.box.top };
+        };
+        const sM = spot(source), sP = spot(partner);
+        const dM = delta(sM, target), dP = delta(sP, partnerDst);
+        const fM = makeFlyer(cont, source, sM.box), fP = makeFlyer(cont, partner, sP.box);
+        const E = 'cubic-bezier(0.45, 0, 0.25, 1)';
+        const T = 2400;
+        const at = (x: number, y: number) => `translate(${x}px, ${y}px)`;
+        fM.animate?.([
+          { transform: at(0, 0), easing: E },
+          // down below the line first, then along it — never through the = in between
+          { transform: at(0, dM.y - dP.y), offset: 0.18, easing: E },
+          { transform: at(dM.x - dP.x, dM.y - dP.y), offset: 0.42 },
+          { transform: at(dM.x - dP.x, dM.y - dP.y), offset: 0.55, easing: E },
+          { transform: at(dM.x, dM.y) },
+        ], { duration: T, fill: 'forwards' });
+        fP.animate?.([
+          { transform: at(0, 0), offset: 0 },
+          { transform: at(0, 0), offset: 0.55, easing: E },
+          { transform: at(dP.x, dP.y) },
+        ], { duration: T, fill: 'forwards' });
+        tok.classList.add('lsn-landing');
+        window.setTimeout(() => {
+          tok.classList.remove('lsn-landing');
+          for (const f of [fM, fP]) {
+            const out = f.animate?.([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+            if (out) out.onfinish = () => f.remove(); else f.remove();
+          }
+        }, T);
+        const flownIds = new Set([tok.dataset.from, pairFrom]);
+        for (const el of Array.from(line.querySelectorAll<HTMLElement>('.lsn-tok[data-token-id][data-gone]'))) {
+          const was = lastAt.current.get(el);
+          if (!was || flownIds.has(el.dataset.tokenId)) continue;
+          const ghost = makeFlyer(cont, el, was);
+          ghost.style.textShadow = 'none';
+          const fade = ghost.animate?.([{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'ease-out', fill: 'forwards' });
+          if (fade) fade.onfinish = () => ghost.remove(); else ghost.remove();
+        }
+        // The = (and anything else that stays) waits for the first step, then slides with the fraction.
+        for (const el of Array.from(line.querySelectorAll<HTMLElement>('.lsn-tok[data-token-id]'))) {
+          if (el === tok || el.dataset.gone || el.dataset.held) continue;
+          const was = lastAt.current.get(el);
+          const now = offsetRect(el, cont);
+          if (!was || (Math.abs(was.left - now.left) < 1 && Math.abs(was.top - now.top) < 1)) continue;
+          const from = at(was.left - now.left, was.top - now.top);
+          el.animate?.([{ transform: from, offset: 0 }, { transform: from, offset: 0.55, easing: E }, { transform: 'none' }], { duration: T });
+        }
+        continue;
+      }
       if (source && start) flyClone(cont, start, target, gone ? lastAt.current.get(source) : undefined,
         piece ? { from: gone ? lastGlyph.current.get(source) : undefined } : undefined);
       // `also`: more pieces of the same rewrite fly at the same time (5^{x-1} up into the top).
