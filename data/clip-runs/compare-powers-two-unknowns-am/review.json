@@ -1,24 +1,46 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T04:34:07.957Z",
+ "at": "2026-10-19T04:44:51.373Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 44000,
+  "input_tokens": 43852,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1269,
+  "output_tokens": 1418,
   "output_tokens_details": {
-   "thinking_tokens": 1242
+   "thinking_tokens": 973
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
  "verdict": "pass",
- "findings": []
+ "findings": [
+  {
+   "beat": 6,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "\"Do the power first\" gives no reason, so a student may not see why the squared bracket is handled before the fractions are multiplied.",
+   "fix": "Add a short reason to the voice, e.g. \"Do the power first, because a power comes before multiplying.\""
+  },
+  {
+   "beat": 13,
+   "rule": "part lit as named",
+   "severity": "should",
+   "problem": "The voice says \"minus three, and plus Y\", but nothing on the line is lit, so a student cannot easily see which signs flipped.",
+   "fix": "Light the −3 and the +y in the a-power of {t1} on those words (and the −2y and +4 in {t2} in beat 14)."
+  },
+  {
+   "beat": 15,
+   "rule": "part lit as named",
+   "severity": "should",
+   "problem": "\"Add up like terms\" does not show which terms combine (2 and −3 into −1; 2 and 4 into 6), so the jump from line 5 to line 6 is only heard.",
+   "fix": "On \"Add up like terms\", light the number terms in the powers on line 5 (2, −3 and 2, +4) before writing {u2} and {u4}."
+  }
+ ]
 }

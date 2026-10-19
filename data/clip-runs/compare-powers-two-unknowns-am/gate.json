@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T04:34:08.017Z",
+ "at": "2026-10-19T04:44:51.431Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -19,13 +19,13 @@
    "detail": "one draft — the stand-in reviewer judges it (see review)"
   },
   "look": {
-   "ok": false,
-   "detail": "43/43 actions on the voice · cues worst 0.20 s (gate 0.3 s) · look problems 13"
+   "ok": true,
+   "detail": "42/42 actions on the voice · cues worst 0.20 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
-   "detail": "0 must, 0 should · 24 frames"
+   "detail": "0 must, 3 should · 24 frames"
   }
  },
- "pass": false
+ "pass": true
 }
