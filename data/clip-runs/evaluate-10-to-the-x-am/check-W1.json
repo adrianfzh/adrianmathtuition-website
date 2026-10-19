@@ -183,8 +183,8 @@
           "say": "Divide both sides by five to the power two X minus one, so it moves down, under five to the power X minus one.",
           "asks": ["Why divide by that?", "Where did it go on the left?"],
           "do": [
-            { "do": "move", "from": "g5" },
-            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "so it moves" }
+            { "do": "move", "from": "g5", "on": "so it moves" },
+            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "under five to" }
           ]
         },
         {

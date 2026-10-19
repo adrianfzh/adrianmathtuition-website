@@ -1,6 +1,6 @@
 {
  "slug": "evaluate-10-to-the-x-am",
- "at": "2026-10-19T13:09:15.225Z",
+ "at": "2026-10-19T13:26:36.147Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -20,7 +20,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "44/44 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "43/43 actions on the voice · cues worst 0.19 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,

@@ -176,13 +176,14 @@
    "do": [
     {
      "do": "move",
-     "from": "g5"
+     "from": "g5",
+     "on": "so it moves"
     },
     {
      "do": "note",
      "text": "÷ both sides by $5^{2x-1}$",
      "near": "g2",
-     "on": "so it moves"
+     "on": "under five to"
     }
    ]
   },
