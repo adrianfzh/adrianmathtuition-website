@@ -60,7 +60,13 @@ You get:
    way ("good, this animation is good. remember it for future clips"): the term goes under its partner
    where the partner stands, the fraction line draws, then the fraction and the = slide into place. A should: a step done without saying why ("To simplify
    the expression, …") or a law used without naming it ("since it is divide, the powers minus").
-15. Anything else in the house rules this clip breaks.
+15. **A graph clip, Adrian's 20 Oct 2026 notes** — each a must: a sketch too small to read on the phone
+   frames ("graph is hard to see … make sure graphs are clearly seen"); a curve that looks like it
+   touches its asymptote or the axis ("the asymptote should not be seen touching the axis"); a point
+   marked where the curve does not yet pass, or a curve that moves later to reach a marked point ("the
+   point (0, 3) should be directly drawn on the graph itself > not graph later shift to cut it"); a
+   separate "draw it" step at the end ("Just 3 steps will do. Draw the graph as you go through each step").
+16. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

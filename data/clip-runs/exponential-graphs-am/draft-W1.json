@@ -372,6 +372,11 @@
      "do": "highlight",
      "token": "shape",
      "on": "the shape of"
+    },
+    {
+     "do": "highlight",
+     "token": "asy",
+     "on": "the asymptote Y"
     }
    ]
   }

@@ -255,7 +255,8 @@
           "say": "So the sketch has the shape of E to the X, through zero, three, above the asymptote Y equals zero.",
           "asks": ["Do I need to label the asymptote?", "Why is there no x-intercept on the sketch?"],
           "do": [
-            { "do": "highlight", "token": "shape", "on": "the shape of" }
+            { "do": "highlight", "token": "shape", "on": "the shape of" },
+            { "do": "highlight", "token": "asy", "on": "the asymptote Y" }
           ]
         }
       ]
