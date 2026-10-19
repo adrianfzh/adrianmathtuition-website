@@ -230,12 +230,6 @@
      "token": "e3",
      "tone": "orange",
      "on": "Three times a"
-    },
-    {
-     "do": "note",
-     "text": "3 × (close to 0) is still close to 0",
-     "near": "asy",
-     "on": "So our curve"
     }
    ]
   },

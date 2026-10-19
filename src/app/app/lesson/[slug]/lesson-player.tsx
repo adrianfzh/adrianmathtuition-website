@@ -3179,12 +3179,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             // Once its step has passed, the chip shrinks to a small 💡 so it does not sit on the maths
             // scrolling past the corner (19 Oct 2026, seen in Compare powers: it hid "y = 10 − 2x").
             const small = step - reads[reads.length - 1].i > 1;
+            // With steps pinned along the top (graph sketching), the top corner is a step: the chip
+            // goes to the bottom corner instead (20 Oct 2026, Exponential graphs: it hid step 4 "draw").
+            const low = scene.type === 'equation-steps' && !!scene.pinned?.length;
+            const at = low ? (small ? 'bottom-16 right-1.5' : 'bottom-16 right-2.5') : (small ? 'top-1.5 right-1.5' : 'top-2.5 right-2.5');
             return (<>
               {!open && (
                 <button key={`chip-${a.slug}`} type="button" data-aside-read-chip aria-expanded={false} aria-label={a.text}
                   onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
                   data-small={small || undefined}
-                  className={`lsn-read-chip absolute z-20 inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy font-bold shadow-md transition-all duration-300 ${small ? 'top-1.5 right-1.5 text-[12px] px-1.5 py-1' : 'top-2.5 right-2.5 text-[13px] px-3 py-1.5'}`}>
+                  className={`lsn-read-chip absolute z-20 inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy font-bold shadow-md transition-all duration-300 ${at} ${small ? 'text-[12px] px-1.5 py-1' : 'text-[13px] px-3 py-1.5'}`}>
                   {small ? '💡' : '💡 Why?'}
                 </button>
               )}

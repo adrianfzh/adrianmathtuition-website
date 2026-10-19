@@ -44,7 +44,7 @@
         {
           "tokens": [
             { "id": "ey", "tex": "y=" },
-            { "id": "e3", "tex": "3", "tight": true },
+            { "id": "e3", "tex": "3" },
             { "id": "ee", "tex": "\\htmlClass{lsn-pc-s}{e}^{\\htmlClass{lsn-pc-n}{2}\\htmlClass{lsn-pc-s}{x}}", "tight": true }
           ]
         },
@@ -207,8 +207,7 @@
           "say": "Three times a number close to zero is still close to zero. So our curve also hugs the X axis.",
           "asks": ["Does the 3 move the asymptote?"],
           "do": [
-            { "do": "highlight", "token": "e3", "tone": "orange", "on": "Three times a" },
-            { "do": "note", "text": "3 × (close to 0) is still close to 0", "near": "asy", "on": "So our curve" }
+            { "do": "highlight", "token": "e3", "tone": "orange", "on": "Three times a" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b13.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b13.timing.json"
