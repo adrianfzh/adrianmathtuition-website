@@ -30,7 +30,7 @@
           ]
         },
         "xMin": -0.8,
-        "xMax": 0.8,
+        "xMax": 0.6,
         "yMin": -0.6,
         "yMax": 5,
         "shape": "exp(-x)",
@@ -104,6 +104,11 @@
           "tokens": [
             { "id": "se", "tex": "e^{-3x}=-\\tfrac{1}{2}" },
             { "id": "ns", "tex": "\\text{(no solutions)}", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "sum", "tex": "\\text{through }(0,3),\\ \\text{above }y=1", "hl": "emerald" }
           ]
         }
       ],
@@ -242,7 +247,6 @@
           "say": "Plus one shifts the whole graph up by one unit. The asymptote moves up from Y equals zero to Y equals one.",
           "asks": ["Does the shape change when we shift?", "Why does the asymptote move too?"],
           "do": [
-            { "do": "highlight", "token": "p1", "tone": "orange" },
             { "do": "sketch", "show": "shift", "on": "up by one" },
             { "do": "write", "token": "asy", "on": "to Y equals one" }
           ],
@@ -332,8 +336,7 @@
           "say": "So the sketch has the shape of E to the power minus X, through zero, three, above the asymptote Y equals one.",
           "asks": ["Do I need to label the asymptote?", "Why is there no x-intercept on the sketch?"],
           "do": [
-            { "do": "highlight", "token": "shape" },
-            { "do": "highlight", "token": "asy", "on": "the asymptote Y" }
+            { "do": "write", "token": "sum", "on": "through zero, three" }
           ],
           "audio": "/lessons/exponential-graphs-am/scene-01-b22.mp3",
           "timing": "/lessons/exponential-graphs-am/scene-01-b22.timing.json"

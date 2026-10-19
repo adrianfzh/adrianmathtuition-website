@@ -846,7 +846,8 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
         <svg viewBox={`0 0 ${W} ${H}`} className="lsn-graph lsn-sketch-main on" aria-hidden>
           <line x1={P - 4} y1={sy(0)} x2={W - P + 4} y2={sy(0)} className="lsn-graph-axis" />
           <line x1={sx(0)} y1={H - P + 4} x2={sx(0)} y2={P - 4} className="lsn-graph-axis" />
-          <text x={W - P + 2} y={sy(0) - 5} className="lsn-graph-lab">x</text>
+          {/* x under the axis: a curve that hugs the axis from above never runs into it (20 Oct 2026). */}
+          <text x={W - P + 2} y={sy(0) + 15} textAnchor="end" className="lsn-graph-lab">x</text>
           <text x={sx(0) + 5} y={P + 2} className="lsn-graph-lab">y</text>
           {has('asymptote') && sk.asymptote?.x !== undefined && (
             <g className="lsn-sketch-asy">

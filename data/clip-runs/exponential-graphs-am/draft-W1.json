@@ -253,11 +253,6 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "p1",
-     "tone": "orange"
-    },
-    {
      "do": "sketch",
      "show": "shift",
      "on": "up by one"
@@ -404,13 +399,9 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "shape"
-    },
-    {
-     "do": "highlight",
-     "token": "asy",
-     "on": "the asymptote Y"
+     "do": "write",
+     "token": "sum",
+     "on": "through zero, three"
     }
    ]
   }

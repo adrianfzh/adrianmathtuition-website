@@ -209,6 +209,20 @@
           "var": "x"
         }
       ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "sum",
+          "tex": "\\text{through }(0,3),\\ \\text{above }y=1",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "yi = 3"
+        }
+      ]
     }
   ],
   "outline": [
@@ -257,7 +271,7 @@
       ]
     },
     "xMin": -0.8,
-    "xMax": 0.8,
+    "xMax": 0.6,
     "yMin": -0.6,
     "yMax": 5,
     "shape": "exp(-x)",

@@ -1,6 +1,6 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T17:59:27.029Z",
+ "at": "2026-10-19T18:42:48.339Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,23 +8,23 @@
   },
   "maths": {
    "ok": true,
-   "detail": "12/12 line checks"
+   "detail": "13/13 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "9 lines = the checked plan"
+   "detail": "10 lines = the checked plan"
   },
   "read": {
    "ok": true,
    "detail": "one draft — the stand-in reviewer judges it (see review)"
   },
   "look": {
-   "ok": true,
-   "detail": "43/43 actions on the voice · cues worst 0.16 s (gate 0.3 s) · look problems 0"
+   "ok": false,
+   "detail": "43/43 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 3"
   },
   "review": {
    "ok": false,
-   "detail": "2 must, 0 should · 24 frames · b14 On the phone, the line 'y → 0 + 1 = 1 ⇒ asymptote y = 1' runs into the sketch column. As it is written, the dashed asymptote and its 'y = 1' label cross over the words 'asymptote y = 1', right while the voice says them. | b20 Once the board has scrolled, the corner-shapes box covers the end of the 'asymptote y = 1' line, so the student sees part of an equation hidden behind the inset."
+   "detail": "2 must, 1 should · 24 frames · b22 To light the old 'shape of y = e^{-x}' line, the board scrolls back up. The last working lines, e^{-3x} = -1/2 and the boxed '(no solutions)', drop out of view, and the question line is half-cut at the top. | b11 In the frames for beats 10–13, the stretched curve's right-hand tail runs into the x-axis and the dashed y = 0 line, and it runs under the 'x' label. A student sees it touching its asymptote."
   }
  },
  "pass": false
