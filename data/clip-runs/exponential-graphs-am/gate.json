@@ -1,6 +1,6 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T18:53:15.303Z",
+ "at": "2026-10-19T19:01:29.282Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -20,12 +20,12 @@
   },
   "look": {
    "ok": true,
-   "detail": "41/41 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
+   "detail": "42/42 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
   },
   "review": {
-   "ok": false,
-   "detail": "1 must, 0 should · 24 frames · b14 The voice says \"Plus one shifts the whole graph up\", but the question line has scrolled half off the top, so the +1 is cut off and never lit."
+   "ok": true,
+   "detail": "0 must, 1 should · 24 frames"
   }
  },
- "pass": false
+ "pass": true
 }
