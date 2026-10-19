@@ -1,0 +1,388 @@
+{
+ "slug": "exponential-graphs-am",
+ "draft": "W1",
+ "by": "session, 19 Oct 2026: Indices clip 6 (note 1081.04), copied from the Sketching clip — four shapes in the corner, empty axes, steps pinned and lit, the shape lifted and stretched through (0, 3)",
+ "beats": [
+  {
+   "say": "First, the four basic shapes of exponential graphs. Most importantly, learn each shape, and which axis it is flipped in.",
+   "asks": [
+    "Why learn the four shapes?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "show": "inset"
+    }
+   ]
+  },
+  {
+   "say": "Y equals E to the X: the basic shape. It grows faster and faster, and stays above the X axis.",
+   "asks": [
+    "Why does it grow faster and faster?",
+    "Why is it always above the x-axis?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c1",
+     "on": "Y equals E"
+    }
+   ]
+  },
+  {
+   "say": "Y equals E to the power minus X: a minus in front of X flips it in the Y axis.",
+   "asks": [
+    "Why does a minus in front of x flip it in the y-axis?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c2",
+     "on": "Y equals E"
+    }
+   ]
+  },
+  {
+   "say": "Y equals minus E to the X: a minus in front of the graph flips it in the X axis.",
+   "asks": [
+    "Why does a minus in front flip it downwards?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c3",
+     "on": "Y equals minus"
+    }
+   ]
+  },
+  {
+   "say": "Y equals minus E to the power minus X: both minuses, so it is flipped twice, in both axes.",
+   "asks": [
+    "How do I know which of the four shapes to use?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "c4",
+     "on": "Y equals minus"
+    }
+   ]
+  },
+  {
+   "say": "Now sketch Y equals three E to the power two X. Start with empty axes at the side.",
+   "asks": [
+    "Why start with empty axes?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0,
+     "on": "Now sketch Y"
+    },
+    {
+     "do": "sketch",
+     "show": "axes",
+     "on": "empty axes at"
+    }
+   ]
+  },
+  {
+   "say": "Four steps: first the shape, then the asymptote, then the intercepts, and last draw it.",
+   "asks": [
+    "Why these four steps?",
+    "Why find the shape first?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "show": 1,
+     "on": "first the shape"
+    },
+    {
+     "do": "pin",
+     "show": 2,
+     "on": "then the asymptote"
+    },
+    {
+     "do": "pin",
+     "show": 3,
+     "on": "then the intercepts"
+    },
+    {
+     "do": "pin",
+     "show": 4,
+     "on": "last draw it"
+    }
+   ]
+  },
+  {
+   "say": "Step one, the shape. It is the minus sign that matters. Here there is no minus sign at all.",
+   "asks": [
+    "Where would a minus sign be?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 1
+    },
+    {
+     "do": "highlight",
+     "token": "ee",
+     "inside": "s",
+     "on": "no minus sign"
+    }
+   ]
+  },
+  {
+   "say": "So it has the shape of E to the X, from the corner. Lift it onto the axes.",
+   "asks": [
+    "Why the shape of e to the x?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1
+    },
+    {
+     "do": "highlight",
+     "token": "ee",
+     "inside": "s",
+     "on": "E to the X"
+    },
+    {
+     "do": "highlight",
+     "token": "c1",
+     "on": "from the corner"
+    },
+    {
+     "do": "sketch",
+     "show": "shape",
+     "on": "Lift it onto"
+    }
+   ]
+  },
+  {
+   "say": "The three and the two do not change the shape. They only stretch it, higher and steeper. Only a minus sign would flip it.",
+   "asks": [
+    "What do the 3 and the 2 do then?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "e3",
+     "tone": "orange",
+     "on": "The three"
+    },
+    {
+     "do": "highlight",
+     "token": "ee",
+     "inside": "n",
+     "tone": "orange",
+     "on": "the two"
+    },
+    {
+     "do": "note",
+     "text": "3 and 2 don't change the shape",
+     "near": "shape",
+     "on": "Only a minus"
+    }
+   ]
+  },
+  {
+   "say": "Step two, the asymptote. As X goes left, E to the X gets closer and closer to the X axis, but never touches it.",
+   "asks": [
+    "What is an asymptote?",
+    "Why does it never touch the x-axis?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 2
+    }
+   ]
+  },
+  {
+   "say": "So the asymptote is Y equals zero, the X axis. Draw it as a dashed line.",
+   "asks": [
+    "Why is the asymptote dashed?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "the asymptote is"
+    },
+    {
+     "do": "sketch",
+     "show": "asymptote",
+     "on": "as a dashed line"
+    }
+   ]
+  },
+  {
+   "say": "Three times a number close to zero is still close to zero. So our curve also hugs the X axis.",
+   "asks": [
+    "Does the 3 move the asymptote?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "e3",
+     "tone": "orange",
+     "on": "Three times a"
+    },
+    {
+     "do": "note",
+     "text": "3 × (close to 0) is still close to 0",
+     "near": "asy",
+     "on": "So our curve"
+    }
+   ]
+  },
+  {
+   "say": "Step three, the intercepts. For the Y intercept, sub X equals zero.",
+   "asks": [
+    "Why put x = 0 for the y-intercept?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 3
+    },
+    {
+     "do": "write",
+     "token": "x0",
+     "on": "sub X equals"
+    }
+   ]
+  },
+  {
+   "say": "Y equals three E to the power two times zero.",
+   "asks": [
+    "Why is it 2 times 0?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ys"
+    }
+   ]
+  },
+  {
+   "say": "Two times zero is zero, so we get three E to the power zero.",
+   "asks": [
+    "Why is 2 times 0 zero?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ye0",
+     "on": "three E to"
+    }
+   ]
+  },
+  {
+   "say": "E to the power zero is one. So Y equals three times one, which is three.",
+   "asks": [
+    "Why is e to the power 0 one?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "yv",
+     "on": "three times one"
+    },
+    {
+     "do": "sketch",
+     "point": 0,
+     "on": "which is three"
+    }
+   ]
+  },
+  {
+   "say": "For the X intercept, sub Y equals zero. Three E to the power two X equals zero.",
+   "asks": [
+    "Why put y = 0 for the x-intercept?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "s0",
+     "on": "sub Y equals"
+    },
+    {
+     "do": "write",
+     "token": "s3",
+     "on": "Three E to"
+    }
+   ]
+  },
+  {
+   "say": "Three times something is zero only if E to the power two X is zero. But a power of E is never zero.",
+   "asks": [
+    "Why can we divide by 3?",
+    "Why is e to a power never zero?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "se",
+     "on": "only if E"
+    },
+    {
+     "do": "note",
+     "text": "e to any power is never zero",
+     "near": "se",
+     "on": "never zero"
+    }
+   ]
+  },
+  {
+   "say": "So there are no solutions, and no X intercept. The curve never meets the X axis.",
+   "asks": [
+    "Does no solutions mean I made a mistake?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ns",
+     "on": "no solutions"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ns",
+     "on": "no X intercept"
+    }
+   ],
+   "aside": {
+    "text": "Why is it never zero?",
+    "slug": "indices-exponential-never-zero",
+    "read": [
+     "$e$ is a positive number, about $2.718$.",
+     "A positive number to any power is still positive.",
+     "So $e^{2x} > 0$ for every $x$.",
+     "It can get very close to $0$, but never reach it.",
+     "**So $e^{2x} = 0$ has no solutions: the curve never meets the $x$-axis.**"
+    ]
+   }
+  },
+  {
+   "say": "Step four, draw it. Stretch the shape through zero, three. It stays above the asymptote, and never cuts the X axis.",
+   "asks": [
+    "Why is the curve steeper than e to the x?"
+   ],
+   "do": [
+    {
+     "do": "pin",
+     "lit": 4
+    },
+    {
+     "do": "sketch",
+     "show": "shift",
+     "on": "Stretch the shape"
+    }
+   ]
+  }
+ ]
+}

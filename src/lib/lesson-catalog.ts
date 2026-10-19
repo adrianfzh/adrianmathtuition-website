@@ -186,6 +186,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 3,
   },
   {
+    slug: 'exponential-graphs-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Exponential graphs: the four basic shapes',
+    minutes: 2,
+  },
+  {
     slug: 'growth-and-decay-am',
     level: 'AM',
     topic: 'Logarithms',

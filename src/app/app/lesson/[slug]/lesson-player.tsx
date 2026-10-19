@@ -759,6 +759,32 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
       { transform: 'none', opacity: 1 },
     ], { duration: 1300, easing: 'cubic-bezier(0.45, 0, 0.3, 1)' });
   }, [shapeOn]);
+  // The stretch (`to`): on the shift stage the lifted shape becomes the question's own curve, drawn
+  // as a blend of the two so it grows into place (y = eˣ → y = 3e²ˣ through (0, 3)).
+  const toD = useMemo(() => (sk.to ? plotPath(sk.to, sk, W, H, P) : ''), [sk]);
+  const curveRef = useRef<SVGPathElement>(null);
+  const stretched = useRef<boolean | null>(null);
+  const shiftOn = has('shift');
+  useIsoLayoutEffect(() => {
+    if (!sk.to) return;
+    if (stretched.current === null || !shapeOn) { stretched.current = shiftOn; return; }   // drawn afresh: no stretch
+    if (!shiftOn) { stretched.current = false; return; }
+    if (stretched.current) return;
+    stretched.current = true;
+    const path = curveRef.current;
+    if (!path || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t0 = performance.now(), MS = 1300;
+    let raf = 0;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / MS);
+      const e = t < 0.5 ? 2 * t * t : 1 - (2 - 2 * t) ** 2 / 2;
+      path.setAttribute('d', t >= 1 ? toD : plotPath(`(${(1 - e).toFixed(4)})*(${sk.shape})+(${e.toFixed(4)})*(${sk.to})`, sk, W, H, P));
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    path.setAttribute('d', shapeD);
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [shiftOn]);
   return (
     <div className="lsn-sketch">
       {has('inset') && (
@@ -792,10 +818,16 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               {sk.asymptote.label && <text x={sx(sk.asymptote.x) + 4} y={P + 9} className="lsn-graph-lab">{sk.asymptote.label}</text>}
             </g>
           )}
+          {has('asymptote') && sk.asymptote?.y !== undefined && (
+            <g className="lsn-sketch-asy">
+              <line x1={P - 4} y1={sy(sk.asymptote.y)} x2={W - P + 4} y2={sy(sk.asymptote.y)} />
+              {sk.asymptote.label && <text x={P} y={sy(sk.asymptote.y) + 13} className="lsn-graph-lab">{sk.asymptote.label}</text>}
+            </g>
+          )}
           {shapeOn && (
             <g style={{ transform: has('shift') ? `translate(${dx}px, ${dy}px)` : 'none', transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
               <g ref={flyRef} className="lsn-sketch-shape" style={{ transformBox: 'fill-box', transformOrigin: '0 0' }}>
-                <path d={shapeD} className="lsn-sketch-curve" data-ci={Math.max(0, insetCurves.findIndex(c => c.id === sk.from))} />
+                <path ref={curveRef} d={sk.to && shiftOn ? toD : shapeD} className="lsn-sketch-curve" data-ci={Math.max(0, insetCurves.findIndex(c => c.id === sk.from))} />
               </g>
             </g>
           )}

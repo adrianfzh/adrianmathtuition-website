@@ -28,6 +28,11 @@ The kinds:
   {"solves": "lhs = rhs", "var": "x",          the equation's ONLY real solution is this
    "gives": 2}                                 (and binds it)
   {"shape": "log(2 - x)", "family": "ln(-x)"}  which of the four basic log shapes it is
+  {"shape": "3*exp(2*x)", "family": "e^x"}     …or exponential shapes (k·a^(mx), k ≠ 0):
+                                               e^x, e^(-x), -e^x, -e^(-x)
+  {"none": "3*exp(2*x) = 0", "var": "x"}       the equation has NO real solution
+  {"limit": "3*exp(2*x)", "var": "x",          the limit as var → at (an asymptote)
+   "at": "-oo", "gives": 0}
   {"form": "Y = m*X + c"}                       a reference line (Y = mX + c) — no claim
   {"system": ["4*a - 2*b = 6", "9*a + 3*b = -54"], unknowns found together (question clips,
    "vars": ["a", "b"]}                         15 Oct 2026): starts a system chain
@@ -200,7 +205,7 @@ def check_plan(plan):
             continue
         for c in checks:
             kind = next((k for k in ('model', 'given', 'start', 'step', 'start_expr', 'step_expr', 'roots',
-                                     'approx', 'identity', 'fact', 'solves', 'shape', 'form',
+                                     'approx', 'identity', 'fact', 'solves', 'none', 'limit', 'shape', 'form',
                                      'system', 'system_step', 'solution') if k in c), None)
             if kind is None:
                 raise PlanError(f'line {li}: unknown check {c}')
@@ -317,6 +322,17 @@ def check_plan(plan):
                 if ok:
                     env[var] = sp.nsimplify(c['gives'])
                 detail = f"{c['solves']} → {c['var']} ∈ {fmt(sols)} ({'= ' if ok else '≠ '}{c['gives']})"
+            elif kind == 'none':
+                var = local[c['var']]
+                lhs, rhs = rel(c['none'], local)
+                sols, _ = real_solutions(S(lhs), S(rhs), var)
+                ok = len(sols) == 0
+                detail = f"{c['none']} → " + ('no real solutions' if ok else f'HAS solutions {fmt(sols)}')
+            elif kind == 'limit':
+                var = local[c['var']]
+                L = sp.limit(S(P(c['limit'], local)), var, sp.sympify(c['at']))
+                ok = holds(L, sp.nsimplify(c['gives']), {})
+                detail = f"limit of {c['limit']} as {c['var']} → {c['at']} is {L} ({'= ' if ok else '≠ '}{c['gives']})"
             elif kind in ('system', 'system_step'):
                 eqs = [rel(e, local) for e in c[kind]]
                 eqs = [sp.Eq(S(a), S(b)) for a, b in eqs]
@@ -359,6 +375,20 @@ def check_plan(plan):
                     outer, f = (1 if coeff > 0 else -1), rest
                 if isinstance(f, sp.log):
                     arg = f.args[0]
+                elif isinstance(f, sp.exp) or (isinstance(f, sp.Pow) and f.base.is_number and f.base > 0 and f.base != 1):
+                    # An exponential k·a^(mx): the numbers in front and the base do not alter the shape —
+                    # "it is the minus sign that matters" (Indices 1081.04). A base below 1 flips it.
+                    ex = f.args[0] if isinstance(f, sp.exp) else f.exp * (1 if f.base > 1 else -1)
+                    ok = sp.Poly(ex, var).degree() == 1 if ex.has(var) else False
+                    if ok:
+                        inner = 1 if sp.diff(ex, var) > 0 else -1
+                        fam = {(1, 1): 'e^x', (1, -1): 'e^(-x)', (-1, 1): '-e^x', (-1, -1): '-e^(-x)'}[(outer, inner)]
+                        ok = fam == c['family']
+                        detail = f"{c['shape']} has the shape of {fam} ({'matches' if ok else 'board says ' + c['family']})"
+                    else:
+                        detail = f"{c['shape']}: not an exponential of a linear power"
+                    results.append((li, bool(ok), detail))
+                    continue
                 ok = arg is not None and sp.degree(arg, var) == 1
                 if ok:
                     inner = 1 if sp.diff(arg, var) > 0 else -1

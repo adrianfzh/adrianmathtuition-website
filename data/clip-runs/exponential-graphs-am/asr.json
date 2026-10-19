@@ -1,0 +1,133 @@
+{
+ "slug": "exponential-graphs-am",
+ "worst": 0.89,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 0.89,
+   "score": 0.89,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 8,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 9,
+   "bag": 0.83,
+   "score": 0.944,
+   "heard": "So it has the shape of E to the X from the corner lifted onto the axis",
+   "said": "So it has the shape of E to the X, from the corner. Lift it onto the axes."
+  },
+  {
+   "beat": 10,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 11,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 13,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 14,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 15,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 16,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 17,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 18,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 19,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 20,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 21,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  }
+ ]
+}

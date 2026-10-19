@@ -376,6 +376,10 @@ export interface SceneSketch {
   shape: string; from?: string;
   /** Where the shape slides to (the `shift` stage): right by dx, up by dy. */
   shift?: { dx?: number; dy?: number };
+  /** The question's own curve (fn in x): on the `shift` stage the lifted shape stretches into it —
+   *  y = eˣ becomes y = 3e²ˣ through (0, 3), "the numbers don't change the shape" (Indices 1081.04,
+   *  19 Oct 2026). */
+  to?: string;
   asymptote?: { x?: number; y?: number; label?: string };
   points?: { x: number; y: number; label: string }[];
 }
@@ -941,7 +945,8 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         const k = scene.sketch as Record<string, unknown>;
         const inset = k?.inset as Record<string, unknown> | undefined;
         if (!isRecord(k) || !isRecord(inset) || !nonEmptyString(inset.fn) || !graphFn(inset.fn as string) || !nonEmptyString(k.shape) || !graphFn(k.shape as string)
-          || !['xMin', 'xMax', 'yMin', 'yMax'].every(f => typeof k[f] === 'number')) errors.push(`${at}: sketch is { inset (a graph), xMin, xMax, yMin, yMax, shape (fn in x), from?, shift?, asymptote?, points? }`);
+          || !['xMin', 'xMax', 'yMin', 'yMax'].every(f => typeof k[f] === 'number')
+          || (k.to !== undefined && (!nonEmptyString(k.to) || !graphFn(k.to as string)))) errors.push(`${at}: sketch is { inset (a graph), xMin, xMax, yMin, yMax, shape (fn in x), from?, shift?, to? (fn in x), asymptote?, points? }`);
         else {
           if (nonEmptyString(inset.id)) sceneIds.add(inset.id as string);
           for (const c of (Array.isArray(inset.curves) ? inset.curves : []) as Record<string, unknown>[]) if (nonEmptyString(c?.id)) sceneIds.add(c.id as string);
