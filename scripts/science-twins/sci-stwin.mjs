@@ -49,7 +49,11 @@ export const TARGET = Number(process.env.SCI_STWINS_TARGET || 40);   // servable
 // 18 Oct 2026 (Adrian: "finish math and science up to 3, for long questions too"): with
 // SCI_STWINS_PER_SKILL=3 the target is 3 structured twins per (pool, sub-skill) instead of 40
 // servable a topic. Off (0) by default, so the Fly lane keeps the topic target until switched.
-export const PER_SKILL_S = Number(process.env.SCI_STWINS_PER_SKILL || 0);
+// Stages (19 Oct 2026, Adrian: "for twins, once up to 3 is done, go to up to 5 immediately"):
+// SCI_STWINS_PER_SKILL='3 5' works to 3 everywhere first, then to 5 — a stage counts as done when
+// no sub-skill below it has a seed left to write from.
+export const STAGES = String(process.env.SCI_STWINS_PER_SKILL || '0').trim().split(/\s+/).map(Number).filter((n) => n > 0);
+export const PER_SKILL_S = STAGES[0] || 0;
 const NOVELTY_MAX = 0.4;
 const TWIN_SCHOOL = 'AdrianMath';
 const PROMPT_VERSION = 'sci-stwin-1';
@@ -134,7 +138,7 @@ function triedHere() {
 }
 
 /** Every (pool, topic) with its servable count, tier, need and ordered seeds (one per sub-skill a round). */
-export async function topicUnits() {
+export async function topicUnits(P = PER_SKILL_S) {
   const { rows, filing, subgroups, combined } = await loadBank();
   const open = openTopics();
   const isOpen = new Map(open.map((o) => [`${o.pool}|${o.topic}`, o.combined ? 2 : 1]));
@@ -187,7 +191,7 @@ export async function topicUnits() {
         for (const s of skills) { const r = s.seeds[round]; if (!r) continue; any = true; seeds.push({ source_id: r.id, subgroup_id: s.sg, subgroup: s.name, checked: !!r.practice_checked_at, has_image: !!r.has_image }); }
         if (!any) break;
       }
-      if (PER_SKILL_S > 0) {
+      if (P > 0) {
         // per sub-skill: each short sub-skill offers fresh seeds, then a seed's next twin ("~n"), up to its need
         const reuseOf = new Map();
         const seen3 = new Set();
@@ -199,7 +203,7 @@ export async function topicUnits() {
         }
         const all = new Set([...bySkill.keys(), ...reuseOf.keys()]);
         const per = [...all].map((sg) => {
-          const have = perSkill.get(sg) ?? 0; const need = Math.max(0, PER_SKILL_S - have);
+          const have = perSkill.get(sg) ?? 0; const need = Math.max(0, P - have);
           const fresh = (bySkill.get(sg) ?? []).sort(cmp).map((r) => ({ source_id: r.id, r }));
           const again = (reuseOf.get(sg) ?? []).sort((a, b) => a.n - b.n || cmp(a.r, b.r)).map(({ n, r }) => ({ source_id: `${r.id}~${n + 1}`, r, reuse: n + 1 }));
           return { sg, name: sgById.get(sg)?.name ?? '', have, need, cands: [...fresh, ...again] };
@@ -213,7 +217,7 @@ export async function topicUnits() {
         const needPS = per.reduce((a, x) => a + x.need, 0);
         const writable = per.reduce((a, x) => a + Math.min(x.need, x.cands.length), 0);
         // every sub-skill of the topic with its own need, for `need --subgroup` (asked right before writing)
-        const skillNeeds = Object.fromEntries([...new Set([...perSkill.keys(), ...all])].filter(Boolean).map((sg) => [sg, Math.max(0, PER_SKILL_S - (perSkill.get(sg) ?? 0))]));
+        const skillNeeds = Object.fromEntries([...new Set([...perSkill.keys(), ...all])].filter(Boolean).map((sg) => [sg, Math.max(0, P - (perSkill.get(sg) ?? 0))]));
         units.push({ pool, topic, tier: isOpen.get(`${pool}|${topic}`) ?? 3, servable: servable.length, twins: twins.length, need: needPS, writable, skills_short: per.length, skill_needs: skillNeeds, seed_count: seedsPS.length, seeds: seedsPS });
         continue;
       }
@@ -239,6 +243,18 @@ export async function topicUnits() {
 }
 
 /** The queue: tier by tier; inside a tier the topics take turns, thinnest first; never past a topic's need. */
+/** The first stage that still has something to write (per-skill mode); else the topic target. */
+export async function stagedUnits() {
+  if (!PER_SKILL_S) return { units: await topicUnits(0), stage: 0 };
+  let last = null;
+  for (const st of STAGES) {
+    const units = await topicUnits(st);
+    last = { units, stage: st };
+    if (units.some((u) => u.seed_count > 0)) return last;
+  }
+  return last;
+}
+
 export function queueFromUnits(units, limit) {
   const out = [];
   for (const tier of [1, 2, 3]) {
@@ -258,13 +274,13 @@ export function queueFromUnits(units, limit) {
 }
 
 async function gap() {
-  const units = await topicUnits();
+  const { units, stage } = await stagedUnits();
   if (has('--json')) { console.log(JSON.stringify({ target: TARGET, units: units.map(({ seeds, ...u }) => u) })); return; }
   if (PER_SKILL_S > 0) {
     for (const tier of [1, 2, 3]) {
       const us = units.filter((u) => u.tier === tier);
       const t = us.reduce((a, u) => ({ skills: a.skills + (u.skills_short ?? 0), need: a.need + u.need, writable: a.writable + (u.writable ?? 0) }), { skills: 0, need: 0, writable: 0 });
-      console.log(`${['', 'Tier 1 — open pure topics', 'Tier 2 — open Combined topics', 'Tier 3 — every other topic'][tier]}: ${t.skills} sub-skills short of ${PER_SKILL_S} structured twins · ${t.need} twins needed · ${t.writable} writable from the seeds`);
+      console.log(`${['', 'Tier 1 — open pure topics', 'Tier 2 — open Combined topics', 'Tier 3 — every other topic'][tier]}: ${t.skills} sub-skills short of ${stage} structured twins · ${t.need} twins needed · ${t.writable} writable from the seeds`);
     }
     return;
   }
@@ -276,7 +292,7 @@ async function gap() {
   }
 }
 async function queue() {
-  const items = queueFromUnits(await topicUnits(), Number(argOf('--limit', 10)));
+  const items = queueFromUnits((await stagedUnits()).units, Number(argOf('--limit', 10)));
   if (has('--json')) { console.log(JSON.stringify(items)); return; }
   for (const r of items) console.log(`${r.source_id}  ${r.pool.padEnd(8)} ${String(r.subgroup_id).padEnd(5)} T${r.tier} ${r.topic} › ${r.subgroup}  (servable ${r.servable}, wants ${r.need})`);
   log(`${items.length} structured seeds`);
@@ -285,9 +301,10 @@ async function need() {
   const pool = argOf('--pool'); const sg = Number(argOf('--subgroup'));
   if (!parsePool(pool) || !sg) throw new Error('--pool PHY|CHEM|BIO|CS_… --subgroup <id> required');
   const { data: s } = await sb().from('subgroups').select('topic').eq('id', sg).maybeSingle();
-  const u = (await topicUnits()).find((x) => x.pool === pool && x.topic === s?.topic);
-  // per-skill mode: THIS sub-skill's need (3 − its structured twins), not the whole topic's
-  if (PER_SKILL_S > 0) { console.log(u ? (u.skill_needs?.[sg] ?? PER_SKILL_S) : 0); return; }
+  const { units: us, stage } = await stagedUnits();
+  const u = us.find((x) => x.pool === pool && x.topic === s?.topic);
+  // per-skill mode: THIS sub-skill's need (the current stage − its structured twins), not the whole topic's
+  if (PER_SKILL_S > 0) { console.log(u ? (u.skill_needs?.[sg] ?? stage) : 0); return; }
   console.log(u ? u.need : 0);
 }
 
