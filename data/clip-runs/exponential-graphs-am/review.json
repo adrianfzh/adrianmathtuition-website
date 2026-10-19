@@ -1,39 +1,39 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T16:52:40.834Z",
+ "at": "2026-10-19T17:59:26.857Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 45369,
+  "input_tokens": 47361,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1215,
+  "output_tokens": 2026,
   "output_tokens_details": {
-   "thinking_tokens": 902
+   "thinking_tokens": 1653
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "pass",
+ "verdict": "fix",
  "findings": [
   {
-   "beat": 11,
-   "rule": "the part talked about is lit",
-   "severity": "should",
-   "problem": "The voice says the curve gets closer and closer to the x-axis as x goes left, but nothing on the board is lit, so the student may not know which part of the sketch to look at.",
-   "fix": "Light the curve on the side sketch (its left tail) on \"gets closer and closer to the X axis\"."
+   "beat": 14,
+   "rule": "layout",
+   "severity": "must",
+   "problem": "On the phone, the line 'y → 0 + 1 = 1 ⇒ asymptote y = 1' runs into the sketch column. As it is written, the dashed asymptote and its 'y = 1' label cross over the words 'asymptote y = 1', right while the voice says them.",
+   "fix": "Keep line 4 inside the working column: put '⇒ asymptote y = 1' on its own line under 'y → 0 + 1 = 1', or shorten it, so no part of the sketch crosses it."
   },
   {
-   "beat": 21,
-   "rule": "the part talked about is lit",
-   "severity": "should",
-   "problem": "The summary lights the shape line and the asymptote line, but not the y-intercept when it says \"through zero, three\", so the three labels the question asks for are not pointed to evenly.",
-   "fix": "Light the (0, 3) point on the sketch, or the line \"= 3(1) = 3\", on \"through zero, three\"."
+   "beat": 20,
+   "rule": "layout",
+   "severity": "must",
+   "problem": "Once the board has scrolled, the corner-shapes box covers the end of the 'asymptote y = 1' line, so the student sees part of an equation hidden behind the inset.",
+   "fix": "With line 4 split or shortened so it stays left of the inset, check the beat 19–22 phone frames again: no board line may run under the corner box."
   }
  ]
 }

@@ -1,6 +1,6 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T16:52:40.886Z",
+ "at": "2026-10-19T17:59:27.029Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,11 +8,11 @@
   },
   "maths": {
    "ok": true,
-   "detail": "9/9 line checks"
+   "detail": "12/12 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "7 lines = the checked plan"
+   "detail": "9 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,12 +20,12 @@
   },
   "look": {
    "ok": true,
-   "detail": "38/38 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
+   "detail": "43/43 actions on the voice · cues worst 0.16 s (gate 0.3 s) · look problems 0"
   },
   "review": {
-   "ok": true,
-   "detail": "0 must, 2 should · 24 frames"
+   "ok": false,
+   "detail": "2 must, 0 should · 24 frames · b14 On the phone, the line 'y → 0 + 1 = 1 ⇒ asymptote y = 1' runs into the sketch column. As it is written, the dashed asymptote and its 'y = 1' label cross over the words 'asymptote y = 1', right while the voice says them. | b20 Once the board has scrolled, the corner-shapes box covers the end of the 'asymptote y = 1' line, so the student sees part of an equation hidden behind the inset."
   }
  },
- "pass": true
+ "pass": false
 }

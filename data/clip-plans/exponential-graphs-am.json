@@ -111,11 +111,6 @@
         {
           "id": "yt",
           "tex": "y\\to 0+1=1"
-        },
-        {
-          "id": "asy",
-          "tex": "\\Rightarrow\\ \\text{asymptote }y=1",
-          "hl": "sky"
         }
       ],
       "checks": [
@@ -124,6 +119,20 @@
           "var": "x",
           "at": "oo",
           "gives": 1
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "asy",
+          "tex": "\\text{asymptote: }y=1",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "1 = 0 + 1"
         }
       ]
     },

@@ -74,8 +74,12 @@
         },
         {
           "tokens": [
-            { "id": "yt", "tex": "y\\to 0+1=1" },
-            { "id": "asy", "tex": "\\Rightarrow\\ \\text{asymptote }y=1", "hl": "sky" }
+            { "id": "yt", "tex": "y\\to 0+1=1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "asy", "tex": "\\text{asymptote: }y=1", "hl": "sky" }
           ]
         },
         {
