@@ -30,6 +30,7 @@ import sameBaseComparePowersAm from '../../data/lessons/same-base-compare-powers
 import solvingBySubstitutionAm from '../../data/lessons/solving-by-substitution-am.json';
 import comparePowersTwoUnknownsAm from '../../data/lessons/compare-powers-two-unknowns-am.json';
 import splitThePowerAm from '../../data/lessons/split-the-power-am.json';
+import evaluate10ToTheXAm from '../../data/lessons/evaluate-10-to-the-x-am.json';
 import linearFormWithLogsAm from '../../data/lessons/linear-form-with-logs-am.json';
 import growthAndDecayAm from '../../data/lessons/growth-and-decay-am.json';
 import sketchingLogGraphsAm from '../../data/lessons/sketching-log-graphs-am.json';
@@ -66,6 +67,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'solving-by-substitution-am': solvingBySubstitutionAm,
   'compare-powers-two-unknowns-am': comparePowersTwoUnknownsAm,
   'split-the-power-am': splitThePowerAm,
+  'evaluate-10-to-the-x-am': evaluate10ToTheXAm,
   'linear-form-with-logs-am': linearFormWithLogsAm,
   'growth-and-decay-am': growthAndDecayAm,
   'sketching-log-graphs-am': sketchingLogGraphsAm,

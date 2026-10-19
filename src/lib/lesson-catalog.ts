@@ -179,6 +179,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 2,
   },
   {
+    slug: 'evaluate-10-to-the-x-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Evaluate 10ˣ without finding x',
+    minutes: 3,
+  },
+  {
     slug: 'growth-and-decay-am',
     level: 'AM',
     topic: 'Logarithms',

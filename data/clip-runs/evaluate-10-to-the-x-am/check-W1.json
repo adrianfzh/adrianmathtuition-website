@@ -1,0 +1,281 @@
+{
+  "slug": "evaluate-10-to-the-x-am",
+  "title": "Evaluate 10ˣ without finding x",
+  "level": "AM",
+  "topic": "Indices",
+  "minutes": 3,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "Without the use of a calculator, evaluate $10^x$, given that $2^{x+2} \\times 5^{2x-1} = 5^{x-1}$.",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Evaluate 10ˣ",
+      "scroll": true,
+      "steps": [
+        {
+          "tokens": [
+            { "id": "q1", "tex": "2^{x+2}" },
+            { "id": "q2", "tex": "\\times 5^{2x-1}" },
+            { "id": "q3", "tex": "=5^{x-1}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "w1", "tex": "10^x=\\,?", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "k1", "tex": "\\text{Key fact: }10^x", "hl": "sky" },
+            { "id": "k2", "tex": "=\\htmlClass{lsn-pc-a}{2^x}\\times\\htmlClass{lsn-pc-b}{5^x}", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "g1", "tex": "2^{x+2}" },
+            { "id": "g2", "tex": "=\\dfrac{5^{x-1}}{5^{2x-1}}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "b1", "tex": "2^{x+2}" },
+            { "id": "b2", "tex": "=5^{(x-1)-(2x-1)}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "o1", "tex": "2^{x+2}" },
+            { "id": "o2", "tex": "=5^{x-1-2x+1}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "n1", "tex": "2^{x+2}" },
+            { "id": "n2", "tex": "=5^{-x}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "s1", "tex": "2^x\\times 2^2" },
+            { "id": "s2", "tex": "=\\dfrac{1}{5^x}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "m1", "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times \\htmlClass{lsn-pc-b}{5^x}" },
+            { "id": "m2", "tex": "\\times 2^2=1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "r1", "tex": "10^x", "from": "m1" },
+            { "id": "r2", "tex": "\\times 4=1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "ans", "tex": "10^x=\\dfrac{1}{4}", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Two to the power X plus two, times five to the power two X minus one,",
+          "asks": ["What does the question give us?"],
+          "do": [
+            { "do": "write", "token": "q1" },
+            { "do": "write", "token": "q2", "on": "times five to" }
+          ]
+        },
+        {
+          "say": "equals five to the power X minus one.",
+          "asks": ["Which side is which?"],
+          "do": [
+            { "do": "write", "token": "q3" }
+          ]
+        },
+        {
+          "say": "Without a calculator, find the value of ten to the power X.",
+          "asks": ["Do I need to find X?", "Why no calculator?"],
+          "do": [
+            { "do": "write", "token": "w1", "on": "ten to the" }
+          ]
+        },
+        {
+          "say": "Leave X alone: it is usually an awkward number. Treat ten to the power X as one block.",
+          "asks": ["Why not find X first?", "What does one block mean?"],
+          "aside": {
+            "text": "Why not find X first?",
+            "slug": "indices-dont-chase-x",
+            "read": [
+              "Here $x$ is not a whole number or a simple fraction.",
+              "It is about $-0.602$, which we cannot work out without a calculator.",
+              "But $10^x$ itself is a simple number.",
+              "So we never find $x$: we build $10^x$ straight from the equation.",
+              "**Don't chase $x$ — rebuild the block.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "w1", "on": "Treat ten to" }
+          ]
+        },
+        {
+          "say": "The key fact: ten to the power X equals two to the power X times five to the power X.",
+          "asks": ["Why is ten to the power X two to the power X times five to the power X?"],
+          "do": [
+            { "do": "write", "token": "k1" },
+            { "do": "write", "token": "k2", "on": "equals two to" }
+          ]
+        },
+        {
+          "say": "Same power, so multiply the bases: two times five is ten.",
+          "asks": ["Which law is this?", "Does it work for other bases?"],
+          "do": [
+            { "do": "note", "text": "Same power: $2^x\\times5^x=(2\\times5)^x$", "near": "k2" }
+          ]
+        },
+        {
+          "say": "The plan: put two to the power X beside five to the power X. Then glue them into ten to the power X.",
+          "asks": ["Why do we want them side by side?"],
+          "do": [
+            { "do": "highlight", "token": "k2", "inside": "a", "tone": "orange", "on": "put two to" },
+            { "do": "highlight", "token": "k2", "inside": "b", "tone": "sky", "on": "beside five to" }
+          ]
+        },
+        {
+          "say": "First, group the fives on one side. Divide both sides by five to the power two X minus one.",
+          "asks": ["Why divide by that?", "Why put the fives together?"],
+          "do": [
+            { "do": "highlight", "token": ["q2", "q3"], "tone": "sky" },
+            { "do": "write", "step": 3, "on": "Divide both sides" },
+            { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "power two X" }
+          ]
+        },
+        {
+          "say": "Now the twos are on the left and the fives are on the right.",
+          "asks": ["Where did the five on the left go?"],
+          "do": [
+            { "do": "highlight", "token": "g1", "tone": "orange" },
+            { "do": "highlight", "token": "g2", "tone": "sky", "on": "the fives are" }
+          ]
+        },
+        {
+          "say": "Same base five, top and bottom, so minus the powers: top power minus bottom power.",
+          "asks": ["Which law is this?", "Why minus the powers?"],
+          "do": [
+            { "do": "highlight", "token": "g2", "tone": "sky" },
+            { "do": "write", "step": 4, "on": "so minus the" },
+            { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "b2", "on": "top power minus" }
+          ]
+        },
+        {
+          "say": "Make sure you put brackets, because we minus the whole bottom power.",
+          "asks": ["Why do I need brackets?"],
+          "do": [
+            { "do": "highlight", "token": "b2", "tone": "sky" }
+          ]
+        },
+        {
+          "say": "A common mistake is leaving out the brackets. Then the signs inside come out wrong.",
+          "asks": ["Which signs go wrong?"],
+          "do": [
+            { "do": "note", "text": "✗ Common mistake: no brackets", "near": "b2", "on": "leaving out the" }
+          ]
+        },
+        {
+          "say": "Open the brackets. Minus a bracket flips every sign inside: minus two X, and plus one.",
+          "asks": ["Why does the sign flip?"],
+          "do": [
+            { "do": "write", "step": 5 },
+            { "do": "note", "text": "Minus a bracket flips every sign inside", "near": "o2", "on": "flips every sign" }
+          ]
+        },
+        {
+          "say": "Add up like terms: X minus two X is negative X, and negative one plus one cancels. So five to the power negative X.",
+          "asks": ["Where did the ones go?"],
+          "do": [
+            { "do": "highlight", "token": "o2", "tone": "sky" },
+            { "do": "write", "step": 6, "on": "So five to" }
+          ]
+        },
+        {
+          "say": "Now split the power of two. We want two to the power X on its own, to pair with five to the power X.",
+          "asks": ["Why split the power?"],
+          "do": [
+            { "do": "highlight", "token": "n1", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "Two to the power X plus two is two to the power X times two squared.",
+          "asks": ["Is it times or plus?"],
+          "do": [
+            { "do": "write", "token": "s1", "on": "is two to" }
+          ]
+        },
+        {
+          "say": "This is Add power in reverse: multiplying adds the powers, back to X plus two.",
+          "asks": ["Which law is this?"],
+          "do": [
+            { "do": "note", "text": "Add power, in reverse: $a^{x+k}=a^x\\times a^k$", "near": "s1" }
+          ]
+        },
+        {
+          "say": "On the right, a negative power flips: five to the power negative X is one over five to the power X.",
+          "asks": ["Why does a negative power flip?"],
+          "do": [
+            { "do": "highlight", "token": "n2", "tone": "sky" },
+            { "do": "write", "token": "s2", "on": "is one over" },
+            { "do": "note", "text": "Negative power flips: $5^{-x}=\\frac{1}{5^x}$", "near": "s2", "on": "five to the power X" }
+          ]
+        },
+        {
+          "say": "Cross multiply: times both sides by five to the power X, so it joins two to the power X.",
+          "asks": ["What is cross multiply?", "Why times by five to the power X?"],
+          "do": [
+            { "do": "write", "step": 8, "on": "times both sides" },
+            { "do": "note", "text": "× both sides by $5^x$", "near": "m1", "on": "five to the" }
+          ]
+        },
+        {
+          "say": "On the right, one over five to the power X, times five to the power X, is one.",
+          "asks": ["Why is the right side one?"],
+          "do": [
+            { "do": "highlight", "token": "m2", "tone": "sky", "on": "is one" }
+          ]
+        },
+        {
+          "say": "Now two to the power X and five to the power X sit side by side, both to the power X.",
+          "asks": ["Why is side by side useful?"],
+          "do": [
+            { "do": "highlight", "token": "m1", "inside": "a", "tone": "orange" },
+            { "do": "highlight", "token": "m1", "inside": "b", "tone": "sky", "on": "five to the" }
+          ]
+        },
+        {
+          "say": "They glue into ten to the power X. Same power, so multiply the bases: two times five is ten.",
+          "asks": ["How do they become ten to the power X?", "Which law is this?"],
+          "do": [
+            { "do": "move", "from": "m1" },
+            { "do": "note", "text": "Same power: $2^x\\times5^x=(2\\times5)^x$", "near": "r1", "on": "multiply the bases" }
+          ]
+        },
+        {
+          "say": "And two squared is four. So ten to the power X times four equals one.",
+          "asks": ["Where did the four come from?"],
+          "do": [
+            { "do": "write", "token": "r2", "on": "two squared is" }
+          ]
+        },
+        {
+          "say": "Divide both sides by four. Ten to the power X equals one quarter.",
+          "asks": ["Can I leave it as a fraction?", "What is it as a decimal?"],
+          "do": [
+            { "do": "write", "step": 10, "on": "Ten to the" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "one quarter" }
+          ]
+        }
+      ]
+    }
+  ]
+}

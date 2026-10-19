@@ -1,0 +1,219 @@
+{
+  "slug": "evaluate-10-to-the-x-am",
+  "title": "Evaluate 10ˣ without finding x",
+  "heading": "Evaluate 10ˣ",
+  "intro": null,
+  "level": "AM",
+  "topic": "Indices",
+  "subgroup": null,
+  "source": {
+    "unit": "108.23",
+    "also": [
+      "108.22"
+    ]
+  },
+  "bible": "data/clip-bibles/indices-am.md",
+  "answer": {
+    "facts": [
+      "10**x = Rational(1,4)"
+    ],
+    "display": "10ˣ = 1/4"
+  },
+  "outline": [
+    "Built 19 Oct 2026 (Indices clip 5) from 108.23 with 108.22's words: the question read; we want 10^x, not x — don't chase x, it is usually not a nice number (a written drop-down); the plan as maths: the key fact 10^x = 2^x × 5^x, so get 2^x and 5^x side by side and glue them; group base 5 on one side (divide both sides by 5^{2x−1}); Minus power with brackets, why the brackets (the common mistake, at the step); open the brackets, add up like terms → 5^{−x}; split the power of 2 (Add power in reverse) and a negative power flips; cross multiply (times both sides by 5^x) so 2^x and 5^x sit side by side; same power, multiply the bases: 10^x, the piece moving; 2² = 4; divide by four: 10^x = 1/4, boxed. One equation line by line, no headings, no step numbers, no Watch out."
+  ],
+  "question": "Without the use of a calculator, evaluate $10^x$, given that $2^{x+2} \\times 5^{2x-1} = 5^{x-1}$.",
+  "minutes": 3,
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "q1",
+          "tex": "2^{x+2}"
+        },
+        {
+          "id": "q2",
+          "tex": "\\times 5^{2x-1}"
+        },
+        {
+          "id": "q3",
+          "tex": "=5^{x-1}"
+        }
+      ],
+      "checks": [
+        {
+          "start": "2**(x+2)*5**(2*x-1) = 5**(x-1)",
+          "var": "x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "w1",
+          "tex": "10^x=\\,?",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "what we want: the value of 10^x, as one block"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "k1",
+          "tex": "\\text{Key fact: }10^x",
+          "hl": "sky"
+        },
+        {
+          "id": "k2",
+          "tex": "=\\htmlClass{lsn-pc-a}{2^x}\\times\\htmlClass{lsn-pc-b}{5^x}",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "10**x = 2**x*5**x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "g1",
+          "tex": "2^{x+2}"
+        },
+        {
+          "id": "g2",
+          "tex": "=\\dfrac{5^{x-1}}{5^{2x-1}}"
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**(x+2) = 5**(x-1)/5**(2*x-1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "b1",
+          "tex": "2^{x+2}"
+        },
+        {
+          "id": "b2",
+          "tex": "=5^{(x-1)-(2x-1)}"
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**(x+2) = 5**((x-1)-(2*x-1))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "o1",
+          "tex": "2^{x+2}"
+        },
+        {
+          "id": "o2",
+          "tex": "=5^{x-1-2x+1}"
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**(x+2) = 5**(x-1-2*x+1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "n1",
+          "tex": "2^{x+2}"
+        },
+        {
+          "id": "n2",
+          "tex": "=5^{-x}"
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**(x+2) = 5**(-x)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s1",
+          "tex": "2^x\\times 2^2"
+        },
+        {
+          "id": "s2",
+          "tex": "=\\dfrac{1}{5^x}"
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**x*2**2 = 1/5**x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "m1",
+          "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times \\htmlClass{lsn-pc-b}{5^x}"
+        },
+        {
+          "id": "m2",
+          "tex": "\\times 2^2=1"
+        }
+      ],
+      "checks": [
+        {
+          "step": "2**x*5**x*2**2 = 1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "r1",
+          "tex": "10^x",
+          "from": "m1"
+        },
+        {
+          "id": "r2",
+          "tex": "\\times 4=1"
+        }
+      ],
+      "checks": [
+        {
+          "step": "10**x*4 = 1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ans",
+          "tex": "10^x=\\dfrac{1}{4}",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "step": "10**x = Rational(1,4)"
+        }
+      ]
+    }
+  ],
+  "scroll": true
+}

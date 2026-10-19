@@ -1,0 +1,150 @@
+{
+ "slug": "evaluate-10-to-the-x-am",
+ "worst": 0.88,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 8,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 9,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 10,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 11,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 13,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 14,
+   "bag": 0.88,
+   "score": 0.88,
+   "heard": null
+  },
+  {
+   "beat": 15,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 16,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 17,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 18,
+   "bag": 0.95,
+   "score": 0.95,
+   "heard": null
+  },
+  {
+   "beat": 19,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 20,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 21,
+   "bag": 0.95,
+   "score": 0.95,
+   "heard": null
+  },
+  {
+   "beat": 22,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 23,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 24,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  }
+ ]
+}
