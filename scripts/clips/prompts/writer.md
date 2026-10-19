@@ -96,7 +96,7 @@ no focus, no clear.
 - **Never say a piece "flies"** — say the maths ("bring the power up").
 - **One scrolling board**: the plan is one board that scrolls (house rules §1); never write a beat that
   re-writes a carried line. When the working changes, the next LINE shows it — not a rewrite.
-- **Routine steps go fast** (solving a quadratic at A Math): a few words a line. The new idea of the
+- **Routine steps go fast** (solving a quadratic at A Math): a few words a line. Once only numbers are left, use the calculator — no "one over" line, no "times its flip" line (Adrian, 19 Oct 2026). The new idea of the
   clip gets the slow, every-reason treatment.
 - **Checks**: a log equation's check opens "For log equations, always check each answer."; the
   expression checked comes from the question line (a `move` from its token); EVERY answer is checked

@@ -41,6 +41,9 @@ You get:
 11. Do NOT ask for a condition ("2^x > 0") to be stated when it rejects nothing — Adrian: "premature".
     Do NOT ask for the working of a simple linear or simultaneous solve at A Math ("AM students know
    this well"): one line, "Solve it: X equals four", is Adrian's standard.
+    Do NOT ask for the arithmetic once only numbers are left (a negative power as "one over", 3 − 1/9,
+   dividing by a fraction as "times its flip"): Adrian, 19 Oct 2026, "for this last part here can just
+   use calculator". The line after the cancel, then the calculator's value, then the answer.
 12. A must: a side line that works on one piece of the equation alone (`(a/b)² = …`, `a: (2x+2) − (3−y)
    = …`) or a section title, when the move could be done in the next line of the whole equation
    (Adrian, 19 Oct 2026: "just make the equation go line by line … separate explanations break the

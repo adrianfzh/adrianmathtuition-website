@@ -1,6 +1,6 @@
 {
  "slug": "split-the-power-am",
- "worst": 0.859,
+ "worst": 0.87,
  "lines": [
   {
    "beat": 1,
@@ -34,8 +34,8 @@
   },
   {
    "beat": 6,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -82,28 +82,15 @@
   },
   {
    "beat": 14,
-   "bag": 0.95,
-   "score": 0.95,
-   "heard": null
-  },
-  {
-   "beat": 15,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
-   "beat": 16,
-   "bag": 0.94,
-   "score": 0.94,
+   "beat": 15,
+   "bag": 0.87,
+   "score": 0.87,
    "heard": null
-  },
-  {
-   "beat": 17,
-   "bag": 0.84,
-   "score": 0.859,
-   "heard": "Dividing by a fraction is times its flip, so the 26s cancel. The answer is -1/3.",
-   "said": "Dividing by a fraction is times its flip, so the twenty-sixes cancel. The answer is negative one third."
   }
  ]
 }
