@@ -1,19 +1,19 @@
 {
  "slug": "split-the-power-am",
- "at": "2026-10-19T06:32:51.633Z",
+ "at": "2026-10-19T06:52:06.952Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 43901,
+  "input_tokens": 42615,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1493,
+  "output_tokens": 1484,
   "output_tokens_details": {
-   "thinking_tokens": 1047
+   "thinking_tokens": 1132
   },
   "service_tier": "standard",
   "inference_geo": "global",
@@ -22,25 +22,18 @@
  "verdict": "pass",
  "findings": [
   {
-   "beat": 14,
+   "beat": 7,
    "rule": "the part talked about is lit",
    "severity": "should",
-   "problem": "The voice names three to the power negative two and its value one over nine, but neither the 3^{-2} on the line above nor the 1/9 on the new line is lit, so the student must search for which piece became which.",
-   "fix": "Light the 3^{-2} in the top of the line above as it is named, then light the 1/9 in the top of the new line on \"one over nine\"."
-  },
-  {
-   "beat": 17,
-   "rule": "what, how, why",
-   "severity": "should",
-   "problem": "The voice says only the twenty-sixes cancel, but the answer also needs three over nine to become one third, so the jump to −1/3 is not fully explained.",
-   "fix": "Add to the voice \"and three over nine is one third\" before \"The answer is negative one third\"."
+   "problem": "In beat 5 the question's term 3^{n+1} lights with its split, but in beats 7–9 only the split on line 2 lights. A student cannot see which question term (3^{n-2}, 3^{n-1}, 3^{n+2}) each split comes from.",
+   "fix": "At the start of beats 7, 8 and 9, also light the matching piece of the question line (b, c, d) in the same tone as its split, as beat 5 does for a."
   },
   {
    "beat": 10,
    "rule": "layout",
    "severity": "should",
-   "problem": "The common-mistake note sits under the Add power note, so its arrow points at that note instead of at the split line it is about.",
-   "fix": "Point the ✗ Common mistake arrow at the orange 3^n × 3^1 term on the split line, or place the note beside the Add power note so its arrow reaches that term."
+   "problem": "The ↑ on the '✗ Common mistake' note points up at the 'Add power' note, not at the split line, so it reads as a comment on the law.",
+   "fix": "Drop the arrow on the common-mistake note, or set its near to the 3^n × 3^1 term so it clearly explains the split."
   }
  ]
 }

@@ -1,6 +1,6 @@
 {
  "slug": "split-the-power-am",
- "at": "2026-10-19T06:32:51.687Z",
+ "at": "2026-10-19T06:52:07.012Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,11 +8,11 @@
   },
   "maths": {
    "ok": true,
-   "detail": "12/12 line checks"
+   "detail": "10/10 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "9 lines = the checked plan"
+   "detail": "7 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,11 +20,11 @@
   },
   "look": {
    "ok": true,
-   "detail": "29/29 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "25/25 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
-   "detail": "0 must, 3 should · 24 frames"
+   "detail": "0 must, 2 should · 24 frames"
   }
  },
  "pass": true
