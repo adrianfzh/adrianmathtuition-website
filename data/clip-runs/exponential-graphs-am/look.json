@@ -1,24 +1,24 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T16:03:09.913Z",
+ "at": "2026-10-19T16:17:21.493Z",
  "width": 390,
  "actions": {
-  "expected": 39,
-  "fired": 39,
-  "fromClip": 39
+  "expected": 38,
+  "fired": 38,
+  "fromClip": 38
  },
  "cue": {
-  "cued": 32,
+  "cued": 31,
   "worst": 0.184,
   "over": 0,
   "gateS": 0.3
  },
  "look": {
-  "problems": 32
+  "problems": 0
  },
  "question": "button",
  "pageErrors": [],
- "pass": false,
+ "pass": true,
  "shots": [
   {
    "file": "exponential-graphs-am/01-b1-sketch.png",
@@ -91,9 +91,9 @@
    "kind": "highlight",
    "on": "Y equals minus",
    "source": "clip",
-   "clipElapsed": 0,
+   "clipElapsed": 0.02,
    "wordStart": 0.16,
-   "offset": -0.16,
+   "offset": -0.14,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -112,9 +112,9 @@
    "kind": "highlight",
    "on": "Y equals minus",
    "source": "clip",
-   "clipElapsed": 0,
+   "clipElapsed": 0.016898,
    "wordStart": 0.153,
-   "offset": -0.153,
+   "offset": -0.136,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -154,9 +154,9 @@
    "kind": "sketch",
    "on": "empty axes at",
    "source": "clip",
-   "clipElapsed": 5.374208,
+   "clipElapsed": 5.387826,
    "wordStart": 5.519,
-   "offset": -0.145,
+   "offset": -0.131,
    "cut": [],
    "small": [],
    "overlap": [],
@@ -175,16 +175,14 @@
    "kind": "pin",
    "on": "first the shape",
    "source": "clip",
-   "clipElapsed": 1.220683,
+   "clipElapsed": 1.210935,
    "wordStart": 1.358,
-   "offset": -0.137,
+   "offset": -0.147,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -198,16 +196,14 @@
    "kind": "pin",
    "on": "then the asymptote",
    "source": "clip",
-   "clipElapsed": 2.319701,
+   "clipElapsed": 2.324052,
    "wordStart": 2.457,
-   "offset": -0.137,
+   "offset": -0.133,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -221,16 +217,14 @@
    "kind": "pin",
    "on": "then the intercepts",
    "source": "clip",
-   "clipElapsed": 3.573657,
+   "clipElapsed": 3.563035,
    "wordStart": 3.703,
-   "offset": -0.129,
+   "offset": -0.14,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -244,16 +238,14 @@
    "kind": "pin",
    "on": "last draw it",
    "source": "clip",
-   "clipElapsed": 5.003338,
+   "clipElapsed": 4.997411,
    "wordStart": 5.145,
-   "offset": -0.142,
+   "offset": -0.148,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -267,16 +259,14 @@
    "kind": "pin",
    "on": null,
    "source": "clip",
-   "clipElapsed": 0.006062,
+   "clipElapsed": 0.007687,
    "wordStart": null,
    "offset": null,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -290,16 +280,14 @@
    "kind": "highlight",
    "on": "no minus sign",
    "source": "clip",
-   "clipElapsed": 4.95697,
+   "clipElapsed": 4.962944,
    "wordStart": 5.101,
-   "offset": -0.144,
+   "offset": -0.138,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -320,9 +308,7 @@
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -336,16 +322,14 @@
    "kind": "highlight",
    "on": "E to the X",
    "source": "clip",
-   "clipElapsed": 1.108552,
+   "clipElapsed": 1.103525,
    "wordStart": 1.246,
-   "offset": -0.137,
+   "offset": -0.142,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -359,16 +343,14 @@
    "kind": "highlight",
    "on": "from the corner",
    "source": "clip",
-   "clipElapsed": 2.107974,
+   "clipElapsed": 2.102296,
    "wordStart": 2.242,
-   "offset": -0.134,
+   "offset": -0.14,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -382,16 +364,14 @@
    "kind": "sketch",
    "on": "Lift it onto",
    "source": "clip",
-   "clipElapsed": 3.245623,
+   "clipElapsed": 3.252366,
    "wordStart": 3.391,
-   "offset": -0.145,
+   "offset": -0.139,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -412,9 +392,7 @@
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -428,16 +406,14 @@
    "kind": "highlight",
    "on": "the two",
    "source": "clip",
-   "clipElapsed": 0.463818,
+   "clipElapsed": 0.450346,
    "wordStart": 0.598,
-   "offset": -0.134,
+   "offset": -0.148,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -451,16 +427,14 @@
    "kind": "note",
    "on": "Only a minus",
    "source": "clip",
-   "clipElapsed": 5.77939,
+   "clipElapsed": 5.787204,
    "wordStart": 5.928,
-   "offset": -0.149,
+   "offset": -0.141,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -474,16 +448,14 @@
    "kind": "pin",
    "on": null,
    "source": "clip",
-   "clipElapsed": 0,
+   "clipElapsed": 0.004852,
    "wordStart": null,
    "offset": null,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -497,16 +469,14 @@
    "kind": "write",
    "on": "the asymptote is",
    "source": "clip",
-   "clipElapsed": 0.174249,
+   "clipElapsed": 0.174344,
    "wordStart": 0.322,
    "offset": -0.148,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -520,16 +490,14 @@
    "kind": "sketch",
    "on": "as a dashed line",
    "source": "clip",
-   "clipElapsed": 4.080287,
+   "clipElapsed": 4.077392,
    "wordStart": 4.22,
-   "offset": -0.14,
+   "offset": -0.143,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -543,98 +511,63 @@
    "kind": "highlight",
    "on": "Three times a",
    "source": "clip",
-   "clipElapsed": 0.01516,
+   "clipElapsed": 0.008143,
    "wordStart": 0.153,
-   "offset": -0.138,
+   "offset": -0.145,
    "cut": [],
    "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
    "shown": 6
   },
   {
-   "file": "exponential-graphs-am/25-b13-note.png",
-   "scene": 1,
-   "beat": 13,
-   "index": 1,
-   "kind": "note",
-   "on": "So our curve",
-   "source": "clip",
-   "clipElapsed": 3.606343,
-   "wordStart": 3.755,
-   "offset": -0.149,
-   "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
-   "overlap": [],
-   "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
-   "subsHide": [],
-   "order": [],
-   "wrapped": [],
-   "shown": 7
-  },
-  {
-   "file": "exponential-graphs-am/26-b14-pin.png",
+   "file": "exponential-graphs-am/25-b14-pin.png",
    "scene": 1,
    "beat": 14,
    "index": 0,
    "kind": "pin",
    "on": null,
    "source": "clip",
-   "clipElapsed": 0,
+   "clipElapsed": 0.005002,
    "wordStart": null,
    "offset": null,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 7
+   "shown": 6
   },
   {
-   "file": "exponential-graphs-am/27-b14-write.png",
+   "file": "exponential-graphs-am/26-b14-write.png",
    "scene": 1,
    "beat": 14,
    "index": 1,
    "kind": "write",
    "on": "sub X equals",
    "source": "clip",
-   "clipElapsed": 4.562313,
+   "clipElapsed": 4.563689,
    "wordStart": 4.698,
-   "offset": -0.136,
+   "offset": -0.134,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 8
+   "shown": 7
   },
   {
-   "file": "exponential-graphs-am/28-b15-write.png",
+   "file": "exponential-graphs-am/27-b15-write.png",
    "scene": 1,
    "beat": 15,
    "index": 0,
@@ -645,89 +578,94 @@
    "wordStart": null,
    "offset": null,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 9
+   "shown": 8
   },
   {
-   "file": "exponential-graphs-am/29-b16-write.png",
+   "file": "exponential-graphs-am/28-b16-write.png",
    "scene": 1,
    "beat": 16,
    "index": 0,
    "kind": "write",
    "on": "three E to",
    "source": "clip",
-   "clipElapsed": 2.427154,
+   "clipElapsed": 2.437653,
    "wordStart": 2.574,
-   "offset": -0.147,
+   "offset": -0.136,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 10
+   "shown": 9
   },
   {
-   "file": "exponential-graphs-am/30-b17-write.png",
+   "file": "exponential-graphs-am/29-b17-write.png",
    "scene": 1,
    "beat": 17,
    "index": 0,
    "kind": "write",
    "on": "three times one",
    "source": "clip",
-   "clipElapsed": 3.175736,
+   "clipElapsed": 3.178289,
    "wordStart": 3.324,
-   "offset": -0.148,
+   "offset": -0.146,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 11
+   "shown": 10
   },
   {
-   "file": "exponential-graphs-am/31-b17-sketch.png",
+   "file": "exponential-graphs-am/30-b17-sketch.png",
    "scene": 1,
    "beat": 17,
    "index": 1,
    "kind": "sketch",
    "on": "which is three",
    "source": "clip",
-   "clipElapsed": 4.425344,
+   "clipElapsed": 4.427455,
    "wordStart": 4.567,
-   "offset": -0.142,
+   "offset": -0.14,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
+   "subsHide": [],
+   "order": [],
+   "wrapped": [],
+   "shown": 10
+  },
+  {
+   "file": "exponential-graphs-am/31-b18-write.png",
+   "scene": 1,
+   "beat": 18,
+   "index": 0,
+   "kind": "write",
+   "on": "sub Y equals",
+   "source": "clip",
+   "clipElapsed": 1.230925,
+   "wordStart": 1.369,
+   "offset": -0.138,
+   "cut": [],
+   "small": [],
+   "overlap": [],
+   "hidden": [],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
@@ -737,154 +675,109 @@
    "file": "exponential-graphs-am/32-b18-write.png",
    "scene": 1,
    "beat": 18,
-   "index": 0,
+   "index": 1,
    "kind": "write",
-   "on": "sub Y equals",
+   "on": "Three E to",
    "source": "clip",
-   "clipElapsed": 1.22405,
-   "wordStart": 1.369,
-   "offset": -0.145,
+   "clipElapsed": 3.051834,
+   "wordStart": 3.186,
+   "offset": -0.134,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
    "shown": 12
   },
   {
-   "file": "exponential-graphs-am/33-b18-write.png",
-   "scene": 1,
-   "beat": 18,
-   "index": 1,
-   "kind": "write",
-   "on": "Three E to",
-   "source": "clip",
-   "clipElapsed": 3.040717,
-   "wordStart": 3.186,
-   "offset": -0.145,
-   "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
-   "overlap": [],
-   "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
-   "subsHide": [],
-   "order": [],
-   "wrapped": [],
-   "shown": 13
-  },
-  {
-   "file": "exponential-graphs-am/34-b19-write.png",
+   "file": "exponential-graphs-am/33-b19-write.png",
    "scene": 1,
    "beat": 19,
    "index": 0,
    "kind": "write",
    "on": "only if E",
    "source": "clip",
-   "clipElapsed": 2.141909,
+   "clipElapsed": 2.144508,
    "wordStart": 2.281,
-   "offset": -0.139,
+   "offset": -0.136,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 14
+   "shown": 13
   },
   {
-   "file": "exponential-graphs-am/35-b19-note.png",
+   "file": "exponential-graphs-am/34-b19-note.png",
    "scene": 1,
    "beat": 19,
    "index": 1,
    "kind": "note",
    "on": "never zero",
    "source": "clip",
-   "clipElapsed": 5.42831,
+   "clipElapsed": 5.42916,
    "wordStart": 5.566,
-   "offset": -0.138,
+   "offset": -0.137,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 15
+   "shown": 14
   },
   {
-   "file": "exponential-graphs-am/36-b20-write.png",
+   "file": "exponential-graphs-am/35-b20-write.png",
    "scene": 1,
    "beat": 20,
    "index": 0,
    "kind": "write",
    "on": "no solutions",
    "source": "clip",
-   "clipElapsed": 0.464332,
+   "clipElapsed": 0.462326,
    "wordStart": 0.6,
-   "offset": -0.136,
+   "offset": -0.138,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 16
+   "shown": 15
   },
   {
-   "file": "exponential-graphs-am/37-b20-mark.png",
+   "file": "exponential-graphs-am/36-b20-mark.png",
    "scene": 1,
    "beat": 20,
    "index": 1,
    "kind": "mark",
    "on": "no X intercept",
    "source": "clip",
-   "clipElapsed": 1.557994,
+   "clipElapsed": 1.560131,
    "wordStart": 1.698,
-   "offset": -0.14,
+   "offset": -0.138,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 16
+   "shown": 15
   },
   {
-   "file": "exponential-graphs-am/38-b21-pin.png",
+   "file": "exponential-graphs-am/37-b21-pin.png",
    "scene": 1,
    "beat": 21,
    "index": 0,
@@ -895,43 +788,35 @@
    "wordStart": null,
    "offset": null,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 16
+   "shown": 15
   },
   {
-   "file": "exponential-graphs-am/39-b21-sketch.png",
+   "file": "exponential-graphs-am/38-b21-sketch.png",
    "scene": 1,
    "beat": 21,
    "index": 1,
    "kind": "sketch",
    "on": "Stretch the shape",
    "source": "clip",
-   "clipElapsed": 2.257281,
+   "clipElapsed": 2.26085,
    "wordStart": 2.396,
-   "offset": -0.139,
+   "offset": -0.135,
    "cut": [],
-   "small": [
-    "note:12:1 ↑ 3 × (close to 0) is still cl (11.4 px)"
-   ],
+   "small": [],
    "overlap": [],
    "hidden": [],
-   "tall": [
-    "board bottom 794 px, screen ends at 783 px"
-   ],
+   "tall": [],
    "subsHide": [],
    "order": [],
    "wrapped": [],
-   "shown": 16
+   "shown": 15
   }
  ],
  "picturesDir": "/var/folders/n6/2mg1mqg10flc_hf7q1vbnf4h0000gn/T/clip-look/exponential-graphs-am"
