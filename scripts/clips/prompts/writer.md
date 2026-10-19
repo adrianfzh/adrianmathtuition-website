@@ -107,6 +107,8 @@ no focus, no clear.
   beat or on its own word, and the voice says what the move is.
 - **The base in its own colour**: a line that talks about the base ("same base", "the base
   matches") lights the bases — `{"do": "highlight", "token": [...], "part": "sub"}` for a log's base.
+- **Pieces inside one token** (a fraction's a over a, b over b): wrap each in `\\htmlClass{lsn-pc-<name>}{…}`
+  in the plan's tex and light it with `{"do": "highlight", "token": "<id>", "inside": "<name>", "tone": "orange"|"sky"}`.
 - **A law acting on two terms points at their middle**: give its note `"span": ["a", "b"]`; keep
   the law short enough for one line.
 - **A mistake goes LAST, as a "Watch out" step**: after the answer is boxed, one beat opens

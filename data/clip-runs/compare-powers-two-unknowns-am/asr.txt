@@ -12,7 +12,7 @@ Verifying 31 clip(s) of compare-powers-two-unknowns-am by transcription (gemini-
   scene-01-b10: 100% of narration words heard
   scene-01-b11: 100% of narration words heard
   scene-01-b12: 100% of narration words heard
-  scene-01-b13: 100% of narration words heard
+  scene-01-b13: 90% of narration words heard
   scene-01-b14: 100% of narration words heard
   scene-01-b15: 100% of narration words heard
   scene-01-b16: 100% of narration words heard
@@ -29,7 +29,7 @@ Verifying 31 clip(s) of compare-powers-two-unknowns-am by transcription (gemini-
   scene-01-b27: 100% of narration words heard
   scene-01-b28: 100% of narration words heard
   scene-01-b29: 100% of narration words heard
-  scene-01-b30: 89% of narration words heard
+  scene-01-b30: 100% of narration words heard
   scene-01-b31: 100% of narration words heard
 
 All clips match their narration.

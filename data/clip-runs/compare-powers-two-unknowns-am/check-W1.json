@@ -17,7 +17,7 @@
           "tokens": [
             { "id": "q1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
             { "id": "q2", "tex": "\\times\\dfrac{b^{x+2}}{a^{3-y}}" },
-            { "id": "q3", "tex": "=a^9b" }
+            { "id": "q3", "tex": "=\\htmlClass{lsn-pc-a}{a^9}\\htmlClass{lsn-pc-b}{b}" }
           ]
         },
         {
@@ -30,12 +30,8 @@
           "heading": "Step 1: do the power first",
           "tokens": [
             { "id": "s1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
-            { "id": "s1b", "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "s2", "tex": "=\\dfrac{a^{2(x+1)}}{b^{2(y-2)}}" }
+            { "id": "s1b", "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}" },
+            { "id": "s2", "tex": "=\\dfrac{a^{2x+2}}{b^{2y-4}}" }
           ]
         },
         {
@@ -47,7 +43,10 @@
         {
           "heading": "Step 2: group the same bases",
           "tokens": [
-            { "id": "g1", "tex": "\\dfrac{a^{2x+2}\\times b^{x+2}}{a^{3-y}\\times b^{2y-4}}" },
+            {
+              "id": "g1",
+              "tex": "\\dfrac{\\htmlClass{lsn-pc-a}{a^{2x+2}}\\times \\htmlClass{lsn-pc-b}{b^{x+2}}}{\\htmlClass{lsn-pc-a}{a^{3-y}}\\times \\htmlClass{lsn-pc-b}{b^{2y-4}}}"
+            },
             { "id": "g2", "tex": "=a^9b" }
           ]
         },
@@ -149,7 +148,8 @@
           "say": "Find X and Y. Two unknowns need two equations: the bases A and B give one each.",
           "asks": ["How can one equation give two answers?", "Why do the bases matter?"],
           "do": [
-            { "do": "highlight", "token": "q3", "on": "the bases A" }
+            { "do": "highlight", "token": "q3", "inside": "a", "tone": "orange", "on": "the bases A" },
+            { "do": "highlight", "token": "q3", "inside": "b", "tone": "sky", "on": "B give one" }
           ]
         },
         {
@@ -190,25 +190,25 @@
           ]
         },
         {
-          "say": "So A to the power two times X plus one, over B to the power two times Y minus two.",
-          "asks": ["Why multiply by two?"],
+          "say": "Two times X plus one is two X plus two. Two times Y minus two is two Y minus four.",
+          "asks": ["Why multiply by two?", "Why not write 2(x + 1) first?"],
           "do": [
             { "do": "write", "token": "s2" }
           ]
         },
         {
-          "say": "Expand the brackets: two X plus two on top, two Y minus four below. Then put it back into the equation.",
-          "asks": ["How do I expand 2(x + 1)?"],
+          "say": "Put this back into the equation, next to the other fraction.",
+          "asks": ["Where does the rest of the line come from?"],
           "do": [
-            { "do": "write", "token": "r1", "on": "Expand the brackets" },
-            { "do": "write", "token": "r2", "on": "put it back" }
+            { "do": "write", "token": "r1", "on": "Put this back" },
+            { "do": "write", "token": "r2", "on": "next to the" }
           ]
         },
         {
           "say": "Step two, group the same bases. Multiplying fractions: tops together, bottoms together.",
           "asks": ["Why can I join the two fractions?"],
           "do": [
-            { "do": "write", "step": 5, "on": "Multiplying fractions" },
+            { "do": "write", "step": 4, "on": "Multiplying fractions" },
             { "do": "highlight", "token": "g1", "on": "bottoms together" }
           ]
         },
@@ -216,8 +216,9 @@
           "say": "Step three, divide. The same base is on top and bottom, so minus the powers: top power minus bottom power.",
           "asks": ["Which law is this?", "Why minus the powers?"],
           "do": [
-            { "do": "highlight", "token": "g1", "on": "The same base" },
-            { "do": "write", "step": 6, "on": "so minus the" },
+            { "do": "highlight", "token": "g1", "inside": "a", "tone": "orange", "on": "The same base" },
+            { "do": "highlight", "token": "g1", "inside": "b", "tone": "sky", "on": "on top and" },
+            { "do": "write", "step": 5, "on": "so minus the" },
             { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "d1", "on": "top power minus" }
           ]
         },
@@ -225,7 +226,8 @@
           "say": "Keep the brackets: the whole bottom power is taken away.",
           "asks": ["Why do I need the brackets?"],
           "do": [
-            { "do": "highlight", "token": ["d1", "d2"], "on": "Keep the brackets" }
+            { "do": "highlight", "token": "d1", "tone": "orange", "on": "Keep the brackets" },
+            { "do": "highlight", "token": "d2", "tone": "sky", "on": "whole bottom power" }
           ]
         },
         {
@@ -347,35 +349,35 @@
           "say": "Substitute: X minus two times, ten minus two X, plus six equals one.",
           "asks": ["Why substitute for y?"],
           "do": [
-            { "do": "write", "step": 13, "on": "X minus two" }
+            { "do": "write", "step": 12, "on": "X minus two" }
           ]
         },
         {
           "say": "Expand: X minus twenty plus four X plus six equals one.",
           "asks": ["Why plus four X?"],
           "do": [
-            { "do": "write", "step": 14, "on": "X minus twenty" }
+            { "do": "write", "step": 13, "on": "X minus twenty" }
           ]
         },
         {
           "say": "Collect: five X equals fifteen, so X equals three.",
           "asks": ["How do I get 5x?"],
           "do": [
-            { "do": "write", "step": 15, "on": "five X equals" }
+            { "do": "write", "step": 14, "on": "five X equals" }
           ]
         },
         {
           "say": "Then Y equals ten minus two times three: four.",
           "asks": ["How do I find y?"],
           "do": [
-            { "do": "write", "step": 16, "on": "Y equals ten" }
+            { "do": "write", "step": 15, "on": "Y equals ten" }
           ]
         },
         {
           "say": "So X equals three and Y equals four.",
           "asks": ["Can I check the answer?"],
           "do": [
-            { "do": "write", "step": 17, "on": "So X equals" },
+            { "do": "write", "step": 16, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "Y equals four" }
           ]
         }

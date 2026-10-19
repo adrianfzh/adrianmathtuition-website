@@ -76,8 +76,8 @@
   },
   {
    "beat": 13,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.9,
+   "score": 0.9,
    "heard": null
   },
   {
@@ -178,8 +178,8 @@
   },
   {
    "beat": 30,
-   "bag": 0.89,
-   "score": 0.89,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {

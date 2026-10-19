@@ -30,12 +30,8 @@
           "heading": "Step 1: do the power first",
           "tokens": [
             { "id": "s1", "tex": "\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2" },
-            { "id": "s1b", "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}" }
-          ]
-        },
-        {
-          "tokens": [
-            { "id": "s2", "tex": "=\\dfrac{a^{2(x+1)}}{b^{2(y-2)}}" }
+            { "id": "s1b", "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}" },
+            { "id": "s2", "tex": "=\\dfrac{a^{2x+2}}{b^{2y-4}}" }
           ]
         },
         {
@@ -210,8 +206,8 @@
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b8.timing.json"
         },
         {
-          "say": "So A to the power two times X plus one, over B to the power two times Y minus two.",
-          "asks": ["Why multiply by two?"],
+          "say": "Two times X plus one is two X plus two. Two times Y minus two is two Y minus four.",
+          "asks": ["Why multiply by two?", "Why not write 2(x + 1) first?"],
           "do": [
             { "do": "write", "token": "s2" }
           ],
@@ -219,11 +215,11 @@
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b9.timing.json"
         },
         {
-          "say": "Expand the brackets: two X plus two on top, two Y minus four below. Then put it back into the equation.",
-          "asks": ["How do I expand 2(x + 1)?"],
+          "say": "Put this back into the equation, next to the other fraction.",
+          "asks": ["Where does the rest of the line come from?"],
           "do": [
-            { "do": "write", "token": "r1", "on": "Expand the brackets" },
-            { "do": "write", "token": "r2", "on": "put it back" }
+            { "do": "write", "token": "r1", "on": "Put this back" },
+            { "do": "write", "token": "r2", "on": "next to the" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b10.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b10.timing.json"
@@ -232,7 +228,7 @@
           "say": "Step two, group the same bases. Multiplying fractions: tops together, bottoms together.",
           "asks": ["Why can I join the two fractions?"],
           "do": [
-            { "do": "write", "step": 5, "on": "Multiplying fractions" },
+            { "do": "write", "step": 4, "on": "Multiplying fractions" },
             { "do": "highlight", "token": "g1", "on": "bottoms together" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b11.mp3",
@@ -244,7 +240,7 @@
           "do": [
             { "do": "highlight", "token": "g1", "inside": "a", "tone": "orange", "on": "The same base" },
             { "do": "highlight", "token": "g1", "inside": "b", "tone": "sky", "on": "on top and" },
-            { "do": "write", "step": 6, "on": "so minus the" },
+            { "do": "write", "step": 5, "on": "so minus the" },
             { "do": "note", "text": "Minus power: $a^m\\div a^n=a^{m-n}$", "near": "d1", "on": "top power minus" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b12.mp3",
@@ -405,7 +401,7 @@
           "say": "Substitute: X minus two times, ten minus two X, plus six equals one.",
           "asks": ["Why substitute for y?"],
           "do": [
-            { "do": "write", "step": 13, "on": "X minus two" }
+            { "do": "write", "step": 12, "on": "X minus two" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b27.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b27.timing.json"
@@ -414,7 +410,7 @@
           "say": "Expand: X minus twenty plus four X plus six equals one.",
           "asks": ["Why plus four X?"],
           "do": [
-            { "do": "write", "step": 14, "on": "X minus twenty" }
+            { "do": "write", "step": 13, "on": "X minus twenty" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b28.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b28.timing.json"
@@ -423,7 +419,7 @@
           "say": "Collect: five X equals fifteen, so X equals three.",
           "asks": ["How do I get 5x?"],
           "do": [
-            { "do": "write", "step": 15, "on": "five X equals" }
+            { "do": "write", "step": 14, "on": "five X equals" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b29.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b29.timing.json"
@@ -432,7 +428,7 @@
           "say": "Then Y equals ten minus two times three: four.",
           "asks": ["How do I find y?"],
           "do": [
-            { "do": "write", "step": 16, "on": "Y equals ten" }
+            { "do": "write", "step": 15, "on": "Y equals ten" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b30.mp3",
           "timing": "/lessons/compare-powers-two-unknowns-am/scene-01-b30.timing.json"
@@ -441,7 +437,7 @@
           "say": "So X equals three and Y equals four.",
           "asks": ["Can I check the answer?"],
           "do": [
-            { "do": "write", "step": 17, "on": "So X equals" },
+            { "do": "write", "step": 16, "on": "So X equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "Y equals four" }
           ],
           "audio": "/lessons/compare-powers-two-unknowns-am/scene-01-b31.mp3",

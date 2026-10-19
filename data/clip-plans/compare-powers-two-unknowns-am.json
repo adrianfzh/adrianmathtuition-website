@@ -22,7 +22,7 @@
     "display": "x = 3, y = 4"
   },
   "outline": [
-    "Built 18 Oct 2026 one step at a time to the house rules (Indices clip 3): the question; the plan as maths (one power of a and one of b each side, then match the powers); Step 1 do the power first — square top and bottom, Times power, 2(x+1) written, then expanded; Step 2 group the same bases into one fraction; Step 3 divide: Minus power, the brackets kept; Step 4 tidy each power on its own line, minus a bracket flips every sign inside; the tidy line with the bare b written as b to the power 1; Step 5 compare powers of each base (the powers moved down, why in a written drop-down); Step 6 solve simultaneously, fast; the answer boxed. No Watch out, no steps strip."
+    "Built 18 Oct 2026 one step at a time to the house rules (Indices clip 3): the question; the plan as maths (one power of a and one of b each side, then match the powers); Step 1 do the power first — square top and bottom, then Times power multiplied straight away on the same line (Adrian, 19 Oct 2026); Step 2 group the same bases into one fraction; Step 3 divide: Minus power, the brackets kept; Step 4 tidy each power on its own line, minus a bracket flips every sign inside; the tidy line with the bare b written as b to the power 1; Step 5 compare powers of each base (the powers moved down, why in a written drop-down); Step 6 solve simultaneously, fast; the answer boxed. No Watch out, no steps strip."
   ],
   "question": "Given that $\\left(\\dfrac{a^{x+1}}{b^{y-2}}\\right)^2 \\times \\dfrac{b^{x+2}}{a^{3-y}} = a^9 b$, find the value of $x$ and of $y$.",
   "minutes": 3,
@@ -77,24 +77,18 @@
         {
           "id": "s1b",
           "tex": "=\\dfrac{(a^{x+1})^2}{(b^{y-2})^2}"
+        },
+        {
+          "id": "s2",
+          "tex": "=\\dfrac{a^{2x+2}}{b^{2y-4}}"
         }
       ],
       "checks": [
         {
           "identity": "(a**(x+1)/b**(y-2))**2 = (a**(x+1))**2/(b**(y-2))**2"
-        }
-      ]
-    },
-    {
-      "tokens": [
+        },
         {
-          "id": "s2",
-          "tex": "=\\dfrac{a^{2(x+1)}}{b^{2(y-2)}}"
-        }
-      ],
-      "checks": [
-        {
-          "identity": "(a**(x+1))**2/(b**(y-2))**2 = a**(2*(x+1))/b**(2*(y-2))"
+          "identity": "(a**(x+1))**2/(b**(y-2))**2 = a**(2*x+2)/b**(2*y-4)"
         }
       ]
     },

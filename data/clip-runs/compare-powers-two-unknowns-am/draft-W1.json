@@ -132,9 +132,10 @@
    ]
   },
   {
-   "say": "So A to the power two times X plus one, over B to the power two times Y minus two.",
+   "say": "Two times X plus one is two X plus two. Two times Y minus two is two Y minus four.",
    "asks": [
-    "Why multiply by two?"
+    "Why multiply by two?",
+    "Why not write 2(x + 1) first?"
    ],
    "do": [
     {
@@ -144,20 +145,20 @@
    ]
   },
   {
-   "say": "Expand the brackets: two X plus two on top, two Y minus four below. Then put it back into the equation.",
+   "say": "Put this back into the equation, next to the other fraction.",
    "asks": [
-    "How do I expand 2(x + 1)?"
+    "Where does the rest of the line come from?"
    ],
    "do": [
     {
      "do": "write",
      "token": "r1",
-     "on": "Expand the brackets"
+     "on": "Put this back"
     },
     {
      "do": "write",
      "token": "r2",
-     "on": "put it back"
+     "on": "next to the"
     }
    ]
   },
@@ -169,7 +170,7 @@
    "do": [
     {
      "do": "write",
-     "step": 5,
+     "step": 4,
      "on": "Multiplying fractions"
     },
     {
@@ -202,7 +203,7 @@
     },
     {
      "do": "write",
-     "step": 6,
+     "step": 5,
      "on": "so minus the"
     },
     {
@@ -490,7 +491,7 @@
    "do": [
     {
      "do": "write",
-     "step": 13,
+     "step": 12,
      "on": "X minus two"
     }
    ]
@@ -503,7 +504,7 @@
    "do": [
     {
      "do": "write",
-     "step": 14,
+     "step": 13,
      "on": "X minus twenty"
     }
    ]
@@ -516,7 +517,7 @@
    "do": [
     {
      "do": "write",
-     "step": 15,
+     "step": 14,
      "on": "five X equals"
     }
    ]
@@ -529,7 +530,7 @@
    "do": [
     {
      "do": "write",
-     "step": 16,
+     "step": 15,
      "on": "Y equals ten"
     }
    ]
@@ -542,7 +543,7 @@
    "do": [
     {
      "do": "write",
-     "step": 17,
+     "step": 16,
      "on": "So X equals"
     },
     {

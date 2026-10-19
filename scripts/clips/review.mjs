@@ -43,7 +43,7 @@ function storyboard() {
       const acts = b.do.map(a => {
         const what = a.do === 'write' ? `write ${a.step !== undefined ? `line ${a.step}` : `{${a.token}}`}`
           : a.do === 'note' ? `note "${a.text}" under {${a.near ?? '?'}}`
-          : a.do === 'highlight' ? `light {${[].concat(a.token).join(', ')}}${a.part ? ` (${a.part})` : ''}`
+          : a.do === 'highlight' ? `light {${[].concat(a.token).join(', ')}}${a.part ? ` (${a.part})` : ''}${a.inside ? ` (only its "${a.inside}" pieces)` : ''}${a.tone ? ` in ${a.tone}` : ''}`
           : a.do === 'mark' ? `${a.kind} round {${[].concat(a.token).join(', ')}}`
           : a.do === 'move' ? `move {${a.from}} to its new place`
           : a.do === 'sketch' ? `sketch: ${a.show ?? `point ${a.point}`}`
