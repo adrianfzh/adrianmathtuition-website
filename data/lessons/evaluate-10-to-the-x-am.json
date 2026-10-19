@@ -161,7 +161,6 @@
           "say": "First, group the fives on one side. Divide both sides by five to the power two X minus one.",
           "asks": ["Why divide by that?", "Why put the fives together?"],
           "do": [
-            { "do": "highlight", "token": ["q2", "q3"], "tone": "sky" },
             { "do": "write", "step": 3, "on": "Divide both sides" },
             { "do": "note", "text": "÷ both sides by $5^{2x-1}$", "near": "g2", "on": "power two X" }
           ],

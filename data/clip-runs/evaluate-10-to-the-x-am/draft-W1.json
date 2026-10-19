@@ -132,14 +132,6 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": [
-      "q2",
-      "q3"
-     ],
-     "tone": "sky"
-    },
-    {
      "do": "write",
      "step": 3,
      "on": "Divide both sides"
