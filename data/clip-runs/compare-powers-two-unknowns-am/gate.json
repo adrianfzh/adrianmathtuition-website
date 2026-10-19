@@ -1,6 +1,6 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T03:23:47.520Z",
+ "at": "2026-10-19T03:34:40.320Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -23,9 +23,9 @@
    "detail": "48/48 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
   },
   "review": {
-   "ok": false,
-   "detail": "6 must, 1 should · 25 frames · b6 The voice numbers the steps ('Step one, do the power first'). Adrian allows step numbers only in graph-sketching clips, where the steps are pinned on screen. | b11 The voice says 'Step two, group the same bases.' | b12 The voice says 'Step three, divide.' | b14 The voice says 'Step four, tidy each power.' | b21 The voice says 'Step five, compare the powers of each base.' | b25 The voice says 'Step six, solve the two equations together.'"
+   "ok": true,
+   "detail": "0 must, 1 should · 25 frames"
   }
  },
- "pass": false
+ "pass": true
 }

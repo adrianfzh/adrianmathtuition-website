@@ -1,74 +1,32 @@
 {
  "slug": "compare-powers-two-unknowns-am",
- "at": "2026-10-19T03:23:47.457Z",
+ "at": "2026-10-19T03:34:40.260Z",
  "model": "claude-opus-5-5",
  "frames": 25,
  "usage": {
-  "input_tokens": 47270,
+  "input_tokens": 46964,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 2107,
+  "output_tokens": 2136,
   "output_tokens_details": {
-   "thinking_tokens": 1317
+   "thinking_tokens": 1921
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "fix",
+ "verdict": "pass",
  "findings": [
   {
-   "beat": 6,
-   "rule": "voice: no 'Step one / Step two'",
-   "severity": "must",
-   "problem": "The voice numbers the steps ('Step one, do the power first'). Adrian allows step numbers only in graph-sketching clips, where the steps are pinned on screen.",
-   "fix": "Say the move itself, e.g. 'Do the power first: the bracket must go before we can group the bases.' Keep the board heading as it is."
-  },
-  {
    "beat": 11,
-   "rule": "voice: no 'Step one / Step two'",
-   "severity": "must",
-   "problem": "The voice says 'Step two, group the same bases.'",
-   "fix": "Say 'Now group the same bases.' and keep the rest of the sentence."
-  },
-  {
-   "beat": 12,
-   "rule": "voice: no 'Step one / Step two'",
-   "severity": "must",
-   "problem": "The voice says 'Step three, divide.'",
-   "fix": "Say 'Now divide. The same base is on top and bottom, so minus the powers …'"
-  },
-  {
-   "beat": 14,
-   "rule": "voice: no 'Step one / Step two'",
-   "severity": "must",
-   "problem": "The voice says 'Step four, tidy each power.'",
-   "fix": "Say 'Tidy each power. For A: …'"
-  },
-  {
-   "beat": 21,
-   "rule": "voice: no 'Step one / Step two'",
-   "severity": "must",
-   "problem": "The voice says 'Step five, compare the powers of each base.'",
-   "fix": "Say 'Now compare the powers of each base. First the base A.'"
-  },
-  {
-   "beat": 25,
-   "rule": "voice: no 'Step one / Step two'",
-   "severity": "must",
-   "problem": "The voice says 'Step six, solve the two equations together.'",
-   "fix": "Say 'Solve the two equations together: X equals three and Y equals four.'"
-  },
-  {
-   "beat": 8,
-   "rule": "layout",
+   "rule": "a moving piece moves",
    "severity": "should",
-   "problem": "The 'Times power' note is stacked under the first note, so its ↑ points at the (M/N)² note rather than at the squared brackets it explains.",
-   "fix": "Place the Times power note so that its arrow points at (a^{x+1})² and (b^{y-2})², for example beside the first note or under the s2 result."
+   "problem": "When the two fractions become one, b^{x+2} goes onto the top next to a^{2x+2} and a^{3-y} goes onto the bottom, but the new line just appears, so a student does not see which piece went where.",
+   "fix": "On \"tops together\", move b^{x+2} from line 3 into the top of {g1}; on \"bottoms together\", move a^{3-y} into its bottom, so the grouping is shown as the pieces travel."
   }
  ]
 }
