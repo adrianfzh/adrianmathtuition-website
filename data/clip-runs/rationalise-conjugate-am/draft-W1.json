@@ -47,10 +47,10 @@
    ]
   },
   {
-   "say": "With two terms below, multiplying by root five alone still leaves a surd below.",
+   "say": "When there are two terms below, multiply the top and the bottom by the conjugate.",
    "asks": [
-    "Why not multiply by root five?",
-    "Why not root three?"
+    "What is a conjugate?",
+    "Why the top and the bottom?"
    ],
    "do": [
     {
@@ -59,25 +59,13 @@
      "inside": "d",
      "tone": "orange"
     }
-   ],
-   "aside": {
-    "text": "Why not times root five?",
-    "slug": "surds-why-conjugate",
-    "read": [
-     "Try $\\times\\dfrac{\\sqrt5}{\\sqrt5}$: the bottom becomes $(\\sqrt5+\\sqrt3)\\sqrt5 = 5+\\sqrt{15}$.",
-     "A surd is still there: $\\sqrt{15}$.",
-     "Try the bottom itself: $(\\sqrt5+\\sqrt3)^2 = 8+2\\sqrt{15}$. Still a surd.",
-     "Only $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$ loses every surd.",
-     "Its two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
-     "**Two terms below: multiply by the conjugate.**"
-    ]
-   }
+   ]
   },
   {
-   "say": "We multiply by the conjugate: the same pair, with only the middle sign flipped.",
+   "say": "The conjugate is the same pair, with only the middle sign flipped.",
    "asks": [
-    "What is a conjugate?",
-    "Which sign is the middle sign?"
+    "Which sign is the middle sign?",
+    "Do I flip both signs?"
    ],
    "do": [
     {
@@ -96,10 +84,31 @@
    ]
   },
   {
-   "say": "Why the conjugate: a pair times its conjugate gives two squares, and squaring a surd clears the root.",
+   "say": "Why it works: A plus B, times A minus B, always gives A squared minus B squared.",
    "asks": [
-    "Why does the conjugate clear the surd?",
-    "Why not square the bottom?"
+    "Where does this rule come from?",
+    "Why does it help?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "d",
+     "tone": "sky"
+    },
+    {
+     "do": "note",
+     "text": "(a + b)(a − b) = a² − b²",
+     "near": "q1",
+     "on": "always gives A"
+    }
+   ]
+  },
+  {
+   "say": "Squaring a surd removes its root. So after multiplying, the bottom has no surd left.",
+   "asks": [
+    "Why does squaring remove the root?",
+    "Where do the middle terms go?"
    ],
    "do": [
     {
@@ -108,7 +117,21 @@
      "inside": "d",
      "tone": "sky"
     }
-   ]
+   ],
+   "aside": {
+    "text": "Why does the conjugate clear the surd?",
+    "slug": "surds-why-conjugate",
+    "read": [
+     "Expand $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$: four products.",
+     "$\\sqrt5\\times\\sqrt5 = 5$",
+     "$\\sqrt5\\times(-\\sqrt3) = -\\sqrt{15}$",
+     "$\\sqrt3\\times\\sqrt5 = +\\sqrt{15}$",
+     "$\\sqrt3\\times(-\\sqrt3) = -3$",
+     "The two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
+     "So the bottom is $5 - 3 = 2$.",
+     "**Plus times minus leaves only the two squares — no surd.**"
+    ]
+   }
   },
   {
    "say": "Write the fraction again, then times root five minus root three, over root five minus root three.",

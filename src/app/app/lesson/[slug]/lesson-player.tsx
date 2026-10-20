@@ -3201,7 +3201,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           )}
           {/* The plan, floating in the top-right corner once it is written, outside the board so it
               never scrolls away (Adrian, 20 Oct 2026: "put that plan at perhaps the top right hand
-              corner (always) so that it is a constant reminder"). */}
+              corner (always) so that it is a constant reminder"). The box is padded for a FRACTION plan
+              too (20 Oct 2026, Surds: "plan can't be seen … it's partially covered" — the 3 px padding
+              fitted a one-line plan; a fraction's top and bottom touched the border). */}
           {scene.type === 'equation-steps' && board && (() => {
             const ci = scene.steps.findIndex(st => st.corner);
             if (ci < 0 || !lineOn(board, ci)) return null;
@@ -3662,7 +3664,7 @@ const PLAYER_CSS = `
 .lsn-scene:has(.lsn-pinned li) .lsn-paused-chip { top: auto; bottom: 4.6rem; right: 50%; translate: 50% 0; }
 .lsn-scene:has([data-lsn-corner]) .lsn-paused-chip { top: auto; bottom: 4.6rem; right: 50%; translate: 50% 0; }
 .lsn-line-corner { display: none; }
-.lsn-corner { padding: 3px 9px; border-radius: 12px; font-size: 15px; color: #7dd3fc; background: rgba(15,23,42,0.55); border: 1px solid rgba(125,211,252,0.35); animation: lsnFade 400ms ease both; }
+.lsn-corner { padding: 9px 9px 7px; border-radius: 12px; font-size: 15px; color: #7dd3fc; background: rgba(15,23,42,0.55); border: 1px solid rgba(125,211,252,0.35); animation: lsnFade 400ms ease both; }
 @media (min-width: 520px) { .lsn-corner { font-size: 17px; } }
 .lsn-pinned { display: flex; flex-wrap: wrap; gap: 4px 4px; margin: 0 0 8px; padding: 0; list-style: none; animation: lsnFade 300ms ease both; position: relative; z-index: 5; }
 .lsn-pinned li { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border-radius: 999px; font: 600 11.5px ui-sans-serif, system-ui, sans-serif; color: rgba(248,250,252,0.7); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); transition: background 300ms ease, color 300ms ease, border-color 300ms ease; }

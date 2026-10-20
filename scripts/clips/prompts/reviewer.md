@@ -79,7 +79,12 @@ You get:
    quadratic in u") that does not float that plan in the top-right corner (`"corner": true`) — "put
    that plan at … the top right hand corner (always) so that it is a constant reminder". Do NOT ask for
    the plan line back in the working: in the corner it is on the board.
-18. Anything else in the house rules this clip breaks.
+18. **Adrian, 20 Oct 2026 (Surds: the conjugate)** — each a must: the corner plan not fully inside its
+   box in a frame ("plan can't be seen at the top right hand corner > it's partially covered" — a
+   fraction plan's top touched the border); a beat that says why ANOTHER method fails before the one
+   used ("there is no need to say multiply by root five alone still … student will be wondering why you
+   say that") — go straight to the method: when to use it, what it is, why it works.
+19. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 
