@@ -341,12 +341,6 @@
      "token": "a5",
      "part": "den",
      "tone": "orange"
-    },
-    {
-     "do": "note",
-     "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$",
-     "near": "t2",
-     "on": "its power turns"
     }
    ]
   },
@@ -370,12 +364,9 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": [
-      "t2",
-      "t7"
-     ],
-     "tone": "orange"
+     "do": "note",
+     "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$",
+     "near": "t2"
     }
    ]
   },

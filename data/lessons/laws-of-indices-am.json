@@ -293,8 +293,7 @@
           "say": "To bring a number from the bottom to the top, its power turns negative.",
           "asks": ["Why does the power turn negative?"],
           "do": [
-            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" },
-            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2", "on": "its power turns" }
+            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" }
           ],
           "audio": "/lessons/laws-of-indices-am/scene-01-b18.mp3",
           "timing": "/lessons/laws-of-indices-am/scene-01-b18.timing.json"
@@ -312,7 +311,7 @@
           "say": "Negative power flips the fraction: one over A to the power M is A to the power negative M.",
           "asks": ["Why does a negative power flip?"],
           "do": [
-            { "do": "highlight", "token": ["t2", "t7"], "tone": "orange" }
+            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2" }
           ],
           "audio": "/lessons/laws-of-indices-am/scene-01-b20.mp3",
           "timing": "/lessons/laws-of-indices-am/scene-01-b20.timing.json"
