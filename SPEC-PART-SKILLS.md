@@ -55,7 +55,7 @@ Science school part labels sat at 4,119 of 9,603 from 19 Oct evening to 20 Oct m
 ## Part labels FIRST, then twins (20 Oct 2026, Adrian: "can we make per part skill labelling the priority first, when finish, then twins can continue")
 - The `twins` and `science-twins` worker switches were turned OFF on 20 Oct 2026, so the plan login and the bigger worker (4 CPU / 16 GB until 21 Oct 21:00 SGT) go to labelling.
 - Bot d2028720: **one filing lane per tree**, all running at once, back to back — maths AM, EM, S1, S2, JC; science PHY, CHEM, BIO; plus the maths twin parts. Each lane files that tree's new questions first, then labels its parts (`FILING_LEVEL` = the tree, `FILING_RUN_DIR` = its own folder). `FILING_LANES_MAX` caps them (default 9). The timed filer runs pause while the lanes are on; `FILING_LANE=0` brings the timetable back.
-- **Twins come back by themselves:** when every lane last found nothing to do, the worker switches `twins` and `science-twins` back ON once (POST `/api/admin/worker-jobs`) and leaves `twins-resumed-after-labelling` so it never flips them again. To resume twins early, switch them on at /admin/switches.
+- **Twins come back by themselves, in two phases** (bot 48c7ade6, SPEC-TWINS §1 "Paused for part labels"): when every lane last found nothing to do, `science-twins` comes ON for long questions to 3 a sub-skill only; once those are done, maths `twins` comes ON and everything goes on to 5.
 - Left on 20 Oct (re-tag, question×topic): maths ~16,000 (JC ~8,200), science ~7,000, maths twins ~1,300; plus new maths filings (~2,300).
 
 ## Next step (Adrian said yes, 15 Oct 2026)
