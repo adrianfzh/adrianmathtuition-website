@@ -5,9 +5,11 @@
 // with the admin session cookie, flips them through the same POSTs the
 // /admin/mark-paper cards use. Rendered in the desk's Settings drawer.
 import { useEffect, useState } from 'react';
+import { loginHealth, sgtWhen } from '@/lib/marking-stall';
+import type { SlotUsage } from '@/lib/slot-accounts';
 
 type Switch = { on: boolean; by?: string | null; at?: string | null };
-type Slot = { email: string; label: string; key: string; on: boolean; at?: string | null; by?: string | null };
+type Slot = { email: string; label: string; key: string; on: boolean; at?: string | null; by?: string | null; usage?: SlotUsage | null };
 
 export default function MarkingSwitches() {
   const [macOnly, setMacOnly] = useState<Switch | null>(null);
@@ -52,7 +54,12 @@ export default function MarkingSwitches() {
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '4px 14px 8px' }} data-marking-switches>
       {row('🖥 Mac plan only', 'ON: every paper waits for a Mac slot; nothing goes to the API.', macOnly?.on ?? null, 'mac', () => post('/api/admin/marking-settings', { macOnly: !macOnly?.on }, 'mac'))}
       {row('🧪 Science tab for students', 'ON: every student sees the Science tab and free science marking.', science?.on ?? null, 'sci', () => post('/api/admin/marking-settings', { scienceOpen: !science?.on }, 'sci'))}
-      {(slots ?? []).map(s => row(`⏻ ${s.label}`, s.email, s.on, s.key, () => post('/api/admin/slot-accounts', { email: s.email, on: !s.on }, s.key)))}
+      {(slots ?? []).map((s, i) => {
+        // 🔑 20 Oct 2026: the switch is his; the worker's view (needs sign-in / full / ready) rides beside it
+        const h = loginHealth({ ...s, at: s.at ?? null, by: s.by ?? null, usage: s.usage ?? null }, i);
+        const sub = `${s.email} · ${h.worker === 'needs' ? '🔑 NEEDS SIGN-IN' : h.text}${h.signinEnds && h.worker !== 'needs' ? ` · sign-in ends ${sgtWhen(h.signinEnds)}` : ''}`;
+        return row(`⏻ ${s.label}`, sub, s.on, s.key, () => post('/api/admin/slot-accounts', { email: s.email, on: !s.on }, s.key));
+      })}
       {slots && slots.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: '8px 0' }}>No slot accounts recorded.</div>}
       {err && <div style={{ fontSize: 12, color: '#b91c1c', paddingTop: 6 }}>{err}</div>}
     </div>

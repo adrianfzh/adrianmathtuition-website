@@ -23,6 +23,7 @@ import type { LayerMeta } from '@/lib/annotate/layer';
 import { fileHref } from '@/lib/student-files';
 import { RUNS_PAGE, refreshLimit, mergeRunsPage, withInMotion } from '@/lib/runs-list';
 import { tickPlan, tickPlanLine } from '@/lib/desk-state';
+import { loginHealths, rowStallNote, type LoginHealth } from '@/lib/marking-stall';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -275,6 +276,17 @@ export default function MarkPaperPage() {
   // grounded-up run isn't released as a confident score. Absent on clean runs.
   const [review, setReview] = useState<{ recommended: boolean; reason: string; unmapped_max?: number } | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
+  // 🔑 The marking logins as the worker sees them (20 Oct 2026) — a queued row that has waited
+  // 30 min says WHY when no login can mark (all off / needs sign-in / full).
+  const [logins, setLogins] = useState<LoginHealth[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const load = () => fetch('/api/admin/slot-accounts').then(r => r.ok ? r.json() : null)
+      .then(d => { if (alive && d && Array.isArray(d.accounts)) setLogins(loginHealths(d.accounts)); }).catch(() => {});
+    load();
+    const t = setInterval(load, 120_000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
   // Generated outputs, labelled — a LIST because "Generate both" shows the images PDF
   // the moment it exists while the full PDF is still typesetting behind it.
   const [marked, setMarked] = useState<{ url: string; kind: string; label: string }[]>([]);
@@ -1915,7 +1927,10 @@ export default function MarkPaperPage() {
                           ? `${claimHolderLabel(run.marked_by)} · reading page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}% · about ${Math.max(1, Math.ceil((pageProgress(run)!.total - pageProgress(run)!.done) * 5 / 60))} min of reading left`
                           : `${claimHolderLabel(run.marked_by)} has it — starting up and fetching the pages (a full paper reads in about 2–3 min, then a minute of drawing)`)
                       : run.queued_at && run.skip_external ? '☁️ queued for the batch API (~50% price) — 10–60 min, then Telegram + Dropbox'
-                      : run.queued_at && run.total_max == null ? '🌙 queued — waiting for a free slot (the cloud worker or your Mac), else ~50% batch API. 10–60 min, then Telegram + Dropbox'
+                      : run.queued_at && run.total_max == null ? (rowStallNote(run.queued_at, logins)
+                          // no Mac marks since 25 Sep 2026 — the cloud worker is the only marker (20 Oct 2026)
+                          ? `⚠ queued — ${rowStallNote(run.queued_at, logins)}. Fix it in Switches → Plan accounts, or ☁️ Batch now`
+                          : '🌙 queued — waiting for the cloud worker. Usually 10–60 min, then Telegram + Dropbox')
                       : canMark ? '⏳ uploaded — not marked yet'
                       : '⏳ still marking on the server — this row updates itself when it lands'}
                     {macMarking(run) && pageProgress(run) && (

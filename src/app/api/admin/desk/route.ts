@@ -30,6 +30,9 @@ import {
   noSheetOf, pdfStaleOf, sheetStageLabel, revisingOf, type AmendedStatus, type DeskLane, isPracticeAgainHandin, handinOriginOf,
   sheetOutcomeOf, type SheetAssignmentLite, type SheetOutcome, markingProgressOf, type MarkingProgress,
 } from '@/lib/desk-state';
+import { loginHealths, rowStallNote, STALL_AFTER_MS } from '@/lib/marking-stall';
+import { slotAccountRows } from '@/lib/slot-accounts';
+import { getSlotAccounts, getSlotUsage } from '@/lib/slot-accounts-store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -112,6 +115,18 @@ export async function GET(req: NextRequest) {
   const inMarking = all
     .map(r => ({ r, marking: markingProgressOf(r) }))
     .filter((x): x is { r: RunRow; marking: MarkingProgress } => !!x.marking);
+  // 🔑 A paper queued > 30 min with no login able to mark says why on its row (20 Oct 2026:
+  // four papers sat three hours behind "queued for marking" while every login was off or dead).
+  if (inMarking.some(x => x.marking.state === 'queued' && x.marking.queuedAt && Date.now() - Date.parse(x.marking.queuedAt) > STALL_AFTER_MS)) {
+    try {
+      const [map, usage] = await Promise.all([getSlotAccounts(), getSlotUsage()]);
+      const health = loginHealths(slotAccountRows(map, usage));
+      for (const x of inMarking) {
+        const note = x.marking.state === 'queued' ? rowStallNote(x.marking.queuedAt, health) : null;
+        if (note) x.marking = { ...x.marking, label: `⚠ queued — ${note} (Switches → Plan accounts)` };
+      }
+    } catch (e) { console.warn('[desk] login health read failed:', (e as Error).message); }
+  }
 
   // Newest live sheet job per run + "From Adrian" assignment count per run.
   const jobsByRun = new Map<string, SheetJobLite[]>();

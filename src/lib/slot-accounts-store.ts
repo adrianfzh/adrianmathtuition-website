@@ -52,3 +52,23 @@ export async function mergeSlotUsage(posted: unknown): Promise<SlotUsageMap> {
   else await airtableRequest('Settings', '', { method: 'POST', body: JSON.stringify({ fields: { 'Setting Name': SLOT_USAGE_SETTING, Value: json } }) });
   return map;
 }
+
+// 🔑 The marking-stall alarm's memory (20 Oct 2026, /api/cron/marking-stall): a third row,
+// Setting Name = marking_alarms — which stall was told when, which sign-in warnings went out.
+export const MARKING_ALARMS_SETTING = 'marking_alarms';
+async function fetchAlarmRow(): Promise<{ id: string | null; value: Record<string, unknown> }> {
+  const data = await airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='${MARKING_ALARMS_SETTING}'`)}&maxRecords=1`);
+  const rec = (data as { records?: { id: string; fields: Record<string, unknown> }[] }).records?.[0];
+  let value: Record<string, unknown> = {};
+  try { value = JSON.parse(String(rec?.fields?.Value ?? '{}')) as Record<string, unknown>; } catch { value = {}; }
+  return { id: rec?.id ?? null, value };
+}
+export async function getMarkingAlarms(): Promise<Record<string, unknown>> {
+  return (await fetchAlarmRow()).value;
+}
+export async function setMarkingAlarms(value: Record<string, unknown>): Promise<void> {
+  const row = await fetchAlarmRow();
+  const json = JSON.stringify(value);
+  if (row.id) await airtableRequest('Settings', `/${row.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Value: json } }) });
+  else await airtableRequest('Settings', '', { method: 'POST', body: JSON.stringify({ fields: { 'Setting Name': MARKING_ALARMS_SETTING, Value: json } }) });
+}

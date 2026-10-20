@@ -680,6 +680,18 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🔑 Marking logins (20 Oct 2026): the alarm's own dry run — red while no login can mark,
+    // or a login's sign-in is dead, so the 6-hourly report says it too.
+    timed('marking-logins', async () => {
+      const r = await fetch(`${base}/api/cron/marking-stall?dry=1`, { headers: { Authorization: `Bearer ${process.env.ADMIN_PASSWORD || ''}` }, signal: T(20000) });
+      const d = await r.json().catch(() => ({})) as { summary?: string; health?: { login: string; on: boolean; worker: string; usable: boolean }[]; error?: string };
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      const h = d.health ?? [];
+      if (h.length && !h.some(x => x.usable)) throw new Error(`no login can mark — ${d.summary}`);
+      const dead = h.filter(x => x.on && x.worker === 'needs');
+      if (dead.length) throw new Error(`login ${dead.map(x => x.login).join(', ')} switched on but needs a fresh sign-in`);
+      return d.summary || 'ok';
+    }),
     // 🎚 The worker's job switches (2 Oct 2026): the Fly worker's scheduler reads this
     // every two minutes. Anonymous must be refused.
     // 🗂 The extracted-papers index (5 Oct 2026) — /admin/library + scripts/library-index.ts.

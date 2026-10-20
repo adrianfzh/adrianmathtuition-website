@@ -14,13 +14,14 @@
 // are not here.
 
 import { useCallback, useEffect, useState } from 'react';
+import { loginHealth, sgtWhen } from '@/lib/marking-stall';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { WORKER_JOB_GROUPS, type WorkerJobRow } from '@/lib/worker-jobs';
 import KioskCard from './kiosk-card';
 
 type Flag = { on: boolean; at: string | null };
-type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null };
-type SlotAccountRow = { email: string; key: string; label: string; on: boolean; at: string | null; usage: SlotUsage | null };
+type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null; signin?: 'ok' | 'renewing' | 'needs' | null; signin_ends?: string | null; signin_at?: string | null; login?: string | null };
+type SlotAccountRow = { email: string; key: string; label: string; by?: string | null; on: boolean; at: string | null; usage: SlotUsage | null };
 
 const sgt = (iso: string | null, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) =>
   iso ? new Date(iso).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', ...opts }) : null;
@@ -204,14 +205,26 @@ export default function SwitchesPage() {
         <section className="bg-white rounded-xl shadow-sm p-4" data-section="accounts">
           <h2 className="text-xs font-bold uppercase tracking-wide text-neutral-500">Plan accounts</h2>
           <p className="text-xs text-neutral-500 mt-0.5 mb-1">Every slot and lane picks the emptiest account before each job. Off = never picked.</p>
-          {accounts ? accounts.map(a => {
+          {accounts ? accounts.map((a, i) => {
             const u = a.usage;
+            // 🔑 20 Oct 2026: on/off is his switch; this is whether the worker can USE the login
+            const h = loginHealth({ ...a, by: a.by ?? null }, i);
+            const tone = h.worker === 'needs' ? '#b91c1c' : h.worker === 'full' ? '#b45309' : h.worker === 'ready' ? '#166534' : '#6b7280';
+            const endsMs = h.signinEnds ? Date.parse(h.signinEnds) : NaN;
+            const endsSoon = Number.isFinite(endsMs) && endsMs - Date.now() < 48 * 3600_000;
             const stale = u ? Date.now() - Date.parse(u.at) > 6 * 3600_000 : false;
             return (
               <div key={a.email} className="flex items-center gap-3 py-2 border-t border-neutral-100" data-slot-account={a.key} data-on={a.on ? 'on' : 'off'}>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-neutral-900 break-all">{a.email}{a.on ? '' : ' — OFF'}</div>
+                  <div className="font-semibold text-sm text-neutral-900 break-all">Login {h.login} · {a.email}{a.on ? '' : ' — OFF'}</div>
                   {a.at && <div className="text-xs text-neutral-500">{a.on ? 'on' : 'off'} since {sgt(a.at)}</div>}
+                  <div className="text-xs mt-0.5" data-login-worker={h.worker}>
+                    <span className="font-semibold" style={{ color: tone }}>{h.worker === 'needs' ? '🔑 needs sign-in' : h.worker === 'ready' ? '✓ worker can use it' : h.text}</span>
+                    {h.signinEnds && h.worker !== 'needs' && (
+                      <span className={endsSoon ? 'font-semibold' : 'text-neutral-500'} style={endsSoon ? { color: '#b45309' } : undefined}> · sign-in ends {sgtWhen(h.signinEnds)}</span>
+                    )}
+                    {h.worker === 'needs' && <span className="text-neutral-600"> · on your Mac, open the Claude app and type &ldquo;sign in marking login {h.login} again&rdquo;</span>}
+                  </div>
                   {u ? (
                     <div className="text-xs mt-1 flex gap-x-4 gap-y-1 flex-wrap" style={{ color: stale ? '#9ca3af' : '#374151' }}>
                       <Meter v={u.five_hour} label="5 h" resets={u.resets_5h} />

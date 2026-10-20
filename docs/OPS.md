@@ -321,6 +321,22 @@ second failure sends one Telegram line naming the failing tests. A ship whose ga
 time is retried up to twice (`proposal_requests.retries`, migration
 `migrations/proposal_requests_retries.sql`).
 
+**🔑 A dead marking login is impossible to miss (20 Oct 2026).** Four papers waited 5:59 →
+past 8:30 pm: logins 1 + 2 switched off, login 3's sign-in past its end date (the refresh
+token's `refreshTokenExpiresAt`), the picker dropped it silently, the card said "on". Now:
+the picker lists a dead login as "needs sign-in" and posts every login's `signin` +
+`signin_ends` with its meters (`lib/slot-accounts.ts` `SlotUsage`); `lib/marking-stall.ts`
+judges each login (switch on/off AND worker: ready / needs sign-in / full until …) for the
+/admin/switches Plan accounts card, the desk drawer's switches, and the queued rows on
+/admin/mark-paper + the desk ("⚠ queued — not moving: login 1 and 2 are switched off and
+login 3 needs a fresh sign-in"); **`/api/cron/marking-stall`** (Vercel, every 10 min,
+`job_runs` `marking-stall`, Settings row `marking_alarms`) sends Adrian ONE line when papers
+wait > 30 min with no usable login (or nothing marking at all) — again only 2 h later if
+still stuck — and one line a day + two hours before any login's sign-in ends, with the
+steps ("sign in marking login N again" in the Claude app → bot `docs/MARKING.md`
+§Refreshing a login). `?dry=1` shows what it would say; the 6-hourly health check runs it
+as `marking-logins` (red when no login can mark or an ON login needs sign-in).
+
 **Since 25 Sep 2026 no Mac runs a plan-billed worker.** The Fly worker
 `adrianmath-worker` holds every lane — 9 marking slots, 9 sheet slots
 (`SHEET_SLOTS_ON='1'`), `worksheets`, `extract`, `find-review`, `bot-review` — and

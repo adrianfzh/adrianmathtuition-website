@@ -91,6 +91,16 @@ export interface SlotUsage {
   /** When it was read, and which machine read it. */
   at: string;
   from: string | null;
+  /** 🔑 Can the worker use this login (20 Oct 2026)? 'needs' = its sign-in is dead (no refresh
+   *  token, or past its end date) — only Adrian signing in again helps; 'renewing' = expired,
+   *  the picker is renewing it; 'ok'. Null on a reading from a picker older than 20 Oct. */
+  signin?: 'ok' | 'renewing' | 'needs' | null;
+  /** The day the login's sign-in ends for good (the refresh token's refreshTokenExpiresAt). */
+  signin_ends?: string | null;
+  /** When the picker last looked at the login's sign-in. */
+  signin_at?: string | null;
+  /** The worker's folder number (1, 2, 3) — the "login N" in Adrian's messages. */
+  login?: string | null;
 }
 export type SlotUsageMap = Record<string, SlotUsage>;
 
@@ -112,7 +122,13 @@ export function parseSlotUsageEntry(v: unknown, at = new Date().toISOString()): 
     at: str(s.at) ?? at,
     from: str(s.from),
   };
-  return u.five_hour === null && u.seven_day === null ? null : u;
+  const signin = s.signin === 'ok' || s.signin === 'renewing' || s.signin === 'needs' ? s.signin : null;
+  if (signin) u.signin = signin;
+  if (str(s.signin_ends)) u.signin_ends = str(s.signin_ends);
+  if (str(s.signin_at)) u.signin_at = str(s.signin_at);
+  if (s.login != null && String(s.login)) u.login = String(s.login);
+  // a dead login has no meters but its sign-in state is the news (20 Oct 2026)
+  return u.five_hour === null && u.seven_day === null && !signin ? null : u;
 }
 
 /** The `slot_usage` row's Value → the map. Unreadable = empty. */
@@ -139,7 +155,14 @@ export function withSlotUsage(map: SlotUsageMap, posted: unknown, at = new Date(
     if (!u) continue;
     const key = accountKey(k);
     const cur = out[key];
-    if (cur && Date.parse(cur.at) > Date.parse(u.at)) continue;
+    const signinOnly = u.five_hour === null && u.seven_day === null;
+    // a post with no meters (a dead login, a failed read) keeps the last meters and their time,
+    // and only updates the sign-in state
+    if (cur && signinOnly) { out[key] = { ...cur, signin: u.signin ?? cur.signin ?? null, signin_ends: u.signin_ends ?? cur.signin_ends ?? null, signin_at: u.signin_at ?? cur.signin_at ?? null, login: u.login ?? cur.login ?? null }; continue; }
+    if (cur && Date.parse(cur.at) > Date.parse(u.at)) {
+      if (u.signin) out[key] = { ...cur, signin: u.signin, signin_ends: u.signin_ends ?? cur.signin_ends ?? null, signin_at: u.signin_at ?? cur.signin_at ?? null, login: u.login ?? cur.login ?? null };
+      continue;
+    }
     out[key] = u;
   }
   return out;
