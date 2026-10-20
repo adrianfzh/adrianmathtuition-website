@@ -263,9 +263,8 @@
           "say": "Nine is three squared, to the power one third. Times power: two times one third gives three to the power two thirds.",
           "asks": ["Where does three squared come from?", "Why multiply the powers?"],
           "do": [
-            { "do": "highlight", "token": "b4", "tone": "orange" },
-            { "do": "write", "token": "b5", "on": "Times power:" },
-            { "do": "note", "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$", "near": "b5", "on": "gives three to" }
+            { "do": "write", "token": "b5" },
+            { "do": "note", "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$", "near": "b5", "on": "Times power:" }
           ],
           "audio": "/lessons/laws-of-indices-am/scene-01-b15.mp3",
           "timing": "/lessons/laws-of-indices-am/scene-01-b15.timing.json"

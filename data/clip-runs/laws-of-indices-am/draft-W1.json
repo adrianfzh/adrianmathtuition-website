@@ -289,20 +289,14 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "b4",
-     "tone": "orange"
-    },
-    {
      "do": "write",
-     "token": "b5",
-     "on": "Times power:"
+     "token": "b5"
     },
     {
      "do": "note",
      "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$",
      "near": "b5",
-     "on": "gives three to"
+     "on": "Times power:"
     }
    ]
   },
