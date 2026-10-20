@@ -28,7 +28,8 @@
         {
           "tokens": [
             { "id": "p1", "tex": "\\text{Plan: }2^{\\square}\\times3^{\\triangle}\\times7^{\\bigcirc}", "hl": "sky" }
-          ]
+          ],
+          "corner": true
         },
         {
           "tokens": [

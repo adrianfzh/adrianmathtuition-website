@@ -72,7 +72,8 @@
         {
           "form": "the plan: write the left side as one power of each base 2, 3, 7, then compare powers"
         }
-      ]
+      ],
+      "corner": true
     },
     {
       "tokens": [

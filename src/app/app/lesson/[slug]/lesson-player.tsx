@@ -982,7 +982,11 @@ function scrollClipBoard(cont: HTMLElement) {
     for (const n of f.lines ?? []) take(zoom.querySelector(`[data-line="${n}"]`));
     if (top < Infinity) {
       const lo = Math.ceil(bottom - room);
-      const hi = Math.floor(top - FADE);
+      // A target near the very top needs no room for the fade: at offset 0 there is no fade at all
+      // (20 Oct 2026, Laws of indices on a short laptop window: "First, the negative power" was said
+      // with the question line half off the top — the 64 px kept for the fade made the beat's two
+      // targets "not fit", so the lowest won).
+      const hi = top < FADE ? 0 : Math.floor(top - FADE);
       if (lo <= hi) offset = Math.min(Math.max(offset, lo), hi);
       else offset = lo;
       offset = Math.max(0, offset);
@@ -1378,7 +1382,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
           const ng = groupOf(board, scene, lineKey(i), i);
           return (
             <div key={i} data-line={i} data-key={board ? lineKey(i) : undefined} aria-hidden={!on}
-              className={`lsn-line ${on ? 'on' : ''}`}>
+              className={`lsn-line ${on ? 'on' : ''}${s.corner && clip ? ' lsn-line-corner' : ''}`}>
               {s.heading && (
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-1 lsn-step-heading">{s.heading}</p>
               )}
@@ -3189,6 +3193,18 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               {scene.sketch && board && <SketchPanel sk={scene.sketch} stages={board.sketch} />}
             </div>
           )}
+          {/* The plan, floating in the top-right corner once it is written, outside the board so it
+              never scrolls away (Adrian, 20 Oct 2026: "put that plan at perhaps the top right hand
+              corner (always) so that it is a constant reminder"). */}
+          {scene.type === 'equation-steps' && board && (() => {
+            const ci = scene.steps.findIndex(st => st.corner);
+            if (ci < 0 || !lineOn(board, ci)) return null;
+            return (
+              <div data-lsn-corner className="lsn-corner absolute top-3 right-3 z-10 pointer-events-none">
+                <MathText text={scene.steps[ci].tokens.map(t => `$${t.tex}$`).join(' ')} />
+              </div>
+            );
+          })()}
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
             character={characterOn ? (board?.pose ?? 'idle') : null} look={look}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
@@ -3218,7 +3234,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             const small = step - reads[reads.length - 1].i > 1;
             // With steps pinned along the top (graph sketching), the top corner is a step: the chip
             // goes to the bottom corner instead (20 Oct 2026, Exponential graphs: it hid step 4 "draw").
-            const low = scene.type === 'equation-steps' && !!scene.pinned?.length;
+            const low = scene.type === 'equation-steps' && (!!scene.pinned?.length || scene.steps.some(st => st.corner));
             const at = low ? (small ? 'bottom-16 right-1.5' : 'bottom-16 right-2.5') : (small ? 'top-1.5 right-1.5' : 'top-2.5 right-2.5');
             return (<>
               {!open && (
@@ -3638,6 +3654,10 @@ const PLAYER_CSS = `
 .lsn-scene:has(.lsn-sidewrap[data-has-sketch]) .lsn-zoom { width: 54%; flex: none; }
 /* The pinned steps own the top of the card: the Paused chip moves down, above the subtitle. */
 .lsn-scene:has(.lsn-pinned li) .lsn-paused-chip { top: auto; bottom: 4.6rem; right: 50%; translate: 50% 0; }
+.lsn-scene:has([data-lsn-corner]) .lsn-paused-chip { top: auto; bottom: 4.6rem; right: 50%; translate: 50% 0; }
+.lsn-line-corner { display: none; }
+.lsn-corner { padding: 3px 9px; border-radius: 12px; font-size: 15px; color: #7dd3fc; background: rgba(15,23,42,0.55); border: 1px solid rgba(125,211,252,0.35); animation: lsnFade 400ms ease both; }
+@media (min-width: 520px) { .lsn-corner { font-size: 17px; } }
 .lsn-pinned { display: flex; flex-wrap: wrap; gap: 4px 4px; margin: 0 0 8px; padding: 0; list-style: none; animation: lsnFade 300ms ease both; position: relative; z-index: 5; }
 .lsn-pinned li { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border-radius: 999px; font: 600 11.5px ui-sans-serif, system-ui, sans-serif; color: rgba(248,250,252,0.7); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); transition: background 300ms ease, color 300ms ease, border-color 300ms ease; }
 .lsn-pinned-n { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 11px; }

@@ -98,6 +98,11 @@ export interface EquationStep {
    *  the one and 2^{2x} = 1/4 under the other). Three tokens = left, middle ("or"), right; two
    *  tokens = left, right. The columns line up from line to line. */
   cols?: boolean;
+  /** The plan line floats in the board's top-right corner from the moment it is written, and stays
+   *  there while the board scrolls — a constant reminder of the aim (Adrian, 20 Oct 2026, Laws of
+   *  indices: "because the aim is to change to base 2, 3 and 7 > we should put that plan at perhaps
+   *  the top right hand corner (always) so that it is a constant reminder"). One line per scene. */
+  corner?: boolean;
 }
 
 /** A curve sketch on a clip board. `fn` is plain maths in x: + − * / ^ ( ) and ln, log (base 10),
@@ -929,6 +934,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           errors.push(`${sAt}: note must be a non-empty string when present`);
         }
         if (step.heading !== undefined && !nonEmptyString(step.heading)) errors.push(`${sAt}: heading must be a non-empty string when present`);
+        if (step.corner !== undefined && step.corner !== true) errors.push(`${sAt}: corner is true (the plan line that floats in the top-right corner) or absent`);
         if (step.cols !== undefined && (step.cols !== true || !Array.isArray(step.tokens) || step.tokens.length < 2 || step.tokens.length > 3)) errors.push(`${sAt}: cols is true on a line of 2 tokens (left, right) or 3 (left, middle, right)`);
         if (step.graph !== undefined) {
           const g = step.graph as Record<string, unknown>;

@@ -74,6 +74,12 @@ no focus, no clear.
   writes the line, or in a later beat.
 - **No "Step one / Step two" in the voice** except a graph-sketching clip (its steps are pinned): say the move.
 - **Two answers side by side**: `"cols": true` lines — each answer worked straight down its own column.
+- **A target-form plan floats in the corner** (Adrian, 20 Oct 2026): a plan line the whole working
+  aims at (`Plan: 2^□ × 3^△ × 7^○`) gets `"corner": true` in the plan — written on the words that say
+  it, it then stays in the top-right corner for the whole clip ("a constant reminder").
+- **What the voice talks about is fully in view at every screen size**, a short laptop window too
+  (Adrian, 20 Oct 2026: "the part you are referring to can be clearly seen"): check the look at the
+  phone AND `--width 1280 --height 640`.
 - **Pinned steps only for graph sketching** (or when Adrian asks): the plan's `pinned` + `pin` actions
   (`show` as the voice lists them, `lit` on each step's turn). An ordinary solve has no strip.
 - **A graph is drawn as you go** (Adrian, 20 Oct 2026): no "draw it" step — each pinned step adds to the

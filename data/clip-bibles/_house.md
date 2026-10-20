@@ -167,6 +167,13 @@ the history.
   that LOOKS BACK at it first ("Look back at the question…", highlight it) — the board scrolls up to
   it, then glides back down as the piece comes down. The look check fails a talked-about piece under
   the fade.
+  **At every screen size — a short laptop window too** (20 Oct 2026, Laws of indices: "when you
+  shift the screen up and talk about First, the negative power > that part you are talking about is
+  partially blocked (make sure when narrating, the part you are referring to can be clearly seen")).
+  The phone look missed it: on a laptop window about 640 px tall the board scrolled the question line
+  half off the top while the voice talked about it (the player kept a 64 px fade band even at the very
+  top — fixed 20 Oct 2026 in `scrollClipBoard`). → run the look at BOTH sizes: the phone (default) and
+  `--width 1280 --height 640`; every "talked about but hidden" there is a must.
 - **A graph clip ALWAYS draws the graph** (18 Oct 2026: "how do you teach sketching a graph without
   drawing the graph?" — the Sketching clip had been put back to a cut that only SAID "draw that shape
   on your paper"). Every sketching step is drawn on the board as it is said: the basic shape, the curve
@@ -310,6 +317,13 @@ the history.
   shapes of logarithmic graphs first"): a clip that uses a set of basic shapes or standard forms
   first SHOWS the set — one sketch with every curve labelled (`graph.curves`), each lit as the voice
   names it and says how it is flipped — then does the question.
+- **The plan floats in the top-right corner** (20 Oct 2026, Laws of indices: "because the aim is to
+  change to base 2, 3 and 7 > we should put that plan at perhaps the top right hand corner (always) so
+  that it is a constant reminder (about to make it "float" at the top right hand corner?)"). When the
+  plan is a target form the whole working aims at (`Plan: 2^□ × 3^△ × 7^○`), give that plan line
+  `"corner": true`: it is written into the top-right corner on the words that say it and stays there,
+  outside the scroll, for the rest of the clip (it takes no line on the board; the 💡 Why? chip moves to
+  the bottom corner). Keep it short (about 20 characters).
 - **Steps pinned on screen ONLY where they help — not by default** (18 Oct 2026: "we don't have to
   always give steps like that. i only suggested it for graph sketching for logs because it's
   helpful"). Graph sketching (asymptote → shape → draw → intercepts) keeps them: the plan's `pinned`
@@ -407,6 +421,8 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
    `--force` the old timings stay and every cue fires early. Then `--verify` / `asr-score.mjs`.
 4. Push `dev`, wait for the preview, move the alias, then `look.mjs` against adrianmath-dev and LOOK at
    it yourself at phone size (375 wide): nothing talked about hidden, slider not moving, question whole.
+   Then look again on a short laptop window (`look.mjs <slug> --base … --width 1280 --height 640 --out
+   <scratchpad>`): 0 "talked about but hidden" there too (20 Oct 2026 — the phone look missed one).
 4b. **The two checks that stand in for Adrian** (18 Oct 2026: "currently still need a lot of
    hand-holding … able to one shot this?" → "build #1 … build #2"):
    - **Said but not shown** (`src/lib/clip-said-shown.ts`, run by verify-lesson as part of `rules`):

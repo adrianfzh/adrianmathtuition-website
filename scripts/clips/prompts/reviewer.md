@@ -72,7 +72,14 @@ You get:
    not drawn on the sketch. Do NOT ask for "as x grows" lines or a table of values to explain an
    asymptote after a shift — Adrian (20 Oct 2026): "don't have to say as x grows... just say +1 means
    shift the graph up by 1".
-17. Anything else in the house rules this clip breaks.
+17. **Adrian, 20 Oct 2026 (Laws of indices)** — a must: the part the voice is talking about is cut off,
+   faded or half off the top of the board at ANY screen size, a short laptop window included ("when you
+   shift the screen up and talk about First, the negative power > that part you are talking about is
+   partially blocked"). A should: a clip whose plan is a target form (2^□ × 3^△ × 7^○, "same base", "a
+   quadratic in u") that does not float that plan in the top-right corner (`"corner": true`) — "put
+   that plan at … the top right hand corner (always) so that it is a constant reminder". Do NOT ask for
+   the plan line back in the working: in the corner it is on the board.
+18. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 
