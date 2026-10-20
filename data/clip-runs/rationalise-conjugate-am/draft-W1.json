@@ -33,7 +33,7 @@
    ]
   },
   {
-   "say": "When there are two terms below, we multiply the top and the bottom by the conjugate.",
+   "say": "When there are two surd terms below, we multiply the top and the bottom by the conjugate.",
    "asks": [
     "What is a conjugate?",
     "Why the top and the bottom?"
@@ -264,12 +264,6 @@
     "Would any other multiplier work?"
    ],
    "do": [
-    {
-     "do": "highlight",
-     "token": "e1",
-     "inside": "d",
-     "tone": "sky"
-    },
     {
      "do": "highlight",
      "token": "f1",
