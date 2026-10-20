@@ -17,7 +17,7 @@
    ]
   },
   {
-   "say": "Rationalizing means removing the surd from the bottom of the fraction. Here the bottom has two terms.",
+   "say": "Rationalizing means removing the surd from the bottom of the fraction. Here the bottom has two surd terms.",
    "asks": [
     "Why remove the surd from the bottom?",
     "Which part is the bottom?"
@@ -40,12 +40,6 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "q1",
-     "inside": "d",
-     "tone": "orange"
-    },
-    {
      "do": "write",
      "step": 1,
      "on": "multiply the top"
@@ -60,37 +54,32 @@
    ],
    "do": [
     {
-     "do": "highlight",
-     "token": "q1",
-     "inside": "d",
-     "tone": "orange"
-    },
-    {
      "do": "write",
      "step": 2,
-     "on": "is root five"
+     "on": "The conjugate of"
     }
    ]
   },
   {
-   "say": "It is the same pair, with only the middle sign flipped: plus becomes minus.",
+   "say": "To get it, keep root five and root three, and change only the sign in the middle: plus becomes minus.",
    "asks": [
-    "Do I flip both signs?",
+    "Do I change both signs?",
     "Why only the middle sign?"
    ],
    "do": [
     {
      "do": "highlight",
-     "token": "q1",
-     "inside": "s",
-     "tone": "orange"
+     "token": "c1",
+     "inside": "p",
+     "tone": "orange",
+     "on": "change only the"
     },
     {
      "do": "highlight",
      "token": "c1",
-     "inside": "s",
+     "inside": "m",
      "tone": "orange",
-     "on": "plus becomes minus"
+     "on": "becomes minus"
     }
    ]
   },
@@ -182,13 +171,6 @@
      "inside": "d",
      "tone": "sky",
      "on": "with the bottom"
-    },
-    {
-     "do": "highlight",
-     "token": "k1",
-     "inside": "d",
-     "tone": "sky",
-     "on": "root five plus"
     }
    ]
   },
@@ -199,12 +181,6 @@
     "Why does this rule fit here?"
    ],
    "do": [
-    {
-     "do": "highlight",
-     "token": "k1",
-     "inside": "d",
-     "tone": "sky"
-    },
     {
      "do": "note",
      "text": "(a + b)(a − b) = a² − b²",
@@ -237,6 +213,13 @@
     {
      "do": "write",
      "token": "e1"
+    },
+    {
+     "do": "highlight",
+     "token": "e1",
+     "inside": "t",
+     "tone": "orange",
+     "on": "two root five"
     },
     {
      "do": "highlight",
@@ -317,12 +300,6 @@
     "Why is this the plan?"
    ],
    "do": [
-    {
-     "do": "highlight",
-     "token": "f1",
-     "inside": "d",
-     "tone": "orange"
-    },
     {
      "do": "write",
      "token": "h1",

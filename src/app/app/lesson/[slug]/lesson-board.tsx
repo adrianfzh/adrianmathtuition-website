@@ -443,9 +443,13 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     onRef.current = nextOn;
     busyUntil.current = cursor;
 
-    // 2. Pulses.
+    // 2. Pulses. A clip does NOT pulse (grow + glow) on a highlight — the steady colour below is the
+    // highlight (Adrian, 20 Oct 2026, Surds: "there is a lot of blinking and enlarging momentarily to
+    // draw attention > only have to do it at the right moment, and usually a highlight will do"). The
+    // pulse grew the WHOLE token even when only a piece inside it was meant to light.
     const pulses = board.pulses;
-    if (pulses.length > pulseRef.current) {
+    const inClip = !!zoom.closest('[data-lsn-clip]');
+    if (pulses.length > pulseRef.current && !inClip) {
       for (const p of pulses.slice(pulseRef.current)) {
         for (const id of p.tokens) {
           const el = zoom.querySelector<HTMLElement>(`[data-token-id="${CSS.escape(id)}"]`);
@@ -457,7 +461,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         }
       }
       pulseRef.current = pulses.length;
-    } else if (pulses.length < pulseRef.current) pulseRef.current = pulses.length;
+    } else if (pulses.length !== pulseRef.current) pulseRef.current = pulses.length;
 
     // 2b. A clip keeps its last highlight LIT through its beat and the next (Adrian, 15 Oct 2026:
     // "when you say plus means multiply, that's when you can just highlight log5+log6, then bring

@@ -25,12 +25,15 @@
         },
         {
           "tokens": [
-            { "id": "c1", "tex": "\\text{Conjugate: }\\sqrt{5}\\htmlClass{lsn-pc-s}{-}\\sqrt{3}" }
+            {
+              "id": "c1",
+              "tex": "\\text{Conjugate of }\\htmlClass{lsn-pc-a}{\\sqrt{5}}\\htmlClass{lsn-pc-p}{+}\\htmlClass{lsn-pc-b}{\\sqrt{3}}\\text{ is }\\htmlClass{lsn-pc-a}{\\sqrt{5}}\\htmlClass{lsn-pc-m}{-}\\htmlClass{lsn-pc-b}{\\sqrt{3}}"
+            }
           ]
         },
         {
           "tokens": [
-            { "id": "m1", "tex": "=\\dfrac{\\htmlClass{lsn-pc-t}{2}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}+\\sqrt{3}}}" },
+            { "id": "m1", "tex": "\\dfrac{\\htmlClass{lsn-pc-t}{2}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}+\\sqrt{3}}}" },
             {
               "id": "m2",
               "tex": "\\times\\dfrac{\\htmlClass{lsn-pc-t}{\\sqrt{5}-\\sqrt{3}}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}\\htmlClass{lsn-pc-s}{-}\\sqrt{3}}}"
@@ -85,7 +88,7 @@
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Rationalizing means removing the surd from the bottom of the fraction. Here the bottom has two terms.",
+          "say": "Rationalizing means removing the surd from the bottom of the fraction. Here the bottom has two surd terms.",
           "asks": ["Why remove the surd from the bottom?", "Which part is the bottom?"],
           "do": [
             { "do": "highlight", "token": "q1", "inside": "d", "tone": "orange", "on": "from the bottom" }
@@ -97,7 +100,6 @@
           "say": "When there are two terms below, we multiply the top and the bottom by the conjugate.",
           "asks": ["What is a conjugate?", "Why the top and the bottom?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "d", "tone": "orange" },
             { "do": "write", "step": 1, "on": "multiply the top" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b3.mp3",
@@ -107,18 +109,17 @@
           "say": "The conjugate of root five plus root three is root five minus root three.",
           "asks": ["What is a conjugate?", "How do I find the conjugate?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "d", "tone": "orange" },
-            { "do": "write", "step": 2, "on": "is root five" }
+            { "do": "write", "step": 2, "on": "The conjugate of" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b4.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b4.timing.json"
         },
         {
-          "say": "It is the same pair, with only the middle sign flipped: plus becomes minus.",
-          "asks": ["Do I flip both signs?", "Why only the middle sign?"],
+          "say": "To get it, keep root five and root three, and change only the sign in the middle: plus becomes minus.",
+          "asks": ["Do I change both signs?", "Why only the middle sign?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "s", "tone": "orange" },
-            { "do": "highlight", "token": "c1", "inside": "s", "tone": "orange", "on": "plus becomes minus" }
+            { "do": "highlight", "token": "c1", "inside": "p", "tone": "orange", "on": "change only the" },
+            { "do": "highlight", "token": "c1", "inside": "m", "tone": "orange", "on": "becomes minus" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b5.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b5.timing.json"
@@ -169,8 +170,7 @@
           "asks": ["Why keep the two brackets?"],
           "do": [
             { "do": "highlight", "token": "m1", "inside": "d", "tone": "sky" },
-            { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky", "on": "with the bottom" },
-            { "do": "highlight", "token": "k1", "inside": "d", "tone": "sky", "on": "root five plus" }
+            { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky", "on": "with the bottom" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b9.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b9.timing.json"
@@ -179,7 +179,6 @@
           "say": "The bottom is A plus B, times A minus B, with A as root five and B as root three.",
           "asks": ["Which one is A?", "Why does this rule fit here?"],
           "do": [
-            { "do": "highlight", "token": "k1", "inside": "d", "tone": "sky" },
             { "do": "note", "text": "(a + b)(a − b) = a² − b²", "near": "k1", "on": "times A minus" },
             { "do": "highlight", "token": "k1", "inside": "a", "tone": "orange", "on": "A as root" },
             { "do": "highlight", "token": "k1", "inside": "b", "tone": "sky", "on": "B as root" }
@@ -192,6 +191,7 @@
           "asks": ["How do I expand the top?", "Where did the middle terms go?"],
           "do": [
             { "do": "write", "token": "e1" },
+            { "do": "highlight", "token": "e1", "inside": "t", "tone": "orange", "on": "two root five" },
             { "do": "highlight", "token": "e1", "inside": "a", "tone": "orange", "on": "The bottom: root" },
             { "do": "highlight", "token": "e1", "inside": "b", "tone": "sky", "on": "minus root three" }
           ],
@@ -236,7 +236,6 @@
           "say": "Five minus three is two.",
           "asks": ["Is two still a surd?", "Why is this the plan?"],
           "do": [
-            { "do": "highlight", "token": "f1", "inside": "d", "tone": "orange" },
             { "do": "write", "token": "h1", "on": "is two" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b14.mp3",

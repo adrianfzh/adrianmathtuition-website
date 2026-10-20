@@ -83,11 +83,15 @@ no focus, no clear.
   …"), what it is (the conjugate: only the middle sign flipped), and WHY it works — said once the move
   is done on the board (next rule), with a written drop-down for the worked detail.
 - **Write it, do it, THEN say why it works** (Adrian, 20 Oct 2026): the new thing is written first
-  (`Conjugate: √5 − √3`) and explained from that line; then the line that does the move; then the
+  (`Conjugate of √5 + √3 is √5 − √3`) and explained from that line; then the line that does the move; then the
   working, pointing out the form the rule needs (`(a + b)(a − b) = a² − b²`); then the step done; only
   then "That is why … works", at the line that shows it. The plan names the move in plain words ("multiply
   the top and the bottom by the conjugate"), never a vague aim ("the same value, written with no surd in
   the bottom" was "not useful, confusing").
+- **Highlights: steady, few, on the words that name the part** (Adrian, 20 Oct 2026: "a lot of blinking
+  and enlarging … usually a highlight will do"): never re-light what is still lit from the beat before;
+  no highlight just to "draw attention". Name things exactly ("two surd terms"). A new object is written
+  as a sentence on the board (`Conjugate of √5 + √3 is √5 − √3`), then the how is lit inside that line.
 - **What the voice talks about is fully in view at every screen size**, a short laptop window too
   (Adrian, 20 Oct 2026: "the part you are referring to can be clearly seen"): check the look at the
   phone AND `--width 1280 --height 640`.

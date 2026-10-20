@@ -90,6 +90,10 @@ You get:
    conjugate, then explain from there … say that's why it works" after the squares are done); a new
    object (the conjugate) explained before it is written ("show the multiplying … first before saying why it
    works > else the student will not know what narrator is talking about").
+   Fourth notes (same day), each a should: a highlight that re-lights what is already lit, or lights
+   a part the voice is not naming ("a lot of blinking … only have to do it at the right moment"); a
+   loose name ("two terms" for "two surd terms"); a new object said but not written as a sentence on the
+   board ("put the conjugate of sqrt 5+ sqrt 3 is sqrt 5 - sqrt 3 on the screen").
 19. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?

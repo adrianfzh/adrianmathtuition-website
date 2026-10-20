@@ -58,7 +58,7 @@
       "tokens": [
         {
           "id": "c1",
-          "tex": "\\text{Conjugate: }\\sqrt{5}\\htmlClass{lsn-pc-s}{-}\\sqrt{3}"
+          "tex": "\\text{Conjugate of }\\htmlClass{lsn-pc-a}{\\sqrt{5}}\\htmlClass{lsn-pc-p}{+}\\htmlClass{lsn-pc-b}{\\sqrt{3}}\\text{ is }\\htmlClass{lsn-pc-a}{\\sqrt{5}}\\htmlClass{lsn-pc-m}{-}\\htmlClass{lsn-pc-b}{\\sqrt{3}}"
         }
       ],
       "checks": [
@@ -71,7 +71,7 @@
       "tokens": [
         {
           "id": "m1",
-          "tex": "=\\dfrac{\\htmlClass{lsn-pc-t}{2}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}+\\sqrt{3}}}"
+          "tex": "\\dfrac{\\htmlClass{lsn-pc-t}{2}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}+\\sqrt{3}}}"
         },
         {
           "id": "m2",
