@@ -76,7 +76,7 @@ no focus, no clear.
 - **Two answers side by side**: `"cols": true` lines — each answer worked straight down its own column.
 - **A target-form plan floats in the corner** (Adrian, 20 Oct 2026): a plan line the whole working
   aims at (`Plan: 2^□ × 3^△ × 7^○`) gets `"corner": true` in the plan — written on the words that say
-  it, it then stays in the top-right corner for the whole clip ("a constant reminder").
+  it, it then stays in the top-right corner for the whole clip ("a constant reminder"). Approved after watching (20 Oct 2026: "so it's good to pin the plan on the top right-hand corner") — every clip with a plan line pins it.
 - **What the voice talks about is fully in view at every screen size**, a short laptop window too
   (Adrian, 20 Oct 2026: "the part you are referring to can be clearly seen"): check the look at the
   phone AND `--width 1280 --height 640`.

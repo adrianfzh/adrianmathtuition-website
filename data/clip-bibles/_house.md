@@ -324,6 +324,8 @@ the history.
   `"corner": true`: it is written into the top-right corner on the words that say it and stays there,
   outside the scroll, for the rest of the clip (it takes no line on the board; the 💡 Why? chip moves to
   the bottom corner). Keep it short (about 20 characters).
+  **APPROVED after watching** (20 Oct 2026: "so it's good to pin the plan on the top right-hand
+  corner. put it in memory for future sessions") — every clip with a plan pins it there from now on.
 - **Steps pinned on screen ONLY where they help — not by default** (18 Oct 2026: "we don't have to
   always give steps like that. i only suggested it for graph sketching for logs because it's
   helpful"). Graph sketching (asymptote → shape → draw → intercepts) keeps them: the plan's `pinned`
