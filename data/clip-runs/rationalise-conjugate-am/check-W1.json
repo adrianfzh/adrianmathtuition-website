@@ -25,6 +25,11 @@
         },
         {
           "tokens": [
+            { "id": "c1", "tex": "\\text{Conjugate: }\\sqrt{5}\\htmlClass{lsn-pc-s}{-}\\sqrt{3}" }
+          ]
+        },
+        {
+          "tokens": [
             { "id": "m1", "tex": "=\\dfrac{\\htmlClass{lsn-pc-t}{2}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}+\\sqrt{3}}}" },
             {
               "id": "m2",
@@ -93,10 +98,19 @@
           ]
         },
         {
-          "say": "The conjugate is the same pair, with only the middle sign flipped.",
-          "asks": ["Which sign is the middle sign?", "Do I flip both signs?"],
+          "say": "The conjugate of root five plus root three is root five minus root three.",
+          "asks": ["What is a conjugate?", "How do I find the conjugate?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "s", "tone": "orange", "on": "the middle sign" }
+            { "do": "highlight", "token": "q1", "inside": "d", "tone": "orange" },
+            { "do": "write", "step": 2, "on": "is root five" }
+          ]
+        },
+        {
+          "say": "It is the same pair, with only the middle sign flipped: plus becomes minus.",
+          "asks": ["Do I flip both signs?", "Why only the middle sign?"],
+          "do": [
+            { "do": "highlight", "token": "q1", "inside": "s", "tone": "orange" },
+            { "do": "highlight", "token": "c1", "inside": "s", "tone": "orange", "on": "plus becomes minus" }
           ]
         },
         {
@@ -105,13 +119,6 @@
           "do": [
             { "do": "write", "token": "m1" },
             { "do": "write", "token": "m2", "on": "then times root" }
-          ]
-        },
-        {
-          "say": "Plus becomes minus, and only the middle sign changes. Root five stays root five.",
-          "asks": ["Do I change both signs?", "Why does root five stay?"],
-          "do": [
-            { "do": "highlight", "token": "m2", "inside": "s", "tone": "orange" }
           ]
         },
         {
@@ -130,36 +137,6 @@
           },
           "do": [
             { "do": "highlight", "token": "m2", "tone": "sky" }
-          ]
-        },
-        {
-          "say": "Why it works: A plus B, times A minus B, always gives A squared minus B squared.",
-          "asks": ["Where does this rule come from?", "Why does it help?"],
-          "do": [
-            { "do": "highlight", "token": "m1", "inside": "d", "tone": "sky" },
-            { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky", "on": "times A minus" },
-            { "do": "note", "text": "(a + b)(a − b) = a² − b²", "near": "q1", "on": "always gives A" }
-          ]
-        },
-        {
-          "say": "Squaring a surd removes its root. So after multiplying, the bottom has no surd left.",
-          "asks": ["Why does squaring remove the root?", "Where do the middle terms go?"],
-          "aside": {
-            "text": "Why does the conjugate clear the surd?",
-            "slug": "surds-why-conjugate",
-            "read": [
-              "Expand $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$: four products.",
-              "$\\sqrt5\\times\\sqrt5 = 5$",
-              "$\\sqrt5\\times(-\\sqrt3) = -\\sqrt{15}$",
-              "$\\sqrt3\\times\\sqrt5 = +\\sqrt{15}$",
-              "$\\sqrt3\\times(-\\sqrt3) = -3$",
-              "The two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
-              "So the bottom is $5 - 3 = 2$.",
-              "**Plus times minus leaves only the two squares — no surd.**"
-            ]
-          },
-          "do": [
-            { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky" }
           ]
         },
         {
@@ -185,6 +162,7 @@
           "asks": ["Which one is A?", "Why does this rule fit here?"],
           "do": [
             { "do": "highlight", "token": "k1", "inside": "d", "tone": "sky" },
+            { "do": "note", "text": "(a + b)(a − b) = a² − b²", "near": "k1", "on": "times A minus" },
             { "do": "highlight", "token": "k1", "inside": "a", "tone": "orange", "on": "A as root" },
             { "do": "highlight", "token": "k1", "inside": "b", "tone": "sky", "on": "B as root" }
           ]
@@ -207,7 +185,29 @@
           ]
         },
         {
-          "say": "Five minus three is two. The bottom is now a number with no surd.",
+          "say": "That is why the conjugate works: the surds in the bottom are squared, so no surd is left in the bottom.",
+          "asks": ["Why does squaring remove the surd?", "Would any other multiplier work?"],
+          "aside": {
+            "text": "Why does the conjugate clear the surd?",
+            "slug": "surds-why-conjugate",
+            "read": [
+              "Expand $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$: four products.",
+              "$\\sqrt5\\times\\sqrt5 = 5$",
+              "$\\sqrt5\\times(-\\sqrt3) = -\\sqrt{15}$",
+              "$\\sqrt3\\times\\sqrt5 = +\\sqrt{15}$",
+              "$\\sqrt3\\times(-\\sqrt3) = -3$",
+              "The two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
+              "Only the two squares are left: $5 - 3$.",
+              "**Plus times minus leaves only the squares — no surd.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "e1", "inside": "d", "tone": "sky" },
+            { "do": "highlight", "token": "f1", "inside": "d", "tone": "orange", "on": "no surd is" }
+          ]
+        },
+        {
+          "say": "Five minus three is two.",
           "asks": ["Is two still a surd?", "Why is this the plan?"],
           "do": [
             { "do": "highlight", "token": "f1", "inside": "d", "tone": "orange" },

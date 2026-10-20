@@ -80,12 +80,14 @@ no focus, no clear.
 - **Go straight to the method** (Adrian, 20 Oct 2026, Surds: "there is no need to say multiply by root
   five alone still... doesn't help in understanding > student will be wondering by you say that?"): never
   open with why another way fails. Say when the method is used ("When there are two terms below, multiply
-  …"), what it is (the conjugate: only the middle sign flipped), and WHY it works (the rule that makes it
-  work, in the voice, with a written drop-down for the worked detail).
-- **Show the move, THEN why it works** (Adrian, 20 Oct 2026): write the line that does the move first
-  (`× (√5 − √3)/(√5 − √3)`), then explain why it works pointing at that line. The plan names the move
-  in plain words ("multiply the top and the bottom by the conjugate"), never a vague aim ("the same value,
-  written with no surd in the bottom" was "not useful, confusing").
+  …"), what it is (the conjugate: only the middle sign flipped), and WHY it works — said once the move
+  is done on the board (next rule), with a written drop-down for the worked detail.
+- **Write it, do it, THEN say why it works** (Adrian, 20 Oct 2026): the new thing is written first
+  (`Conjugate: √5 − √3`) and explained from that line; then the line that does the move; then the
+  working, pointing out the form the rule needs (`(a + b)(a − b) = a² − b²`); then the step done; only
+  then "That is why … works", at the line that shows it. The plan names the move in plain words ("multiply
+  the top and the bottom by the conjugate"), never a vague aim ("the same value, written with no surd in
+  the bottom" was "not useful, confusing").
 - **What the voice talks about is fully in view at every screen size**, a short laptop window too
   (Adrian, 20 Oct 2026: "the part you are referring to can be clearly seen"): check the look at the
   phone AND `--width 1280 --height 640`.

@@ -1,6 +1,6 @@
 {
  "slug": "rationalise-conjugate-am",
- "worst": 0.88,
+ "worst": 0.9,
  "lines": [
   {
    "beat": 1,
@@ -46,38 +46,38 @@
   },
   {
    "beat": 8,
-   "bag": 0.88,
-   "score": 0.88,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 9,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
    "beat": 10,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 11,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 12,
    "bag": 0.9,
    "score": 0.9,
    "heard": null
   },
   {
-   "beat": 13,
+   "beat": 11,
    "bag": 0.95,
    "score": 0.95,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 13,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -88,18 +88,12 @@
   },
   {
    "beat": 15,
-   "bag": 0.93,
-   "score": 0.93,
-   "heard": null
-  },
-  {
-   "beat": 16,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
-   "beat": 17,
+   "beat": 16,
    "bag": 1,
    "score": 1,
    "heard": null

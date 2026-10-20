@@ -20,7 +20,8 @@
     "display": "√5 − √3"
   },
   "outline": [
-    "Built 20 Oct 2026 (Surds clip 1) for skill 3.4 from 107.13 on its own worked example 107.14: the question read; rationalizing means removing the surd from the bottom; the plan (pinned in the corner): two terms below, so multiply the top and the bottom by the conjugate (Adrian, 20 Oct 2026: the old plan \"the same value, written with no surd in the bottom\" was \"not useful, confusing\"); the conjugate = the same pair with only the middle sign flipped, its sign lit; multiply the top AND the bottom by it — times 1, same value; top with top, bottom with bottom (each pair lit); expand the top, and the bottom by (a + b)(a − b) = a² − b² (the rule beside the line); a surd times itself is the number inside: (√5)² = 5, (√3)² = 3; 5 − 3 = 2, split the fraction; = √5 − √3, boxed. One expression line by line, no step numbers, no Watch out. Order (Adrian, 20 Oct 2026): the multiplying by the conjugate is WRITTEN first, then why it works."
+    "Built 20 Oct 2026 (Surds clip 1) for skill 3.4 from 107.13 on its own worked example 107.14: the question read; rationalizing means removing the surd from the bottom; the plan (pinned in the corner): two terms below, so multiply the top and the bottom by the conjugate (Adrian, 20 Oct 2026: the old plan \"the same value, written with no surd in the bottom\" was \"not useful, confusing\"); the conjugate = the same pair with only the middle sign flipped, its sign lit; multiply the top AND the bottom by it — times 1, same value; top with top, bottom with bottom (each pair lit); expand the top, and the bottom by (a + b)(a − b) = a² − b² (the rule beside the line); a surd times itself is the number inside: (√5)² = 5, (√3)² = 3; 5 − 3 = 2, split the fraction; = √5 − √3, boxed. One expression line by line, no step numbers, no Watch out. Order (Adrian, 20 Oct 2026): the multiplying by the conjugate is WRITTEN first, then why it works.",
+    "Re-ordered 20 Oct 2026 (Adrian's third note): the conjugate √5 − √3 is WRITTEN first and explained from there; then the × conjugate line, top with top and bottom with bottom, the bottom pointed out as (a + b)(a − b) = a² − b², the squares done; only then \"that is why it works: the surds in the bottom are squared, so no surd is left\"."
   ],
   "question": "Rationalize the denominator of $\\dfrac{2}{\\sqrt{5}+\\sqrt{3}}$.",
   "minutes": 2,
@@ -52,6 +53,19 @@
         }
       ],
       "corner": true
+    },
+    {
+      "tokens": [
+        {
+          "id": "c1",
+          "tex": "\\text{Conjugate: }\\sqrt{5}\\htmlClass{lsn-pc-s}{-}\\sqrt{3}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the conjugate of sqrt(5) + sqrt(3): the same pair with the middle sign flipped"
+        }
+      ]
     },
     {
       "tokens": [
