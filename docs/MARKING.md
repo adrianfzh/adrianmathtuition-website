@@ -3281,8 +3281,16 @@ show only fast 200s). Same on 16 and 19 Oct whenever 4+ papers stacked. Fix in t
 storage writes get their own pool, 30 s connect window, 5 patient tries and the real error in the
 log; the marker draws **2 papers at once**, oldest first (`MARK_ASSEMBLE_CONCURRENCY`); each paper
 logs `⏱ … finished in N s … uploads retried r, lost l`. The lasting cure — a machine with an
-unrationed CPU — is Adrian's call (it costs more a month). Full evidence + metrics query: bot
-`docs/OPS.md` §Marker CPU.
+unrationed CPU — Adrian said yes the same night: marker on `performance-2x` from 16:08 UTC
+20 Oct, back to `shared-cpu-2x` after 3 pm SGT 21 Oct (the hub scheduled it). Full evidence +
+metrics query: bot `docs/OPS.md` §Marker CPU.
+
+**Measured, 20 Oct 2026** (bot log `⏱` lines): before, on the throttled shared CPU, 716–1 087 s per
+paper, one at a time, and run a07aafaa alone had 6+ retried uploads and 1 lost overflow page in 8 min.
+After (performance CPU + the new code, 16:08–16:32 UTC): 9 papers, **124–260 s each, two at once,
+0 uploads retried, 0 lost**, no failed health check after 16:08. New hand-backs: 16:22:10 → done
+16:25:58 (3 min 48 s), 16:30:10 → 16:32:18 (2 min 8 s). Back on shared CPUs, a stack of 4+ papers
+can drain the allowance again — watch for `⏱ … finished in` above ~600 s.
 
 ## Marked-PDF assembly — page order + LaTeX repair
 
