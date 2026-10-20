@@ -3266,6 +3266,24 @@ would leave the copy behind — breaking PDF uploads at runtime with nothing fai
 build time. `src/lib/pdf-worker-asset.test.ts` pins the pair; when it fails the fix is
 `cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs`.
 
+## 🧩 The last step — drawing the marks after the reads come back (20 Oct 2026)
+
+Reading a paper (the worker's plan slots) and drawing it (the bot's **marker** machine: red pen,
+saved pages, marked PDF) are two steps. A paper whose pages are all read but not yet drawn shows on
+`/admin/mark-paper` as **"all pages read · drawing the marks — next in line / N ahead"** (website
+commit 3d40d8fa, 20 Oct 2026), never "queued".
+
+**20 Oct 2026, Adrian: "is marking slow now?"** — the drawing step took 17–22 min a paper instead of
+1–2. Cause: the marker is a shared-CPU Fly machine; a stack of papers used up its CPU allowance
+(at zero from ~22:30 SGT) and Fly throttled it, so drawing, the health check and new connections
+to storage all crawled; uploads failed on the machine before reaching Supabase (storage's own logs
+show only fast 200s). Same on 16 and 19 Oct whenever 4+ papers stacked. Fix in the bot (same day):
+storage writes get their own pool, 30 s connect window, 5 patient tries and the real error in the
+log; the marker draws **2 papers at once**, oldest first (`MARK_ASSEMBLE_CONCURRENCY`); each paper
+logs `⏱ … finished in N s … uploads retried r, lost l`. The lasting cure — a machine with an
+unrationed CPU — is Adrian's call (it costs more a month). Full evidence + metrics query: bot
+`docs/OPS.md` §Marker CPU.
+
 ## Marked-PDF assembly — page order + LaTeX repair
 
 The marked PDF (`/api/admin/mark-paper-pdf`) interleaves each **annotated photo** with the
