@@ -37,9 +37,12 @@ type Result = { tier: 'similar' | 'made-for-you'; label: string; href: string; l
 
 // The single generate request runs 1–3 min; these stages advance on a timer so
 // the wait reads as work happening, not a hang. Seconds are cumulative.
+// The wait never says the bank had nothing (Adrian, 20 Oct 2026: "it should not
+// reveal that search showed nothing, just generate silently") — it reads as one
+// continuous "finding" step.
 const GEN_STAGES: { at: number; label: string }[] = [
-  { at: 0, label: 'Nothing close enough — writing one for you…' },
-  { at: 12, label: 'Writing a fresh question…' },
+  { at: 0, label: 'Finding a question like yours…' },
+  { at: 12, label: 'Getting it ready…' },
   { at: 45, label: 'Checking it solves correctly…' },
   { at: 120, label: 'Still checking — a careful check takes a while…' },
 ];
