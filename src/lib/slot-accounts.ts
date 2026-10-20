@@ -106,6 +106,8 @@ export interface SlotUsage {
   kind?: 'login' | 'key' | null;
   /** A key (or login) resting after a plan-limit message, until this instant. */
   resting_until?: string | null;
+  /** When the picker last chose it (a key with no meters shows "last used …"). */
+  last_used?: string | null;
 }
 export type SlotUsageMap = Record<string, SlotUsage>;
 
@@ -134,6 +136,7 @@ export function parseSlotUsageEntry(v: unknown, at = new Date().toISOString()): 
   if (s.login != null && String(s.login)) u.login = String(s.login);
   if (s.kind === 'key' || s.kind === 'login') u.kind = s.kind;
   if (str(s.resting_until)) u.resting_until = str(s.resting_until);
+  if (str(s.last_used)) u.last_used = str(s.last_used);
   // a dead login has no meters but its sign-in state is the news (20 Oct 2026)
   return u.five_hour === null && u.seven_day === null && !signin ? null : u;
 }

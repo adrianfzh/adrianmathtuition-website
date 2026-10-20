@@ -45,12 +45,15 @@ export interface LoginHealth {
 }
 
 /** "Thu 22 Oct, 12:40 pm" in Singapore time. */
-export function sgtWhen(iso: string | number): string {
+export function sgtWhen(iso: string | number, now: number = Date.now()): string {
   const d = new Date((typeof iso === 'number' ? iso : Date.parse(iso)) + 8 * 3600_000);
   const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getUTCDay()];
   const mo = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()];
   const h = d.getUTCHours(); const m = String(d.getUTCMinutes()).padStart(2, '0');
-  return `${wd} ${d.getUTCDate()} ${mo}, ${h % 12 || 12}:${m} ${h < 12 ? 'am' : 'pm'}`;
+  // a date in another year carries its year (20 Oct 2026: "ends Wed 20 Oct, 9:26 pm" read as tonight)
+  const thisYear = new Date(now + 8 * 3600_000).getUTCFullYear();
+  const yr = d.getUTCFullYear() !== thisYear ? ` ${d.getUTCFullYear()}` : '';
+  return `${wd} ${d.getUTCDate()} ${mo}${yr}, ${h % 12 || 12}:${m} ${h < 12 ? 'am' : 'pm'}`;
 }
 
 export function loginHealth(row: SlotAccountRow, index: number, now: number = Date.now()): LoginHealth {
@@ -63,9 +66,8 @@ export function loginHealth(row: SlotAccountRow, index: number, now: number = Da
   // past its end date it is dead whatever the last post said (the worker may be asleep)
   if (u?.signin === 'needs' || (Number.isFinite(endsMs) && endsMs <= now)) worker = 'needs';
   else if (u?.signin === 'renewing') worker = 'renewing';
-  else if (u?.kind === 'key') {
-    const rest = u.resting_until ? Date.parse(u.resting_until) : NaN;
-    if (Number.isFinite(rest) && rest > now) { worker = 'full'; fullUntil = new Date(rest).toISOString(); }
+  else if (u?.kind === 'key' && Number.isFinite(u.resting_until ? Date.parse(u.resting_until) : NaN) && Date.parse(u.resting_until!) > now) {
+    worker = 'full'; fullUntil = new Date(Date.parse(u.resting_until!)).toISOString();
   } else if (u) {
     let until = 0;
     for (const [v, r] of [[u.five_hour, u.resets_5h], [u.seven_day, u.resets_7d]] as const) {
@@ -152,8 +154,8 @@ export function signinWarnings(h: LoginHealth[], told: SigninTold, now: number =
         send.push({
           key: x.key,
           text: x.kind === 'key'
-            ? `🗝 Marking login ${x.login}'s year-long key (${x.email}) ends ${sgtWhen(ends)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n\n${newKeySteps(x)}`
-            : `🔑 Marking login ${x.login} (${x.email}) stops working ${sgtWhen(ends)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n`
+            ? `🗝 Marking login ${x.login}'s year-long key (${x.email}) ends ${sgtWhen(ends, now)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n\n${newKeySteps(x)}`
+            : `🔑 Marking login ${x.login} (${x.email}) stops working ${sgtWhen(ends, now)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n`
               + `It cannot renew itself past that time; only a fresh sign-in keeps it going.\n\n${signInSteps(x)}`,
         });
       }

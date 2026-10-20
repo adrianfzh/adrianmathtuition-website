@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { slotAccountRows, withSlotUsage, parseSlotUsage, type SlotAccountMap, type SlotUsageMap } from './slot-accounts';
-import { loginHealths, poolStall, signinWarnings, stallDecision, rowStallNote, signInSteps } from './marking-stall';
+import { loginHealths, poolStall, signinWarnings, stallDecision, rowStallNote, signInSteps, sgtWhen } from './marking-stall';
 
 // 20 Oct 2026, 6:30 pm SGT
 const NOW = Date.parse('2026-10-20T10:30:00Z');
@@ -136,6 +136,10 @@ describe('🗝 year-long keys (20 Oct 2026)', () => {
     expect(a.send[0].text).toMatch(/claude-key-capture\.sh 1/);
     const at2 = Date.parse('2027-10-19T11:00:00Z');
     expect(signinWarnings(loginHealths(slotAccountRows({}, KEYS), at2), a.told, at2).send).toHaveLength(2);
+  });
+  it('a date in another year shows its year (the key ending next October is not "tonight")', () => {
+    expect(sgtWhen('2027-10-20T13:26:00Z', NOW)).toBe('Wed 20 Oct 2027, 9:26 pm');
+    expect(sgtWhen('2026-10-22T04:40:00Z', NOW)).toBe('Thu 22 Oct, 12:40 pm');
   });
   it('a key post replaces the old sign-in meters', () => {
     const map = parseSlotUsage(JSON.stringify({ 'ablnon-gmail-com': { five_hour: 10, seven_day: 50, at: '2026-10-20T06:00:00Z' } }));

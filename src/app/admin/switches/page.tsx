@@ -20,7 +20,7 @@ import { WORKER_JOB_GROUPS, type WorkerJobRow } from '@/lib/worker-jobs';
 import KioskCard from './kiosk-card';
 
 type Flag = { on: boolean; at: string | null };
-type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null; signin?: 'ok' | 'renewing' | 'needs' | null; signin_ends?: string | null; signin_at?: string | null; login?: string | null; kind?: 'login' | 'key' | null; resting_until?: string | null };
+type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null; signin?: 'ok' | 'renewing' | 'needs' | null; signin_ends?: string | null; signin_at?: string | null; login?: string | null; kind?: 'login' | 'key' | null; resting_until?: string | null; last_used?: string | null };
 type SlotAccountRow = { email: string; key: string; label: string; by?: string | null; on: boolean; at: string | null; usage: SlotUsage | null };
 
 const sgt = (iso: string | null, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) =>
@@ -225,7 +225,10 @@ export default function SwitchesPage() {
                     )}
                     {h.worker === 'needs' && <span className="text-neutral-600"> · on your Mac, open the Claude app and type &ldquo;sign in marking login {h.login} again&rdquo;</span>}
                   </div>
-                  {h.kind === 'key' ? null : u ? (
+                  {h.kind === 'key' && (!u || (u.five_hour === null && u.seven_day === null)) ? (
+                    // a key whose usage the worker could not read: what it does know
+                    <div className="text-xs text-neutral-500 mt-1">usage bars not readable for this key{u?.last_used ? ` · last used ${sgt(u.last_used)}` : ''}</div>
+                  ) : u ? (
                     <div className="text-xs mt-1 flex gap-x-4 gap-y-1 flex-wrap" style={{ color: stale ? '#9ca3af' : '#374151' }}>
                       <Meter v={u.five_hour} label="5 h" resets={u.resets_5h} />
                       <Meter v={u.seven_day} label="week" resets={u.resets_7d} />
