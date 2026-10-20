@@ -81,6 +81,12 @@
    ],
    "do": [
     {
+     "do": "note",
+     "text": "Conjugate: change only the middle sign",
+     "near": "q1",
+     "on": "the same pair"
+    },
+    {
      "do": "highlight",
      "token": "q1",
      "inside": "s",
@@ -134,12 +140,6 @@
      "token": "m2",
      "inside": "s",
      "tone": "orange"
-    },
-    {
-     "do": "note",
-     "text": "Conjugate: change only the middle sign",
-     "near": "m2",
-     "on": "only the middle"
     }
    ]
   },
@@ -263,12 +263,6 @@
      "inside": "b",
      "tone": "sky",
      "on": "B is root"
-    },
-    {
-     "do": "note",
-     "text": "a = √5, b = √3",
-     "near": "k1",
-     "on": "three"
     }
    ]
   },
@@ -316,12 +310,6 @@
      "do": "write",
      "token": "f1",
      "on": "So root five"
-    },
-    {
-     "do": "note",
-     "text": "a surd × itself = the number inside",
-     "near": "f1",
-     "on": "root three squared"
     }
    ]
   },
