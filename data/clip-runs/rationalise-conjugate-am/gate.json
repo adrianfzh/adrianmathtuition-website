@@ -1,6 +1,6 @@
 {
  "slug": "rationalise-conjugate-am",
- "at": "2026-10-20T13:11:38.136Z",
+ "at": "2026-10-20T14:44:38.087Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,11 +8,11 @@
   },
   "maths": {
    "ok": true,
-   "detail": "12/12 line checks"
+   "detail": "13/13 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "9 lines = the checked plan"
+   "detail": "10 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,7 +20,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "32/32 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "33/33 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
