@@ -21,6 +21,8 @@ export const STALL_AFTER_MS = 30 * 60_000;
 export const STALL_REPEAT_MS = 2 * 3600_000;
 export const WARN_DAY_MS = 24 * 3600_000;
 export const WARN_HOURS_MS = 2 * 3600_000;
+/** A year-long key is warned a week ahead too (20 Oct 2026). */
+export const WARN_WEEK_MS = 7 * 24 * 3600_000;
 export const SITE = 'https://www.adrianmathtuition.com';
 
 export type LoginState = 'ready' | 'off' | 'needs' | 'renewing' | 'full' | 'unknown';
@@ -38,6 +40,8 @@ export interface LoginHealth {
   text: string;
   fullUntil: string | null;
   signinEnds: string | null;
+  /** 🗝 'key' = a year-long key (no meters; rests after a plan-limit message). */
+  kind: 'login' | 'key';
 }
 
 /** "Thu 22 Oct, 12:40 pm" in Singapore time. */
@@ -59,7 +63,10 @@ export function loginHealth(row: SlotAccountRow, index: number, now: number = Da
   // past its end date it is dead whatever the last post said (the worker may be asleep)
   if (u?.signin === 'needs' || (Number.isFinite(endsMs) && endsMs <= now)) worker = 'needs';
   else if (u?.signin === 'renewing') worker = 'renewing';
-  else if (u) {
+  else if (u?.kind === 'key') {
+    const rest = u.resting_until ? Date.parse(u.resting_until) : NaN;
+    if (Number.isFinite(rest) && rest > now) { worker = 'full'; fullUntil = new Date(rest).toISOString(); }
+  } else if (u) {
     let until = 0;
     for (const [v, r] of [[u.five_hour, u.resets_5h], [u.seven_day, u.resets_7d]] as const) {
       if ((v ?? 0) < FULL_AT) continue;
@@ -71,10 +78,10 @@ export function loginHealth(row: SlotAccountRow, index: number, now: number = Da
   }
   const text = worker === 'needs' ? 'needs sign-in'
     : worker === 'renewing' ? 'renewing its sign-in'
-    : worker === 'full' ? `full until ${sgtWhen(fullUntil!)}`
+    : worker === 'full' ? `${u?.kind === 'key' ? 'resting' : 'full'} until ${sgtWhen(fullUntil!)}`
     : worker === 'unknown' ? 'no reading from the worker yet'
     : 'ready';
-  return { key: row.key, email: row.email, login, on: row.on, usable: row.on && (worker === 'ready' || worker === 'unknown' || worker === 'renewing'), worker, text, fullUntil, signinEnds: ends };
+  return { key: row.key, email: row.email, login, on: row.on, usable: row.on && (worker === 'ready' || worker === 'unknown' || worker === 'renewing'), worker, text, fullUntil, signinEnds: ends, kind: u?.kind === 'key' ? 'key' : 'login' };
 }
 
 export function loginHealths(rows: SlotAccountRow[], now: number = Date.now()): LoginHealth[] {
@@ -96,7 +103,7 @@ export function poolStall(h: LoginHealth[]): string | null {
   const is = (n: string[]) => (n.length === 1 ? 'is' : 'are');
   if (off.length) parts.push(`login ${joinNums(off)} ${is(off)} switched off`);
   if (needs.length) parts.push(`login ${joinNums(needs)} ${needs.length === 1 ? 'needs' : 'need'} a fresh sign-in`);
-  for (const f of full) parts.push(`login ${f.login} is full until ${sgtWhen(f.fullUntil!)}`);
+  for (const f of full) parts.push(`login ${f.login} is ${f.kind === 'key' ? 'resting' : 'full'} until ${sgtWhen(f.fullUntil!)}`);
   const s = parts.join(', ');
   return parts.length > 1 ? s.replace(/, ([^,]*)$/, ' and $1') : s;
 }
@@ -112,7 +119,18 @@ export function signInSteps(h: Pick<LoginHealth, 'login' | 'email'>): string {
   ].join('\n');
 }
 
-export type SigninTold = Record<string, { ends: string; day?: boolean; hours?: boolean }>;
+/** A year-long key is replaced from Terminal on the Mac (bot scripts/claude-key-capture.sh). */
+export function newKeySteps(h: Pick<LoginHealth, 'login' | 'email'>): string {
+  return [
+    `To make login ${h.login} a new year-long key:`,
+    `1. On your Mac, open the Terminal app.`,
+    `2. Type: cd ~/dev/adrianmath-telegram-math-bot && bash scripts/claude-key-capture.sh ${h.login}`,
+    `3. Follow what it says: sign in as ${h.email} in the browser, press Authorize, copy the key it prints, press Enter.`,
+    `Then tell Claude "keys are in".`,
+  ].join('\n');
+}
+
+export type SigninTold = Record<string, { ends: string; week?: boolean; day?: boolean; hours?: boolean }>;
 
 /** Lines to send now, and the record to keep. A new end date (he signed in again) starts over. */
 export function signinWarnings(h: LoginHealth[], told: SigninTold, now: number = Date.now()): { send: { key: string; text: string }[]; told: SigninTold } {
@@ -125,15 +143,18 @@ export function signinWarnings(h: LoginHealth[], told: SigninTold, now: number =
     const t = told[x.key]?.ends === x.signinEnds ? { ...told[x.key] } : { ends: x.signinEnds };
     const left = ends - now;
     if (left > 0 && x.worker !== 'needs') {
-      let stage: 'day' | 'hours' | null = null;
-      if (left <= WARN_HOURS_MS && !t.hours) { stage = 'hours'; t.hours = true; t.day = true; }
-      else if (left <= WARN_DAY_MS && !t.day) { stage = 'day'; t.day = true; }
+      let stage: 'week' | 'day' | 'hours' | null = null;
+      if (left <= WARN_HOURS_MS && !t.hours) { stage = 'hours'; t.hours = true; t.day = true; t.week = true; }
+      else if (left <= WARN_DAY_MS && !t.day) { stage = 'day'; t.day = true; t.week = true; }
+      else if (x.kind === 'key' && left <= WARN_WEEK_MS && !t.week) { stage = 'week'; t.week = true; }
       if (stage) {
-        const inWords = left < 3600_000 ? 'in under an hour' : left < 2 * 3600_000 ? 'in about 1 hour' : left < 20 * 3600_000 ? `in about ${Math.round(left / 3600_000)} hours` : 'in about a day';
+        const inWords = stage === 'week' ? `in about ${Math.max(2, Math.round(left / 86_400_000))} days` : left < 3600_000 ? 'in under an hour' : left < 2 * 3600_000 ? 'in about 1 hour' : left < 20 * 3600_000 ? `in about ${Math.round(left / 3600_000)} hours` : 'in about a day';
         send.push({
           key: x.key,
-          text: `🔑 Marking login ${x.login} (${x.email}) stops working ${sgtWhen(ends)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n`
-            + `It cannot renew itself past that time; only a fresh sign-in keeps it going.\n\n${signInSteps(x)}`,
+          text: x.kind === 'key'
+            ? `🗝 Marking login ${x.login}'s year-long key (${x.email}) ends ${sgtWhen(ends)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n\n${newKeySteps(x)}`
+            : `🔑 Marking login ${x.login} (${x.email}) stops working ${sgtWhen(ends)} — ${inWords}.${x.on ? '' : ' (It is switched off right now.)'}\n`
+              + `It cannot renew itself past that time; only a fresh sign-in keeps it going.\n\n${signInSteps(x)}`,
         });
       }
     }

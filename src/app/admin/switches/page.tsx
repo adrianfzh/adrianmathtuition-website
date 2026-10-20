@@ -20,7 +20,7 @@ import { WORKER_JOB_GROUPS, type WorkerJobRow } from '@/lib/worker-jobs';
 import KioskCard from './kiosk-card';
 
 type Flag = { on: boolean; at: string | null };
-type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null; signin?: 'ok' | 'renewing' | 'needs' | null; signin_ends?: string | null; signin_at?: string | null; login?: string | null };
+type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null; signin?: 'ok' | 'renewing' | 'needs' | null; signin_ends?: string | null; signin_at?: string | null; login?: string | null; kind?: 'login' | 'key' | null; resting_until?: string | null };
 type SlotAccountRow = { email: string; key: string; label: string; by?: string | null; on: boolean; at: string | null; usage: SlotUsage | null };
 
 const sgt = (iso: string | null, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) =>
@@ -221,11 +221,11 @@ export default function SwitchesPage() {
                   <div className="text-xs mt-0.5" data-login-worker={h.worker}>
                     <span className="font-semibold" style={{ color: tone }}>{h.worker === 'needs' ? '🔑 needs sign-in' : h.worker === 'ready' ? '✓ worker can use it' : h.text}</span>
                     {h.signinEnds && h.worker !== 'needs' && (
-                      <span className={endsSoon ? 'font-semibold' : 'text-neutral-500'} style={endsSoon ? { color: '#b45309' } : undefined}> · sign-in ends {sgtWhen(h.signinEnds)}</span>
+                      <span className={endsSoon ? 'font-semibold' : 'text-neutral-500'} style={endsSoon ? { color: '#b45309' } : undefined}> · {h.kind === 'key' ? 'year-long key, ends' : 'sign-in ends'} {sgtWhen(h.signinEnds)}</span>
                     )}
                     {h.worker === 'needs' && <span className="text-neutral-600"> · on your Mac, open the Claude app and type &ldquo;sign in marking login {h.login} again&rdquo;</span>}
                   </div>
-                  {u ? (
+                  {h.kind === 'key' ? null : u ? (
                     <div className="text-xs mt-1 flex gap-x-4 gap-y-1 flex-wrap" style={{ color: stale ? '#9ca3af' : '#374151' }}>
                       <Meter v={u.five_hour} label="5 h" resets={u.resets_5h} />
                       <Meter v={u.seven_day} label="week" resets={u.resets_7d} />

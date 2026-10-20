@@ -101,6 +101,11 @@ export interface SlotUsage {
   signin_at?: string | null;
   /** The worker's folder number (1, 2, 3) — the "login N" in Adrian's messages. */
   login?: string | null;
+  /** 🗝 'key' = a year-long `claude setup-token` key (20 Oct 2026): no meters, signin_ends = a year
+   *  after it was made; 'login' = a browser sign-in with meters. */
+  kind?: 'login' | 'key' | null;
+  /** A key (or login) resting after a plan-limit message, until this instant. */
+  resting_until?: string | null;
 }
 export type SlotUsageMap = Record<string, SlotUsage>;
 
@@ -127,6 +132,8 @@ export function parseSlotUsageEntry(v: unknown, at = new Date().toISOString()): 
   if (str(s.signin_ends)) u.signin_ends = str(s.signin_ends);
   if (str(s.signin_at)) u.signin_at = str(s.signin_at);
   if (s.login != null && String(s.login)) u.login = String(s.login);
+  if (s.kind === 'key' || s.kind === 'login') u.kind = s.kind;
+  if (str(s.resting_until)) u.resting_until = str(s.resting_until);
   // a dead login has no meters but its sign-in state is the news (20 Oct 2026)
   return u.five_hour === null && u.seven_day === null && !signin ? null : u;
 }
@@ -155,12 +162,13 @@ export function withSlotUsage(map: SlotUsageMap, posted: unknown, at = new Date(
     if (!u) continue;
     const key = accountKey(k);
     const cur = out[key];
-    const signinOnly = u.five_hour === null && u.seven_day === null;
+    // a key has no meters: its post replaces the old sign-in's last meters outright
+    const signinOnly = u.five_hour === null && u.seven_day === null && u.kind !== 'key';
     // a post with no meters (a dead login, a failed read) keeps the last meters and their time,
     // and only updates the sign-in state
-    if (cur && signinOnly) { out[key] = { ...cur, signin: u.signin ?? cur.signin ?? null, signin_ends: u.signin_ends ?? cur.signin_ends ?? null, signin_at: u.signin_at ?? cur.signin_at ?? null, login: u.login ?? cur.login ?? null }; continue; }
+    if (cur && signinOnly) { out[key] = { ...cur, signin: u.signin ?? cur.signin ?? null, signin_ends: u.signin_ends ?? cur.signin_ends ?? null, signin_at: u.signin_at ?? cur.signin_at ?? null, login: u.login ?? cur.login ?? null, kind: u.kind ?? cur.kind ?? null, resting_until: u.resting_until ?? null }; continue; }
     if (cur && Date.parse(cur.at) > Date.parse(u.at)) {
-      if (u.signin) out[key] = { ...cur, signin: u.signin, signin_ends: u.signin_ends ?? cur.signin_ends ?? null, signin_at: u.signin_at ?? cur.signin_at ?? null, login: u.login ?? cur.login ?? null };
+      if (u.signin) out[key] = { ...cur, signin: u.signin, signin_ends: u.signin_ends ?? cur.signin_ends ?? null, signin_at: u.signin_at ?? cur.signin_at ?? null, login: u.login ?? cur.login ?? null, kind: u.kind ?? cur.kind ?? null, resting_until: u.resting_until ?? null };
       continue;
     }
     out[key] = u;

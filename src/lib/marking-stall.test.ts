@@ -117,3 +117,29 @@ describe('slot usage merge keeps meters when a dead login posts only its sign-in
     expect(next['ablnon-hotmail-com']).toMatchObject({ five_hour: 10, seven_day: 50, at: '2026-10-20T06:00:00Z', signin: 'needs', signin_ends: '2026-10-20T07:30:57Z', login: '3' });
   });
 });
+
+describe('🗝 year-long keys (20 Oct 2026)', () => {
+  const KEYS: SlotUsageMap = {
+    'adrianmathtuition-gmail-com': { five_hour: null, seven_day: null, resets_5h: null, resets_7d: null, at: iso(NOW), from: 'fly', signin: 'ok', signin_ends: '2027-10-20T10:00:00Z', login: '1', kind: 'key' },
+    'ablnon-gmail-com': { five_hour: null, seven_day: null, resets_5h: null, resets_7d: null, at: iso(NOW), from: 'fly', signin: 'ok', signin_ends: '2027-10-20T10:00:00Z', login: '2', kind: 'key', resting_until: iso(NOW + 2 * H) },
+  };
+  it('a key is ready, or resting until its reset — never meters', () => {
+    const h = loginHealths(slotAccountRows({}, KEYS), NOW);
+    expect(h[0]).toMatchObject({ kind: 'key', worker: 'ready', usable: true });
+    expect(h[1]).toMatchObject({ kind: 'key', worker: 'full', usable: false, text: 'resting until Tue 20 Oct, 8:30 pm' });
+  });
+  it('a key is warned a week ahead, then a day, then two hours — with the Terminal steps', () => {
+    const at = Date.parse('2027-10-14T10:00:00Z');
+    const a = signinWarnings(loginHealths(slotAccountRows({}, KEYS), at), {}, at);
+    expect(a.send).toHaveLength(2);
+    expect(a.send[0].text).toMatch(/year-long key .* ends Wed 20 Oct, 6:00 pm — in about 6 days/);
+    expect(a.send[0].text).toMatch(/claude-key-capture\.sh 1/);
+    const at2 = Date.parse('2027-10-19T11:00:00Z');
+    expect(signinWarnings(loginHealths(slotAccountRows({}, KEYS), at2), a.told, at2).send).toHaveLength(2);
+  });
+  it('a key post replaces the old sign-in meters', () => {
+    const map = parseSlotUsage(JSON.stringify({ 'ablnon-gmail-com': { five_hour: 10, seven_day: 50, at: '2026-10-20T06:00:00Z' } }));
+    const next = withSlotUsage(map, { 'ablnon-gmail-com': { five_hour: null, seven_day: null, at: '2026-10-20T10:00:00Z', signin: 'ok', kind: 'key', login: '2' } });
+    expect(next['ablnon-gmail-com']).toMatchObject({ five_hour: null, seven_day: null, kind: 'key' });
+  });
+});

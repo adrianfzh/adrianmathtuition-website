@@ -335,7 +335,10 @@ wait > 30 min with no usable login (or nothing marking at all) — again only 2 
 still stuck — and one line a day + two hours before any login's sign-in ends, with the
 steps ("sign in marking login N again" in the Claude app → bot `docs/MARKING.md`
 §Refreshing a login). `?dry=1` shows what it would say; the 6-hourly health check runs it
-as `marking-logins` (red when no login can mark or an ON login needs sign-in).
+as `marking-logins` (red when no login can mark or an ON login needs sign-in). **🗝 Year-long keys (same day, Adrian: "yes"):** a login may instead hold a
+`claude setup-token` key (bot `scripts/claude-key-capture.sh`, which Adrian runs in Terminal);
+its posts carry `kind: 'key'` + `resting_until`, the card shows "year-long key, ends …" /
+"resting until …" instead of meters, and the alarm also warns a week before a key's year ends.
 
 **Since 25 Sep 2026 no Mac runs a plan-billed worker.** The Fly worker
 `adrianmath-worker` holds every lane — 9 marking slots, 9 sheet slots

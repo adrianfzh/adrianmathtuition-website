@@ -57,7 +57,7 @@ export default function MarkingSwitches() {
       {(slots ?? []).map((s, i) => {
         // 🔑 20 Oct 2026: the switch is his; the worker's view (needs sign-in / full / ready) rides beside it
         const h = loginHealth({ ...s, at: s.at ?? null, by: s.by ?? null, usage: s.usage ?? null }, i);
-        const sub = `${s.email} · ${h.worker === 'needs' ? '🔑 NEEDS SIGN-IN' : h.text}${h.signinEnds && h.worker !== 'needs' ? ` · sign-in ends ${sgtWhen(h.signinEnds)}` : ''}`;
+        const sub = `${s.email} · ${h.worker === 'needs' ? '🔑 NEEDS SIGN-IN' : h.text}${h.signinEnds && h.worker !== 'needs' ? ` · ${h.kind === 'key' ? 'key ends' : 'sign-in ends'} ${sgtWhen(h.signinEnds)}` : ''}`;
         return row(`⏻ ${s.label}`, sub, s.on, s.key, () => post('/api/admin/slot-accounts', { email: s.email, on: !s.on }, s.key));
       })}
       {slots && slots.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: '8px 0' }}>No slot accounts recorded.</div>}
