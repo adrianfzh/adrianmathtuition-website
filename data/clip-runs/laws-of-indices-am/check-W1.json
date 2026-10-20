@@ -40,7 +40,7 @@
         {
           "tokens": [
             { "id": "a4", "tex": "=\\left(\\dfrac{3}{2\\times7^2}\\right)^{3}" },
-            { "id": "b4", "tex": "\\times9^{\\frac{1}{3}}" },
+            { "id": "b4", "tex": "\\times9^{\\frac{1}{\\htmlClass{lsn-pc-r}{3}}}" },
             { "id": "c4", "tex": "\\times\\dfrac{2}{7}" }
           ]
         },
@@ -206,7 +206,13 @@
           "say": "The bottom of the fraction, three, tells us which root it is: the cube root. Two over seven stays.",
           "asks": ["What if the bottom is two?"],
           "do": [
-            { "do": "note", "text": "In a fraction power the bottom is the root: $a^{\\frac{1}{n}}=\\sqrt[n]{a}$", "near": "b4" },
+            { "do": "highlight", "token": "b4", "inside": "r", "tone": "orange" },
+            {
+              "do": "note",
+              "text": "In a fraction power the bottom is the root: $a^{\\frac{1}{n}}=\\sqrt[n]{a}$",
+              "near": "b4",
+              "on": "tells us which"
+            },
             { "do": "write", "token": "c4", "on": "Two over seven" }
           ]
         },
@@ -236,8 +242,8 @@
           "asks": ["Where does three squared come from?", "Why multiply the powers?"],
           "do": [
             { "do": "highlight", "token": "b4", "tone": "orange" },
-            { "do": "write", "token": "b5", "on": "gives three to" },
-            { "do": "note", "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$", "near": "b5", "on": "power two thirds" }
+            { "do": "write", "token": "b5", "on": "Times power:" },
+            { "do": "note", "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$", "near": "b5", "on": "gives three to" }
           ]
         },
         {
@@ -259,7 +265,8 @@
           "say": "To bring a number from the bottom to the top, its power turns negative.",
           "asks": ["Why does the power turn negative?"],
           "do": [
-            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" }
+            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" },
+            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2", "on": "its power turns" }
           ]
         },
         {
@@ -273,7 +280,7 @@
           "say": "Negative power flips the fraction: one over A to the power M is A to the power negative M.",
           "asks": ["Why does a negative power flip?"],
           "do": [
-            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2" }
+            { "do": "highlight", "token": ["t2", "t7"], "tone": "orange" }
           ]
         },
         {

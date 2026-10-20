@@ -103,7 +103,7 @@
         },
         {
           "id": "b4",
-          "tex": "\\times9^{\\frac{1}{3}}"
+          "tex": "\\times9^{\\frac{1}{\\htmlClass{lsn-pc-r}{3}}}"
         },
         {
           "id": "c4",

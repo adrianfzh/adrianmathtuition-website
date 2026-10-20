@@ -230,9 +230,16 @@
    ],
    "do": [
     {
+     "do": "highlight",
+     "token": "b4",
+     "inside": "r",
+     "tone": "orange"
+    },
+    {
      "do": "note",
      "text": "In a fraction power the bottom is the root: $a^{\\frac{1}{n}}=\\sqrt[n]{a}$",
-     "near": "b4"
+     "near": "b4",
+     "on": "tells us which"
     },
     {
      "do": "write",
@@ -295,13 +302,13 @@
     {
      "do": "write",
      "token": "b5",
-     "on": "gives three to"
+     "on": "Times power:"
     },
     {
      "do": "note",
      "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$",
      "near": "b5",
-     "on": "power two thirds"
+     "on": "gives three to"
     }
    ]
   },
@@ -346,6 +353,12 @@
      "token": "a5",
      "part": "den",
      "tone": "orange"
+    },
+    {
+     "do": "note",
+     "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$",
+     "near": "t2",
+     "on": "its power turns"
     }
    ]
   },
@@ -369,9 +382,12 @@
    ],
    "do": [
     {
-     "do": "note",
-     "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$",
-     "near": "t2"
+     "do": "highlight",
+     "token": [
+      "t2",
+      "t7"
+     ],
+     "tone": "orange"
     }
    ]
   },
