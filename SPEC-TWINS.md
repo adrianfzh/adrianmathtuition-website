@@ -41,7 +41,11 @@ school's expression. A twin that reads as a new question is ours.
 `question_part_subgroups`: copied from the seed at publish when the seed's parts are labelled and line up,
 otherwise labelled by the filer's twins-only job (`file-twin-parts`). The main filing above never changes.
 
-**Paused for part labels (20 Oct 2026, Adrian: "can we make per part skill labelling the priority first, when finish, then twins can continue").** The `twins` and `science-twins` worker lanes are switched off until every part-skill filing lane is idle; the worker then switches them back on by itself, once (SPEC-PART-SKILLS §"Part labels FIRST, then twins"). The API credit run is separate.
+**Paused for part labels, then two phases (20 Oct 2026).** Adrian: *"can we make per part skill labelling the priority first, when finish, then twins can continue"* and *"make sure all science long questions hit 3 per skill first before moving on to 5 per skill for both math and science"*. The worker does it by itself (bot `worker/fly/jobs.sh` `twins_after_labelling`, 48c7ade6), stamping job_runs `twins-phase` at each change:
+1. **While part labels run:** `twins` and `science-twins` switched off.
+2. **Phase A — every filing lane idle:** `science-twins` ON, **long (structured) questions only, to 3 a sub-skill** (`SCI_STWINS_PER_SKILL=3`, 3 long a run, no multiple-choice); maths `twins` stays OFF.
+3. **Phase B — three science runs in a row find no long question left to try at 3:** maths `twins` ON (to 5, `TWINS_TARGETS '3 5'`); science back to its normal settings — long questions 3→5, multiple-choice to 5, 2 long + 1 multiple-choice a run.
+To skip ahead, flip the switches at /admin/switches; the API credit run is separate.
 
 ## 2. Inputs
 
