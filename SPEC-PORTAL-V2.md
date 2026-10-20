@@ -147,8 +147,11 @@ same concept, marks within one; "same chapter" is NOT enough and is never offere
      yours…" then "Getting it ready…" (`find-client.tsx` `GEN_STAGES`). The result card
      still says *Similar question* / *Made for you* (the two tiers above).
   4. **"Question ready" reaches the student only as an app notification** (Web Push,
-     `sendPushToStudent`) — 5 of 21 students had notifications on (20 Oct 2026). No
-     Telegram message.
+     `sendPushToStudent`) — 5 of 21 students had notifications on (20 Oct 2026). **Since the
+     same day (Adrian: *"also send a Telegram message to the student when a written question
+     is ready"*) it also sends "✨ Your question is ready — it's on your Practice list." on
+     Telegram** (`lib/student-recipient` → `sendTelegramTo`, as the Practice photo flow does).
+     Bank finds are instant and send nothing.
   2. *The writer refused.* The generation rule asked the model to "record that reasoning";
      claude-opus-5-5 refuses any request to write out its reasoning (empty reply), so every
      "Made for you" attempt failed in seconds — also the Practice photo flow and the

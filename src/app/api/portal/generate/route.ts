@@ -19,6 +19,8 @@
 // the nightly find-review.
 import { NextResponse } from 'next/server';
 import { sendPushToStudent } from '@/lib/portal-push';
+import { resolveRecipient } from '@/lib/student-recipient';
+import { sendTelegramTo } from '@/lib/telegram';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import {
   parseGenerateBody, resolveQbLevel, extractQuestionId, countGenerationsToday,
@@ -129,6 +131,15 @@ export async function POST(req: Request) {
       body: 'Made for you — checked, and waiting in your Practice.',
       url,
     }).catch(() => {});
+    // Adrian, 20 Oct 2026: "also send a Telegram message to the student when a
+    // written question is ready" — most students have no app notifications on
+    // (5 of 21). Same doorbell as the Practice photo flow (practice/photo/done).
+    // Awaited (a serverless function may stop once it has answered); a failure
+    // never fails the generation.
+    try {
+      const to = await resolveRecipient(identity);
+      if (to) await sendTelegramTo(to.chatId, '✨ Your question is ready — it’s on your Practice list.');
+    } catch (e) { console.error('[portal-generate] telegram:', (e as Error).message); }
     return NextResponse.json({ questionId, assignmentId, label: FIND_TIER_LABEL['made-for-you'], question: summary, url });
   } catch (e) {
     console.error('[portal-generate] bot call failed:', e);
