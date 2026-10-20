@@ -1,6 +1,6 @@
 {
  "slug": "rationalise-conjugate-am",
- "worst": 0.82,
+ "worst": 0.88,
  "lines": [
   {
    "beat": 1,
@@ -34,10 +34,9 @@
   },
   {
    "beat": 6,
-   "bag": 0.82,
-   "score": 0.82,
-   "heard": "Why it works A + b * a - b always gives a2 - b2.",
-   "said": "Why it works: A plus B, times A minus B, always gives A squared minus B squared."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 7,
@@ -47,8 +46,8 @@
   },
   {
    "beat": 8,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.88,
+   "score": 0.88,
    "heard": null
   },
   {
@@ -71,14 +70,14 @@
   },
   {
    "beat": 12,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.9,
+   "score": 0.9,
    "heard": null
   },
   {
    "beat": 13,
-   "bag": 0.89,
-   "score": 0.89,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -89,8 +88,8 @@
   },
   {
    "beat": 15,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
@@ -101,18 +100,6 @@
   },
   {
    "beat": 17,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 18,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 19,
    "bag": 1,
    "score": 1,
    "heard": null

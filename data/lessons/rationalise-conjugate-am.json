@@ -10,7 +10,6 @@
   "scenes": [
     {
       "type": "equation-steps",
-      "heading": "Multiply by the conjugate",
       "scroll": true,
       "steps": [
         {
@@ -20,7 +19,7 @@
         },
         {
           "tokens": [
-            { "id": "p1", "tex": "\\text{Plan: }\\dfrac{\\cdots}{\\text{no surd}}", "hl": "sky" }
+            { "id": "p1", "tex": "\\text{Plan: }\\times\\dfrac{\\text{conjugate}}{\\text{conjugate}}", "hl": "sky" }
           ],
           "corner": true
         },
@@ -90,42 +89,73 @@
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b2.timing.json"
         },
         {
-          "say": "So the plan: the same value, written with no surd in the bottom.",
-          "asks": ["Does the value change?", "Why keep the same value?"],
+          "say": "When there are two terms below, we multiply the top and the bottom by the conjugate.",
+          "asks": ["What is a conjugate?", "Why the top and the bottom?"],
           "do": [
-            { "do": "write", "step": 1, "on": "the same value" }
+            { "do": "highlight", "token": "q1", "inside": "d", "tone": "orange" },
+            { "do": "write", "step": 1, "on": "multiply the top" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b3.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b3.timing.json"
         },
         {
-          "say": "When there are two terms below, multiply the top and the bottom by the conjugate.",
-          "asks": ["What is a conjugate?", "Why the top and the bottom?"],
+          "say": "The conjugate is the same pair, with only the middle sign flipped.",
+          "asks": ["Which sign is the middle sign?", "Do I flip both signs?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "d", "tone": "orange" }
+            { "do": "highlight", "token": "q1", "inside": "s", "tone": "orange", "on": "the middle sign" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b4.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b4.timing.json"
         },
         {
-          "say": "The conjugate is the same pair, with only the middle sign flipped.",
-          "asks": ["Which sign is the middle sign?", "Do I flip both signs?"],
+          "say": "Write the fraction again, then times root five minus root three, over root five minus root three.",
+          "asks": ["Why write the fraction again?", "Why put the conjugate on the top too?"],
           "do": [
-            { "do": "note", "text": "Conjugate: change only the middle sign", "near": "q1", "on": "the same pair" },
-            { "do": "highlight", "token": "q1", "inside": "s", "tone": "orange", "on": "the middle sign" }
+            { "do": "write", "token": "m1" },
+            { "do": "write", "token": "m2", "on": "then times root" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b5.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Why it works: A plus B, times A minus B, always gives A squared minus B squared.",
-          "asks": ["Where does this rule come from?", "Why does it help?"],
+          "say": "Plus becomes minus, and only the middle sign changes. Root five stays root five.",
+          "asks": ["Do I change both signs?", "Why does root five stay?"],
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "d", "tone": "sky" },
-            { "do": "note", "text": "(a + b)(a − b) = a² − b²", "near": "q1", "on": "always gives A" }
+            { "do": "highlight", "token": "m2", "inside": "s", "tone": "orange" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b6.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "We multiply the top and the bottom by the same thing, so the value does not change.",
+          "asks": ["Why does the value stay the same?", "Can I multiply only the bottom?"],
+          "aside": {
+            "text": "Why does the value stay the same?",
+            "slug": "surds-times-one",
+            "read": [
+              "$\\dfrac{\\sqrt5-\\sqrt3}{\\sqrt5-\\sqrt3}$ has the same top and bottom.",
+              "So it equals $1$.",
+              "Multiplying by $1$ changes nothing.",
+              "Multiplying only the bottom would change the value.",
+              "**Top and bottom, always both.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "m2", "tone": "sky" }
+          ],
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b7.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "Why it works: A plus B, times A minus B, always gives A squared minus B squared.",
+          "asks": ["Where does this rule come from?", "Why does it help?"],
+          "do": [
+            { "do": "highlight", "token": "m1", "inside": "d", "tone": "sky" },
+            { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky", "on": "times A minus" },
+            { "do": "note", "text": "(a + b)(a − b) = a² − b²", "near": "q1", "on": "always gives A" }
+          ],
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b8.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b8.timing.json"
         },
         {
           "say": "Squaring a surd removes its root. So after multiplying, the bottom has no surd left.",
@@ -145,49 +175,10 @@
             ]
           },
           "do": [
-            { "do": "highlight", "token": "q1", "inside": "d", "tone": "sky" }
-          ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b7.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b7.timing.json"
-        },
-        {
-          "say": "Write the fraction again, then times root five minus root three, over root five minus root three.",
-          "asks": ["Why write the fraction again?", "Why put the conjugate on the top too?"],
-          "do": [
-            { "do": "write", "token": "m1" },
-            { "do": "write", "token": "m2", "on": "then times root" }
-          ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b8.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b8.timing.json"
-        },
-        {
-          "say": "Plus becomes minus, and only the middle sign changes. Root five stays root five.",
-          "asks": ["Do I change both signs?", "Why does root five stay?"],
-          "do": [
-            { "do": "highlight", "token": "m2", "inside": "s", "tone": "orange" }
+            { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky" }
           ],
           "audio": "/lessons/rationalise-conjugate-am/scene-01-b9.mp3",
           "timing": "/lessons/rationalise-conjugate-am/scene-01-b9.timing.json"
-        },
-        {
-          "say": "We multiply the top and the bottom by the same thing, so the value does not change.",
-          "asks": ["Why does the value stay the same?", "Can I multiply only the bottom?"],
-          "aside": {
-            "text": "Why does the value stay the same?",
-            "slug": "surds-times-one",
-            "read": [
-              "$\\dfrac{\\sqrt5-\\sqrt3}{\\sqrt5-\\sqrt3}$ has the same top and bottom.",
-              "So it equals $1$.",
-              "Multiplying by $1$ changes nothing.",
-              "Multiplying only the bottom would change the value.",
-              "**Top and bottom, always both.**"
-            ]
-          },
-          "do": [
-            { "do": "highlight", "token": "m2", "tone": "sky" }
-          ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b10.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b10.timing.json"
         },
         {
           "say": "Multiply the top with the top: two times root five minus root three.",
@@ -197,8 +188,8 @@
             { "do": "highlight", "token": "m2", "inside": "t", "tone": "orange", "on": "with the top" },
             { "do": "write", "token": "k1", "on": "two times root" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b11.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b11.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b10.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b10.timing.json"
         },
         {
           "say": "And the bottom with the bottom: root five plus root three, times root five minus root three.",
@@ -208,28 +199,19 @@
             { "do": "highlight", "token": "m2", "inside": "d", "tone": "sky", "on": "with the bottom" },
             { "do": "highlight", "token": "k1", "inside": "d", "tone": "sky", "on": "root five plus" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b12.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b12.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b11.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b11.timing.json"
         },
         {
-          "say": "The bottom is A plus B, times A minus B. That always equals A squared minus B squared.",
-          "asks": ["Where does this rule come from?", "What are A and B here?"],
+          "say": "The bottom is A plus B, times A minus B, with A as root five and B as root three.",
+          "asks": ["Which one is A?", "Why does this rule fit here?"],
           "do": [
             { "do": "highlight", "token": "k1", "inside": "d", "tone": "sky" },
-            { "do": "note", "text": "(a + b)(a − b) = a² − b²", "near": "k1", "on": "That always equals" }
+            { "do": "highlight", "token": "k1", "inside": "a", "tone": "orange", "on": "A as root" },
+            { "do": "highlight", "token": "k1", "inside": "b", "tone": "sky", "on": "B as root" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b13.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b13.timing.json"
-        },
-        {
-          "say": "Here A is root five, and B is root three.",
-          "asks": ["Which one is A?", "Does the order matter?"],
-          "do": [
-            { "do": "highlight", "token": "k1", "inside": "a", "tone": "orange" },
-            { "do": "highlight", "token": "k1", "inside": "b", "tone": "sky", "on": "B is root" }
-          ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b14.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b14.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b12.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b12.timing.json"
         },
         {
           "say": "Expand the top: two root five minus two root three. The bottom: root five squared, minus root three squared.",
@@ -239,8 +221,8 @@
             { "do": "highlight", "token": "e1", "inside": "a", "tone": "orange", "on": "The bottom: root" },
             { "do": "highlight", "token": "e1", "inside": "b", "tone": "sky", "on": "minus root three" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b15.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b15.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b13.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b13.timing.json"
         },
         {
           "say": "A surd times itself is the number inside. So root five squared is five, and root three squared is three.",
@@ -249,8 +231,8 @@
             { "do": "highlight", "token": "e1", "inside": "d", "tone": "sky" },
             { "do": "write", "token": "f1", "on": "So root five" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b16.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b16.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b14.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b14.timing.json"
         },
         {
           "say": "Five minus three is two. The bottom is now a number with no surd.",
@@ -259,8 +241,8 @@
             { "do": "highlight", "token": "f1", "inside": "d", "tone": "orange" },
             { "do": "write", "token": "h1", "on": "is two" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b17.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b17.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b15.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b15.timing.json"
         },
         {
           "say": "Split the fraction: each term over two.",
@@ -268,8 +250,8 @@
           "do": [
             { "do": "write", "token": "g1" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b18.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b18.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b16.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b16.timing.json"
         },
         {
           "say": "Divide each term by two: two root five over two is root five. So the answer is root five minus root three.",
@@ -278,8 +260,8 @@
             { "do": "write", "token": "ans", "on": "So the answer" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "root five minus" }
           ],
-          "audio": "/lessons/rationalise-conjugate-am/scene-01-b19.mp3",
-          "timing": "/lessons/rationalise-conjugate-am/scene-01-b19.timing.json"
+          "audio": "/lessons/rationalise-conjugate-am/scene-01-b17.mp3",
+          "timing": "/lessons/rationalise-conjugate-am/scene-01-b17.timing.json"
         }
       ]
     }

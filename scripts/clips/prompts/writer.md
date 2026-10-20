@@ -82,6 +82,10 @@ no focus, no clear.
   open with why another way fails. Say when the method is used ("When there are two terms below, multiply
   …"), what it is (the conjugate: only the middle sign flipped), and WHY it works (the rule that makes it
   work, in the voice, with a written drop-down for the worked detail).
+- **Show the move, THEN why it works** (Adrian, 20 Oct 2026): write the line that does the move first
+  (`× (√5 − √3)/(√5 − √3)`), then explain why it works pointing at that line. The plan names the move
+  in plain words ("multiply the top and the bottom by the conjugate"), never a vague aim ("the same value,
+  written with no surd in the bottom" was "not useful, confusing").
 - **What the voice talks about is fully in view at every screen size**, a short laptop window too
   (Adrian, 20 Oct 2026: "the part you are referring to can be clearly seen"): check the look at the
   phone AND `--width 1280 --height 640`.

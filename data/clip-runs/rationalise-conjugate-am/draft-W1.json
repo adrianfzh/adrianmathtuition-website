@@ -33,21 +33,7 @@
    ]
   },
   {
-   "say": "So the plan: the same value, written with no surd in the bottom.",
-   "asks": [
-    "Does the value change?",
-    "Why keep the same value?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "step": 1,
-     "on": "the same value"
-    }
-   ]
-  },
-  {
-   "say": "When there are two terms below, multiply the top and the bottom by the conjugate.",
+   "say": "When there are two terms below, we multiply the top and the bottom by the conjugate.",
    "asks": [
     "What is a conjugate?",
     "Why the top and the bottom?"
@@ -58,6 +44,11 @@
      "token": "q1",
      "inside": "d",
      "tone": "orange"
+    },
+    {
+     "do": "write",
+     "step": 1,
+     "on": "multiply the top"
     }
    ]
   },
@@ -69,12 +60,6 @@
    ],
    "do": [
     {
-     "do": "note",
-     "text": "Conjugate: change only the middle sign",
-     "near": "q1",
-     "on": "the same pair"
-    },
-    {
      "do": "highlight",
      "token": "q1",
      "inside": "s",
@@ -82,56 +67,6 @@
      "on": "the middle sign"
     }
    ]
-  },
-  {
-   "say": "Why it works: A plus B, times A minus B, always gives A squared minus B squared.",
-   "asks": [
-    "Where does this rule come from?",
-    "Why does it help?"
-   ],
-   "do": [
-    {
-     "do": "highlight",
-     "token": "q1",
-     "inside": "d",
-     "tone": "sky"
-    },
-    {
-     "do": "note",
-     "text": "(a + b)(a − b) = a² − b²",
-     "near": "q1",
-     "on": "always gives A"
-    }
-   ]
-  },
-  {
-   "say": "Squaring a surd removes its root. So after multiplying, the bottom has no surd left.",
-   "asks": [
-    "Why does squaring remove the root?",
-    "Where do the middle terms go?"
-   ],
-   "do": [
-    {
-     "do": "highlight",
-     "token": "q1",
-     "inside": "d",
-     "tone": "sky"
-    }
-   ],
-   "aside": {
-    "text": "Why does the conjugate clear the surd?",
-    "slug": "surds-why-conjugate",
-    "read": [
-     "Expand $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$: four products.",
-     "$\\sqrt5\\times\\sqrt5 = 5$",
-     "$\\sqrt5\\times(-\\sqrt3) = -\\sqrt{15}$",
-     "$\\sqrt3\\times\\sqrt5 = +\\sqrt{15}$",
-     "$\\sqrt3\\times(-\\sqrt3) = -3$",
-     "The two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
-     "So the bottom is $5 - 3 = 2$.",
-     "**Plus times minus leaves only the two squares — no surd.**"
-    ]
-   }
   },
   {
    "say": "Write the fraction again, then times root five minus root three, over root five minus root three.",
@@ -192,6 +127,63 @@
    }
   },
   {
+   "say": "Why it works: A plus B, times A minus B, always gives A squared minus B squared.",
+   "asks": [
+    "Where does this rule come from?",
+    "Why does it help?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "m1",
+     "inside": "d",
+     "tone": "sky"
+    },
+    {
+     "do": "highlight",
+     "token": "m2",
+     "inside": "d",
+     "tone": "sky",
+     "on": "times A minus"
+    },
+    {
+     "do": "note",
+     "text": "(a + b)(a − b) = a² − b²",
+     "near": "q1",
+     "on": "always gives A"
+    }
+   ]
+  },
+  {
+   "say": "Squaring a surd removes its root. So after multiplying, the bottom has no surd left.",
+   "asks": [
+    "Why does squaring remove the root?",
+    "Where do the middle terms go?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "m2",
+     "inside": "d",
+     "tone": "sky"
+    }
+   ],
+   "aside": {
+    "text": "Why does the conjugate clear the surd?",
+    "slug": "surds-why-conjugate",
+    "read": [
+     "Expand $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$: four products.",
+     "$\\sqrt5\\times\\sqrt5 = 5$",
+     "$\\sqrt5\\times(-\\sqrt3) = -\\sqrt{15}$",
+     "$\\sqrt3\\times\\sqrt5 = +\\sqrt{15}$",
+     "$\\sqrt3\\times(-\\sqrt3) = -3$",
+     "The two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
+     "So the bottom is $5 - 3 = 2$.",
+     "**Plus times minus leaves only the two squares — no surd.**"
+    ]
+   }
+  },
+  {
    "say": "Multiply the top with the top: two times root five minus root three.",
    "asks": [
     "Why is there a bracket?",
@@ -247,10 +239,10 @@
    ]
   },
   {
-   "say": "The bottom is A plus B, times A minus B. That always equals A squared minus B squared.",
+   "say": "The bottom is A plus B, times A minus B, with A as root five and B as root three.",
    "asks": [
-    "Where does this rule come from?",
-    "What are A and B here?"
+    "Which one is A?",
+    "Why does this rule fit here?"
    ],
    "do": [
     {
@@ -260,32 +252,18 @@
      "tone": "sky"
     },
     {
-     "do": "note",
-     "text": "(a + b)(a − b) = a² − b²",
-     "near": "k1",
-     "on": "That always equals"
-    }
-   ]
-  },
-  {
-   "say": "Here A is root five, and B is root three.",
-   "asks": [
-    "Which one is A?",
-    "Does the order matter?"
-   ],
-   "do": [
-    {
      "do": "highlight",
      "token": "k1",
      "inside": "a",
-     "tone": "orange"
+     "tone": "orange",
+     "on": "A as root"
     },
     {
      "do": "highlight",
      "token": "k1",
      "inside": "b",
      "tone": "sky",
-     "on": "B is root"
+     "on": "B as root"
     }
    ]
   },

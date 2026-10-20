@@ -84,6 +84,10 @@ You get:
    fraction plan's top touched the border); a beat that says why ANOTHER method fails before the one
    used ("there is no need to say multiply by root five alone still … student will be wondering why you
    say that") — go straight to the method: when to use it, what it is, why it works.
+   Also a must (same day): a plan that describes the result vaguely instead of naming the move ("the same
+   value, written with no surd in the bottom … not useful, confusing statement"); a "why it works" said
+   BEFORE the line that does the move is on the board ("show the multiplying … first before saying why it
+   works > else the student will not know what narrator is talking about").
 19. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
