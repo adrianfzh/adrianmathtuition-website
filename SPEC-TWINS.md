@@ -41,6 +41,8 @@ school's expression. A twin that reads as a new question is ours.
 `question_part_subgroups`: copied from the seed at publish when the seed's parts are labelled and line up,
 otherwise labelled by the filer's twins-only job (`file-twin-parts`). The main filing above never changes.
 
+**Paused for part labels (20 Oct 2026, Adrian: "can we make per part skill labelling the priority first, when finish, then twins can continue").** The `twins` and `science-twins` worker lanes are switched off until every part-skill filing lane is idle; the worker then switches them back on by itself, once (SPEC-PART-SKILLS §"Part labels FIRST, then twins"). The API credit run is separate.
+
 ## 2. Inputs
 
 - One source row of `questions` (a school row, or a national one — a twin of a
