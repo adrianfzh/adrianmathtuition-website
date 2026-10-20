@@ -1,6 +1,6 @@
 {
  "slug": "rationalise-conjugate-am",
- "at": "2026-10-20T03:52:08.713Z",
+ "at": "2026-10-20T05:08:27.525Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -20,7 +20,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "31/31 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "33/33 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
