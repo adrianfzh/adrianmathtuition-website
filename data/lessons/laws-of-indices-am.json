@@ -1,0 +1,419 @@
+{
+  "slug": "laws-of-indices-am",
+  "title": "Laws of indices: negative and fraction powers",
+  "level": "AM",
+  "topic": "Indices",
+  "minutes": 3,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "Given that $\\left[\\left(\\dfrac{98}{3}\\right)^{-3} \\times \\sqrt[3]{9}\\right] \\div \\dfrac{7}{2} = 2^x 3^y 7^z$, find the value of each of $x$, $y$ and $z$.",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Laws of indices",
+      "scroll": true,
+      "steps": [
+        {
+          "tokens": [
+            { "id": "qa", "tex": "\\Bigg[\\left(\\dfrac{98}{3}\\right)^{-3}" },
+            { "id": "qb", "tex": "\\times\\sqrt[3]{9}\\Bigg]" },
+            { "id": "qc", "tex": "\\div\\dfrac{7}{2}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "qd", "tex": "=\\htmlClass{lsn-pc-a}{2^x}\\times\\htmlClass{lsn-pc-b}{3^y}\\times\\htmlClass{lsn-pc-c}{7^z}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "p1", "tex": "\\text{Plan: }2^{\\square}\\times3^{\\triangle}\\times7^{\\bigcirc}", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "a3", "tex": "=\\left(\\dfrac{3}{98}\\right)^{3}" },
+            { "id": "b3", "tex": "\\times\\sqrt[3]{9}" },
+            { "id": "c3", "tex": "\\times\\dfrac{2}{7}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "a4", "tex": "=\\left(\\dfrac{3}{2\\times7^2}\\right)^{3}" },
+            { "id": "b4", "tex": "\\times9^{\\frac{1}{3}}" },
+            { "id": "c4", "tex": "\\times\\dfrac{2}{7}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "a5", "tex": "=\\dfrac{3^3}{\\htmlClass{lsn-pc-b}{2^3}\\times\\htmlClass{lsn-pc-s}{7^6}}" },
+            { "id": "b5", "tex": "\\times3^{\\frac{2}{3}}" },
+            { "id": "c5", "tex": "\\times\\dfrac{\\htmlClass{lsn-pc-u}{2}}{\\htmlClass{lsn-pc-v}{7}}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "t2", "tex": "=\\htmlClass{lsn-pc-m}{2^{-3}}", "from": "a5", "fromPiece": "b", "into": "m" },
+            { "id": "t2b", "tex": "\\times\\htmlClass{lsn-pc-m}{2^{1}}", "from": "c5", "fromPiece": "u", "into": "m" },
+            { "id": "t3", "tex": "\\times3^{3}\\times3^{\\frac{2}{3}}" },
+            { "id": "t7", "tex": "\\times\\htmlClass{lsn-pc-m}{7^{-6}}", "from": "a5", "fromPiece": "s", "into": "m" },
+            { "id": "t8", "tex": "\\times\\htmlClass{lsn-pc-m}{7^{-1}}", "from": "c5", "fromPiece": "v", "into": "m" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "r2", "tex": "=2^{-2}" },
+            { "id": "r3", "tex": "\\times3^{\\frac{11}{3}}" },
+            { "id": "r7", "tex": "\\times7^{-7}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "el", "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times\\htmlClass{lsn-pc-b}{3^y}\\times\\htmlClass{lsn-pc-c}{7^z}" },
+            {
+              "id": "er",
+              "tex": "=\\htmlClass{lsn-pc-a}{2^{-2}}\\times\\htmlClass{lsn-pc-b}{3^{\\frac{11}{3}}}\\times\\htmlClass{lsn-pc-c}{7^{-7}}"
+            }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "cp", "tex": "\\text{Comparing powers:}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "ax", "tex": "x=-2,", "hl": "emerald" },
+            { "id": "ay", "tex": "\\;y=\\dfrac{11}{3},", "hl": "emerald" },
+            { "id": "az", "tex": "\\;z=-7", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Ninety-eight over three, to the power negative three, times the cube root of nine.",
+          "asks": ["What does the bracket mean?", "Which part is the power?"],
+          "do": [
+            { "do": "write", "token": "qa" },
+            { "do": "write", "token": "qb", "on": "times the cube" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b1.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "All divided by seven over two, equals two to the power X, times three to the power Y, times seven to the power Z.",
+          "asks": ["Which side is which?"],
+          "do": [
+            { "do": "write", "token": "qc" },
+            { "do": "write", "step": 1, "on": "equals two to" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b2.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "We have to find the powers X, Y and Z.",
+          "asks": ["Are X, Y and Z numbers?", "Do I need a calculator?"],
+          "do": [
+            { "do": "highlight", "token": "qd", "tone": "sky" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b3.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "The right side is a power of two, times a power of three, times a power of seven.",
+          "asks": ["Why only two, three and seven?"],
+          "do": [
+            { "do": "highlight", "token": "qd", "inside": "a", "tone": "orange" },
+            { "do": "highlight", "token": "qd", "inside": "b", "tone": "sky", "on": "of three, times" },
+            { "do": "highlight", "token": "qd", "inside": "c", "tone": "orange", "on": "of seven" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b4.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "So we make the left side the same form, then compare the powers.",
+          "asks": ["Why make it the same form?", "What do the box, triangle and circle mean?"],
+          "do": [
+            { "do": "write", "step": 2, "on": "the same form" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b5.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "First, the negative power. Negative power flips the fraction: ninety-eight over three becomes three over ninety-eight.",
+          "asks": ["Why does a negative power flip?", "Where did the minus go?"],
+          "aside": {
+            "text": "Why does a negative power flip?",
+            "slug": "indices-negative-power-flips",
+            "read": [
+              "$a^{-m}$ means $\\dfrac{1}{a^m}$.",
+              "So $\\left(\\frac{98}{3}\\right)^{-3}$ is $1 \\div \\left(\\frac{98}{3}\\right)^{3}$.",
+              "One over a fraction is that fraction flipped.",
+              "So it is $\\left(\\frac{3}{98}\\right)^{3}$.",
+              "**A negative power flips the fraction, and the power turns positive.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "qa", "tone": "orange" },
+            { "do": "write", "token": "a3", "on": "becomes three over" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b6.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Flipped, the power is positive three.",
+          "asks": ["Why is the power positive now?"],
+          "do": [
+            {
+              "do": "note",
+              "text": "Negative power flips the fraction: $\\left(\\frac{a}{b}\\right)^{-m}=\\left(\\frac{b}{a}\\right)^{m}$",
+              "near": "a3"
+            }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b7.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "The cube root of nine stays for now. Dividing by seven over two is the same as times two over seven.",
+          "asks": ["Why does divide become times?", "Why flip seven over two?"],
+          "do": [
+            { "do": "write", "token": "b3" },
+            { "do": "write", "token": "c3", "on": "times two over" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b8.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b8.timing.json"
+        },
+        {
+          "say": "Next, break every number into twos, threes and sevens, the bases on the right.",
+          "asks": ["Why break the numbers up?"],
+          "do": [
+            { "do": "highlight", "token": "a3", "tone": "orange" },
+            { "do": "highlight", "token": "qd", "tone": "sky", "on": "the bases on" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b9.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "Ninety-eight is two times forty-nine, which is two times seven squared.",
+          "asks": ["How do I break up ninety-eight?"],
+          "do": [
+            { "do": "write", "token": "a4", "on": "two times seven" },
+            { "do": "note", "text": "98 = 2 × 49 = 2 × 7²", "near": "a4", "on": "seven squared" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b10.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b10.timing.json"
+        },
+        {
+          "say": "In a fraction power, the bottom is the root. So the cube root of nine is nine to the power one third.",
+          "asks": ["Why is a root a fraction power?", "Which number is the root?"],
+          "aside": {
+            "text": "Why is the bottom the root?",
+            "slug": "indices-fraction-power-root",
+            "read": [
+              "Cube $9^{\\frac13}$: Times power gives $\\left(9^{\\frac13}\\right)^3 = 9^{\\frac13\\times3} = 9^1$.",
+              "So $9^{\\frac13}$ is the number that, cubed, gives $9$.",
+              "That number is the cube root of $9$.",
+              "The same works for any root: $a^{\\frac1n} = \\sqrt[n]{a}$.",
+              "**In a fraction power, the bottom is the root.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "b3", "tone": "orange" },
+            { "do": "write", "token": "b4", "on": "nine to the" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b11.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b11.timing.json"
+        },
+        {
+          "say": "The bottom of the fraction, three, tells us which root it is: the cube root. Two over seven stays.",
+          "asks": ["What if the bottom is two?"],
+          "do": [
+            { "do": "note", "text": "In a fraction power the bottom is the root: $a^{\\frac{1}{n}}=\\sqrt[n]{a}$", "near": "b4" },
+            { "do": "write", "token": "c4", "on": "Two over seven" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b12.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b12.timing.json"
+        },
+        {
+          "say": "Now the power three outside the bracket. Same power: every base inside the bracket gets the power three.",
+          "asks": ["Why does every base get the power?", "Which law is this?"],
+          "do": [
+            { "do": "highlight", "token": "a4", "tone": "orange" },
+            { "do": "write", "token": "a5", "on": "every base inside" },
+            {
+              "do": "note",
+              "text": "Same power: $\\left(\\frac{a}{bc}\\right)^3=\\frac{a^3}{b^3c^3}$",
+              "near": "a5",
+              "on": "the power three"
+            }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b13.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b13.timing.json"
+        },
+        {
+          "say": "So three cubed over two cubed, and Times power: seven squared, cubed, is seven to the power six.",
+          "asks": ["Why is it six, not five?"],
+          "do": [
+            { "do": "note", "text": "Times power: $(7^2)^3=7^{2\\times3}=7^6$", "near": "a5", "on": "Times power" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b14.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b14.timing.json"
+        },
+        {
+          "say": "Nine is three squared, to the power one third. Times power: two times one third gives three to the power two thirds.",
+          "asks": ["Where does three squared come from?", "Why multiply the powers?"],
+          "do": [
+            { "do": "highlight", "token": "b4", "tone": "orange" },
+            { "do": "write", "token": "b5", "on": "gives three to" },
+            { "do": "note", "text": "9 = 3², Times power: $(3^2)^{\\frac13}=3^{\\frac23}$", "near": "b5", "on": "power two thirds" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b15.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b15.timing.json"
+        },
+        {
+          "say": "Two over seven stays as it is.",
+          "asks": ["Why does two over seven stay?"],
+          "do": [
+            { "do": "write", "token": "c5" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b16.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b16.timing.json"
+        },
+        {
+          "say": "Write it all as times: twos, threes, then sevens. The threes are already on top.",
+          "asks": ["Why put the same bases together?"],
+          "do": [
+            { "do": "write", "step": 6 },
+            { "do": "highlight", "token": "t3", "tone": "sky", "on": "already on top" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b17.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b17.timing.json"
+        },
+        {
+          "say": "To bring a number from the bottom to the top, its power turns negative.",
+          "asks": ["Why does the power turn negative?"],
+          "do": [
+            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b18.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b18.timing.json"
+        },
+        {
+          "say": "So two cubed comes up as two to the power negative three, seven to the power six as seven to the power negative six.",
+          "asks": ["Why negative three?", "Where did the fraction line go?"],
+          "do": [
+            { "do": "move", "from": "a5" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b19.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b19.timing.json"
+        },
+        {
+          "say": "Negative power flips the fraction: one over A to the power M is A to the power negative M.",
+          "asks": ["Why does a negative power flip?"],
+          "do": [
+            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b20.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b20.timing.json"
+        },
+        {
+          "say": "From two over seven, the two is two to the power one, and the seven comes up as seven to the power negative one.",
+          "asks": ["Why write two as two to the power one?", "Why negative one?"],
+          "do": [
+            { "do": "move", "from": "c5" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b21.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b21.timing.json"
+        },
+        {
+          "say": "Same base, so Add power: add the powers of two. Negative three plus one is negative two.",
+          "asks": ["Which law is this?", "Why add the powers?"],
+          "do": [
+            { "do": "highlight", "token": ["t2", "t2b"], "tone": "orange" },
+            { "do": "write", "token": "r2", "on": "Negative three plus" },
+            { "do": "note", "text": "Add power: $a^m\\times a^n=a^{m+n}$", "near": "r2", "on": "negative two" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b22.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b22.timing.json"
+        },
+        {
+          "say": "For the threes, three plus two thirds is eleven thirds.",
+          "asks": ["How is three plus two thirds eleven thirds?"],
+          "do": [
+            { "do": "highlight", "token": "t3", "tone": "sky" },
+            { "do": "write", "token": "r3", "on": "eleven thirds" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b23.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b23.timing.json"
+        },
+        {
+          "say": "For the sevens, negative six plus negative one is negative seven.",
+          "asks": ["Why is it negative seven?"],
+          "do": [
+            { "do": "highlight", "token": ["t7", "t8"], "tone": "orange" },
+            { "do": "write", "token": "r7", "on": "negative seven" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b24.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b24.timing.json"
+        },
+        {
+          "say": "Put it equal to the right side: two to the power X, times three to the power Y, times seven to the power Z.",
+          "asks": ["Where is the right side from?"],
+          "do": [
+            { "do": "write", "step": 8, "on": "the right side" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b25.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b25.timing.json"
+        },
+        {
+          "say": "Since the bases are the same, the powers must be the same.",
+          "asks": ["Why must the powers match?"],
+          "do": [
+            { "do": "write", "step": 9, "on": "Since the bases" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b26.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b26.timing.json"
+        },
+        {
+          "say": "Powers of two: X equals negative two.",
+          "asks": ["Which power goes with X?"],
+          "do": [
+            { "do": "highlight", "token": ["el", "er"], "inside": "a", "tone": "orange" },
+            { "do": "write", "token": "ax", "on": "X equals negative" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b27.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b27.timing.json"
+        },
+        {
+          "say": "Powers of three: Y equals eleven thirds.",
+          "asks": ["Which power goes with Y?"],
+          "do": [
+            { "do": "highlight", "token": ["el", "er"], "inside": "b", "tone": "sky" },
+            { "do": "write", "token": "ay", "on": "Y equals eleven" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b28.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b28.timing.json"
+        },
+        {
+          "say": "Powers of seven: Z equals negative seven.",
+          "asks": ["Which power goes with Z?"],
+          "do": [
+            { "do": "highlight", "token": ["el", "er"], "inside": "c", "tone": "orange" },
+            { "do": "write", "token": "az", "on": "Z equals negative" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b29.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b29.timing.json"
+        },
+        {
+          "say": "So X equals negative two, Y equals eleven thirds, and Z equals negative seven.",
+          "asks": ["Can Y be a fraction?"],
+          "do": [
+            { "do": "mark", "kind": "box", "token": ["ax", "ay", "az"], "on": "Z equals negative" }
+          ],
+          "audio": "/lessons/laws-of-indices-am/scene-01-b30.mp3",
+          "timing": "/lessons/laws-of-indices-am/scene-01-b30.timing.json"
+        }
+      ]
+    }
+  ]
+}

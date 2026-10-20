@@ -26,6 +26,7 @@ import henceQuestionsS2 from '../../data/lessons/hence-questions-s2.json';
 import lawsOfLogarithmsAm from '../../data/lessons/laws-of-logarithms-am.json';
 import solvingLogEquationsAm from '../../data/lessons/solving-log-equations-am.json';
 import solvingExponentialEquationsAm from '../../data/lessons/solving-exponential-equations-am.json';
+import lawsOfIndicesAm from '../../data/lessons/laws-of-indices-am.json';
 import sameBaseComparePowersAm from '../../data/lessons/same-base-compare-powers-am.json';
 import solvingBySubstitutionAm from '../../data/lessons/solving-by-substitution-am.json';
 import comparePowersTwoUnknownsAm from '../../data/lessons/compare-powers-two-unknowns-am.json';
@@ -64,6 +65,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'laws-of-logarithms-am': lawsOfLogarithmsAm,
   'solving-log-equations-am': solvingLogEquationsAm,
   'solving-exponential-equations-am': solvingExponentialEquationsAm,
+  'laws-of-indices-am': lawsOfIndicesAm,
   'same-base-compare-powers-am': sameBaseComparePowersAm,
   'solving-by-substitution-am': solvingBySubstitutionAm,
   'compare-powers-two-unknowns-am': comparePowersTwoUnknownsAm,

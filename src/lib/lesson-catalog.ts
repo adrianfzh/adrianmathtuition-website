@@ -151,6 +151,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     minutes: 2,
   },
   {
+    slug: 'laws-of-indices-am',
+    level: 'AM',
+    topic: 'Indices',
+    title: 'Laws of indices: negative and fraction powers',
+    minutes: 3,
+  },
+  {
     slug: 'same-base-compare-powers-am',
     level: 'AM',
     topic: 'Indices',

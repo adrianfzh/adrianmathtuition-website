@@ -1,0 +1,38 @@
+Verifying 30 clip(s) of laws-of-indices-am by transcription (gemini-2.5-flash)…
+
+  scene-01-b1: 93% of narration words heard
+  scene-01-b2: 100% of narration words heard
+  scene-01-b3: 100% of narration words heard
+  scene-01-b4: 100% of narration words heard
+  scene-01-b5: 100% of narration words heard
+  scene-01-b6: 100% of narration words heard
+  scene-01-b7: 100% of narration words heard
+  scene-01-b8: 100% of narration words heard
+  scene-01-b9: 100% of narration words heard
+  scene-01-b10: 100% of narration words heard
+  scene-01-b11: 95% of narration words heard
+  scene-01-b12: 100% of narration words heard
+  scene-01-b13: 100% of narration words heard
+  scene-01-b14: 100% of narration words heard
+  scene-01-b15: 86% of narration words heard
+  scene-01-b16: 57% of narration words heard  ⚠ LOW
+      heard: two over seven stays.
+  scene-01-b17: 100% of narration words heard
+  scene-01-b18: 100% of narration words heard
+  scene-01-b19: 100% of narration words heard
+  scene-01-b20: 100% of narration words heard
+  scene-01-b21: 100% of narration words heard
+  scene-01-b22: 88% of narration words heard
+  scene-01-b23: 70% of narration words heard  ⚠ LOW
+      heard: for the three 3 + 2/3 is 11/3.
+  scene-01-b24: 73% of narration words heard  ⚠ LOW
+      heard: For the sevens -6 + -1 is -7.
+  scene-01-b25: 100% of narration words heard
+  scene-01-b26: 100% of narration words heard
+  scene-01-b27: 86% of narration words heard
+  scene-01-b28: 86% of narration words heard
+  scene-01-b29: 100% of narration words heard
+  scene-01-b30: 79% of narration words heard  ⚠ LOW
+      heard: So x equals -2, y equals 11/3, and z equals -7.
+
+4 clip(s) below 85% — listen to those.

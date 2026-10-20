@@ -1,0 +1,264 @@
+{
+  "slug": "laws-of-indices-am",
+  "title": "Laws of indices: negative and fraction powers",
+  "heading": "Laws of indices",
+  "intro": null,
+  "level": "AM",
+  "topic": "Indices",
+  "subgroup": null,
+  "source": {
+    "unit": "108.01",
+    "also": [
+      "108.03"
+    ],
+    "question_id": "8006348c-a2b2-44d7-9ccd-25151b522b15"
+  },
+  "bible": "data/clip-bibles/indices-am.md",
+  "answer": {
+    "facts": [
+      "2**x*3**y*7**z = (Rational(98,3))**(-3)*9**Rational(1,3)/Rational(7,2)"
+    ],
+    "display": "x = −2, y = 11/3, z = −7"
+  },
+  "outline": [
+    "Built 20 Oct 2026 (Indices clip 7) for skill 3.1 from 108.01 + 108.03 (the notes have no worked example) on a real school question (bank 8006348c, 3 marks): the question read; what we must find (the powers x, y, z); the right side is a power of 2 times a power of 3 times a power of 7, so the plan (shown as maths) is to make the left side the same and compare powers; Negative power flips the fraction ((98/3)^-3 = (3/98)^3, why in a written drop-down); dividing by 7/2 is times 2/7; break every number into the bases 2, 3, 7: 98 = 2 x 49 = 2 x 7^2; In a fraction power the bottom is the root (cube root of 9 = 9^(1/3), why in a written drop-down); Same power: the power 3 goes to every base inside, Times power (7^2)^3 = 7^6; 9 = 3^2, Times power (3^2)^(1/3) = 3^(2/3); every bottom comes UP to the top as a negative power (2^3 and 7^6 move up, then the 7 of 2/7) - the line written with the twos, threes, sevens side by side; Add power on each base: -3 + 1 = -2, 3 + 2/3 = 11/3, -6 + (-1) = -7; same bases, so the powers must be the same: x = -2, y = 11/3, z = -7, boxed. One expression line by line, no step numbers, no Watch out."
+  ],
+  "question": "Given that $\\left[\\left(\\dfrac{98}{3}\\right)^{-3} \\times \\sqrt[3]{9}\\right] \\div \\dfrac{7}{2} = 2^x 3^y 7^z$, find the value of each of $x$, $y$ and $z$.",
+  "minutes": 3,
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "qa",
+          "tex": "\\Bigg[\\left(\\dfrac{98}{3}\\right)^{-3}"
+        },
+        {
+          "id": "qb",
+          "tex": "\\times\\sqrt[3]{9}\\Bigg]"
+        },
+        {
+          "id": "qc",
+          "tex": "\\div\\dfrac{7}{2}"
+        }
+      ],
+      "checks": [
+        {
+          "start_expr": "(Rational(98,3))**(-3)*9**Rational(1,3)/Rational(7,2)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "qd",
+          "tex": "=\\htmlClass{lsn-pc-a}{2^x}\\times\\htmlClass{lsn-pc-b}{3^y}\\times\\htmlClass{lsn-pc-c}{7^z}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the right side of the question: a power of 2 times a power of 3 times a power of 7"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "p1",
+          "tex": "\\text{Plan: }2^{\\square}\\times3^{\\triangle}\\times7^{\\bigcirc}",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: write the left side as one power of each base 2, 3, 7, then compare powers"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "a3",
+          "tex": "=\\left(\\dfrac{3}{98}\\right)^{3}"
+        },
+        {
+          "id": "b3",
+          "tex": "\\times\\sqrt[3]{9}"
+        },
+        {
+          "id": "c3",
+          "tex": "\\times\\dfrac{2}{7}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "(Rational(3,98))**3*9**Rational(1,3)*Rational(2,7)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "a4",
+          "tex": "=\\left(\\dfrac{3}{2\\times7^2}\\right)^{3}"
+        },
+        {
+          "id": "b4",
+          "tex": "\\times9^{\\frac{1}{3}}"
+        },
+        {
+          "id": "c4",
+          "tex": "\\times\\dfrac{2}{7}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "(3/(2*7**2))**3*9**Rational(1,3)*Rational(2,7)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "a5",
+          "tex": "=\\dfrac{3^3}{\\htmlClass{lsn-pc-b}{2^3}\\times\\htmlClass{lsn-pc-s}{7^6}}"
+        },
+        {
+          "id": "b5",
+          "tex": "\\times3^{\\frac{2}{3}}"
+        },
+        {
+          "id": "c5",
+          "tex": "\\times\\dfrac{\\htmlClass{lsn-pc-u}{2}}{\\htmlClass{lsn-pc-v}{7}}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "3**3/(2**3*7**6)*3**Rational(2,3)*Rational(2,7)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "t2",
+          "tex": "=\\htmlClass{lsn-pc-m}{2^{-3}}",
+          "from": "a5",
+          "fromPiece": "b",
+          "into": "m"
+        },
+        {
+          "id": "t2b",
+          "tex": "\\times\\htmlClass{lsn-pc-m}{2^{1}}",
+          "from": "c5",
+          "fromPiece": "u",
+          "into": "m"
+        },
+        {
+          "id": "t3",
+          "tex": "\\times3^{3}\\times3^{\\frac{2}{3}}"
+        },
+        {
+          "id": "t7",
+          "tex": "\\times\\htmlClass{lsn-pc-m}{7^{-6}}",
+          "from": "a5",
+          "fromPiece": "s",
+          "into": "m"
+        },
+        {
+          "id": "t8",
+          "tex": "\\times\\htmlClass{lsn-pc-m}{7^{-1}}",
+          "from": "c5",
+          "fromPiece": "v",
+          "into": "m"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "2**(-3)*2**1*3**3*3**Rational(2,3)*7**(-6)*7**(-1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "r2",
+          "tex": "=2^{-2}"
+        },
+        {
+          "id": "r3",
+          "tex": "\\times3^{\\frac{11}{3}}"
+        },
+        {
+          "id": "r7",
+          "tex": "\\times7^{-7}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "2**(-2)*3**Rational(11,3)*7**(-7)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "el",
+          "tex": "\\htmlClass{lsn-pc-a}{2^x}\\times\\htmlClass{lsn-pc-b}{3^y}\\times\\htmlClass{lsn-pc-c}{7^z}"
+        },
+        {
+          "id": "er",
+          "tex": "=\\htmlClass{lsn-pc-a}{2^{-2}}\\times\\htmlClass{lsn-pc-b}{3^{\\frac{11}{3}}}\\times\\htmlClass{lsn-pc-c}{7^{-7}}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the question's right side equal to the left side just found: 2^x 3^y 7^z = 2^-2 3^(11/3) 7^-7"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "cp",
+          "tex": "\\text{Comparing powers:}"
+        }
+      ],
+      "checks": [
+        {
+          "form": "compare with 2^x 3^y 7^z: same bases, so the powers are the same"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ax",
+          "tex": "x=-2,",
+          "hl": "emerald"
+        },
+        {
+          "id": "ay",
+          "tex": "\\;y=\\dfrac{11}{3},",
+          "hl": "emerald"
+        },
+        {
+          "id": "az",
+          "tex": "\\;z=-7",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "x = -2"
+        },
+        {
+          "fact": "y = Rational(11,3)"
+        },
+        {
+          "fact": "z = -7"
+        }
+      ]
+    }
+  ],
+  "scroll": true
+}
