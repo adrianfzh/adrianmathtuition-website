@@ -245,13 +245,7 @@
           "asks": ["Why does every base get the power?", "Which law is this?"],
           "do": [
             { "do": "highlight", "token": "a4", "tone": "orange" },
-            { "do": "write", "token": "a5", "on": "every base inside" },
-            {
-              "do": "note",
-              "text": "Same power: $\\left(\\frac{a}{bc}\\right)^3=\\frac{a^3}{b^3c^3}$",
-              "near": "a5",
-              "on": "the power three"
-            }
+            { "do": "write", "token": "a5", "on": "every base inside" }
           ],
           "audio": "/lessons/laws-of-indices-am/scene-01-b13.mp3",
           "timing": "/lessons/laws-of-indices-am/scene-01-b13.timing.json"
@@ -260,7 +254,7 @@
           "say": "So three cubed over two cubed, and Times power: seven squared, cubed, is seven to the power six.",
           "asks": ["Why is it six, not five?"],
           "do": [
-            { "do": "note", "text": "Times power: $(7^2)^3=7^{2\\times3}=7^6$", "near": "a5", "on": "Times power" }
+            { "do": "note", "text": "Same power, then Times power: $(7^2)^3=7^6$", "near": "a5", "on": "Times power" }
           ],
           "audio": "/lessons/laws-of-indices-am/scene-01-b14.mp3",
           "timing": "/lessons/laws-of-indices-am/scene-01-b14.timing.json"

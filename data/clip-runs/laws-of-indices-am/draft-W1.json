@@ -264,12 +264,6 @@
      "do": "write",
      "token": "a5",
      "on": "every base inside"
-    },
-    {
-     "do": "note",
-     "text": "Same power: $\\left(\\frac{a}{bc}\\right)^3=\\frac{a^3}{b^3c^3}$",
-     "near": "a5",
-     "on": "the power three"
     }
    ]
   },
@@ -281,7 +275,7 @@
    "do": [
     {
      "do": "note",
-     "text": "Times power: $(7^2)^3=7^{2\\times3}=7^6$",
+     "text": "Same power, then Times power: $(7^2)^3=7^6$",
      "near": "a5",
      "on": "Times power"
     }
