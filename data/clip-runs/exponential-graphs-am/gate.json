@@ -1,6 +1,6 @@
 {
  "slug": "exponential-graphs-am",
- "at": "2026-10-19T19:01:29.282Z",
+ "at": "2026-10-20T00:02:06.674Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,11 +8,11 @@
   },
   "maths": {
    "ok": true,
-   "detail": "14/14 line checks"
+   "detail": "9/9 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "11 lines = the checked plan"
+   "detail": "7 lines = the checked plan"
   },
   "read": {
    "ok": true,
@@ -20,7 +20,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "42/42 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
+   "detail": "39/39 actions on the voice · cues worst 0.18 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
