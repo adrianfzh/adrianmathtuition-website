@@ -951,7 +951,13 @@ function scrollClipBoard(cont: HTMLElement) {
   // hidden"): the board scrolls back down just enough to show it.
   // (A board just drawn — the start, or a seek — has seen everything on it already.)
   // Clear of the top fade (36 px) AND of a circle drawn round the line (it reaches ~12 px above it).
-  const FADE = 64;
+  // The plan floating in the top-right corner (`corner`) owns the top strip of the board: once the
+  // board has scrolled, nothing sits under it — the fade starts below it, and a line the voice talks
+  // about is kept below it (20 Oct 2026, Laws of indices: "seven squared" was said with its line half
+  // under the plan box).
+  const cornerEl = stage.querySelector<HTMLElement>('[data-lsn-corner]');
+  const band = cornerEl ? Math.max(0, Math.ceil(cornerEl.getBoundingClientRect().bottom - boardEl.getBoundingClientRect().top)) : 0;
+  const FADE = 64 + band;
   const first = cont.dataset.scrollSeen !== '1';
   cont.dataset.scrollSeen = '1';
   let fresh = Infinity;
@@ -1000,7 +1006,7 @@ function scrollClipBoard(cont: HTMLElement) {
   zoom.style.translate = at ? `0 ${-at}px` : '0 0';
   // The first placement (a fresh board, or one drawn afresh by a seek) is instant; after that it glides.
   if (!zoom.style.transition) requestAnimationFrame(() => { zoom.style.transition = 'translate 1100ms cubic-bezier(0.45, 0, 0.3, 1)'; });
-  const fade = offset ? 'linear-gradient(to bottom, transparent 0, #000 36px)' : '';
+  const fade = offset ? `linear-gradient(to bottom, transparent 0, transparent ${band}px, #000 ${band + 36}px)` : '';
   boardEl.style.maskImage = fade;
   boardEl.style.setProperty('-webkit-mask-image', fade);
 }
