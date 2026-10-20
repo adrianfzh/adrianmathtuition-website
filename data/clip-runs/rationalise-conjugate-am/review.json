@@ -1,0 +1,24 @@
+{
+ "slug": "rationalise-conjugate-am",
+ "at": "2026-10-20T03:52:05.945Z",
+ "model": "claude-opus-5-5",
+ "frames": 24,
+ "usage": {
+  "input_tokens": 52537,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 897,
+  "output_tokens_details": {
+   "thinking_tokens": 870
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "verdict": "pass",
+ "findings": []
+}
