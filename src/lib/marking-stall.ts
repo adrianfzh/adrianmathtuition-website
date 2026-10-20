@@ -124,7 +124,7 @@ export function newKeySteps(h: Pick<LoginHealth, 'login' | 'email'>): string {
   return [
     `To make login ${h.login} a new year-long key:`,
     `1. On your Mac, open the Terminal app.`,
-    `2. Type: cd ~/dev/adrianmath-telegram-math-bot && bash scripts/claude-key-capture.sh ${h.login}`,
+    `2. Type: cd ~/dev/adrianmath-telegram-math-bot-2 && git pull -q && bash scripts/claude-key-capture.sh ${h.login}`,
     `3. Follow what it says: sign in as ${h.email} in the browser, press Authorize, copy the key it prints, press Enter.`,
     `Then tell Claude "keys are in".`,
   ].join('\n');
