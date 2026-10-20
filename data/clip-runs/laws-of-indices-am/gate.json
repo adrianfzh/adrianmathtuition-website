@@ -1,0 +1,31 @@
+{
+ "slug": "laws-of-indices-am",
+ "at": "2026-10-20T01:06:10.897Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "18/18 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "11 lines = the checked plan"
+  },
+  "read": {
+   "ok": true,
+   "detail": "one draft — the stand-in reviewer judges it (see review)"
+  },
+  "look": {
+   "ok": true,
+   "detail": "52/52 actions on the voice · cues worst 0.21 s (gate 0.3 s) · look problems 0"
+  },
+  "review": {
+   "ok": true,
+   "detail": "0 must, 1 should · 30 frames"
+  }
+ },
+ "pass": true
+}
