@@ -137,7 +137,7 @@ async function uploadScheme(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; queue_failed_reason?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null; paper_subject?: string | null; practice_again?: boolean };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; queue_failed_reason?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; handed_back_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null; paper_subject?: string | null; practice_again?: boolean };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1923,6 +1923,13 @@ export default function MarkPaperPage() {
                       // reads handed back → the bot is drawing; pages counted → reading, with
                       // the pages left; claimed, nothing counted yet → starting up.
                       : run.queued_at && run.claim_delivered_at ? '🎨 reads are in — drawing the marks, building the PDF, filing (about a minute)'
+                      // 📥 Every page read and handed back; the bot draws one paper at a time, oldest
+                      // hand-back first (20 Oct 2026: Sophie's paper said "queued" while it waited its
+                      // turn to be drawn, and looked skipped while later papers were being read)
+                      : run.queued_at && run.handed_back_at ? (() => {
+                          const ahead = [...inMotionRuns, ...recentRuns].filter((o, i, all) => all.findIndex(x => x.id === o.id) === i && o.id !== run.id && o.handed_back_at && !o.claim_delivered_at && o.total_max == null && o.handed_back_at < run.handed_back_at!).length;
+                          return `📥 all pages read · drawing the marks ${ahead ? `— ${ahead} paper${ahead === 1 ? '' : 's'} ahead of it` : '— next in line'} (about a minute each)`;
+                        })()
                       : run.queued_at && macMarking(run) ? (pageProgress(run)
                           ? `${claimHolderLabel(run.marked_by)} · reading page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}% · about ${Math.max(1, Math.ceil((pageProgress(run)!.total - pageProgress(run)!.done) * 5 / 60))} min of reading left`
                           : `${claimHolderLabel(run.marked_by)} has it — starting up and fetching the pages (a full paper reads in about 2–3 min, then a minute of drawing)`)
