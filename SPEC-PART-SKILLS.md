@@ -49,5 +49,8 @@ Two changes, bot 7b7d5907 (replaces the hourly timetable above):
 2. **The re-tag no longer waits for the twins writers.** Adrian's 15 Oct rule ("never alongside the twins lanes") is replaced: the writers ran nearly all day, so the ~29,000 older maths questions would almost never have been labelled. New filings still come first.
 Expected once live (next ordinary worker restart): maths twins in a few hours, maths school questions in about 1–2 days. Watch: the plan's 5-hour meter (marking first). Science runs unchanged (every 2 h), except its re-tag also no longer waits.
 
+## Science stall fixed (20 Oct 2026)
+Science school part labels sat at 4,119 of 9,603 from 19 Oct evening to 20 Oct morning. Cause: ten of the twelve science filer runs a day set `FILING_TIER=2` (Combined first), and the fetch took ONLY Combined while any was left — once Combined was down to a handful, each run labelled 4–16 questions and stopped, while ~6,900 Pure waited (only the 10:15 and 22:15 runs did Pure). Fix, bot 0b291f18: the tier goes first and the rest of the 300 is filled from the other tiers (test fetch: 46 Combined + 254 Pure). Live from the next science run (the worker pulls the bot before each run). Expected: science school done in about 2 days.
+
 ## Next step (Adrian said yes, 15 Oct 2026)
 When the re-tag has finished (`FILING_PARTS=1` status shows 0 for both banks, `select * from question_main_vs_parts` looked at), adopt the part table in ONE place first: the bleed table / "where marks are lost" (report only, cannot change what a student is served). Then Practice photo, then Find, one at a time, each checked for what students are served. Remind Adrian when the re-tag backlog reaches 0.
