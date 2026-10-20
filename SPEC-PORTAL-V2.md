@@ -127,6 +127,20 @@ same concept, marks within one; "same chapter" is NOT enough and is never offere
   still to write).
 - Home's "Request materials" door became "Find a question"; the request lane was retired on 6 Sep 2026 (routes + pages deleted, table kept for export/retention)
   reachable for Adrian (full-portal nav) and is no longer linked for students.
+- **Fixed 20 Oct 2026** (Adrian, on his phone: *"When I tried using the app to find the
+  questions, it doesn't work"* — an E Math trig photo ended in "didn't pass our checks").
+  Two bot faults, both silent since late Sep (bot `d11b5c31`):
+  1. *Bank search saw only A Math.* The bot's method index (`questions.embedding_fp`) is
+     filled for AM rows only (3,105 AM, 0 at every other level), so an EM / JC / S1 / S2
+     photo matched 12 A Math rows and the level gate dropped all 12. `/api/portal-similar`
+     now falls back to the plain-text index once per level of the student's family when the
+     method search has nothing at their level. Filling `embedding_fp` for the other levels
+     would let them use the method search too — not done.
+  2. *The writer refused.* The generation rule asked the model to "record that reasoning";
+     claude-opus-5-5 refuses any request to write out its reasoning (empty reply), so every
+     "Made for you" attempt failed in seconds — also the Practice photo flow and the
+     generation queue, which use the same prompt. Now it asks for the construction;
+     bot `test/generation-prompt.test.js` keeps it that way.
 
 ## 5. Requests become one pipeline
 
