@@ -1,0 +1,115 @@
+{
+ "slug": "rationalise-conjugate-am",
+ "worst": 0.83,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 8,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 9,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 10,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 11,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 0.83,
+   "score": 0.83,
+   "heard": "The bottom is a + b times a - b. That always equals a2 - b2.",
+   "said": "The bottom is A plus B, times A minus B. That always equals A squared minus B squared."
+  },
+  {
+   "beat": 13,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 14,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 15,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 16,
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
+  },
+  {
+   "beat": 17,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 18,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  }
+ ]
+}

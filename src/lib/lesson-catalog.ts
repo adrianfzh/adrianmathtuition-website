@@ -234,6 +234,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Why ln when e is involved',
     minutes: 1,
   },
+  {
+    slug: 'rationalise-conjugate-am',
+    level: 'AM',
+    topic: 'Surds',
+    title: 'Two terms below: multiply by the conjugate',
+    minutes: 2,
+  },
 ];
 
 /**

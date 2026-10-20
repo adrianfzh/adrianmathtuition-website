@@ -1,0 +1,153 @@
+{
+  "slug": "rationalise-conjugate-am",
+  "title": "Two terms below: multiply by the conjugate",
+  "heading": "Multiply by the conjugate",
+  "intro": null,
+  "level": "AM",
+  "topic": "Surds",
+  "subgroup": null,
+  "source": {
+    "unit": "107.13",
+    "also": [
+      "107.14"
+    ]
+  },
+  "bible": "data/clip-bibles/surds-am.md",
+  "answer": {
+    "facts": [
+      "2/(sqrt(5)+sqrt(3)) = sqrt(5) - sqrt(3)"
+    ],
+    "display": "√5 − √3"
+  },
+  "outline": [
+    "Built 20 Oct 2026 (Surds clip 1) for skill 3.4 from 107.13 on its own worked example 107.14: the question read; rationalizing means removing the surd from the bottom; the plan (pinned in the corner): make the bottom a number with no surd; why multiplying by the same surd does not work with two terms (a written drop-down); the conjugate = the same pair with only the middle sign flipped, its sign lit; multiply the top AND the bottom by it — times 1, same value; top with top, bottom with bottom (each pair lit); expand the top, and the bottom by (a + b)(a − b) = a² − b² (the rule beside the line); a surd times itself is the number inside: (√5)² = 5, (√3)² = 3; 5 − 3 = 2, split the fraction; = √5 − √3, boxed. One expression line by line, no step numbers, no Watch out."
+  ],
+  "question": "Rationalize the denominator of $\\dfrac{2}{\\sqrt{5}+\\sqrt{3}}$.",
+  "minutes": 2,
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "q1",
+          "tex": "\\dfrac{2}{\\htmlClass{lsn-pc-d}{\\sqrt{5}\\htmlClass{lsn-pc-s}{+}\\sqrt{3}}}"
+        }
+      ],
+      "checks": [
+        {
+          "start_expr": "2/(sqrt(5)+sqrt(3))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "p1",
+          "tex": "\\text{Plan: }\\dfrac{\\cdots}{\\text{no surd}}",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: the same value written with no surd in the bottom"
+        }
+      ],
+      "corner": true
+    },
+    {
+      "tokens": [
+        {
+          "id": "m1",
+          "tex": "=\\dfrac{\\htmlClass{lsn-pc-t}{2}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}+\\sqrt{3}}}"
+        },
+        {
+          "id": "m2",
+          "tex": "\\times\\dfrac{\\htmlClass{lsn-pc-t}{\\sqrt{5}-\\sqrt{3}}}{\\htmlClass{lsn-pc-d}{\\sqrt{5}\\htmlClass{lsn-pc-s}{-}\\sqrt{3}}}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "2/(sqrt(5)+sqrt(3)) * (sqrt(5)-sqrt(3))/(sqrt(5)-sqrt(3))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "k1",
+          "tex": "=\\dfrac{\\htmlClass{lsn-pc-t}{2(\\sqrt{5}-\\sqrt{3})}}{\\htmlClass{lsn-pc-d}{(\\htmlClass{lsn-pc-a}{\\sqrt{5}}+\\htmlClass{lsn-pc-b}{\\sqrt{3}})(\\htmlClass{lsn-pc-a}{\\sqrt{5}}-\\htmlClass{lsn-pc-b}{\\sqrt{3}})}}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "2*(sqrt(5)-sqrt(3))/((sqrt(5)+sqrt(3))*(sqrt(5)-sqrt(3)))"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "e1",
+          "tex": "=\\dfrac{\\htmlClass{lsn-pc-t}{2\\sqrt{5}-2\\sqrt{3}}}{\\htmlClass{lsn-pc-d}{(\\htmlClass{lsn-pc-a}{\\sqrt{5}})^2-(\\htmlClass{lsn-pc-b}{\\sqrt{3}})^2}}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "(2*sqrt(5)-2*sqrt(3))/((sqrt(5))**2-(sqrt(3))**2)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "f1",
+          "tex": "=\\dfrac{2\\sqrt{5}-2\\sqrt{3}}{\\htmlClass{lsn-pc-d}{5-3}}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "(2*sqrt(5)-2*sqrt(3))/(5-3)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "h1",
+          "tex": "=\\dfrac{2\\sqrt{5}-2\\sqrt{3}}{\\htmlClass{lsn-pc-d}{2}}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "(2*sqrt(5)-2*sqrt(3))/2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "g1",
+          "tex": "=\\dfrac{2\\sqrt{5}}{2}-\\dfrac{2\\sqrt{3}}{2}"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "2*sqrt(5)/2 - 2*sqrt(3)/2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ans",
+          "tex": "=\\sqrt{5}-\\sqrt{3}",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "step_expr": "sqrt(5) - sqrt(3)"
+        }
+      ]
+    }
+  ]
+}

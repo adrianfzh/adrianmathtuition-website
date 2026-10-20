@@ -1,0 +1,382 @@
+{
+ "slug": "rationalise-conjugate-am",
+ "draft": "W1",
+ "by": "session, 20 Oct 2026, Surds clip 1 to the house rules",
+ "beats": [
+  {
+   "say": "Rationalize the denominator of two over root five plus root three.",
+   "asks": [
+    "What is the denominator?",
+    "What does rationalize mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "Rationalizing means removing the surd from the bottom of the fraction. Here the bottom has two terms.",
+   "asks": [
+    "Why remove the surd from the bottom?",
+    "Which part is the bottom?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "d",
+     "tone": "orange",
+     "on": "from the bottom"
+    }
+   ]
+  },
+  {
+   "say": "So the plan: the same value, written with no surd in the bottom.",
+   "asks": [
+    "Does the value change?",
+    "Why keep the same value?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "the same value"
+    }
+   ]
+  },
+  {
+   "say": "With two terms below, multiplying by root five alone still leaves a surd below.",
+   "asks": [
+    "Why not multiply by root five?",
+    "Why not root three?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "d",
+     "tone": "orange"
+    }
+   ],
+   "aside": {
+    "text": "Why not times root five?",
+    "slug": "surds-why-conjugate",
+    "read": [
+     "Try $\\times\\dfrac{\\sqrt5}{\\sqrt5}$: the bottom becomes $(\\sqrt5+\\sqrt3)\\sqrt5 = 5+\\sqrt{15}$.",
+     "A surd is still there: $\\sqrt{15}$.",
+     "Try the bottom itself: $(\\sqrt5+\\sqrt3)^2 = 8+2\\sqrt{15}$. Still a surd.",
+     "Only $(\\sqrt5+\\sqrt3)(\\sqrt5-\\sqrt3)$ loses every surd.",
+     "Its two middle terms, $-\\sqrt{15}$ and $+\\sqrt{15}$, cancel.",
+     "**Two terms below: multiply by the conjugate.**"
+    ]
+   }
+  },
+  {
+   "say": "We multiply by the conjugate: the same pair, with only the middle sign flipped.",
+   "asks": [
+    "What is a conjugate?",
+    "Which sign is the middle sign?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "s",
+     "tone": "orange",
+     "on": "the middle sign"
+    }
+   ]
+  },
+  {
+   "say": "Why the conjugate: a pair times its conjugate gives two squares, and squaring a surd clears the root.",
+   "asks": [
+    "Why does the conjugate clear the surd?",
+    "Why not square the bottom?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "q1",
+     "inside": "d",
+     "tone": "sky"
+    }
+   ]
+  },
+  {
+   "say": "Write the fraction again, then times root five minus root three, over root five minus root three.",
+   "asks": [
+    "Why write the fraction again?",
+    "Why put the conjugate on the top too?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "m1"
+    },
+    {
+     "do": "write",
+     "token": "m2",
+     "on": "then times root"
+    }
+   ]
+  },
+  {
+   "say": "Plus becomes minus, and only the middle sign changes. Root five stays root five.",
+   "asks": [
+    "Do I change both signs?",
+    "Why does root five stay?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "m2",
+     "inside": "s",
+     "tone": "orange"
+    },
+    {
+     "do": "note",
+     "text": "Conjugate: change only the middle sign",
+     "near": "m2",
+     "on": "only the middle"
+    }
+   ]
+  },
+  {
+   "say": "We multiply the top and the bottom by the same thing, so the value does not change.",
+   "asks": [
+    "Why does the value stay the same?",
+    "Can I multiply only the bottom?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "m2",
+     "tone": "sky"
+    }
+   ],
+   "aside": {
+    "text": "Why does the value stay the same?",
+    "slug": "surds-times-one",
+    "read": [
+     "$\\dfrac{\\sqrt5-\\sqrt3}{\\sqrt5-\\sqrt3}$ has the same top and bottom.",
+     "So it equals $1$.",
+     "Multiplying by $1$ changes nothing.",
+     "Multiplying only the bottom would change the value.",
+     "**Top and bottom, always both.**"
+    ]
+   }
+  },
+  {
+   "say": "Multiply the top with the top: two times root five minus root three.",
+   "asks": [
+    "Why is there a bracket?",
+    "Do I expand it now?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "m1",
+     "inside": "t",
+     "tone": "orange"
+    },
+    {
+     "do": "highlight",
+     "token": "m2",
+     "inside": "t",
+     "tone": "orange",
+     "on": "with the top"
+    },
+    {
+     "do": "write",
+     "token": "k1",
+     "on": "two times root"
+    }
+   ]
+  },
+  {
+   "say": "And the bottom with the bottom: root five plus root three, times root five minus root three.",
+   "asks": [
+    "Why keep the two brackets?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "m1",
+     "inside": "d",
+     "tone": "sky"
+    },
+    {
+     "do": "highlight",
+     "token": "m2",
+     "inside": "d",
+     "tone": "sky",
+     "on": "with the bottom"
+    },
+    {
+     "do": "highlight",
+     "token": "k1",
+     "inside": "d",
+     "tone": "sky",
+     "on": "root five plus"
+    }
+   ]
+  },
+  {
+   "say": "The bottom is A plus B, times A minus B. That always equals A squared minus B squared.",
+   "asks": [
+    "Where does this rule come from?",
+    "What are A and B here?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "k1",
+     "inside": "d",
+     "tone": "sky"
+    },
+    {
+     "do": "note",
+     "text": "(a + b)(a − b) = a² − b²",
+     "near": "k1",
+     "on": "That always equals"
+    }
+   ]
+  },
+  {
+   "say": "Here A is root five, and B is root three.",
+   "asks": [
+    "Which one is A?",
+    "Does the order matter?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "k1",
+     "inside": "a",
+     "tone": "orange"
+    },
+    {
+     "do": "highlight",
+     "token": "k1",
+     "inside": "b",
+     "tone": "sky",
+     "on": "B is root"
+    },
+    {
+     "do": "note",
+     "text": "a = √5, b = √3",
+     "near": "k1",
+     "on": "three"
+    }
+   ]
+  },
+  {
+   "say": "Expand the top: two root five minus two root three. The bottom: root five squared, minus root three squared.",
+   "asks": [
+    "How do I expand the top?",
+    "Where did the middle terms go?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "e1"
+    },
+    {
+     "do": "highlight",
+     "token": "e1",
+     "inside": "a",
+     "tone": "orange",
+     "on": "The bottom: root"
+    },
+    {
+     "do": "highlight",
+     "token": "e1",
+     "inside": "b",
+     "tone": "sky",
+     "on": "minus root three"
+    }
+   ]
+  },
+  {
+   "say": "A surd times itself is the number inside. So root five squared is five, and root three squared is three.",
+   "asks": [
+    "Why is root five squared five?",
+    "Is root two squared four?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "e1",
+     "inside": "d",
+     "tone": "sky"
+    },
+    {
+     "do": "write",
+     "token": "f1",
+     "on": "So root five"
+    },
+    {
+     "do": "note",
+     "text": "a surd × itself = the number inside",
+     "near": "f1",
+     "on": "root three squared"
+    }
+   ]
+  },
+  {
+   "say": "Five minus three is two. The bottom is now a number with no surd.",
+   "asks": [
+    "Is two still a surd?",
+    "Why is this the plan?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "f1",
+     "inside": "d",
+     "tone": "orange"
+    },
+    {
+     "do": "write",
+     "token": "h1",
+     "on": "is two"
+    }
+   ]
+  },
+  {
+   "say": "Split the fraction: each term over two.",
+   "asks": [
+    "Why split the fraction?",
+    "Can I leave it as one fraction?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "g1"
+    }
+   ]
+  },
+  {
+   "say": "Divide each term by two: two root five over two is root five. So the answer is root five minus root three.",
+   "asks": [
+    "Is there still a surd in the bottom?",
+    "Can I check with a calculator?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "ans",
+     "on": "So the answer"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "root five minus"
+    }
+   ]
+  }
+ ]
+}

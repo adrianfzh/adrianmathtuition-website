@@ -39,6 +39,7 @@ import sketchingLogGraphsAm from '../../data/lessons/sketching-log-graphs-am.jso
 import logScalesAm from '../../data/lessons/log-scales-am.json';
 import logOfNegativeUndefinedAm from '../../data/lessons/log-of-negative-undefined-am.json';
 import whyLnWhenEAm from '../../data/lessons/why-ln-when-e-am.json';
+import rationaliseConjugateAm from '../../data/lessons/rationalise-conjugate-am.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -73,6 +74,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'evaluate-10-to-the-x-am': evaluate10ToTheXAm,
   'exponential-graphs-am': exponentialGraphsAm,
   'linear-form-with-logs-am': linearFormWithLogsAm,
+  'rationalise-conjugate-am': rationaliseConjugateAm,
   'growth-and-decay-am': growthAndDecayAm,
   'sketching-log-graphs-am': sketchingLogGraphsAm,
   'log-scales-am': logScalesAm,
