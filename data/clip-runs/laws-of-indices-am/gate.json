@@ -1,6 +1,6 @@
 {
  "slug": "laws-of-indices-am",
- "at": "2026-10-20T01:06:10.897Z",
+ "at": "2026-10-20T02:18:29.662Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -20,11 +20,11 @@
   },
   "look": {
    "ok": true,
-   "detail": "52/52 actions on the voice · cues worst 0.21 s (gate 0.3 s) · look problems 0"
+   "detail": "51/51 actions on the voice · cues worst 0.21 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
-   "detail": "0 must, 1 should · 30 frames"
+   "detail": "0 must, 0 should · 30 frames"
   }
  },
  "pass": true

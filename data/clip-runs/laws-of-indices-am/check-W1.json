@@ -28,7 +28,8 @@
         {
           "tokens": [
             { "id": "p1", "tex": "\\text{Plan: }2^{\\square}\\times3^{\\triangle}\\times7^{\\bigcirc}", "hl": "sky" }
-          ]
+          ],
+          "corner": true
         },
         {
           "tokens": [
@@ -258,8 +259,7 @@
           "say": "To bring a number from the bottom to the top, its power turns negative.",
           "asks": ["Why does the power turn negative?"],
           "do": [
-            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" },
-            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2", "on": "its power turns" }
+            { "do": "highlight", "token": "a5", "part": "den", "tone": "orange" }
           ]
         },
         {
@@ -273,7 +273,7 @@
           "say": "Negative power flips the fraction: one over A to the power M is A to the power negative M.",
           "asks": ["Why does a negative power flip?"],
           "do": [
-            { "do": "highlight", "token": ["t2", "t7"], "tone": "orange" }
+            { "do": "note", "text": "Negative power flips: $\\dfrac{1}{a^m}=a^{-m}$", "near": "t2" }
           ]
         },
         {
