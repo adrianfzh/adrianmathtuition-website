@@ -323,7 +323,7 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - **Contact info is lazy-loaded** (`/api/admin-schedule/student-contact`), never returned eagerly.
 - **Vercel caps request bodies at 4.5 MB** — chunk, client-token upload, or reference by id.
 - `src/lib/latex-repair.ts` reads as binary to grep — use `grep -a`.
-- **New Supabase table (from 30 Oct 2026, both projects)**: Supabase stops auto-granting new `public` tables to the API roles. Every `create table` migration adds `alter table … enable row level security;` + `grant select, insert, update, delete on table … to service_role;` (anon/authenticated only when the browser reads it, with a policy) — else the code gets "permission denied". A table without RLS is an open table (21 Oct: three science backup tables were).
+- **New Supabase table (from 30 Oct 2026, both projects)**: Supabase stops auto-granting new `public` tables to the API roles. Every `create table` migration adds `alter table … enable row level security;` + `grant select, insert, update, delete on table … to service_role;` (anon/authenticated only when the browser reads it, with a policy) — else the code gets "permission denied". A table without RLS is an open table (21 Oct: three science backup tables were). **Since 21 Oct 2026 both databases turn RLS on by themselves** for every new `public` table (event trigger `rls_auto_enable`, function `private.rls_auto_enable`) — a table the browser must read still needs its own policy.
 - **" 2" duplicate files** (old iCloud copies): stale — delete on sight, never commit or edit one.
 
 ## Pending Tasks → [`IDEAS.md`](IDEAS.md)
