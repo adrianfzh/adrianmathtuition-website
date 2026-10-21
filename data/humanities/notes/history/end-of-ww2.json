@@ -1,0 +1,212 @@
+{
+  "id": "end-of-ww2",
+  "subject": "history",
+  "courses": ["history_e", "history_p"],
+  "unit": "World War II",
+  "title": "The end of World War II",
+  "bigIdea": [
+    "By 1945 the Axis powers had lost the war.",
+    "Germany surrendered in May 1945. Japan surrendered in August 1945.",
+    "Exam questions ask WHY they lost: the strengths of the Allies, or the weaknesses of Germany and Japan.",
+    "A top answer explains two or more reasons with dates and evidence, then weighs which mattered most."
+  ],
+  "timeline": [
+    { "when": "May–Jun 1940", "what": "Germany defeats France." },
+    { "when": "May 1940", "what": "At Dunkirk, over 300,000 Allied soldiers escape to Britain." },
+    { "when": "Jul–Oct 1940", "what": "Battle of Britain: the RAF stops Germany's air attack. Britain is not beaten." },
+    { "when": "Mar 1941", "what": "Lend-Lease begins: the USA sends weapons and supplies to Britain." },
+    { "when": "Jun 1941", "what": "Operation Barbarossa: Germany invades the Soviet Union." },
+    { "when": "Dec 1941", "what": "The German army is stopped outside Moscow by the winter and a Soviet counter-attack." },
+    { "when": "7 Dec 1941", "what": "Japan attacks Pearl Harbor. The USA enters the war." },
+    { "when": "11 Dec 1941", "what": "Germany declares war on the USA." },
+    { "when": "Jun 1942", "what": "Battle of Midway: the USA sinks four Japanese aircraft carriers. The turning point in the Pacific." },
+    { "when": "Aug 1942", "what": "US forces land on Guadalcanal: island-hopping begins." },
+    { "when": "Feb 1943", "what": "The German army at Stalingrad surrenders. The turning point in the East." },
+    { "when": "May 1943", "what": "The Allies win the Battle of the Atlantic. Breaking German codes (Enigma) helped." },
+    { "when": "Jul 1943", "what": "Battle of Kursk: Germany's last big attack in the East fails." },
+    { "when": "6 Jun 1944", "what": "D-Day: Allied landings in Normandy open a major second front in France." },
+    { "when": "Jun 1944", "what": "The USA takes the Marianas islands. Its bombers can now reach Japan." },
+    { "when": "Dec 1944", "what": "Battle of the Bulge: Germany's last big attack in the West fails." },
+    { "when": "Feb 1945", "what": "At Yalta, Stalin promises to join the war against Japan within three months of Germany's defeat." },
+    { "when": "Mar 1945", "what": "US firebombing of Tokyo kills about 80,000–100,000 people in one night." },
+    { "when": "Apr–Jun 1945", "what": "Battle of Okinawa: very heavy losses on both sides." },
+    { "when": "12 Apr 1945", "what": "Truman becomes US President after Roosevelt dies." },
+    { "when": "30 Apr 1945", "what": "Hitler kills himself." },
+    { "when": "8 May 1945", "what": "Germany's surrender takes effect (VE Day)." },
+    { "when": "6 Aug 1945", "what": "Atomic bomb (\"Little Boy\") on Hiroshima." },
+    { "when": "8–9 Aug 1945", "what": "The Soviet Union declares war on Japan (8 Aug) and invades Manchuria (9 Aug)." },
+    { "when": "9 Aug 1945", "what": "Atomic bomb (\"Fat Man\") on Nagasaki." },
+    { "when": "14–15 Aug 1945", "what": "Japan accepts surrender (14 Aug). Emperor Hirohito announces it on the radio (15 Aug)." },
+    { "when": "2 Sep 1945", "what": "Japan signs the surrender on USS Missouri in Tokyo Bay." }
+  ],
+  "terms": [
+    { "term": "Axis", "meaning": "Germany, Italy and Japan." },
+    { "term": "Allies", "meaning": "Britain, the USA, the Soviet Union and others fighting the Axis." },
+    { "term": "Blitzkrieg", "meaning": "\"Lightning war\": fast attacks with tanks and planes, to win quickly." },
+    { "term": "Two-front war", "meaning": "Fighting enemies on two sides at once, which splits an army's men and supplies." },
+    { "term": "Second front", "meaning": "The Allied attack in France (D-Day) that made Germany fight in the West as well as the East." },
+    { "term": "Lend-Lease", "meaning": "The US scheme that supplied the Allies with weapons, food and raw materials." },
+    { "term": "Island-hopping", "meaning": "Capturing key Pacific islands one by one, and skipping the strongest, to get closer to Japan." },
+    { "term": "Overstretched empire", "meaning": "Holding more land than you can defend or supply." },
+    { "term": "Kamikaze", "meaning": "Japanese pilots who crashed their planes into Allied ships on purpose (from Oct 1944)." },
+    { "term": "Unconditional surrender", "meaning": "Giving up with no terms agreed first. The Allies demanded it from Jan 1943." }
+  ],
+  "chains": [
+    {
+      "title": "Why Germany was defeated",
+      "steps": [
+        "Blitzkrieg won quick wars, such as France in 1940.",
+        "Britain was not beaten, so Germany still had an enemy in the West.",
+        "Hitler invaded the Soviet Union in 1941. This made a two-front war.",
+        "The war became long, and Blitzkrieg does not work in a long war.",
+        "The Soviet victories at Stalingrad and Kursk (1943) pushed Germany back.",
+        "The USA's factories and Lend-Lease out-produced Germany.",
+        "D-Day (1944) opened a second front, so Germany was squeezed from East and West.",
+        "Germany could not replace its losses. It surrendered in May 1945."
+      ]
+    },
+    {
+      "title": "Why Japan was defeated",
+      "steps": [
+        "Pearl Harbor (1941) brought the USA, the strongest economy, into the war.",
+        "At Midway (1942) Japan lost four carriers and many trained pilots.",
+        "Japan could not replace them fast enough.",
+        "US factories out-built Japan in ships, planes and weapons.",
+        "Island-hopping brought US forces closer to Japan.",
+        "US submarines sank Japan's supply ships, so it ran short of oil and raw materials.",
+        "Japan's empire was overstretched and faced local resistance.",
+        "In August 1945, the atomic bombs and the Soviet attack made Japan surrender."
+      ]
+    }
+  ],
+  "reasons": [
+    {
+      "reason": "The USA's economic and military power",
+      "side": "Allied strengths",
+      "evidence": [
+        "By 1944 the USA was making more weapons than Germany and Japan together.",
+        "Lend-Lease supplied Britain and, from late 1941, the Soviet Union.",
+        "By 1943 the USA was building cargo ships (Liberty ships) faster than U-boats could sink them.",
+        "Its factories replaced lost ships and planes faster than Germany or Japan could."
+      ]
+    },
+    {
+      "reason": "The USA in the Pacific",
+      "side": "Allied strengths",
+      "evidence": [
+        "Midway (1942) destroyed four Japanese carriers.",
+        "Island-hopping: Guadalcanal (1942), the Marianas (1944), the Philippines (1944), Iwo Jima and Okinawa (1945).",
+        "Taking the Marianas put US bombers within reach of Japan.",
+        "US submarines sank more than half of Japan's merchant ships."
+      ]
+    },
+    {
+      "reason": "The atomic bombs",
+      "side": "Allied strengths",
+      "evidence": [
+        "Truman chose to use them to avoid the huge losses of invading Japan.",
+        "Hiroshima (6 Aug 1945) and Nagasaki (9 Aug 1945) were destroyed.",
+        "In his surrender broadcast, Hirohito named the new bomb as a reason to stop.",
+        "But Japan was already losing. The bombs made it give up sooner."
+      ]
+    },
+    {
+      "reason": "Britain's role",
+      "side": "Allied strengths",
+      "evidence": [
+        "Britain won the Battle of Britain (1940), so Germany could not invade.",
+        "Radar and Spitfire and Hurricane fighters helped it hold out.",
+        "Britain was the base for the US forces that landed on D-Day.",
+        "Its empire fought Japan: India alone sent about 2.5 million soldiers."
+      ]
+    },
+    {
+      "reason": "The Soviet Union's role",
+      "side": "Allied strengths",
+      "evidence": [
+        "It moved its factories east to the Urals and Siberia (1941–42), out of German reach.",
+        "By 1942 Soviet factories were making more tanks than Germany's.",
+        "Order No. 227, \"Not a step back\" (Jul 1942), forced soldiers to hold their ground.",
+        "It won at Stalingrad and Kursk (1943).",
+        "About three-quarters of German soldiers who died in the war died fighting the Soviet Union.",
+        "It attacked Japan in Manchuria (Aug 1945), as Stalin had promised at Yalta."
+      ]
+    },
+    {
+      "reason": "D-Day",
+      "side": "Allied strengths",
+      "evidence": [
+        "On 6 Jun 1944 about 156,000 Allied troops landed in Normandy by sea and air.",
+        "The Allies had control of the air.",
+        "Germany now fought a major front in the West as well as the East."
+      ]
+    },
+    {
+      "reason": "Hitler's mistakes",
+      "side": "Germany's weaknesses",
+      "evidence": [
+        "He invaded the Soviet Union (1941) before beating Britain. This made a two-front war.",
+        "He declared war on the USA (Dec 1941), bringing its full strength against Germany.",
+        "He overruled his generals.",
+        "He ordered the army at Stalingrad not to retreat (Nov 1942), and it was destroyed."
+      ]
+    },
+    {
+      "reason": "Germany's poor planning",
+      "side": "Germany's weaknesses",
+      "evidence": [
+        "It spent heavily on big battleships such as the Bismarck and Tirpitz.",
+        "It had no aircraft carriers and no strong heavy bombers.",
+        "It fell behind Britain in radar."
+      ]
+    },
+    {
+      "reason": "Rivalry between Japan's army and navy",
+      "side": "Japan's weaknesses",
+      "evidence": [
+        "The army wanted to attack north (Siberia). The navy wanted to go south for oil (Dutch East Indies).",
+        "They did not share plans or information.",
+        "In 1942 the army refused troops for a navy plan against Australia."
+      ]
+    },
+    {
+      "reason": "Japan's overstretched empire",
+      "side": "Japan's weaknesses",
+      "evidence": [
+        "By 1942 Japan held almost all of Southeast Asia, too much to defend.",
+        "Raw materials had to travel by sea, where US submarines sank them.",
+        "It depended on imported oil, and ran short."
+      ]
+    },
+    {
+      "reason": "Japan's poor planning",
+      "side": "Japan's weaknesses",
+      "evidence": [
+        "It trusted battleships more than aircraft carriers.",
+        "The Pearl Harbor raid missed the US carriers, which were at sea.",
+        "It could not replace the carriers and trained pilots lost at Midway fast enough."
+      ]
+    },
+    {
+      "reason": "Lack of local support",
+      "side": "Japan's weaknesses",
+      "evidence": [
+        "Harsh rule and forced labour turned local people against Japan.",
+        "Resistance groups fought back, such as the Malayan People's Anti-Japanese Army.",
+        "Others included the Viet Minh in Vietnam and Chinese communist guerrillas."
+      ]
+    }
+  ],
+  "inExam": [
+    "Essays usually read: \"'X was the main reason Germany / Japan was defeated.' How far do you agree?\"",
+    "Explain the given reason, with dates and evidence.",
+    "Explain at least one other reason the same way.",
+    "End by saying which reason mattered most, and how it helped the other reasons work.",
+    "Source questions often ask about the atomic bombs: why they were used, and whether a source about them can be trusted."
+  ],
+  "example": {
+    "question": "'The strength of the USA was the main reason Japan was defeated.' How far do you agree? (one paragraph of a full answer)",
+    "text": "I agree that the strength of the USA was the main reason, because it made the other reasons possible. By 1944 the USA was making more weapons than Germany and Japan together, so it could replace the ships and planes it lost, while Japan could not. This strength built the submarines that sank Japan's supply ships and cut its oil. It also paid for island-hopping: taking the Marianas in 1944 put US bombers within reach of Japan. Without the USA's power, neither strategy could have worked."
+  },
+  "checked": { "on": "2026-10-21", "by": "independent fact check; coverage checked against a syllabus chapter in the library", "reference": "library: 2261 Elective History chapter, End of WW2 in Europe and the Asia-Pacific" }
+}

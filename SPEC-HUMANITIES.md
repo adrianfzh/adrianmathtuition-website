@@ -270,6 +270,26 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **S — NOTES FOR THE CONTENT, ONE SAMPLE TOPIC, 21 Oct 2026 (CLOSED to students).** Adrian: "is there a need to memorize
+> facts and content?" → "instead of quizzes, can we build 'notes' for the content?" → "yes" (one sample topic first) → "are you
+> writing on your own or taking references?"
+> - **How a page is written:** in our own words, never copied; what earns marks from the school answer schemes in the bank;
+>   what the syllabus covers from a reference chapter in the library (166 Humanities notes files were copied in on 6 Oct —
+>   67 History, 58 Geography, 41 Social Studies — `paper_library` status `library`, exam_type `Notes`; used for coverage
+>   only, other people's work, never served or quoted); then an independent fact check (Opus, reputable sources for
+>   anything uncertain) and a readability pass (one idea a line). The reference's school is never shown to students.
+> - **The sample:** History — *The end of World War II* (`data/humanities/notes/history/end-of-ww2.json`; Elective and
+>   Pure): the big idea · key dates · key terms · how it happened (Germany, Japan, one step a line) · the reasons with
+>   their evidence, in the syllabus's own shape (Allied strengths: the USA, the atomic bombs, Britain, the Soviet Union,
+>   D-Day; Germany's weaknesses: Hitler's mistakes, poor planning; Japan's: army–navy rivalry, overstretched empire, poor
+>   planning, lack of local support) · using it in the exam · one well-used paragraph. The first draft was missing about
+>   half the chapter's reasons; the check also replaced an unconfirmed figure ("40% of the world's weapons") with "more
+>   weapons than Germany and Japan together" and softened two others.
+> - **In the app:** `/app/humanities/notes` (the student's subjects only) and `/app/humanities/notes/<id>`, a "Notes" card
+>   on "Check my answer" — behind `HUMANITIES_NOTES_OPEN_TO_STUDENTS = false` (`humanitiesNotesOpen()`: Adrian's admin
+>   cookie and the preview student). **Next:** Adrian reads the sample on his phone; the rest (about 30–40 topics across
+>   Social Studies, History and Geography, Elective and Pure) follow its shape once he is happy.
+
 > **R — GRAPH NUMBERS AND A WHOLE PAPER AT ONCE, 17 Oct 2026.** Adrian: "do the next two (just don't do literature)".
 > - **Graph numbers** (read **as accurately as possible** — Adrian, 17 Oct 2026: *"when reading graphs, system should aim to read as
 >   accurate as possible"*: a printed value copied exactly, otherwise lined up against the scale and gridlines to at least a

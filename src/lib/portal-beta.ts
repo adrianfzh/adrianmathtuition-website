@@ -319,6 +319,13 @@ export const HUMANITIES_OWN_OPEN_TO_STUDENTS = true;
 // delete it, you can just gatekeep it from students. we can turn it on later, just not now". Adrian's admin cookie and
 // the preview student see it. Flip to true to show students the One question | Whole paper choice.
 export const HUMANITIES_WHOLE_PAPER_OPEN_TO_STUDENTS = false;
+// 📗 Humanities notes (21 Oct 2026, Adrian: "instead of quizzes, can we build 'notes' for the content?" → "yes"): one
+// page per syllabus topic (lib/humanities-notes). CLOSED — one sample topic first for Adrian to look at; his admin
+// cookie and the preview student see it. Flip to true when he is happy with the sample and the rest are written.
+export const HUMANITIES_NOTES_OPEN_TO_STUDENTS = false;
+export async function humanitiesNotesOpen(): Promise<boolean> {
+  return HUMANITIES_NOTES_OPEN_TO_STUDENTS || (await humanitiesOpen());
+}
 export async function humanitiesWholePaperOpen(): Promise<boolean> {
   return HUMANITIES_WHOLE_PAPER_OPEN_TO_STUDENTS || (await humanitiesOpen());
 }

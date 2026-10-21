@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { humanitiesOpen, humanitiesOwnOpen, humanitiesWholePaperOpen } from '@/lib/portal-beta';
+import { humanitiesOpen, humanitiesOwnOpen, humanitiesWholePaperOpen, humanitiesNotesOpen } from '@/lib/portal-beta';
 import { studentHumanities } from '@/lib/portal-prefs';
 import { loadHumanitiesRun } from '@/lib/humanities-runs';
 import { OWN_SKILLS, type OwnQuestion } from '@/lib/humanities-own';
@@ -21,6 +21,7 @@ export default async function OwnQuestionPage({ searchParams }: { searchParams: 
   const account = await currentAccount();
   const full = await humanitiesOpen();
   const wholePaper = await humanitiesWholePaperOpen();
+  const notes = await humanitiesNotesOpen();
   let prefill: OwnQuestion | null = null;
   if (again && UUID.test(again)) {
     const run = await loadHumanitiesRun(again, portalIdentity(account));
@@ -43,6 +44,17 @@ export default async function OwnQuestionPage({ searchParams }: { searchParams: 
         <p className="text-sm text-gray-600 mt-1">Send a question you did and your answer. Type them, or send photos.</p>
         <p className="text-[12px] text-gray-500">Social Studies, your elective, and Pure Geography or History if you take them.</p>
       </div>
+      {/* Notes for their subjects (closed to students until Adrian approves the sample — HUMANITIES_NOTES_OPEN_TO_STUDENTS). */}
+      {notes && (
+        <Link href="/app/humanities/notes" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300">
+          <span className="text-xl" aria-hidden>📗</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[15px] font-bold text-navy">Notes</span>
+            <span className="block text-[12px] text-gray-500">The facts, terms and examples a top answer uses</span>
+          </span>
+          <span className="shrink-0 text-gray-400">›</span>
+        </Link>
+      )}
       <OwnForm initialSubject={subject} initialPure={pure} choices={choices} prefill={prefill} skills={OWN_SKILLS} maxWords={MAX_WORDS} wholePaper={wholePaper} />
     </div>
   );
