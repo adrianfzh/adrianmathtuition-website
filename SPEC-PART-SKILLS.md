@@ -70,5 +70,20 @@ Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will 
 - **No listed sub-skill fits — ~55.**
 - **Never fetched — 93**, mostly Sec 2 topics with no Sec 2 list: Indices 38, Sets 16, Standard Form 10, Circle Properties 3, Matrices 2 (Sec 3 work in today's syllabus), and Speed 10, Real Numbers 9, Integers 6, Exchange Rate 3, Interest 3 (Sec 1 work — Adrian's rule above).
 
+**Done 21 Oct 2026 (Adrian: "yes", all five steps) — 225 of the ~420 filed, every one with part labels:**
+- **Tie-break reader** (bot 847b17c5): a split between the first two readers goes to a third blind reader; two of three files it. Of ~170 held "readers disagree", 1 is still held.
+- **Wrong topic tags:** 36 re-tagged where a reader was sure (≥ 0.7); backup `_backups/retag-wrong-topics-before-2026-10-21.json`.
+- **Sec 2 shares the Sec 1 skill list** (bot 847b17c5): the S1 tree also takes S2 questions, only under topics with no Sec 2 list (Speed, Integers, Real Numbers, Exchange Rate, Interest …) — 27 Sec 2 questions now have a Sec 1 main skill and appear in Sec 1 practice (Adrian's yes). `twin_queue` now takes a question's main skill from its own level only (`migrations/twin_queue_own_tree.sql`), so they never count in the Sec 2 twins; checked: S1, S2, AM, JC twin units unchanged, EM lost 2 units that were really Sec 1 sub-skills on 5 Sec 3 rows.
+- Released 216 set-aside entries (193 questions) on the worker so they were read again; backup of the list in `_backups/`.
+- By level, filed / total: S1 46/66, S2 83/176 (27 under Sec 1 skills), S3_EM 6/54, S3_AM 32/53, EM 30/34, AM 28/37.
+
+**Left — 195, and why:**
+- **62 Sec 2 rows of Sec 3 work** (Indices, Sets, Standard Form, Circle Properties, Matrices). Not moved: Sec 2 practice only reads Sec 2 rows (`practice_qlevels`), so moving them to Sec 3 E Math makes them unreachable for every Sec 2 student, taught-early or not; old-syllabus marking at Sec 3 would also hide them from Sec 3. Keeping them at Sec 2 with `legacy_syllabus` + `ip_syllabus` would reach IP Sec 2 students only. Adrian to choose.
+- **47 at the wrong level** — 40 Sec 3 E Math rows are A Math work (logarithms, discriminant), 7 others. A level move changes who sees them; not done.
+- **~50 no skill fits** — two real gaps proposed: Sec 2 Constructions has no perpendicular / angle bisector skill (6 questions); Sec 1 Real-World has no reading bills / price tables / budgets skill (6). The rest are scattered one or two a topic.
+- **~25 low confidence** (topic or main skill unclear), **11 never fetched** (topics with no list at their level: Proof, Functions, Probability at A Math …).
+- Also found: of the 67 Sec 1 rows marked old-syllabus on 15 Oct, only 14 carry `ip_syllabus`, so the other 53 reach no student (the 15 Oct note said IP students still get them).
+- The phase change record (`job_runs` 'twins-phase') did not save on 20 Oct; phase A itself ran (science long questions 14:38–22:45) until the switch was turned off by hand.
+
 ## Next step (Adrian said yes, 15 Oct 2026)
 When the re-tag has finished (`FILING_PARTS=1` status shows 0 for both banks, `select * from question_main_vs_parts` looked at), adopt the part table in ONE place first: the bleed table / "where marks are lost" (report only, cannot change what a student is served). Then Practice photo, then Find, one at a time, each checked for what students are served. Remind Adrian when the re-tag backlog reaches 0.
