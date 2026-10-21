@@ -432,7 +432,10 @@ door, the same queue and the same Fly lane; only the destination differs.
      `GEOG E`) count only as the FIRST token, so a maths school ending in "SS" stays maths.
    - Elective = the word Elective, "Combined Humanities", or an elective syllabus code
      (2204, 2260–2265, 2267, 2272, 2273). Pure codes: 2174 History; 2236 / 2279 Geography.
-   - Refused with the reason: two subjects in one name; a Sec 1–3 humanities name (no level).
+   - Refused with the reason: two subjects in one name; a Sec 1–2 Social Studies name (no such subject).
+   - **Sec 1–2 (21 Oct 2026):** `S1 History …` / `S2 Geography …` → `S1_HIST` / `S2_HIST` / `S1_GEOG` /
+     `S2_GEOG` (G2 / G3 stripped from the school, the stream goes in the notes); Sec 3 keeps the upper-sec
+     level as before. English already had `S1_EL` / `S2_EL`. → §4f.
    - A split book's parts are named `History GCE 2025 Paper 1.pdf` etc. (`levelNameTokens`,
      round-trip tested).
 2. **The lane** (bot `worker/fly/extract.sh`): `history` / `geography` / `social_studies` are
@@ -537,7 +540,7 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   Yishun Town papers skipped as already banked). Every file is in Dropbox `AdrianMath Work/Papers/<subject>/2026 …/`;
   **177 went through the Extraction Inbox** (papers + their schemes). Not queued, Dropbox only: papers already
   banked, humanities papers with no scheme (Geography: Dunman, Unity, Christ Church), SJI English Paper 1 (only
-  its editing section has a scheme), Seng Kang Sec 2 History (no lower-sec humanities level), and three Hwa Chong
+  its editing section has a scheme), Seng Kang Sec 2 History (no lower-sec humanities level then — queued or held 21 Oct, §4f), and three Hwa Chong
   IP files that are one student's marked script (name on them) or a one-page fragment. Left out: N-Level A Math
   "Unknown School", the NJC JH3 quiz (a student's name on it), two compilations of older papers.
   The same day `EXAM_RULES` learned `WA1`–`WA4`/`WA` — before it, a weighted assessment was queued with the
@@ -545,6 +548,36 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   **Next time (Adrian, 12 Oct 2026: "yes"):** that walk was ~5,700 look-ups and 237 downloads in minutes from
   his connection — it stands out in Grail's logs and the address can be matched to his own Grail use. From now
   on: read grail.moe's terms first, fetch a few files a minute, and only the papers Adrian names — no id walk.
+
+### 4f. Sec 1–2 History, Geography and English (21 Oct 2026)
+
+Adrian, 21 Oct 2026: *"yes — set up Sec 1–2 levels for Geography, History and English, then queue the 78 files"*.
+A helper had copied 78 lower-sec Grail files (Dropbox `AdrianMath Work/Papers/Lower Sec Geography|History|English/<year>/`,
+bucket `sources/_grail/<subject>/`) and filed them `library` because no level existed.
+
+- **Levels:** `S1_HIST`, `S2_HIST`, `S1_GEOG`, `S2_GEOG` (new — `SPEC-HUMANITIES.md` §4b, migration
+  `migrations/humanities_lower_sec_levels.sql`, law *Sec 1–2 History and Geography*, archive
+  `exam-extraction-2026-10-21`, rule `xr-lower-sec-history-geography`); English uses the existing `S2_EL`.
+  The inbox parser files the names (`parseSourceFilename`, tested). The bot needed no change: the lane passes
+  the row's level through, and only the database functions check it.
+- **What happened to the 78** (each row's notes say why, ending `QUEUED 21 Oct 2026 …` / `HELD 21 Oct 2026 …`):
+  - **66 queued** — 60 with the school's scheme inside the file (most files print the paper then its scheme;
+    six are schemes that reprint every question, so they ARE the paper), 3 Assumption English Sec 2 History
+    papers paired with their separate `… MS.pdf` (filed `skipped`), and 3 Sec 2 English papers with no scheme
+    (banked without answers, §Language papers). The two English Paper 2s had their Insert merged in FIRST
+    (new objects `… P2 (with Insert).pdf`; the booklet alone stays in the bucket).
+  - **3 held** (no scheme anywhere, and the law never writes a humanities model answer): Springfield S2
+    Geography 2022, Seng Kang S2 History WA2 and WA3 2026.
+  - **5 skipped** (schemes kept for pairing): the three Assumption MS files and two Victoria English Paper 1
+    Section C outlines (their papers are not in the library).
+  - **4 library**: the two English Inserts (merged), the blank Seng Kang WA3 2024 Geography (its answered copy
+    is queued), the first Victoria S1 History WA2 copy (the cleaner second copy is queued).
+  - Corrections on the rows: "S1 Geography Mock 2026 Paya Lebar Methodist Girls MS" is a Sec 1 HISTORY paper
+    (filed history / `S1_HIST`; the Dropbox file keeps its old name and folder); "S2 History SA2 2025 Seng Kang
+    MS" is a class practice worksheet (exam_type `Practice`).
+  - Never queued: the Seng Kang Sec 2 History WA3 "MS" (Grail #25202) is a student's marked script — not in
+    the library at all, kept only in Dropbox.
+- The queue was otherwise empty when they went in, so they run next.
 
 ## 4b. The rules in plain words + the extraction learner (5 Oct 2026)
 

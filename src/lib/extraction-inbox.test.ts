@@ -102,11 +102,21 @@ describe('parseSourceFilename — the humanities (5 Oct 2026)', () => {
     expect(parseSourceFilename('Combined Humanities Geography 2260/02 PRELIM 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'GEOG_E', school: 'Bedok View' });
     expect(parseSourceFilename('History 2174 PRELIM 2024 Bedok View P2.pdf')).toMatchObject({ ok: true, level: 'HIST', school: 'Bedok View', paper: 'p2' });
   });
-  it('a maths or science name is never humanities, and two subjects or a lower-sec level are refused', () => {
+  it('a maths or science name is never humanities, and two subjects are refused', () => {
     expect(parseSourceFilename('EM PRELIM 2024 Bukit Merah SS P1.pdf')).toMatchObject({ ok: true, level: 'EM', subject: 'math' });
     expect(parseSourceFilename('S2 SA2 2021 Clementi Town SS.pdf')).toMatchObject({ ok: true, level: 'S2', subject: 'math' });
     expect(parseSourceFilename('History Geography GCE 2020 Paper 1.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('two humanities') });
-    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('upper-sec humanities') });
+  });
+  it('Sec 1–2 History and Geography have their own levels (21 Oct 2026); Sec 1–2 Social Studies is refused', () => {
+    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: true, level: 'S2_HIST', subject: 'history', school: 'Hua Yi', examType: 'SA2' });
+    expect(parseSourceFilename('S1 Geography SA2 2022 Ang Mo Kio.pdf')).toMatchObject({ ok: true, level: 'S1_GEOG', subject: 'geography', school: 'Ang Mo Kio' });
+    expect(parseSourceFilename('S2 History SA2 (G2) 2025 Bendemeer (with scheme).pdf')).toMatchObject({ ok: true, level: 'S2_HIST', school: 'Bendemeer' });
+    expect(parseSourceFilename('S1 History WA2 2024 Victoria.pdf')).toMatchObject({ ok: true, level: 'S1_HIST', examType: 'WA2', school: 'Victoria' });
+    expect(parseSourceFilename('S2 Geography SA2 2022 West Spring MS.pdf')).toMatchObject({ ok: true, level: 'S2_GEOG', school: 'West Spring' });
+    expect(libraryKindOf('S2 Geography SA2 2022 West Spring MS.pdf')).toBe('solutions');
+    expect(parseSourceFilename('S2 Social Studies SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('Sec 3') });
+    // Sec 3 stays on the upper-sec level, as before
+    expect(parseSourceFilename('History S3 EOY 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'HIST' });
   });
   it('a humanities paper is never filed for the maths marker', () => {
     const name = 'History GCE 2025 Paper 1.pdf';

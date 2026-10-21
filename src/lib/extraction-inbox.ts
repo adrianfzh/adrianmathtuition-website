@@ -174,7 +174,7 @@ function detectScience(stem: string): { level: string; subject: SourceSubject } 
 // FIRST token ("SS GCE 2025 Paper 1.pdf"), so a maths school whose name ends in SS is never
 // read as Social Studies. "Elective", "Combined Humanities" or an elective syllabus code
 // beside History / Geography makes it the elective. Never when a maths level token or a
-// science word is in the name, and never at Sec 1–3 (no lower-sec humanities level exists).
+// science word is in the name. Sec 1–2 → S1_/S2_ levels (21 Oct 2026, below); Sec 3 → the upper-sec level.
 const HUMANITIES_RULES: Array<[RegExp, string, SourceSubject]> = [
   [/\bSOCIAL\s+STUDIES\b|^SS\b/i, 'SS', 'social_studies'],
   [/\bHISTORY\b|^HIST(?:\s?E)?\b|\b2174\b/i, 'HIST', 'history'],
@@ -202,7 +202,8 @@ const HUMANITIES_CODES = /\b(?:2174|2236|2279|2204|2260|2261|2262|2263|2264|2265
 // School papers (6 Oct 2026, Adrian: "copy the secondary humanities and languages and yes queue
 // humanities"): a subject WORD beats a maths level token ("Social Studies (NA) PRELIM 2019 X" is
 // N(A) Social Studies, SS_NA); NA / (NA) / 4NA beside Social Studies is the N(A) paper; S3 is the
-// same upper-sec syllabus, filed under the same level. Sec 1–2 still has no humanities level.
+// same upper-sec syllabus, filed under the same level. Sec 1–2 History / Geography: S1_HIST, S2_HIST,
+// S1_GEOG, S2_GEOG since 21 Oct 2026.
 const HUMANITIES_SUBJECT_WORD = /\bSOCIAL\s+STUDIES\b|\bHISTORY\b|\bGEOGRAPHY\b/i;
 const HUMANITIES_NA = /\bNA\b|\(NA\)|\b4NA\b|N\(A\)/i;
 
@@ -211,8 +212,16 @@ function detectHumanities(stem: string): { level: string; subject: SourceSubject
   const hits = HUMANITIES_RULES.filter(([re]) => re.test(stem));
   if (!hits.length) return null;
   if (hits.length > 1) return { refuse: `the name names two humanities subjects (${hits.map(h => h[1]).join(' + ')}) — one paper per file` };
-  if (/\bS[12]\b/i.test(stem)) return { refuse: 'only upper-sec humanities have a level (HIST / HIST_E / GEOG / GEOG_E / SS / SS_NA) — no lower-sec humanities level yet' };
   const [, base, subject] = hits[0];
+  // Lower-sec History / Geography (21 Oct 2026, Adrian: "set up Sec 1–2 levels for Geography,
+  // History and English"): "S1 Geography SA2 2022 X" → S1_GEOG, "S2 History SA2 2023 X" → S2_HIST.
+  // One level per year (the file names and covers tell Sec 1 from Sec 2); G2 / G3 / Express share
+  // it (the stream goes in the row notes). No elective at Sec 1–2, and no lower-sec Social Studies.
+  const lower = stem.match(/\bS(?:ec\s?)?([12])\b/i);
+  if (lower) {
+    if (base === 'SS') return { refuse: 'Social Studies starts at Sec 3 — no Sec 1–2 Social Studies level' };
+    return { level: `S${lower[1]}_${base}`, subject };
+  }
   if (base === 'SS') return { level: HUMANITIES_NA.test(stem) ? 'SS_NA' : 'SS', subject };
   return { level: HUMANITIES_ELECTIVE.test(stem) ? `${base}_E` : base, subject };
 }
@@ -258,7 +267,7 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   let school = stem
     .replace(yearMatch[0], ' ')
     .replace(/\b(S[1-4]|JC[12]|H[12]|AM|EM|Sec\s?[1-4])\b/gi, ' ')
-    .replace(/\((NA|NT)\)|\bG[123]\b|\b(4045|4046|4047|4048|9758)\b/gi, ' ')
+    .replace(/\((NA|NT|G[123])\)|\bG[123]\b|\b(4045|4046|4047|4048|9758)\b/gi, ' ')
     .replace(/\bP(?:aper)?\s?[1-6]\b/gi, ' ')
     .replace(/\bPaper\b/gi, ' ')
     // A kind word is never a school either (26 Sep 2026): "West Spring P1 MS" is

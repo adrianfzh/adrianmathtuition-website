@@ -707,6 +707,28 @@ the law's §Humanities papers → *School papers* (v2026-10-06, archive `exam-ex
 Still grounding-only — nothing reads them but the marker's future background step. The queue side
 and the counts are in `docs/EXTRACTION-QUEUE.md` §4e.
 
+**Sec 1–2 History and Geography join (21 Oct 2026, Adrian: "yes — set up Sec 1–2 levels for
+Geography, History and English, then queue the 78 files").** Four levels, one per school year like
+the maths `S1` / `S2` and English `S1_EL` / `S2_EL`: **`S1_HIST`, `S2_HIST`, `S1_GEOG`, `S2_GEOG`**
+(Express, G3 and G2 share the year's level; the stream goes in the row notes — the file names and
+covers tell Sec 1 from Sec 2, so one code per year is safe). `humanities_topics.bands` (`upper` /
+`lower`) keeps two closed lists apart: the function refuses a Sec 1–2 row tagged with an upper-sec
+topic and the other way round. Sec 1–2 lists (MOE lower-sec syllabus, checked against the papers):
+History — Singapore before 1819 · The founding of modern Singapore · Colonial Singapore as a port
+city (1819–1942) · Immigrants and life in colonial Singapore · The fall of Singapore and the
+Japanese Occupation · Post-war Singapore and the road to self-government · Merger with Malaysia and
+separation · Safeguarding independence and nation-building · Historical enquiry and source skills;
+Geography — Water (cycle and budget · supply and management · floods, droughts and quality) ·
+Forests (rainforests and mangroves · uses, deforestation and conservation) · Natural resources and
+energy · Housing (demand, provision and slums · planning and sustainable housing) · Transport
+(modes, systems and accessibility · impacts, congestion and management), plus Weather and Climate,
+Geographical Investigations and Geographical skills shared with the upper list. No lower-sec
+elective, no lower-sec Social Studies (the inbox refuses `S1/S2 Social Studies`). Migration
+`migrations/humanities_lower_sec_levels.sql`; the law's §Humanities papers → *Sec 1–2 History and
+Geography* (v2026-10-21, archive `exam-extraction-2026-10-21`; rule row
+`xr-lower-sec-history-geography`). Same posture: grounding only, RLS with no policies, nothing
+served, `HUMANITIES_OPEN_TO_STUDENTS` stays false.
+
 ## 5. What stays out
 
 - No school paper served to a student (docs/CONTENT-POLICY.md).
