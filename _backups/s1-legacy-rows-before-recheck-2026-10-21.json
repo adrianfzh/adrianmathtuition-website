@@ -1,0 +1,2724 @@
+[
+ {
+  "id": "5d75c5f8-522a-4ad2-8f1c-342d2c59a175",
+  "school": "Anglo Chinese School (Barker Road)",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "13",
+  "topics": [
+   "Algebra (Factorization)"
+  ],
+  "question_text": "Factorise the following completely.",
+  "parts": [
+   {
+    "text": "$21x^{2}y + 7xz$",
+    "label": "a",
+    "marks": 1,
+    "answer": "$7x(3xy + z)$",
+    "solution": "Common factor of $21x^{2}y$ and $7xz$ is $7x$.\n$21x^{2}y + 7xz = 7x(3xy + z)$"
+   },
+   {
+    "text": "$(a - b)(c + 1) + b(c + 1)$",
+    "label": "b",
+    "marks": 2,
+    "answer": "$a(c + 1)$",
+    "solution": "Common factor $(c + 1)$:\n$(a - b)(c + 1) + b(c + 1) = (c + 1)[(a - b) + b]$\n$= (c + 1)(a - b + b)$\n$= a(c + 1)$"
+   },
+   {
+    "text": "$2xy - 6ay + x - 3a$",
+    "label": "c",
+    "marks": 2,
+    "answer": "$(x - 3a)(2y + 1)$",
+    "solution": "Group in pairs:\n$2xy - 6ay + x - 3a = 2y(x - 3a) + 1(x - 3a)$\n$= (x - 3a)(2y + 1)$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "90c407ce-ce56-47da-a866-6195e2b4b7ee",
+  "school": "North Vista",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "11",
+  "topics": [
+   "Mensuration"
+  ],
+  "question_text": "A portion of a solid cuboid is cut and removed as shown. Given that all dimensions in the diagram are in centimetres, find",
+  "parts": [
+   {
+    "text": "the volume,",
+    "label": "a",
+    "marks": 3,
+    "answer": "$3600$ cm$^3$",
+    "solution": "The uniform cross-section is a $14$ by $16$ rectangle with a right-angled triangle cut off.\nHorizontal side of the triangle $= 14 - 8 = 6$ cm\nVertical side $= \\sqrt{10^2 - 6^2} = \\sqrt{64} = 8$ cm\nCross-sectional area $= 14 \\times 16 - \\frac{1}{2}(6)(8) = 224 - 24 = 200$ cm$^2$\nVolume $= 200 \\times 18 = 3600$ cm$^3$"
+   },
+   {
+    "text": "the total surface area of the solid that remains.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$1408$ cm$^2$",
+    "solution": "Two cross-sectional faces $= 2 \\times 200 = 400$ cm$^2$\nPerimeter of the cross-section $= 16 + 14 + 8 + 10 + 8 = 56$ cm\nSurrounding surfaces $= 56 \\times 18 = 1008$ cm$^2$\nTotal surface area $= 400 + 1008 = 1408$ cm$^2$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "33c1a573-9dcf-49a2-b696-0fbfc22f3403",
+  "school": "Beatty",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "1",
+  "topics": [
+   "Algebra (Expressions)",
+   "Algebra (Fractions)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Given that $x = \\frac{2a^2 - 1}{5 - (2a)^3}$, find the value of $x$ when $a = -\\frac{1}{3}$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$-\\frac{21}{143}$",
+    "solution": "$2a^2 - 1 = 2\\left(-\\frac{1}{3}\\right)^2 - 1 = \\frac{2}{9} - 1 = -\\frac{7}{9}$\n$(2a)^3 = \\left(-\\frac{2}{3}\\right)^3 = -\\frac{8}{27}$\n$5 - (2a)^3 = 5 + \\frac{8}{27} = \\frac{143}{27}$\n$x = -\\frac{7}{9} \\div \\frac{143}{27} = -\\frac{7}{9} \\times \\frac{27}{143} = -\\frac{21}{143}$"
+   },
+   {
+    "text": "Simplify $\\frac{3cd}{2c + 2d} \\div \\frac{(3d)^2}{8(c + d)^2}$.",
+    "label": "b",
+    "marks": 3,
+    "answer": "$\\frac{4c(c + d)}{3d}$",
+    "solution": "$\\frac{3cd}{2c + 2d} \\div \\frac{(3d)^2}{8(c + d)^2} = \\frac{3cd}{2(c + d)} \\times \\frac{8(c + d)^2}{9d^2}$\n$= \\frac{24cd(c + d)^2}{18d^2(c + d)}$\n$= \\frac{4c(c + d)}{3d}$"
+   },
+   {
+    "text": "Express $\\frac{2x - 3}{5} - \\frac{1 - x}{2}$ as a single fraction.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$\\frac{9x - 11}{10}$",
+    "solution": "$\\frac{2x - 3}{5} - \\frac{1 - x}{2} = \\frac{2(2x - 3)}{10} - \\frac{5(1 - x)}{10}$\n$= \\frac{4x - 6 - 5 + 5x}{10}$\n$= \\frac{9x - 11}{10}$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "36dd98b7-cc48-45b1-935a-3087664f215e",
+  "school": "St Patrick",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "7",
+  "topics": [
+   "Algebra (Linear Equations)",
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve $\\frac{x - 2}{8} = \\frac{3x + 7}{9}$.",
+    "label": "a",
+    "marks": 3,
+    "answer": "$x = -4\\frac{14}{15}$",
+    "solution": "$\\frac{x - 2}{8} = \\frac{3x + 7}{9}$\n$9(x - 2) = 8(3x + 7)$\n$9x - 18 = 24x + 56$\n$9x - 24x = 56 + 18$\n$-15x = 74$\n$x = -\\frac{74}{15} = -4\\frac{14}{15}$"
+   },
+   {
+    "text": "A bus can ferry a maximum of 45 students. By setting up an inequality, find the minimum number of buses that are needed to ferry 520 students.",
+    "label": "b",
+    "marks": 3,
+    "answer": "$x \\ge 11\\frac{5}{9}$, so the minimum number of buses needed is 12",
+    "solution": "Let $x$ be the number of buses needed.\n$45x \\ge 520$\n$x \\ge \\frac{520}{45}$\n$x \\ge 11\\frac{5}{9}$\nThe number of buses must be a whole number, so the minimum number of buses needed is 12."
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "4880db84-4528-4060-9150-092392e5be37",
+  "school": "Tanjong Katong",
+  "year": 2017,
+  "paper": "2",
+  "question_number": "4",
+  "topics": [
+   "Algebra (Inequalities)",
+   "Algebra (Linear Equations)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $15 - 3x < -x - 16$.\nHence, find the smallest prime number, $x$, such that $15 - 3x < -x - 16$.",
+    "label": "a",
+    "marks": 4,
+    "answer": "$x > 15.5$ ; smallest prime number $= 17$",
+    "solution": "$15 - 3x < -x - 16$\n$15 + 16 < -x + 3x$\n$31 < 2x$\n$x > 15.5$\nThe prime numbers greater than 15.5 are $17, 19, 23, \\ldots$\nSmallest prime number $= 17$"
+   },
+   {
+    "text": "It is given that $-3 \\leq x \\leq 1$ and $-5 \\leq y \\leq 2$, calculate",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "the smallest possible value of $x - y$,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$-5$",
+      "solution": "$x - y$ is smallest when $x$ is smallest and $y$ is largest.\nSmallest value $= -3 - 2 = -5$"
+     },
+     {
+      "text": "the greatest possible value of $x^{2} + y^{2}$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "34",
+      "solution": "Greatest $x^{2} = (-3)^{2} = 9$ and greatest $y^{2} = (-5)^{2} = 25$.\nGreatest value of $x^{2} + y^{2} = 9 + 25 = 34$"
+     }
+    ]
+   },
+   {
+    "text": "Given that $x = 6$ is the solution to the equation $2kx - 7 = x + 11$, find the value of $k$.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$k = 2$",
+    "solution": "$2k(6) - 7 = 6 + 11$\n$12k - 7 = 17$\n$12k = 24$\n$k = 2$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "77e23230-dd32-43b7-8737-d4865371b02f",
+  "school": "Maris Stella",
+  "year": 2016,
+  "paper": "1",
+  "question_number": "5",
+  "topics": [
+   "Algebra (Factorization)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Factorize $3xy - 6ay + 8a - 4x$ completely.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$(x - 2a)(3y - 4)$",
+    "solution": "$3xy - 6ay + 8a - 4x$\n$= 3y(x - 2a) - 4(x - 2a)$\n$= (x - 2a)(3y - 4)$"
+   },
+   {
+    "text": "",
+    "label": "b",
+    "marks": 3,
+    "subparts": [
+     {
+      "text": "Factorize $st + sr$.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$s(t + r)$",
+      "solution": "$s$ is a common factor of both terms.\n$st + sr = s(t + r)$"
+     },
+     {
+      "text": "Hence, using the result from (i), find the value of $6789 \\times 501 + 6789 \\times 499$.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "6789000",
+      "solution": "Taking $s = 6789$, $t = 501$ and $r = 499$:\n$6789 \\times 501 + 6789 \\times 499 = 6789(501 + 499)$\n$= 6789 \\times 1000 = 6789000$"
+     }
+    ]
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "33239afe-a7e3-4667-9c19-afb929b6efa4",
+  "school": "Maris Stella",
+  "year": 2016,
+  "paper": "1",
+  "question_number": "6",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Write down the largest integer that satisfies $-2 \\leq a < 3$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$a = 2$",
+    "solution": "$a$ may take the integer values $-2, -1, 0, 1, 2$ ($3$ is excluded because the inequality is strict).\nLargest integer: $a = 2$"
+   },
+   {
+    "text": "Solve the inequality $2x - 4x \\geq 3 - 9$ and illustrate the solution on the number line.",
+    "label": "b",
+    "marks": 3,
+    "answer": "$x \\leq 3$",
+    "solution": "$2x - 4x \\geq 3 - 9$\n$-2x \\geq -6$\nDividing both sides by $-2$ reverses the inequality sign:\n$x \\leq 3$\nOn the number line: a filled (shaded) circle at $3$ with the arrow shaded to the left."
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "f11067bd-82b4-4515-9865-eb4dd063a759",
+  "school": "CHIJ St Joseph",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "11",
+  "topics": [
+   "Algebra (Expansion)"
+  ],
+  "question_text": "Expand and simplify",
+  "parts": [
+   {
+    "text": "$4mn(5m - 4n)$,",
+    "label": "a",
+    "marks": 1,
+    "answer": "$20m^{2}n - 16mn^{2}$",
+    "solution": "$4mn(5m - 4n) = 4mn \\times 5m - 4mn \\times 4n = 20m^{2}n - 16mn^{2}$"
+   },
+   {
+    "text": "$(k + 7)(4 - 3k)$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$-3k^{2} - 17k + 28$",
+    "solution": "$(k + 7)(4 - 3k) = 4k - 3k^{2} + 28 - 21k = -3k^{2} - 17k + 28$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "9b71525f-4b06-40b3-93b2-2277ebfcb278",
+  "school": "Kranji",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "2",
+  "topics": [
+   "Algebra (Expressions)"
+  ],
+  "question_text": "It is given that $d = \\frac{3f}{g^{2}}$.",
+  "parts": [
+   {
+    "text": "Find the value of $d$ when $f = 5$ and $g = 2$",
+    "label": "a",
+    "marks": 2,
+    "answer": "$d = 3.75$",
+    "solution": "$d = \\frac{3(5)}{2^{2}} = \\frac{15}{4} = 3.75$"
+   },
+   {
+    "text": "Make $g$ the subject of the formula.",
+    "label": "b",
+    "marks": 3,
+    "answer": "$g = \\pm\\sqrt{\\frac{3f}{d}}$",
+    "solution": "$d = \\frac{3f}{g^{2}}$\n$dg^{2} = 3f$\n$g^{2} = \\frac{3f}{d}$\n$g = \\pm\\sqrt{\\frac{3f}{d}}$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "8ad7265a-c0fa-41b7-8b8a-7091754cc0a5",
+  "school": "Changkat Changi",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "8",
+  "topics": [
+   "Algebra (Factorization)"
+  ],
+  "question_text": "Factorise completely.",
+  "parts": [
+   {
+    "text": "$2ab - 4a^{2}$",
+    "label": "a",
+    "marks": 1,
+    "answer": "$2a(b - 2a)$",
+    "solution": "$2ab - 4a^{2} = 2a(b - 2a)$"
+   },
+   {
+    "text": "$2xy + 8y + 3x + 12$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$(x + 4)(2y + 3)$",
+    "solution": "$2xy + 8y + 3x + 12 = 2y(x + 4) + 3(x + 4) = (x + 4)(2y + 3)$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "4ccd8f90-1094-4ce6-9aac-0ef36fe5b892",
+  "school": "Ang Mo Kio",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "2",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "List all the integers that satisfy $-4 < x \\leq 2$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$-3,\\ -2,\\ -1,\\ 0,\\ 1,\\ 2$",
+    "solution": "$x$ must be greater than $-4$ and less than or equal to $2$.\n$-4$ is excluded and $2$ is included, so the integers are $-3,\\ -2,\\ -1,\\ 0,\\ 1,\\ 2$."
+   },
+   {
+    "text": "Solve the inequality $-4x < 36$.",
+    "label": "b",
+    "marks": 1,
+    "answer": "$x > -9$",
+    "solution": "$-4x < 36$\nDivide both sides by $-4$; dividing by a negative number reverses the inequality sign:\n$x > -9$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "bae4fb50-d0d5-4aeb-8c7f-9c820a934667",
+  "school": "Geylang Methodist",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "9",
+  "topics": [
+   "Algebra (Fractions)",
+   "Algebra (Expressions)"
+  ],
+  "question_text": "Simplify",
+  "parts": [
+   {
+    "text": "$\\sqrt{\\dfrac{64a^4}{81b^6}} \\div \\left( \\dfrac{2a}{3b} \\right)^3$,",
+    "label": "a",
+    "marks": 2,
+    "answer": "$\\dfrac{3}{a}$",
+    "solution": "$\\sqrt{\\dfrac{64a^4}{81b^6}} = \\dfrac{8a^2}{9b^3}$\n$\\left( \\dfrac{2a}{3b} \\right)^3 = \\dfrac{8a^3}{27b^3}$\n$\\dfrac{8a^2}{9b^3} \\div \\dfrac{8a^3}{27b^3} = \\dfrac{8a^2}{9b^3} \\times \\dfrac{27b^3}{8a^3} = \\dfrac{27}{9a} = \\dfrac{3}{a}$"
+   },
+   {
+    "text": "$\\dfrac{u}{6} + \\dfrac{2(u - 1)}{3}$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$\\dfrac{5u - 4}{6}$",
+    "solution": "$\\dfrac{u}{6} + \\dfrac{2(u - 1)}{3} = \\dfrac{u}{6} + \\dfrac{4(u - 1)}{6} = \\dfrac{u + 4u - 4}{6} = \\dfrac{5u - 4}{6}$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "5d40b49b-1499-49ae-913d-1b95c24d635e",
+  "school": "Kranji",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "16",
+  "topics": [
+   "Algebra (Factorization)"
+  ],
+  "question_text": "Factorize $3p^{2} + 6pq - 4pr - 8qr$ completely.",
+  "parts": null,
+  "answer": "$(p + 2q)(3p - 4r)$",
+  "solution": "Group the terms in pairs:\n$3p^{2} + 6pq - 4pr - 8qr = 3p(p + 2q) - 4r(p + 2q)$\n$= (p + 2q)(3p - 4r)$",
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "b30f36b9-665a-420b-8d4f-08ca8ed3ffa9",
+  "school": "Kranji",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "8",
+  "topics": [
+   "Algebra (Fractions)"
+  ],
+  "question_text": "Simplify $\\frac{7xy^{3}}{2x} \\div \\frac{14}{y}$",
+  "parts": null,
+  "answer": "$\\frac{y^{4}}{4}$",
+  "solution": "$\\frac{7xy^{3}}{2x} \\div \\frac{14}{y} = \\frac{7y^{3}}{2} \\times \\frac{y}{14}$\n$= \\frac{7y^{4}}{28}$\n$= \\frac{y^{4}}{4}$",
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "a74e7ca5-46ca-4772-ada1-0c28c1e28aba",
+  "school": "Kranji",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "14",
+  "topics": [
+   "Algebra (Inequalities)",
+   "Number Patterns"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $2x + 10 \\geq 5x - 8$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x \\leq 6$",
+    "solution": "$2x + 10 \\geq 5x - 8$\n$10 + 8 \\geq 5x - 2x$\n$18 \\geq 3x$\n$6 \\geq x$\n$x \\leq 6$"
+   },
+   {
+    "text": "The first four terms of a sequence are\n$$3,\\ 8,\\ 13,\\ 18$$",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "Write down the next two terms.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$23,\\ 28$",
+      "solution": "Each term is $5$ more than the one before it.\nNext two terms: $18 + 5 = 23$ and $23 + 5 = 28$."
+     },
+     {
+      "text": "Write down an expression, in terms of $n$, for the $n^{\\text{th}}$ term of this sequence.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$5n - 2$",
+      "solution": "The common difference is $5$, so the $n$th term has the form $5n + c$.\nWhen $n = 1$ the term is $3$: $5(1) + c = 3$, so $c = -2$.\nThe $n$th term is $5n - 2$.\n(Check: $n = 4$ gives $5(4) - 2 = 18$.)"
+     }
+    ]
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "3f3843b3-0f90-4cc4-a75f-6dddd8e9a53e",
+  "school": "Peicai",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Algebra (Expressions)",
+   "Algebra (Fractions)",
+   "Algebra (Linear Equations)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Find the value of $a^{3}b - (3b)^{2}$ when $a = -\\frac{5}{2}$ and $b = 7$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$-550.375$",
+    "solution": "$a^{3}b = \\left(-\\frac{5}{2}\\right)^{3}(7) = -\\frac{125}{8} \\times 7 = -\\frac{875}{8} = -109.375$\n$(3b)^{2} = (21)^{2} = 441$\n$a^{3}b - (3b)^{2} = -109.375 - 441 = -550.375$"
+   },
+   {
+    "text": "Simplify $\\frac{3xy^{2}}{8z^{3}} \\div \\left( \\frac{-6x^{2}y}{z^{2}} \\right)$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$-\\frac{y}{16xz}$",
+    "solution": "$\\frac{3xy^{2}}{8z^{3}} \\div \\left( \\frac{-6x^{2}y}{z^{2}} \\right) = \\frac{3xy^{2}}{8z^{3}} \\times \\frac{z^{2}}{-6x^{2}y} = \\frac{3xy^{2}z^{2}}{-48x^{2}yz^{3}} = -\\frac{y}{16xz}$"
+   },
+   {
+    "text": "Solve $\\frac{x + 2}{6} - \\frac{3x - 5}{7} = x$.",
+    "label": "c",
+    "marks": 3,
+    "answer": "$x = \\frac{44}{53}$",
+    "solution": "Multiply throughout by 42:\n$7(x + 2) - 6(3x - 5) = 42x$\n$7x + 14 - 18x + 30 = 42x$\n$-11x + 44 = 42x$\n$44 = 53x$\n$x = \\frac{44}{53}$"
+   }
+  ],
+  "answer": "(a) $-550.375$  (b) $-\\frac{y}{16xz}$  (c) $x = \\frac{44}{53}$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "e54d2f23-7a65-4441-9c5b-0dd9a9629d8e",
+  "school": "Nanyang Girls",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "2",
+  "topics": [
+   "Algebra (Factorization)"
+  ],
+  "question_text": "Factorise completely",
+  "parts": [
+   {
+    "text": "$12x^{2} - x - 6$",
+    "label": "a",
+    "marks": 1,
+    "answer": "$(3x + 2)(4x - 3)$",
+    "solution": "$12x^{2} - x - 6 = (3x + 2)(4x - 3)$\nCheck: $(3x)(4x) = 12x^{2}$, $(3x)(-3) + (2)(4x) = -9x + 8x = -x$, $(2)(-3) = -6$"
+   },
+   {
+    "text": "$18c^{2} - 50$",
+    "label": "b",
+    "marks": 2,
+    "answer": "$2(3c - 5)(3c + 5)$",
+    "solution": "Take out the common factor $2$ first.\n$18c^{2} - 50 = 2(9c^{2} - 25)$\n$= 2\\left[(3c)^{2} - 5^{2}\\right]$\n$= 2(3c - 5)(3c + 5)$"
+   },
+   {
+    "text": "$4x^{2} - 6x - 9y + 6xy$",
+    "label": "c",
+    "marks": 2,
+    "answer": "$(2x - 3)(2x + 3y)$",
+    "solution": "Rearrange and group in pairs.\n$4x^{2} - 6x - 9y + 6xy = 4x^{2} - 6x + 6xy - 9y$\n$= 2x(2x - 3) + 3y(2x - 3)$\n$= (2x - 3)(2x + 3y)$"
+   }
+  ],
+  "answer": "(a) $(3x + 2)(4x - 3)$; (b) $2(3c - 5)(3c + 5)$; (c) $(2x - 3)(2x + 3y)$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "562b2e67-a971-4e6f-8ff3-90beb0b5d4c5",
+  "school": "Anglo Chinese School (Independent)",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "4",
+  "topics": [
+   "Statistics",
+   "Numbers (Percentages)"
+  ],
+  "question_text": "The diagram below shows a line graph for the number of dengue fever cases over the past 7 weeks.",
+  "parts": [
+   {
+    "text": "Find the average number of dengue fever cases, giving your answer correct to the nearest whole number, reported for the 7 weeks.",
+    "label": "a",
+    "marks": 2,
+    "answer": "208 cases",
+    "solution": "From the graph the numbers of cases are 158, 193, 214, 234, 246, 223 and 190.\nTotal $= 158 + 193 + 214 + 234 + 246 + 223 + 190 = 1458$\nAverage $= \\frac{1458}{7} = 208.28\\ldots$\nAverage $= 208$ cases  (to the nearest whole number)"
+   },
+   {
+    "text": "Find the percentage increase of the number of dengue fever cases between week 2 and week 5, giving your answer correct to 3 significant figures.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$27.5\\%$",
+    "solution": "Week 2: 193 cases.  Week 5: 246 cases.\nIncrease $= 246 - 193 = 53$\nPercentage increase $= \\frac{53}{193} \\times 100\\% = 27.461\\ldots\\%$\nPercentage increase $= 27.5\\%$  (3 s.f.)"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "1b6e8c6a-1ac2-4c8d-876b-3b6df9696ef8",
+  "school": "Changkat Changi",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "12",
+  "topics": [
+   "Mensuration"
+  ],
+  "question_text": "In the diagram, $ABDE$ is a trapezium and $BCD$ is a semicircle. $AB = ED = 15$ cm, $AE = 25$ cm and $BD = 49$ cm. Taking $\\pi = \\frac{22}{7}$, calculate",
+  "parts": [
+   {
+    "text": "the perimeter of the figure,",
+    "label": "a",
+    "marks": 2,
+    "answer": "$132$ cm",
+    "solution": "Radius of the semicircle $= \\frac{49}{2} = 24.5$ cm.\nArc $BCD = \\pi r = \\frac{22}{7} \\times 24.5 = 77$ cm.\nPerimeter $= AE + AB + ED + \\text{arc } BCD = 25 + 15 + 15 + 77 = 132$ cm."
+   },
+   {
+    "text": "the area of the figure.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$1276.25$ cm$^2$",
+    "solution": "Height of the trapezium: the horizontal overhang on each side is $\\frac{49 - 25}{2} = 12$ cm, so the height $= \\sqrt{15^{2} - 12^{2}} = \\sqrt{81} = 9$ cm.\nArea of trapezium $= \\frac{1}{2}(25 + 49)(9) = 333$ cm$^2$.\nArea of semicircle $= \\frac{1}{2} \\times \\frac{22}{7} \\times 24.5^{2} = 943.25$ cm$^2$.\nTotal area $= 333 + 943.25 = 1276.25$ cm$^2$."
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "49ec16d4-060e-493b-a404-50201d95ba84",
+  "school": "Catholic High (IP)",
+  "year": 2011,
+  "paper": "1",
+  "question_number": "4",
+  "topics": [
+   "Statistics"
+  ],
+  "question_text": "The mean of a set of 50 numbers is 6, and the mean of another set of $n$ numbers is 9. The mean of the combined sets of $50 + n$ numbers is 8. Find the value of $n$.",
+  "parts": null,
+  "answer": "$n = 100$",
+  "solution": "Convert each mean into a total.\n$$\\text{Total of the first set}=50\\times 6=300$$\n$$\\text{Total of the second set}=n\\times 9=9n$$\nThe combined set has $50+n$ numbers and mean 8, so\n$$\\frac{300+9n}{50+n}=8$$\n$$300+9n=8(50+n)=400+8n$$\n$$9n-8n=400-300$$\n$$n=100$$",
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "b0169f58-34a3-4e2f-9dcd-3e1c18f16622",
+  "school": "Nanyang Girls",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "5",
+  "topics": [
+   "Mensuration"
+  ],
+  "question_text": "As part of the inter-disciplinary unit, many groups have mooted the idea of implementing vertical gardening for food sustainability in the school. The diagram below shows a recommendation of how the auto-irrigation system for the plants may look like. The container is in the form of a right hollow cone joined to a cylinder. The diameter of the cylinder is 42 cm and the height of the cone is 20 cm. 25 000 cm$^3$ of water is poured into it. [Take $\\pi = \\frac{22}{7}$] (Curved surface area of cone $= \\pi r l$, Volume of cone $= \\frac{1}{3}\\pi r^{2} h$)",
+  "parts": [
+   {
+    "text": "Calculate the height of the water in the cylinder, giving your answer correct to 3 significant figures.",
+    "label": "a",
+    "marks": 3,
+    "answer": "$11.4$ cm",
+    "solution": "Radius $= \\frac{42}{2} = 21$ cm\nVolume of cone $= \\frac{1}{3} \\times \\frac{22}{7} \\times 21^{2} \\times 20 = 9240$ cm$^3$\nThe cone fills first, so the volume of water in the cylinder $= 25000 - 9240 = 15760$ cm$^3$\nCross-sectional area of cylinder $= \\frac{22}{7} \\times 21^{2} = 1386$ cm$^2$\nHeight of water in the cylinder $= \\frac{15760}{1386} = 11.3708\\ldots$\nHeight $= 11.4$ cm (3 s.f.)"
+   },
+   {
+    "text": "Given that the slant height of the cone is 29 cm, calculate the surface area of the container that is in contact with the water, giving your answer correct to the nearest ten.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$3410$ cm$^2$",
+    "solution": "The water touches the whole curved surface of the cone and the curved surface of the cylinder up to the water level.\nCurved surface area of cone $= \\pi r l = \\frac{22}{7} \\times 21 \\times 29 = 1914$ cm$^2$\nCurved surface area of the wetted cylinder $= 2\\pi r h = 2 \\times \\frac{22}{7} \\times 21 \\times 11.3708\\ldots = 1500.95\\ldots$ cm$^2$\nTotal $= 1914 + 1500.95 = 3414.95\\ldots$ cm$^2$\nSurface area $= 3410$ cm$^2$ (to the nearest ten)"
+   },
+   {
+    "text": "It is recommended that the water system be programmed to water the plants once a day in the morning, dispensing 3000 cm$^3$ of water each time. The container will be refilled with 25 000 cm$^3$ of water in the evening when it contains less than 1200 cm$^3$ of water. If the container is first filled with water on a Sunday evening, write down and explain when the next time water must be topped up.",
+    "label": "c",
+    "marks": 2,
+    "answer": "On the Monday evening of the following week, because after the 8th watering only $1000$ cm$^3$ is left, which is less than $1200$ cm$^3$.",
+    "solution": "The container starts with $25000$ cm$^3$ and loses $3000$ cm$^3$ each morning.\nAfter $n$ waterings the container holds $(25000 - 3000n)$ cm$^3$.\nAfter 7 waterings: $25000 - 21000 = 4000$ cm$^3$, which is not less than $1200$ cm$^3$, so no refill.\nAfter 8 waterings: $25000 - 24000 = 1000$ cm$^3$, which is less than $1200$ cm$^3$, so it must be refilled.\nThe first watering is on Monday morning, so the 8th watering is on the Monday of the following week.\nWater must be topped up on that Monday evening, 8 days after the first filling."
+   }
+  ],
+  "answer": "(a) $11.4$ cm; (b) $3410$ cm$^2$; (c) On the Monday evening of the following week, because after the 8th watering only $1000$ cm$^3$ is left, which is less than $1200$ cm$^3$.",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "8cb23072-182c-43dd-bf9b-0a4c9675c36f",
+  "school": "Nanyang Girls",
+  "year": 2015,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Algebra (Expressions)"
+  ],
+  "question_text": "Given that $x^{2} + y^{2} = 26$ and $xy = -5$, evaluate",
+  "parts": [
+   {
+    "text": "$\\left( \\frac{x - y}{2} \\right)^{2}$,",
+    "label": "a",
+    "marks": 2,
+    "answer": "9",
+    "solution": "$\\left( \\frac{x - y}{2} \\right)^2 = \\frac{(x - y)^2}{4} = \\frac{x^2 - 2xy + y^2}{4}$\n$= \\frac{26 - 2(-5)}{4}$\n$= \\frac{36}{4} = 9$"
+   },
+   {
+    "text": "$\\left( x + y \\right)^{4}$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "256",
+    "solution": "$(x + y)^2 = x^2 + 2xy + y^2 = 26 + 2(-5) = 16$\n$(x + y)^4 = \\left[ (x + y)^2 \\right]^2 = 16^2 = 256$"
+   }
+  ],
+  "answer": "9; 256",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "61fddeb7-8b49-4d7a-ab2d-a588a25dc332",
+  "school": "Nanyang Girls",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "1",
+  "topics": [
+   "Numbers (Ratio)",
+   "Numbers (Speed)"
+  ],
+  "question_text": "The model of some new HDB flats shown in the HDB gallery was constructed to a scale of $1 : 750$.",
+  "parts": [
+   {
+    "text": "",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "The length of a park connector in a park was 45 cm on the model. Calculate the actual length, in metres, of the park connector.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$337.5$ m",
+      "solution": "Actual length $= 45 \\times 750 = 33750$ cm\n$= \\frac{33750}{100} = 337.5$ m"
+     },
+     {
+      "text": "Mr Tan's new home is one of the new flats in the model. He intends to take 8 minutes to stroll up and down this park connector daily. Calculate Mr Tan's speed in kilometres per hour.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$5.0625$ km/h",
+      "solution": "Up and down the connector $= 2 \\times 337.5 = 675$ m $= 0.675$ km\nTime $= 8$ minutes $= \\frac{8}{60}$ hour\nSpeed $= 0.675 \\div \\frac{8}{60} = 0.675 \\times \\frac{60}{8} = 5.0625$ km/h"
+     }
+    ]
+   },
+   {
+    "text": "The actual area of a vegetable plot was projected to be 58 m$^2$. Calculate, in cm$^2$, the area on the model which represents this.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$1\\frac{7}{225}$ cm$^2$",
+    "solution": "Area scale $= \\left(\\frac{1}{750}\\right)^{2} = \\frac{1}{562500}$\nActual area $= 58$ m$^2 = 58 \\times 10000 = 580000$ cm$^2$\nArea on model $= \\frac{580000}{562500} = \\frac{232}{225} = 1\\frac{7}{225}$ cm$^2$"
+   }
+  ],
+  "answer": "(a)(i) $337.5$ m; (a)(ii) $5.0625$ km/h; (b) $1\\frac{7}{225}$ cm$^2$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "11fac00f-7aa1-4f75-9e8c-2a06852dcd68",
+  "school": "Geylang Methodist",
+  "year": 2014,
+  "paper": "1",
+  "question_number": "10",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "Solve the inequalities and show your solutions on the number lines below.",
+  "parts": [
+   {
+    "text": "$4x > 32$",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x > 8$",
+    "solution": "$4x > 32$\n$x > \\frac{32}{4}$\n$x > 8$\nOn the number line: an open circle at $8$ with the arrow pointing to the right."
+   },
+   {
+    "text": "$-3x < 24$",
+    "label": "b",
+    "marks": 2,
+    "answer": "$x > -8$",
+    "solution": "$-3x < 24$\nDividing by $-3$ REVERSES the inequality sign:\n$x > \\frac{24}{-3}$\n$x > -8$\nOn the number line: an open circle at $-8$ with the arrow pointing to the right."
+   }
+  ],
+  "answer": "(a) $x > 8$; (b) $x > -8$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "150beb93-f532-47e4-b1c7-abf6973b4ff3",
+  "school": "Gan Eng Seng",
+  "year": 2017,
+  "paper": "1",
+  "question_number": "11",
+  "topics": [
+   "Algebra (Expressions)",
+   "Algebra (Fractions)"
+  ],
+  "question_text": "A small pipe takes $x$ minutes to fill a tank while a large pipe takes $y$ minutes to fill the same tank. Express as a single fraction, in terms of $x$ and $y$, the time taken to fill the tank if both pipes were switched on.",
+  "parts": [],
+  "answer": "$\\frac{xy}{x + y}$ minutes",
+  "solution": "In 1 minute the small pipe fills $\\dfrac{1}{x}$ of the tank.\nIn 1 minute the large pipe fills $\\dfrac{1}{y}$ of the tank.\nTogether, in 1 minute they fill $\\dfrac{1}{x} + \\dfrac{1}{y} = \\dfrac{y + x}{xy}$ of the tank.\nTime taken to fill the whole tank $= 1 \\div \\dfrac{x + y}{xy}$\n$= \\dfrac{xy}{x + y}$ minutes",
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "19498239-12f2-47c8-b14a-20ff6da2dde7",
+  "school": "Kranji",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "4",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "A range of values of $x$ is represented on the number line below.\nWrite down inequalities that represent this range of values for $x$.",
+  "parts": null,
+  "answer": "$-3 < x \\leq 3$",
+  "solution": "The circle at $-3$ is unshaded, so $-3$ is not included: $x > -3$.\nThe circle at $3$ is shaded, so $3$ is included: $x \\leq 3$.\nCombining them: $-3 < x \\leq 3$.",
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "1b8686c1-28f8-4969-a6dc-4d3be2b4869d",
+  "school": "Pasir Ris Crest",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "3",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "A range of values for $x$ is represented in the number line below. Write down the inequality that represents this range of values for $x$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$x \\leq 5\\frac{1}{2}$",
+    "solution": "The end point of the arrow is at $5\\frac{1}{2}$, halfway between the $5$ and $6$ marks.\nThe circle at the end point is filled in, so $5\\frac{1}{2}$ is included, and the arrow points to the left, so all smaller values are included.\nThe inequality is $x \\leq 5\\frac{1}{2}$."
+   },
+   {
+    "text": "Given that $y$ satisfies the inequality $-9y < 12$, find the smallest integer value of $y$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$y = -1$",
+    "solution": "$-9y < 12$\nDividing both sides by $-9$ reverses the inequality sign:\n$y > -\\frac{12}{9} = -\\frac{4}{3} = -1\\frac{1}{3}$\nThe integers greater than $-1\\frac{1}{3}$ are $-1, 0, 1, 2, \\ldots$\nThe smallest of these is $y = -1$."
+   },
+   {
+    "text": "Anna organised a sketching meetup for her drawing club members.\nA total of 95 members participated in the meetup.\nShe booked vans that can ferry a maximum of 12 passengers per van.\nFind the smallest number of vans she needed to book to ferry the participants.",
+    "label": "c",
+    "marks": 2,
+    "answer": "8 vans",
+    "solution": "$\\frac{95}{12} = 7.91666...$\nSeven vans carry only $7 \\times 12 = 84$ members, which is not enough, so an eighth van is needed for the remaining $95 - 84 = 11$ members.\nSmallest number of vans $= 8$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "37544c4d-5956-4cea-93cd-cb9656ab8827",
+  "school": "East Spring",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "3",
+  "topics": [
+   "Algebra (Linear Equations)",
+   "Algebra (Inequalities)",
+   "Algebra (Expressions)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Tiffany has $\\$e$. Joe has $\\$7$ less than her, while Elle has twice as much as Joe does.",
+    "label": "a",
+    "marks": 4,
+    "subparts": [
+     {
+      "text": "Write an expression in terms of $e$ for the amount of money Joe has.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$\\$(e - 7)$",
+      "solution": "Joe has $\\$7$ less than Tiffany's $\\$e$, so Joe has $\\$(e - 7)$."
+     },
+     {
+      "text": "Write an expression in terms of $e$ for the amount of money Elle has.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$\\$(2e - 14)$",
+      "solution": "Elle has twice as much as Joe: $2(e - 7) = 2e - 14$, so Elle has $\\$(2e - 14)$."
+     },
+     {
+      "text": "Given that the total amount of money they have is $\\$123$, form an equation and find the amount of money Joe has.",
+      "label": "iii",
+      "marks": 2,
+      "answer": "Joe has $\\$29$",
+      "solution": "$e + (e - 7) + (2e - 14) = 123$\n$4e - 21 = 123$\n$4e = 144$\n$e = 36$\nJoe has $\\$(36 - 7) = \\$29$."
+     }
+    ]
+   },
+   {
+    "text": "The sum of three consecutive even numbers is smaller than 134. Form an inequality and find the maximum possible value of the smallest number.",
+    "label": "b",
+    "marks": 3,
+    "answer": "$3x + 6 < 134$, so $x < 42\\frac{2}{3}$; the maximum value of the smallest number is $42$.",
+    "solution": "Let the three consecutive even numbers be $x$, $x + 2$ and $x + 4$.\n$x + (x + 2) + (x + 4) < 134$\n$3x + 6 < 134$\n$3x < 128$\n$x < 42\\frac{2}{3}$\nSince $x$ must be an even number, the largest possible value is $x = 42$.\nCheck: $42 + 44 + 46 = 132 < 134$."
+   },
+   {
+    "text": "Aaron took part in the game 'Hit the Target'. Five points were awarded for each target hit and two points were deducted for each target missed. After 30 attempts, Aaron scored 101 points in total. How many targets did Aaron hit?",
+    "label": "c",
+    "marks": 3,
+    "answer": "$23$ targets",
+    "solution": "Let $h$ be the number of targets hit, so $30 - h$ were missed.\n$5h - 2(30 - h) = 101$\n$5h - 60 + 2h = 101$\n$7h = 161$\n$h = 23$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "4fc9a405-0e0e-42cd-844e-bb96a3207441",
+  "school": "CHIJ Katong Convent",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "6",
+  "topics": [
+   "Algebra (Fractions)"
+  ],
+  "question_text": "Express the following algebraic fractions as a single fraction in the simplest form.",
+  "parts": [
+   {
+    "text": "$\\frac{10(x + 2y)}{3} + \\frac{3(2x + y)}{2}$,",
+    "label": "a",
+    "marks": 2,
+    "answer": "$\\frac{38x + 49y}{6}$",
+    "solution": "$\\frac{10(x + 2y)}{3} + \\frac{3(2x + y)}{2}$\n$= \\frac{20(x + 2y) + 9(2x + y)}{6}$\n$= \\frac{20x + 40y + 18x + 9y}{6}$\n$= \\frac{38x + 49y}{6}$"
+   },
+   {
+    "text": "$\\frac{2}{x + y} + \\left(-\\frac{7z}{4}\\right)$,",
+    "label": "b",
+    "marks": 2,
+    "answer": "$\\frac{8 - 7xz - 7yz}{4x + 4y}$",
+    "solution": "$\\frac{2}{x + y} - \\frac{7z}{4}$\n$= \\frac{8 - 7z(x + y)}{4(x + y)}$\n$= \\frac{8 - 7xz - 7yz}{4x + 4y}$"
+   },
+   {
+    "text": "$-9 + \\frac{7(4x - 5y)}{14} - \\frac{3(y - x)}{9} + \\frac{2(-2x - 6y)}{24}$",
+    "label": "c",
+    "marks": 3,
+    "answer": "$\\frac{-54 + 13x - 20y}{6}$",
+    "solution": "$-9 + \\frac{7(4x - 5y)}{14} - \\frac{3(y - x)}{9} + \\frac{2(-2x - 6y)}{24}$\n$= -9 + \\frac{4x - 5y}{2} - \\frac{y - x}{3} + \\frac{-x - 3y}{6}$\n$= \\frac{-54 + 3(4x - 5y) - 2(y - x) + (-x - 3y)}{6}$\n$= \\frac{-54 + 12x - 15y - 2y + 2x - x - 3y}{6}$\n$= \\frac{-54 + 13x - 20y}{6}$"
+   }
+  ],
+  "answer": "$\\frac{38x + 49y}{6}$; $\\frac{8 - 7xz - 7yz}{4x + 4y}$; $\\frac{-54 + 13x - 20y}{6}$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "5006b40a-6c96-41e4-9ef5-40a810a4c03f",
+  "school": "St Patrick",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "1",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve $2w - 3 > 5$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$w > 4$",
+    "solution": "$2w - 3 > 5$\n$2w > 8$\n$w > 4$"
+   },
+   {
+    "text": "Hence or otherwise, illustrate the solution of the above inequality on the number line below.",
+    "label": "b",
+    "marks": 1,
+    "answer": "An open circle at $w = 4$, with the line shaded and arrowed towards the larger values of $w$.",
+    "solution": "Since $w > 4$, mark an open (unshaded) circle at $4$ on the number line, because $w = 4$ is not included.\nDraw an arrow from that circle pointing to the right, covering every value greater than $4$."
+   },
+   {
+    "text": "Find the smallest possible integer that satisfies the above inequality.",
+    "label": "c",
+    "marks": 1,
+    "answer": "5",
+    "solution": "The integers satisfying $w > 4$ are $5,\\ 6,\\ 7,\\ \\ldots$\nThe smallest of these is $5$."
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "524382e7-6641-4409-adb8-d037d00cecf7",
+  "school": "Holy Innocent",
+  "year": 2014,
+  "paper": "1",
+  "question_number": "13",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "Given that $2 \\leq x < 6$ and $-5 \\leq y \\leq -2$, and $x$ and $y$ are integers, find",
+  "parts": [
+   {
+    "text": "the least possible value of $y - x$,",
+    "label": "a",
+    "marks": 1,
+    "answer": "$-10$",
+    "solution": "Since $x$ and $y$ are integers, $x = 2, 3, 4, 5$ and $y = -5, -4, -3, -2$.\n$y - x$ is least when $y$ is least and $x$ is greatest.\nLeast value $= -5 - 5 = -10$"
+   },
+   {
+    "text": "the least possible value of $\\frac{x}{y}$,",
+    "label": "b",
+    "marks": 1,
+    "answer": "$-2\\frac{1}{2}$",
+    "solution": "$x$ is positive and $y$ is negative, so $\\frac{x}{y}$ is always negative.\nIt is least (most negative) when $x$ is greatest and $\\lvert y \\rvert$ is smallest.\nLeast value $= \\frac{5}{-2} = -2\\frac{1}{2}$"
+   },
+   {
+    "text": "the greatest possible value of $x^2 y^2$.",
+    "label": "c",
+    "marks": 1,
+    "answer": "$625$",
+    "solution": "$x^2 y^2 = (xy)^2$, which is greatest when $\\lvert xy \\rvert$ is greatest.\nGreatest $\\lvert xy \\rvert = 5 \\times 5 = 25$\nGreatest value $= 25^2 = 625$"
+   }
+  ],
+  "answer": "(a) $-10$; (b) $-2\\frac{1}{2}$; (c) $625$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "567e96db-40b6-40c8-b8cf-98a41a65504b",
+  "school": "Holy Innocent",
+  "year": 2014,
+  "paper": "1",
+  "question_number": "11",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve $\\frac{m}{2} + 3m \\geq \\frac{2}{5}$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$m \\geq \\frac{4}{35}$",
+    "solution": "$\\frac{m}{2} + 3m \\geq \\frac{2}{5}$\n$\\frac{m + 6m}{2} \\geq \\frac{2}{5}$\n$\\frac{7m}{2} \\geq \\frac{2}{5}$\n$7m \\geq \\frac{4}{5}$\n$m \\geq \\frac{4}{35}$"
+   },
+   {
+    "text": "Hence write down the smallest integer value of $m$ that satisfies $\\frac{m}{2} + 3m \\geq \\frac{2}{5}$.",
+    "label": "b",
+    "marks": 1,
+    "answer": "$1$",
+    "solution": "$\\frac{4}{35} = 0.1142...$\nThe smallest integer greater than or equal to $0.1142...$ is $1$."
+   }
+  ],
+  "answer": "(a) $m \\geq \\frac{4}{35}$; (b) $1$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "56ac31d5-5a4d-46ec-af81-95e4598b038f",
+  "school": "Greendale",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "7",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Represent $x \\geq -3$ on the number line below.",
+    "label": "a",
+    "marks": 1,
+    "answer": "A solid circle at $-3$, with the line shaded to the right of $-3$.",
+    "solution": "Draw a solid (filled) circle at $x = -3$ to show that $-3$ is included.\nShade the number line to the right of $-3$, in the direction of increasing $x$."
+   },
+   {
+    "text": "Solve the following inequalities.",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "$-3x > 15$",
+      "label": "i",
+      "marks": 1,
+      "answer": "$x < -5$",
+      "solution": "$-3x > 15$\nDivide both sides by $-3$ and reverse the inequality sign.\n$x < -5$"
+     },
+     {
+      "text": "$2 + 2x > 9$",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$x > \\frac{7}{2}$",
+      "solution": "$2 + 2x > 9$\n$2x > 7$\n$x > \\frac{7}{2}$"
+     }
+    ]
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "56c45640-62a3-4624-a25f-9ddc8181dc4d",
+  "school": "Peicai",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "7",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve $19 - 2x < x + 28$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x > -3$",
+    "solution": "$19 - 2x < x + 28$\n$19 - 28 < x + 2x$\n$-9 < 3x$\n$-3 < x$\n$x > -3$"
+   },
+   {
+    "text": "Show your solution on the number line below.",
+    "label": "b",
+    "marks": 1,
+    "answer": "An open circle at $-3$ with the line shaded to the right of $-3$.",
+    "solution": "Since $x > -3$ does not include $-3$, draw an open (unfilled) circle at $-3$ and shade the number line to the right of it."
+   },
+   {
+    "text": "State the smallest integer value of $x$.",
+    "label": "c",
+    "marks": 1,
+    "answer": "$x = -2$",
+    "solution": "$x > -3$, so the integers satisfying it are $-2,\\ -1,\\ 0,\\ \\ldots$\nSmallest integer value $= -2$"
+   }
+  ],
+  "answer": "(a) $x > -3$  (c) $x = -2$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "5818b61e-6e76-49dc-a271-be765839cf59",
+  "school": "Nanyang Girls",
+  "year": 2015,
+  "paper": "2",
+  "question_number": "2",
+  "topics": [
+   "Numbers (Ratio)"
+  ],
+  "question_text": "A building has a perimeter of 8 cm, with a gate of width 0.5 cm on a map. If the actual perimeter of the building is 0.56 km,",
+  "parts": [
+   {
+    "text": "find the scale of the map in the form $1 : r$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$1 : 7000$",
+    "solution": "$0.56$ km $= 0.56 \\times 100\\,000 = 56\\,000$ cm\nScale $= 8 : 56\\,000$\n$= 1 : 7000$"
+   },
+   {
+    "text": "A model of the building is made to another scale of $1 : 5000$. Calculate",
+    "label": "b",
+    "marks": 3,
+    "subparts": [
+     {
+      "text": "the width of the gate in centimetres as represented by the second scale,",
+      "label": "i",
+      "marks": 1,
+      "answer": "0.7 cm",
+      "solution": "Actual width of the gate $= 0.5 \\times 7000 = 3500$ cm\nWidth on the model $= 3500 \\div 5000 = 0.7$ cm"
+     },
+     {
+      "text": "the floor area of the building model in square centimetres if the actual floor area of the building is $16\\,000$ m$^2$.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "6.4 cm$^2$",
+      "solution": "Actual floor area $= 16\\,000$ m$^2 = 16\\,000 \\times 10\\,000 = 160\\,000\\,000$ cm$^2$\nArea scale $= 1^2 : 5000^2 = 1 : 25\\,000\\,000$\nFloor area of the model $= \\frac{160\\,000\\,000}{25\\,000\\,000}$\n$= 6.4$ cm$^2$"
+     }
+    ]
+   }
+  ],
+  "answer": "$1 : 7000$; 0.7 cm; 6.4 cm$^2$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "9a589e74-a744-48ad-a8d0-ca5ea56355ef",
+  "school": "CHIJ St Theresa",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "2",
+  "topics": [
+   "Numbers (Rate)",
+   "Algebra (Inequalities)",
+   "Algebra (Linear Equations)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "During a walk and jog event, runners are flagged off from the starting point in waves of 50 every 3 minutes.",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "Calculate the time needed to flag off 1400 runners from the starting point.",
+      "label": "i",
+      "marks": 1,
+      "answer": "81 minutes",
+      "solution": "Number of waves $= 1400 \\div 50 = 28$\nThe 1st wave leaves at $0$ minutes, so the 28th wave leaves after $27 \\times 3 = 81$ minutes."
+     },
+     {
+      "text": "Calculate the maximum number of runners that can be flagged off in an hour.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "1050 runners",
+      "solution": "In 60 minutes, waves leave at $0, 3, 6, \\ldots, 60$ minutes.\nNumber of waves $= \\frac{60}{3} + 1 = 21$\nMaximum number of runners $= 21 \\times 50 = 1050$"
+     }
+    ]
+   },
+   {
+    "text": "Solve the inequality $-3x \\leq 21$. Represent your solution on a number line.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$x \\geq -7$",
+    "solution": "$-3x \\leq 21$\nDividing both sides by $-3$ reverses the inequality sign:\n$x \\geq -7$\nOn the number line: a filled (closed) circle at $-7$ with an arrow pointing to the right."
+   },
+   {
+    "text": "The temperature in Thailand was taken on three successive days. The temperature on the first day was $2.5^\\circ$C higher than the second day, and the second day $3.5^\\circ$C lower than the third day. The average temperature of the three days is $33.5^\\circ$C. Find the temperature in Thailand on the first day.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$34^\\circ$C",
+    "solution": "Let the second day be $d\\,^\\circ$C.\nFirst day $= d + 2.5$; third day $= d + 3.5$\nAverage: $\\frac{(d + 2.5) + d + (d + 3.5)}{3} = 33.5$\n$\\frac{3d + 6}{3} = 33.5$\n$d + 2 = 33.5$, so $d = 31.5$\nFirst day $= 31.5 + 2.5 = 34^\\circ$C"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "9eedd0be-8018-44c0-b94a-8e79bd0a3bf7",
+  "school": "Beatty",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "2",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $-4x < 4$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$x > -1$",
+    "solution": "$-4x < 4$\nDividing both sides by $-4$ and reversing the inequality sign:\n$x > -1$"
+   },
+   {
+    "text": "Represent your answer in (a) on the number line below.",
+    "label": "b",
+    "marks": 1,
+    "answer": "An open circle at $-1$ with the line shaded to the right of $-1$.",
+    "solution": "Since $x > -1$ and $-1$ itself is not included, draw an open (unshaded) circle at $-1$ and shade the number line to the right of $-1$."
+   },
+   {
+    "text": "Write down the smallest integer $x$ that satisfies the inequality $-4x < 4$.",
+    "label": "c",
+    "marks": 1,
+    "answer": "$0$",
+    "solution": "The integers satisfying $x > -1$ are $0, 1, 2, \\ldots$\nThe smallest of these is $0$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "a72caddf-640f-4e6e-bb86-79c1894356cd",
+  "school": "Nanyang Girls",
+  "year": 2015,
+  "paper": "1",
+  "question_number": "9",
+  "topics": [
+   "Algebra (Factorization)"
+  ],
+  "question_text": "Factorise the following completely.",
+  "parts": [
+   {
+    "text": "$12u^{2} + 9u - 3$",
+    "label": "a",
+    "marks": 2,
+    "answer": "$3(4u - 1)(u + 1)$",
+    "solution": "$12u^2 + 9u - 3 = 3(4u^2 + 3u - 1)$\n$= 3(4u - 1)(u + 1)$"
+   },
+   {
+    "text": "$16x^{2} - 25$",
+    "label": "b",
+    "marks": 2,
+    "answer": "$(4x - 5)(4x + 5)$",
+    "solution": "$16x^2 - 25 = (4x)^2 - 5^2$\n$= (4x - 5)(4x + 5)$ (difference of two squares)"
+   },
+   {
+    "text": "$3ac + ad - 6bc - 2bd$",
+    "label": "c",
+    "marks": 3,
+    "answer": "$(a - 2b)(3c + d)$",
+    "solution": "$3ac + ad - 6bc - 2bd$\n$= a(3c + d) - 2b(3c + d)$\n$= (a - 2b)(3c + d)$"
+   }
+  ],
+  "answer": "$3(4u - 1)(u + 1)$; $(4x - 5)(4x + 5)$; $(a - 2b)(3c + d)$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "aad3d695-b390-481b-958d-122887de6f72",
+  "school": "Holy Innocent",
+  "year": 2015,
+  "paper": "1",
+  "question_number": "5",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $x - 4 \\geq 3x + 3$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x \\leq -3\\dfrac{1}{2}$",
+    "solution": "$x - 4 \\geq 3x + 3$\n$x - 3x \\geq 3 + 4$\n$-2x \\geq 7$\n$x \\leq -\\dfrac{7}{2}$ (dividing by a negative number reverses the inequality sign)\n$x \\leq -3\\dfrac{1}{2}$"
+   },
+   {
+    "text": "Hence write down the largest integer value of $x$ such that $x$ satisfies $x - 4 \\geq 3x + 3$.",
+    "label": "b",
+    "marks": 1,
+    "answer": "Largest integer $x = -4$",
+    "solution": "From part (a), $x \\leq -3.5$.\nThe integers satisfying this are $-4,\\ -5,\\ -6,\\ \\ldots$\nLargest integer value of $x = -4$"
+   }
+  ],
+  "answer": "(a) $x \\leq -3\\dfrac{1}{2}$; (b) Largest integer $x = -4$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "b2903c33-65b7-4f48-9728-b882367218a5",
+  "school": "Yio Chu Kang",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "9",
+  "topics": [
+   "Number Patterns"
+  ],
+  "question_text": "The diagrams below are made up of grey squares and white squares. Diagram $n$ is a square of squares with grey squares along its two diagonals.\n$$\\begin{array}{|c|c|c|c|} \\hline \\text{Diagram} & \\text{Number of grey squares } (G) & \\text{Number of white squares } (W) & \\text{Total number of squares } (T) \\\\ \\hline 1 & 1 & 0 & 1 \\\\ \\hline 2 & 5 & 4 & 9 \\\\ \\hline 3 & 9 & 16 & 25 \\\\ \\hline 4 & 13 & 36 & 49 \\\\ \\hline 5 & \\vdots & \\vdots & \\vdots \\\\ \\hline 6 & 21 & x & y \\\\ \\hline \\end{array}$$",
+  "parts": [
+   {
+    "text": "Find the values of $x$ and of $y$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x = 100$, $y = 121$",
+    "solution": "Diagram $n$ is a $(2n-1) \\times (2n-1)$ square, so $T = (2n-1)^2$.\nFor Diagram 6: $y = T = (2 \\times 6 - 1)^2 = 11^2 = 121$\nEvery square is grey or white, so $x = W = T - G = 121 - 21 = 100$."
+   },
+   {
+    "text": "Write down an expression, in terms of $n$, for the number of grey squares $(G)$ in Diagram $n$.",
+    "label": "b",
+    "marks": 1,
+    "answer": "$G = 4n - 3$",
+    "solution": "The grey numbers $1,\\ 5,\\ 9,\\ 13,\\ \\ldots$ go up by 4 each time, so $G$ is linear in $n$ with gradient 4.\n$G = 4n - 3$\n(Check: $n = 1$ gives $1$; $n = 4$ gives $13$; $n = 6$ gives $21$.)"
+   },
+   {
+    "text": "Calculate the number of grey squares in Diagram 123.",
+    "label": "c",
+    "marks": 1,
+    "answer": "$489$",
+    "solution": "$G = 4(123) - 3 = 492 - 3 = 489$"
+   },
+   {
+    "text": "",
+    "label": "d",
+    "marks": 2,
+    "subparts": [
+     {
+      "text": "Write down an expression, in terms of $n$, for the total number of squares $(T)$ in Diagram $n$.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$T = (2n - 1)^2$",
+      "solution": "The totals are $1,\\ 9,\\ 25,\\ 49,\\ \\ldots$, which are the squares of $1,\\ 3,\\ 5,\\ 7,\\ \\ldots$\n$T = (2n - 1)^2$"
+     },
+     {
+      "text": "Explain why there is no diagram with a total number of 530 squares.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$T = (2n-1)^2$ is always a perfect square and 530 is not a perfect square.",
+      "solution": "$T = (2n - 1)^2$, so every value of $T$ is a perfect square.\n$23^2 = 529$ and $24^2 = 576$, so $530$ is not a perfect square (its square root is not an integer).\nTherefore no diagram can have a total of 530 squares."
+     }
+    ]
+   },
+   {
+    "text": "Write down an equation connecting $G$, $W$ and $T$.",
+    "label": "e",
+    "marks": 1,
+    "answer": "$W + G = T$",
+    "solution": "Every square in a diagram is either grey or white, so the grey and white squares together make the total.\n$W + G = T$"
+   },
+   {
+    "text": "If there are 89 grey squares in Diagram 23, calculate the number of white squares.",
+    "label": "f",
+    "marks": 2,
+    "answer": "$1936$",
+    "solution": "For Diagram 23: $T = (2 \\times 23 - 1)^2 = 45^2 = 2025$\n$W = T - G = 2025 - 89 = 1936$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "b5aeb58e-2e59-4f96-8b89-6d357368b743",
+  "school": "Tanjong Katong",
+  "year": 2017,
+  "paper": "1",
+  "question_number": "12",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $\\frac{4x - 11}{2} \\leq 3x - 3 < 4$.\nRepresent your answer on the number line given below.",
+    "label": "a",
+    "marks": 4,
+    "answer": "$-2.5 \\leq x < 2\\frac{1}{3}$",
+    "solution": "$\\frac{4x - 11}{2} \\leq 3x - 3$\n$4x - 11 \\leq 6x - 6$\n$-5 \\leq 2x$\n$x \\geq -2.5$\n$3x - 3 < 4$\n$3x < 7$\n$x < 2\\frac{1}{3}$\n$-2.5 \\leq x < 2\\frac{1}{3}$\nOn the number line: a filled circle at $-2.5$, an open circle at $2\\frac{1}{3}$, and the line joining them shaded."
+   },
+   {
+    "text": "Hence, write down",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "the greatest integer value of $x$ which satisfies $\\frac{4x - 11}{2} \\leq 3x - 3 < 4$.",
+      "label": "i",
+      "marks": 1,
+      "answer": "2",
+      "solution": "The greatest integer less than $2\\frac{1}{3}$ is 2."
+     },
+     {
+      "text": "the smallest integer value of $x$ which satisfies $\\frac{4x - 11}{2} \\leq 3x - 3 < 4$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$-2$",
+      "solution": "The smallest integer greater than or equal to $-2.5$ is $-2$."
+     }
+    ]
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "bb67b05e-181e-4bf6-a86f-fa2be1ec9d57",
+  "school": "Raffles Girls",
+  "year": 2015,
+  "paper": "1",
+  "question_number": "7",
+  "topics": [
+   "Statistics"
+  ],
+  "question_text": "The daily Pollutant Standards Index (PSI) reading at 8 am for Singapore from 19 to 30 June 2013 is shown below.\n$$\\begin{array}{|c|c|c|c|c|c|} \\hline 105 & 173 & 198 & 246 & 128 & 96 \\\\ \\hline 77 & 61 & 59 & 62 & 62 & 70 \\\\ \\hline \\end{array}$$",
+  "parts": [
+   {
+    "text": "Find the median PSI.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$86.5$",
+    "solution": "Arrange the $12$ readings in ascending order:\n$59, 61, 62, 62, 70, 77, 96, 105, 128, 173, 198, 246$\nSince $n = 12$ is even, the median is the mean of the $6$th and $7$th values.\n$6$th value $= 77$, $7$th value $= 96$\nMedian $= \\frac{77 + 96}{2} = \\frac{173}{2} = 86.5$"
+   },
+   {
+    "text": "The information above is shown in the following grouped frequency table.\n$$\\begin{array}{|c|c|} \\hline \\text{PSI, } x & \\text{Frequency} \\\\ \\hline 50 < x \\leq 100 & 7 \\\\ \\hline 100 < x \\leq 150 & 2 \\\\ \\hline 150 < x \\leq 200 & 2 \\\\ \\hline 200 < x \\leq 250 & 1 \\\\ \\hline \\end{array}$$",
+    "label": "b",
+    "marks": 5,
+    "subparts": [
+     {
+      "text": "On the grid below, draw a histogram to represent the data.",
+      "label": "i",
+      "marks": 2,
+      "answer": "Bars of height $7$, $2$, $2$, $1$ over $50 < x \\leq 100$, $100 < x \\leq 150$, $150 < x \\leq 200$, $200 < x \\leq 250$, drawn adjacent with no gaps.",
+      "solution": "All four class intervals have equal width $50$, so the height of each bar is simply the frequency.\nDraw bars with PSI on the horizontal axis and frequency on the vertical axis:\n$50 < x \\leq 100$: height $7$\n$100 < x \\leq 150$: height $2$\n$150 < x \\leq 200$: height $2$\n$200 < x \\leq 250$: height $1$\nThe bars must touch one another with no gaps, because the data is continuous and grouped into adjoining intervals."
+     },
+     {
+      "text": "Find an estimate of the mean PSI.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$112.5$",
+      "solution": "Use the mid-value of each class interval to estimate the mean.\n$$\\begin{array}{|c|c|c|} \\hline \\text{Mid-value } x & \\text{Frequency } f & fx \\\\ \\hline 75 & 7 & 525 \\\\ \\hline 125 & 2 & 250 \\\\ \\hline 175 & 2 & 350 \\\\ \\hline 225 & 1 & 225 \\\\ \\hline \\end{array}$$\nMean $= \\frac{\\sum fx}{\\sum f}$\n$= \\frac{525 + 250 + 350 + 225}{7 + 2 + 2 + 1}$\n$= \\frac{1350}{12}$\n$= 112.5$"
+     },
+     {
+      "text": "State the modal class.",
+      "label": "iii",
+      "marks": 1,
+      "answer": "$50 < x \\leq 100$",
+      "solution": "The modal class is the class interval with the highest frequency.\nThe frequencies are $7$, $2$, $2$ and $1$, so the highest frequency is $7$.\nModal class $= 50 < x \\leq 100$"
+     }
+    ]
+   }
+  ],
+  "answer": "Median PSI $= 86.5$; mean PSI $= 112.5$; modal class $50 < x \\leq 100$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "021c6986-b26f-4f26-9b51-8f0c68c8f037",
+  "school": "Fuhua",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "5",
+  "topics": [
+   "Algebra (Expressions)",
+   "Mensuration"
+  ],
+  "question_text": "The formula of the volume, $V$, of a cone is given as $V = \\frac{1}{3}\\pi r^2 h$, where $r$ is the radius and $h$ is the height.\nGiven further that $r = \\frac{2}{5}h$.",
+  "parts": [
+   {
+    "text": "Find the height of the cone when the radius is $8\\text{ cm}$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$h = 20$ cm",
+    "solution": "$$r = \\frac{2}{5}h$$\n$$8 = \\frac{2}{5}h$$\n$$h = 8 \\times \\frac{5}{2} = 20$$\nThe height is $20\\text{ cm}$."
+   },
+   {
+    "text": "Hence, find the volume of the cone, giving your answer to 3 significant figures.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$1340\\text{ cm}^3$ (3 s.f.)",
+    "solution": "$$V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi (8)^2 (20) = \\frac{1280\\pi}{3}$$\n$$= 1340.41\\ldots$$\nThe volume is $1340\\text{ cm}^3$ (3 s.f.)."
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "0302bf16-8a24-4d48-a170-0103a7d0db43",
+  "school": "Tanjong Katong",
+  "year": 2017,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Algebra (Linear Equations)",
+   "Algebra (Fractions)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the following equations.",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "$2(x - 3) - 5x = -3$",
+      "label": "i",
+      "marks": 3,
+      "answer": "$x = -1$",
+      "solution": "$2x - 6 - 5x = -3$\n$-3x - 6 = -3$\n$-3x = 3$\n$x = -1$"
+     },
+     {
+      "text": "$\\frac{2}{y + 5} = \\frac{3}{4y - 1}$",
+      "label": "ii",
+      "marks": 3,
+      "answer": "$y = 3\\frac{2}{5}$",
+      "solution": "$2(4y - 1) = 3(y + 5)$\n$8y - 2 = 3y + 15$\n$5y = 17$\n$y = \\frac{17}{5} = 3\\frac{2}{5}$"
+     }
+    ]
+   },
+   {
+    "text": "",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "Simplify $\\frac{\\sqrt{64p^{2}}}{4} \\div \\frac{10}{p^{2}}$.",
+      "label": "i",
+      "marks": 3,
+      "answer": "$\\frac{p^{3}}{5}$",
+      "solution": "$\\frac{\\sqrt{64p^{2}}}{4} = \\frac{8p}{4} = 2p$\n$2p \\div \\frac{10}{p^{2}} = 2p \\times \\frac{p^{2}}{10} = \\frac{2p^{3}}{10} = \\frac{p^{3}}{5}$"
+     },
+     {
+      "text": "Express $\\frac{y - 2}{3} - \\frac{y + 3}{2}$ as a single fraction in its simplest form.",
+      "label": "ii",
+      "marks": 3,
+      "answer": "$\\frac{-y - 13}{6}$",
+      "solution": "$\\frac{y - 2}{3} - \\frac{y + 3}{2} = \\frac{2(y - 2) - 3(y + 3)}{6}$\n$= \\frac{2y - 4 - 3y - 9}{6}$\n$= \\frac{-y - 13}{6}$"
+     }
+    ]
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "0a01138c-7e3d-4bfb-8d5a-badd632b65e2",
+  "school": "Nanyang Girls",
+  "year": 2014,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Statistics"
+  ],
+  "question_text": "The table shows the number of trips made by students in a class to the zoo in 2013.\n$$\\begin{array}{|l|c|c|c|c|c|c|c|} \\hline \\text{No. of trips to the zoo} & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\\\ \\hline \\text{Number of students} & 4 & 7 & 5 & x & 4 & 2 & 3 \\\\ \\hline \\end{array}$$\nFind",
+  "parts": [
+   {
+    "text": "the mean number of trips made by the class if $x$ has a value of 3,",
+    "label": "a",
+    "marks": 2,
+    "answer": "Mean $= 2.5$"
+   },
+   {
+    "text": "the highest possible value of $x$ if the median number of trips made is 2,",
+    "label": "b",
+    "marks": 2,
+    "answer": "Highest possible value of $x = 6$"
+   },
+   {
+    "text": "all possible values of $x$ if the mode is 1.",
+    "label": "c",
+    "marks": 1,
+    "answer": "$x = 0$, $1$, $2$, $3$, $4$, $5$ or $6$"
+   }
+  ],
+  "answer": "(a) Mean $= 2.5$; (b) Highest possible value of $x = 6$; (c) $x = 0$, $1$, $2$, $3$, $4$, $5$ or $6$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "40abc917-917a-4b76-a3bf-149863400e10",
+  "school": "CHIJ St Theresa",
+  "year": 2017,
+  "paper": "1",
+  "question_number": "12",
+  "topics": [
+   "Algebra (Inequalities)",
+   "Numbers (Real Numbers)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $-3x \\leq -13$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$x \\geq 4\\frac{1}{3}$",
+    "solution": "Divide both sides by $-3$ and reverse the inequality sign:\n$x \\geq \\frac{13}{3} = 4\\frac{1}{3}$"
+   },
+   {
+    "text": "Hence, write down the smallest value of $x$ which satisfies $-3x \\leq -13$ if",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "$x$ is a prime number,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$x = 5$",
+      "solution": "The primes greater than or equal to $4\\frac{1}{3}$ are $5, 7, 11, \\ldots$, so the smallest is $x = 5$."
+     },
+     {
+      "text": "$x$ is a perfect cube,",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$x = 8$",
+      "solution": "The perfect cubes are $1, 8, 27, \\ldots$; the smallest one at least $4\\frac{1}{3}$ is $x = 8$."
+     },
+     {
+      "text": "$x$ is a rational number,",
+      "label": "iii",
+      "marks": 1,
+      "answer": "$x = 4\\frac{1}{3}$",
+      "solution": "$4\\frac{1}{3} = \\frac{13}{3}$ is itself rational and satisfies the inequality, so the smallest value is $x = 4\\frac{1}{3}$."
+     }
+    ]
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "49e12945-e54b-478b-9c6a-c2a2641b6e0d",
+  "school": "Clementi Town",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "1",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve $5x > 40 - 3x$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x > 5$",
+    "solution": "$5x > 40 - 3x$\n$5x + 3x > 40$\n$8x > 40$\n$x > 5$"
+   },
+   {
+    "text": "Hence, find the smallest possible value of $x$ that satisfies the inequality in part (a) such that $x$ is",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "a prime number,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$7$",
+      "solution": "The primes greater than $5$ are $7, 11, 13, \\ldots$\nThe smallest is $7$."
+     },
+     {
+      "text": "an integer.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$6$",
+      "solution": "The integers greater than $5$ are $6, 7, 8, \\ldots$\nThe smallest is $6$."
+     }
+    ]
+   }
+  ],
+  "answer": "(a) $x > 5$ (b)(i) $7$ (ii) $6$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "4d667cf8-d7bb-4e6e-8431-74079fd335ae",
+  "school": "North Vista",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "8",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "If $-11 < a < 3$ and $-6 < b < 4$ and $a$ and $b$ are integers, find",
+  "parts": [
+   {
+    "text": "the smallest value of $a + b$,",
+    "label": "a",
+    "marks": 1,
+    "answer": "$-15$",
+    "solution": "The smallest integer value of $a$ is $-10$ and the smallest integer value of $b$ is $-5$.\nSmallest $a + b = -10 + (-5) = -15$"
+   },
+   {
+    "text": "the greatest value of $ab$.",
+    "label": "b",
+    "marks": 1,
+    "answer": "$50$",
+    "solution": "$a$ takes integer values from $-10$ to $2$, and $b$ from $-5$ to $3$.\nThe largest product comes from multiplying the two most negative values.\nGreatest $ab = (-10)(-5) = 50$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "63860267-584e-49b1-8870-f10ba8e4ff97",
+  "school": "Raffles Girls",
+  "year": 2015,
+  "paper": "1",
+  "question_number": "13",
+  "topics": [
+   "Mensuration"
+  ],
+  "question_text": "The diagram shows an inverted right pyramid, $VABCD$, with a hole in the shape of a hemisphere removed from the top. $ABCD$ is a square of side 14 cm and $VE = 21.2$ cm. Radius of the hemisphere is 3 cm.",
+  "parts": [
+   {
+    "text": "Calculate the total exposed surface area of the solid. Give your answer to one significant figure.",
+    "label": "a",
+    "marks": 4,
+    "answer": "$800$ cm$^{2}$ (1 s.f.)",
+    "solution": "The exposed surface is made up of three parts: the four slanting triangular faces, the square top with the circular hole removed, and the curved surface of the hemispherical hole.\nFour triangular faces (base $14$ cm, slant height $VE = 21.2$ cm):\n$4 \\times \\frac{1}{2} \\times 14 \\times 21.2 = 593.6$ cm$^{2}$\nSquare top less the circle of radius $3$ cm:\n$14^{2} - \\pi(3)^{2} = 196 - 28.274 = 167.726$ cm$^{2}$\nCurved surface of the hemisphere:\n$2\\pi r^{2} = 2\\pi(3)^{2} = 56.549$ cm$^{2}$\nTotal exposed surface area\n$= 593.6 + 167.726 + 56.549$\n$= 817.875$ cm$^{2}$\n$= 800$ cm$^{2}$ (1 s.f.)"
+   },
+   {
+    "text": "The hole is to be filled by a liquid. Find the volume of the liquid required. Give your answer in terms of $\\pi$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$18\\pi$ cm$^{3}$",
+    "solution": "The liquid fills the hemispherical hole, so the volume required is the volume of a hemisphere of radius $3$ cm.\nVolume of a hemisphere $= \\frac{2}{3}\\pi r^{3}$\n$= \\frac{2}{3}\\pi (3)^{3}$\n$= \\frac{2}{3}\\pi \\times 27$\n$= 18\\pi$ cm$^{3}$"
+   }
+  ],
+  "answer": "$800$ cm$^2$ (1 s.f.); $18\\pi$ cm$^3$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "712511e5-beaf-4aa5-b817-953268fdb506",
+  "school": "CHIJ St Theresa",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "4",
+  "topics": [
+   "Numbers (Integers)",
+   "Algebra (Inequalities)",
+   "Algebra (Expressions)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Both liquids A and B used in an experiment were at a temperature of $-7^\\circ$C.",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "Liquid A was heated until its temperature rose by $12^\\circ$C. Write down its new temperature.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$5^\\circ$C",
+      "solution": "$-7 + 12 = 5$\nNew temperature $= 5^\\circ$C"
+     },
+     {
+      "text": "Liquid B was cooled until its temperature fell by $5^\\circ$C. Write down its new temperature.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$-12^\\circ$C",
+      "solution": "$-7 - 5 = -12$\nNew temperature $= -12^\\circ$C"
+     },
+     {
+      "text": "Hence, find the difference between the final temperatures of the two liquids.",
+      "label": "iii",
+      "marks": 1,
+      "answer": "$17^\\circ$C",
+      "solution": "Difference $= 5 - (-12) = 5 + 12 = 17^\\circ$C"
+     }
+    ]
+   },
+   {
+    "text": "A carpenter needs at least 700 nails to construct a wooden structure. The nails are sold in packets of one dozen. Use inequality to find the minimum number of packets of nails he has to buy.",
+    "label": "b",
+    "marks": 3,
+    "answer": "59 packets",
+    "solution": "Let $n$ be the number of packets bought. One dozen $= 12$ nails.\n$12n \\geq 700$\n$n \\geq \\frac{700}{12} = 58.33\\ldots$\nSince $n$ must be a whole number, the minimum is $n = 59$.\nHe must buy 59 packets."
+   },
+   {
+    "text": "What must be added to $4x^3 - 3x^2 + 2x - 5$ to get $9 - 4x + 5x^2 + 7x^3$?",
+    "label": "c",
+    "marks": 3,
+    "answer": "$3x^3 + 8x^2 - 6x + 14$",
+    "solution": "Required $= (7x^3 + 5x^2 - 4x + 9) - (4x^3 - 3x^2 + 2x - 5)$\n$= 7x^3 - 4x^3 + 5x^2 + 3x^2 - 4x - 2x + 9 + 5$\n$= 3x^3 + 8x^2 - 6x + 14$"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "c5c516a4-dd25-49f6-bff8-0b77f396314e",
+  "school": "Nanyang Girls",
+  "year": 2015,
+  "paper": "1",
+  "question_number": "8",
+  "topics": [
+   "Algebra (Expansion)"
+  ],
+  "question_text": "Expand and simplify each of the following expressions.",
+  "parts": [
+   {
+    "text": "$\\left( 2x + 3y \\right)^{2}$",
+    "label": "a",
+    "marks": 1,
+    "answer": "$4x^2 + 12xy + 9y^2$",
+    "solution": "$(2x + 3y)^2 = (2x)^2 + 2(2x)(3y) + (3y)^2$\n$= 4x^2 + 12xy + 9y^2$"
+   },
+   {
+    "text": "$2r\\left[ 1 - 3s - 2\\left( r - s + 1 \\right) - r \\right]$",
+    "label": "b",
+    "marks": 2,
+    "answer": "$-2r - 2rs - 6r^2$",
+    "solution": "$2r[1 - 3s - 2(r - s + 1) - r]$\n$= 2r[1 - 3s - 2r + 2s - 2 - r]$\n$= 2r[-1 - s - 3r]$\n$= -2r - 2rs - 6r^2$"
+   },
+   {
+    "text": "$3\\left( 2x - y \\right)\\left( x + y \\right) - \\left( x + 2y \\right)\\left( x - 2y \\right)$",
+    "label": "c",
+    "marks": 3,
+    "answer": "$5x^2 + 3xy + y^2$",
+    "solution": "$3(2x - y)(x + y) - (x + 2y)(x - 2y)$\n$= 3(2x^2 + 2xy - xy - y^2) - (x^2 - 4y^2)$\n$= 3(2x^2 + xy - y^2) - x^2 + 4y^2$\n$= 6x^2 + 3xy - 3y^2 - x^2 + 4y^2$\n$= 5x^2 + 3xy + y^2$"
+   }
+  ],
+  "answer": "$4x^2 + 12xy + 9y^2$; $-2r - 2rs - 6r^2$; $5x^2 + 3xy + y^2$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "e5264525-4be4-4051-bb1c-8eb4852b517f",
+  "school": "Raffles Girls",
+  "year": 2015,
+  "paper": "1",
+  "question_number": "8",
+  "topics": [
+   "Algebra (Linear Equations)"
+  ],
+  "question_text": "A tailor made costumes for students in a school play. Each male costume took 2 hours and cost $\\$32$ to make. Each female costume took 3 hours and cost $\\$49$ to make. In total, the tailor spent 30 hours and a total of $\\$484$ on the costumes.",
+  "parts": [
+   {
+    "text": "Write down a pair of simultaneous equations to represent this information. Use $m$ to represent the number of male costumes and $f$ to represent the number of female costumes the tailor made.",
+    "label": "i",
+    "marks": 2,
+    "answer": "$2m + 3f = 30$ and $32m + 49f = 484$",
+    "solution": "Let $m$ be the number of male costumes and $f$ the number of female costumes.\nTime taken: each male costume takes $2$ hours and each female costume takes $3$ hours, giving a total of $30$ hours:\n$2m + 3f = 30$ ... (1)\nCost: each male costume costs $\\$32$ and each female costume costs $\\$49$, giving a total of $\\$484$:\n$32m + 49f = 484$ ... (2)"
+   },
+   {
+    "text": "Solve your simultaneous equations to find the total number of costumes made.",
+    "label": "ii",
+    "marks": 3,
+    "answer": "$m = 9$, $f = 4$; total $= 13$ costumes",
+    "solution": "$2m + 3f = 30$ ... (1)\n$32m + 49f = 484$ ... (2)\nFrom (1): $2m = 30 - 3f$, so $m = \\frac{30 - 3f}{2}$\nSubstitute into (2):\n$32\\left(\\frac{30 - 3f}{2}\\right) + 49f = 484$\n$16(30 - 3f) + 49f = 484$\n$480 - 48f + 49f = 484$\n$f = 4$\nSubstitute $f = 4$ into (1):\n$2m + 3(4) = 30$\n$2m = 18$\n$m = 9$\nTotal number of costumes $= m + f = 9 + 4 = 13$"
+   }
+  ],
+  "answer": "$2m + 3f = 30$, $32m + 49f = 484$; $m = 9$, $f = 4$; 13 costumes made",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "e6caa946-3562-46e8-9ee6-8573f92b2871",
+  "school": "Yio Chu Kang",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "10",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "Adrian wants to plan for a dinner gathering for his friends. He has a budget of $\\$600$ for the dinner gathering. The cost per person is $\\$22.80$.",
+  "parts": [
+   {
+    "text": "Write down an inequality for the number of people Adrian can invite with his budget. Let $x$ be the number of people he can invite.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$22.8x \\leq 600$",
+    "solution": "The cost of inviting $x$ people is $22.8x$ dollars, and this must not exceed the budget of $\\$600$.\n$22.8x \\leq 600$"
+   },
+   {
+    "text": "Solve the inequality, in part (a), to find the maximum number of people Adrian can invite.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$x \\leq 26\\frac{6}{19}$; the maximum number of people is 26",
+    "solution": "$22.8x \\leq 600$\n$x \\leq \\frac{600}{22.8} = 26\\frac{6}{19} = 26.315...$\nSince the number of people must be a whole number, the maximum number of people Adrian can invite is $26$."
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "0053fbc5-da00-43cd-a3ce-82d791827de0",
+  "school": "Anglo Chinese School (Barker Road)",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Numbers (Ratio)",
+   "Mensuration"
+  ],
+  "question_text": "Map $A$ is drawn to a scale of $1 : 250\\,000$.",
+  "parts": [
+   {
+    "text": "",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "Find the actual distance of the road, in kilometres, represented by $12\\text{ cm}$ on the map.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$30\\text{ km}$",
+      "solution": "Actual distance $= 12 \\times 250\\,000 = 3\\,000\\,000\\text{ cm}$\n$3\\,000\\,000\\text{ cm} = 30\\,000\\text{ m} = 30\\text{ km}$"
+     },
+     {
+      "text": "The same road is represented on another map $B$ by $20\\text{ cm}$. Calculate the scale of map $B$ in the form $1 : n$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$1 : 150\\,000$",
+      "solution": "The road is $30\\text{ km} = 3\\,000\\,000\\text{ cm}$ actual, shown as $20\\text{ cm}$ on map $B$.\n$n = \\frac{3\\,000\\,000}{20} = 150\\,000$\nScale of map $B = 1 : 150\\,000$"
+     }
+    ]
+   },
+   {
+    "text": "An airport covers an area of $20\\text{ km}^{2}$. Find, in $\\text{cm}^{2}$, the area of the airport on map $A$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$3.2\\text{ cm}^{2}$",
+    "solution": "Length scale $1 : 250\\,000$, so area scale $= 1^{2} : 250\\,000^{2} = 1 : 6.25 \\times 10^{10}$\n$20\\text{ km}^{2} = 20 \\times (100\\,000)^{2}\\text{ cm}^{2} = 2 \\times 10^{11}\\text{ cm}^{2}$\nArea on map $= \\frac{2 \\times 10^{11}}{6.25 \\times 10^{10}} = 3.2\\text{ cm}^{2}$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "008b9fd1-732d-4501-81d7-690637e1c241",
+  "school": "Tanjong Katong",
+  "year": 2017,
+  "paper": "2",
+  "question_number": "5",
+  "topics": [
+   "Algebra (Factorization)",
+   "Numbers (Percentages)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "Factorise completely $4x^{2} - 4xy - py + px$.",
+      "label": "i",
+      "marks": 3,
+      "answer": "$(4x + p)(x - y)$",
+      "solution": "$4x^{2} - 4xy - py + px = 4x(x - y) + p(x - y)$\n$= (4x + p)(x - y)$"
+     },
+     {
+      "text": "Factorise $b^{2} + b$. Explain why if $b$ is a positive integer, then $b^{2} + b$ is always even.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$b(b + 1)$ ; $b$ and $b + 1$ are consecutive integers, so one of them must be even, and the product of an even integer with another integer is always even.",
+      "solution": "$b^{2} + b = b(b + 1)$\n$b$ and $b + 1$ are consecutive integers, so exactly one of them is even.\nThe product of an even integer with another integer is always even, so $b^{2} + b$ is always even."
+     }
+    ]
+   },
+   {
+    "text": "A stamp collector will suffer a loss of $35\\%$ if he sells a particular stamp for $\\$273$.",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "Find the price he paid for it.",
+      "label": "i",
+      "marks": 2,
+      "answer": "$\\$420$",
+      "solution": "$\\$273$ represents $100\\% - 35\\% = 65\\%$ of the price he paid.\nPrice paid $= \\frac{273}{65} \\times 100 = \\$420$"
+     },
+     {
+      "text": "What would the selling price be if he wants to make a profit of $15\\%$?",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$\\$483$",
+      "solution": "Selling price $= \\$420 \\times \\frac{115}{100} = \\$483$"
+     }
+    ]
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "1ba3dff0-02f6-4ec4-b613-8102567919b6",
+  "school": "Dunearn",
+  "year": 2014,
+  "paper": "1",
+  "question_number": "11",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $\\frac{1}{3}x + 1 \\geq 10 + 2x$.",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "Show your solution for (a) on the number line below.",
+      "label": "i",
+      "marks": 3,
+      "answer": "$x \\leq -5\\frac{2}{5}$",
+      "solution": "$\\frac{1}{3}x + 1 \\geq 10 + 2x$\nMultiply throughout by 3: $x + 3 \\geq 30 + 6x$\n$3 - 30 \\geq 6x - x$\n$-27 \\geq 5x$\n$x \\leq -\\frac{27}{5} = -5\\frac{2}{5}$\nOn the number line, mark a filled circle at $-5\\frac{2}{5}$ with the arrow pointing to the left."
+     },
+     {
+      "text": "Hence, write down the greatest integer value of $x$ which satisfies $\\frac{1}{3}x + 1 \\geq 10 + 2x$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$-6$",
+      "solution": "The integers satisfying $x \\leq -5.4$ are $-6, -7, -8, \\ldots$\nGreatest integer value of $x = -6$."
+     }
+    ]
+   },
+   {
+    "text": "If the integers $a$ and $b$ satisfy the inequalities $-5 \\leq a < 0$ and $0 < b \\leq 11$, find",
+    "label": "b",
+    "subparts": [
+     {
+      "text": "the smallest value of $ab$,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$-55$",
+      "solution": "$a$ is negative and $b$ is positive, so $ab$ is negative and is smallest when $|a|$ and $|b|$ are largest.\nTake $a = -5$ and $b = 11$: $ab = -5 \\times 11 = -55$."
+     },
+     {
+      "text": "the largest value of $(b - a)^{4}$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$65536$",
+      "solution": "$(b - a)^{4}$ is largest when $b - a$ is largest.\nLargest $b - a = 11 - (-5) = 16$.\n$(b - a)^{4} = 16^{4} = 65536$."
+     }
+    ]
+   }
+  ],
+  "answer": "(a)(i) $x \\leq -5\\frac{2}{5}$; (a)(ii) $-6$; (b)(i) $-55$; (b)(ii) $65536$",
+  "solution": "(a)(i) $\\frac{1}{3}x + 1 \\geq 10 + 2x$\nMultiply throughout by 3: $x + 3 \\geq 30 + 6x$\n$3 - 30 \\geq 6x - x$\n$-27 \\geq 5x$\n$x \\leq -\\frac{27}{5} = -5\\frac{2}{5}$\nOn the number line, mark a filled circle at $-5\\frac{2}{5}$ with the arrow pointing to the left.\n\n(a)(ii) The integers satisfying $x \\leq -5.4$ are $-6, -7, -8, \\ldots$\nGreatest integer value of $x = -6$.\n\n(b)(i) $a$ is negative and $b$ is positive, so $ab$ is negative and is smallest when $|a|$ and $|b|$ are largest.\nTake $a = -5$ and $b = 11$: $ab = -5 \\times 11 = -55$.\n\n(b)(ii) $(b - a)^{4}$ is largest when $b - a$ is largest.\nLargest $b - a = 11 - (-5) = 16$.\n$(b - a)^{4} = 16^{4} = 65536$.",
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "1e436abd-8939-4abf-b0a9-db266673d20b",
+  "school": "Nanyang Girls",
+  "year": 2015,
+  "paper": "2",
+  "question_number": "9",
+  "topics": [
+   "Statistics"
+  ],
+  "question_text": "The table below shows the number of books borrowed by the students of a class.\n$$\\begin{array}{|c|c|c|c|c|c|c|} \\hline \\text{Number of books borrowed} & 0 & 1 & 2 & 3 & 4 & 5 \\\\ \\hline \\text{Number of students} & 7 & x & 6 & 2 & 4 & 5 \\\\ \\hline \\end{array}$$",
+  "parts": [
+   {
+    "text": "If the mean is 2.25, form an equation in $x$ and use it to find the value of $x$.",
+    "label": "a",
+    "marks": 3,
+    "answer": "$x = 4$",
+    "solution": "Total number of books $= 0(7) + 1(x) + 2(6) + 3(2) + 4(4) + 5(5)$\n$= x + 12 + 6 + 16 + 25 = x + 59$\nTotal number of students $= 7 + x + 6 + 2 + 4 + 5 = 24 + x$\n$\\frac{x + 59}{24 + x} = 2.25$\n$x + 59 = 2.25(24 + x)$\n$x + 59 = 54 + 2.25x$\n$1.25x = 5$\n$x = 4$"
+   },
+   {
+    "text": "Find the largest possible value of $x$ if the median number of books borrowed is 2.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$x = 9$",
+    "solution": "There are $24 + x$ students. Arranged in order, the first 7 values are 0, the next $x$ values are 1, and the values in positions $8 + x$ to $13 + x$ are 2.\nFor an odd number of students the median is the value in position $\\frac{25 + x}{2}$.\nFor this to be a 2: $\\frac{25 + x}{2} \\geq 8 + x$\n$25 + x \\geq 16 + 2x$\n$x \\leq 9$\nWhen $x = 9$ there are 33 students and the 17th value is 2, so the median is 2.\n(When $x = 10$ there are 34 students; the 17th and 18th values are 1 and 2, giving a median of 1.5.)\nLargest possible value of $x$ is 9."
+   }
+  ],
+  "answer": "$x = 4$; $x = 9$",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "2355ffeb-64aa-4bc3-ba98-f336e326bcab",
+  "school": "Admiralty",
+  "year": 2016,
+  "paper": "1",
+  "question_number": "9",
+  "topics": [
+   "Algebra (Expressions)",
+   "Algebra (Expansion)",
+   "Algebra (Fractions)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Write down the algebraic expression for the following:",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "Subtract $3p$ from the square root of $pq$,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$\\sqrt{pq} - 3p$",
+      "solution": "The square root of $pq$ is $\\sqrt{pq}$.\nSubtracting $3p$ from it gives\n$\\sqrt{pq} - 3p$"
+     },
+     {
+      "text": "A number which is 10 less than the reciprocal of a number $3n$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$\\dfrac{1}{3n} - 10$",
+      "solution": "The reciprocal of $3n$ is $\\dfrac{1}{3n}$.\nA number 10 less than this is\n$\\dfrac{1}{3n} - 10$"
+     }
+    ]
+   },
+   {
+    "text": "Simplify $\\dfrac{1}{2}\\left(2x - 6y\\right) - 3\\left(x - 2y\\right)$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$3y - 2x$",
+    "solution": "Expand each bracket:\n$\\dfrac{1}{2}\\left(2x - 6y\\right) = x - 3y$\n$-3\\left(x - 2y\\right) = -3x + 6y$\nCollect like terms:\n$x - 3y - 3x + 6y = -2x + 3y$\n$= 3y - 2x$"
+   },
+   {
+    "text": "Simplify $\\dfrac{3ab}{8c^{2}} \\div \\dfrac{9ab}{c}$.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$\\dfrac{1}{24c}$",
+    "solution": "Dividing by a fraction is the same as multiplying by its reciprocal:\n$\\dfrac{3ab}{8c^{2}} \\div \\dfrac{9ab}{c} = \\dfrac{3ab}{8c^{2}} \\times \\dfrac{c}{9ab}$\nCancel $3ab$ with $9ab$ (leaving $3$ in the denominator) and one $c$ with $c^{2}$:\n$= \\dfrac{1}{8c} \\times \\dfrac{1}{3}$\n$= \\dfrac{1}{24c}$"
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "3b51a2ff-a5e7-4524-8743-1f439c4656e0",
+  "school": "Changkat Changi",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "1",
+  "topics": [
+   "Algebra (Expressions)",
+   "Algebra (Factorization)",
+   "Algebra (Linear Equations)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "It is given that $v = t^{2} + u - \\frac{2u}{t}$. Find the value of",
+    "label": "a",
+    "marks": 2,
+    "subparts": [
+     {
+      "text": "$v$ when $t = 3$ and $u = - 2$,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$v = 8\\frac{1}{3}$",
+      "solution": "$v = 3^{2} + ( - 2) - \\frac{2( - 2)}{3} = 9 - 2 + \\frac{4}{3} = 7 + \\frac{4}{3} = 8\\frac{1}{3}$"
+     },
+     {
+      "text": "$v$ when $t = - 1$ and $u = 3$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$v = 10$",
+      "solution": "$v = ( - 1)^{2} + 3 - \\frac{2(3)}{ - 1} = 1 + 3 + 6 = 10$"
+     }
+    ]
+   },
+   {
+    "text": "Factorise completely,",
+    "label": "b",
+    "marks": 3,
+    "subparts": [
+     {
+      "text": "$3d - 6cd$,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$3d(1 - 2c)$",
+      "solution": "$3d - 6cd = 3d(1 - 2c)$"
+     },
+     {
+      "text": "$2x^{2} - 50$.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$2(x + 5)(x - 5)$",
+      "solution": "$2x^{2} - 50 = 2(x^{2} - 25) = 2(x + 5)(x - 5)$"
+     }
+    ]
+   },
+   {
+    "text": "Solve the following equations.",
+    "label": "c",
+    "marks": 5,
+    "subparts": [
+     {
+      "text": "$x + 2 = 3(x - 2)$,",
+      "label": "i",
+      "marks": 2,
+      "answer": "$x = 4$",
+      "solution": "$x + 2 = 3(x - 2)$\n$x + 2 = 3x - 6$\n$8 = 2x$\n$x = 4$"
+     },
+     {
+      "text": "$\\frac{3}{x + 1} = \\frac{2}{x - 3}$.",
+      "label": "ii",
+      "marks": 3,
+      "answer": "$x = 11$",
+      "solution": "$\\frac{3}{x + 1} = \\frac{2}{x - 3}$\n$3(x - 3) = 2(x + 1)$\n$3x - 9 = 2x + 2$\n$x = 11$"
+     }
+    ]
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "3f0303ca-c8f7-463f-ba86-780dcd734887",
+  "school": "Clementi Town",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "8",
+  "topics": [
+   "Algebra (Inequalities)",
+   "Numbers (Real Numbers)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $\\frac{1}{2}x + \\frac{2}{3}x > -\\frac{7}{6}$ and represent your solution on the number line below.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$x > -1$",
+    "solution": "$\\frac{1}{2}x + \\frac{2}{3}x > -\\frac{7}{6}$\n$\\frac{3x + 4x}{6} > -\\frac{7}{6}$\n$\\frac{7x}{6} > -\\frac{7}{6}$\n$7x > -7$\n$x > -1$\nOn the number line, draw an open circle at $-1$ with the arrow pointing to the right."
+   },
+   {
+    "text": "List the rational numbers: $\\sqrt{5},\\ 3.\\dot{4},\\ -\\frac{9}{7},\\ \\pi,\\ 13$",
+    "label": "b",
+    "marks": 1,
+    "answer": "$3.\\dot{4}$, $-\\frac{9}{7}$, $13$",
+    "solution": "A rational number can be written as a fraction $\\frac{a}{b}$ where $a$ and $b$ are integers and $b \\neq 0$.\n$3.\\dot{4} = \\frac{31}{9}$ (a recurring decimal), $-\\frac{9}{7}$ and $13 = \\frac{13}{1}$ are rational.\n$\\sqrt{5}$ and $\\pi$ are irrational.\nThe rational numbers are $3.\\dot{4}$, $-\\frac{9}{7}$ and $13$."
+   }
+  ],
+  "answer": "(a) $x > -1$ (b) $3.\\dot{4}$, $-\\frac{9}{7}$, $13$",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "3fdf4e73-c63d-47fd-8128-cc62d51b4c39",
+  "school": "Kranji",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Numbers (Ratio)",
+   "Numbers (Speed)"
+  ],
+  "question_text": "The diagram below shows an extract of the map of Singapore Botanical Gardens.\nThe actual distance from Jacob Ballas Car Park to Jacob Ballas Children's Garden is $72\\text{ m}$.",
+  "parts": [
+   {
+    "text": "Mandy took 2 minutes to walk from Jacob Ballas Car Park to Jacob Ballas Children's Garden. Find her average speed in $km/h$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$2.16$ km/h",
+    "solution": "Speed $= \\frac{72\\text{ m}}{2\\text{ min}} = 36$ m/min.\n$36$ m/min $= 36 \\times 60 = 2160$ m/h $= \\frac{2160}{1000} = 2.16$ km/h."
+   },
+   {
+    "text": "Measure the distance from Jacob Ballas Car Park to Jacob Ballas Children's Garden on the map.",
+    "label": "b",
+    "marks": 1,
+    "answer": "$2.9$ cm to $3.0$ cm (accept any value in this range)",
+    "solution": "Use a ruler to measure the straight line joining the two markers on the printed map.\nIt measures between $2.9$ cm and $3.0$ cm. (This is a measured length, so a small tolerance is allowed.)"
+   },
+   {
+    "text": "Hence, find the scale of the map in the form $1:n$",
+    "label": "c",
+    "marks": 2,
+    "answer": "$1 : 2400$",
+    "solution": "Take the map distance as $3$ cm and the actual distance as $72\\text{ m} = 7200\\text{ cm}$.\nScale $= 3 : 7200 = 1 : 2400$."
+   },
+   {
+    "text": "The area of the Eco Lake on the map is $12\\text{ cm}^{2}$, calculate the actual area of Eco Lake. Express your answer in $m^{2}$.",
+    "label": "d",
+    "marks": 2,
+    "answer": "$6912\\text{ m}^{2}$",
+    "solution": "Length scale factor $= 2400$, so area scale factor $= 2400^{2} = 5\\,760\\,000$.\nActual area $= 12 \\times 5\\,760\\,000 = 69\\,120\\,000\\text{ cm}^{2}$.\nSince $1\\text{ m}^{2} = 10\\,000\\text{ cm}^{2}$: actual area $= \\frac{69\\,120\\,000}{10\\,000} = 6912\\text{ m}^{2}$."
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "88b9a2ed-ee0b-463b-a225-fef413ebcec2",
+  "school": "Beatty",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "3",
+  "topics": [
+   "Numbers (Percentages)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "In Fit Bit Secondary School, students with a Body Mass Index (BMI) of more than 23.5 have to attend fitness training every Friday morning before lessons begin. In January 2018, Jing Hua's height was $164$ cm and his weight was $M$ kg. If he was not required to attend the fitness training in the first half of the year, find the greatest possible integer value of $M$.\n$$\\left\\lbrack BMI = \\frac{\\text{weight}}{(\\text{height})^2}, \\text{ where weight is in kg and height is in metres.} \\right\\rbrack$$",
+    "label": "a",
+    "marks": 3,
+    "answer": "$M = 63$",
+    "solution": "Height $= 164$ cm $= 1.64$ m\nHe is not required to attend, so BMI $\\le 23.5$:\n$\\frac{M}{1.64^2} \\le 23.5$\n$M \\le 23.5 \\times 2.6896$\n$M \\le 63.2056$\nGreatest possible integer value of $M = 63$"
+   },
+   {
+    "text": "In July 2018, Jing Hua's height increased by $1\\%$ and his weight increased by $4\\%$. Would Jing Hua have to attend the Friday fitness training for the second half of the year? Show your working clearly using the greatest possible integer value of $M$ obtained in part (a) as Jing Hua's original weight.",
+    "label": "b",
+    "marks": 2,
+    "answer": "Yes. New BMI $= 23.9 > 23.5$, so he has to attend the fitness training.",
+    "solution": "New height $= 1.64 \\times 1.01 = 1.6564$ m\nNew weight $= 63 \\times 1.04 = 65.52$ kg\nNew BMI $= \\frac{65.52}{1.6564^2} = \\frac{65.52}{2.74366} = 23.880$\nSince $23.880 > 23.5$, Jing Hua has to attend the Friday fitness training."
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "89c3a6b7-1435-435c-a684-463faac3ed4c",
+  "school": "North Vista",
+  "year": 2018,
+  "paper": "1",
+  "question_number": "5",
+  "topics": [
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Solve the inequality $5x \\geq 9$.",
+    "label": "i",
+    "marks": 1,
+    "answer": "$x \\geq 1.8$",
+    "solution": "$5x \\geq 9$\n$x \\geq \\frac{9}{5}$\n$x \\geq 1.8$"
+   },
+   {
+    "text": "Hence, show your solution on the number line below.",
+    "label": "ii",
+    "marks": 1,
+    "answer": "A filled circle at $1.8$ with the line shaded to the right of $1.8$.",
+    "solution": "$1.8$ lies between $1$ and $2$ on the number line.\nDraw a filled (shaded) circle at $1.8$, because $x = 1.8$ is included, and shade the line to the right of $1.8$."
+   }
+  ],
+  "answer": null,
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "9aeb541c-8499-4815-b07e-00f5a8c84ee2",
+  "school": "CHIJ St Theresa",
+  "year": 2017,
+  "paper": "2",
+  "question_number": "6",
+  "topics": [
+   "Algebra (Linear Equations)",
+   "Algebra (Inequalities)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Terrence is planning to bring his family for dinner at a restaurant. Given that the cost of a bowl of noodles is $\\$7.90$ and Terrence orders $y$ number of bowls of noodles,",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "form an expression in $y$ for the total amount Terrence paid,",
+      "label": "i",
+      "marks": 1,
+      "answer": "$\\$7.90y$",
+      "solution": "Total amount $= 7.90 \\times y = \\$7.90y$."
+     },
+     {
+      "text": "form an inequality in $y$ to determine how many bowls of noodles Terrence can buy if he has only $\\$50$, and",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$7.90y \\leq 50$",
+      "solution": "The total cost cannot exceed $\\$50$, so $7.90y \\leq 50$."
+     },
+     {
+      "text": "solve the inequality in (a)(ii), and state the maximum number of bowls of noodles he can buy.",
+      "label": "iii",
+      "marks": 2,
+      "answer": "$y \\leq 6.33$ (3 s.f.), so the maximum is 6 bowls",
+      "solution": "$y \\leq \\frac{50}{7.90} = 6.329\\ldots$\nSince $y$ must be a whole number, the maximum number of bowls is $y = 6$."
+     }
+    ]
+   },
+   {
+    "text": "The sum of three consecutive odd numbers is 141. Find the biggest number.",
+    "label": "b",
+    "marks": 3,
+    "answer": "49",
+    "solution": "Let the numbers be $x$, $x + 2$ and $x + 4$.\n$3x + 6 = 141$\n$3x = 135$\n$x = 45$\nThe numbers are 45, 47 and 49, so the biggest number is 49."
+   },
+   {
+    "text": "The sum of the ages of Cindy and her sister is 38. Seven years ago, Cindy was thrice as old as her sister. Find Cindy's age now.",
+    "label": "c",
+    "marks": 3,
+    "answer": "25 years old",
+    "solution": "Let Cindy be $x$ years old now; her sister is $(38 - x)$ years old.\n$x - 7 = 3[(38 - x) - 7]$\n$x - 7 = 3(31 - x) = 93 - 3x$\n$4x = 100$\n$x = 25$\nCindy is 25 years old now."
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "bdde650e-12d8-46e6-9137-8377c732ff1b",
+  "school": "St Patrick",
+  "year": 2018,
+  "paper": "2",
+  "question_number": "3",
+  "topics": [
+   "Algebra (Inequalities)",
+   "Numbers (HCF and LCM)",
+   "Numbers (Prime Factorization)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "It is given that $x$ and $y$ are integers such that $0 \\le x \\le 7$ and $0 \\le y \\le 4$. Calculate the greatest value of $x - 2y$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "7",
+    "solution": "$x - 2y$ is greatest when $x$ is as large as possible and $2y$ is as small as possible.\nLargest $x = 7$; smallest $y = 0$.\nGreatest value $= 7 - 2(0) = 7$"
+   },
+   {
+    "text": "A series of three light bulbs switch on every 15, 32 and 48 seconds respectively. Given that they lit up together at 6 am, when is the next time all the three light bulbs will light up together again?",
+    "label": "b",
+    "marks": 4,
+    "answer": "6.08 am",
+    "solution": "The bulbs light up together again after the LCM of 15, 32 and 48 seconds.\n$15 = 3 \\times 5$\n$32 = 2^{5}$\n$48 = 2^{4} \\times 3$\nLCM $= 2^{5} \\times 3 \\times 5 = 480$ seconds $= 8$ minutes\nNext time $= 6.00\\text{ am} + 8\\text{ min} = 6.08\\text{ am}$"
+   },
+   {
+    "text": "Given that $200 = 2^{3} \\times 5^{2}$, it is stated that $200k$ is both a perfect square and a perfect cube. Find the smallest possible value of $k$.",
+    "label": "c",
+    "marks": 1,
+    "answer": "5000",
+    "solution": "A number that is both a perfect square and a perfect cube is a perfect sixth power, so every index in $200k$ must be a multiple of $6$.\n$200k = 2^{3} \\times 5^{2} \\times k$\nRaise the index of $2$ from $3$ to $6$ and the index of $5$ from $2$ to $6$:\n$k = 2^{3} \\times 5^{4} = 8 \\times 625 = 5000$\nCheck: $200 \\times 5000 = 1\\,000\\,000 = 1000^{2} = 100^{3}$ ✓"
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "fd8d1ad1-9eb1-47a8-aa25-b585bde070f2",
+  "school": "Nanyang Girls",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "8",
+  "topics": [
+   "Statistics"
+  ],
+  "question_text": "The following tables show the climatic data of two cities in South America.\nRio de Janeiro, Brazil:\n$$\\begin{array}{|l|c|c|c|c|c|c|c|c|c|c|c|c|} \\hline & \\text{Jan} & \\text{Feb} & \\text{Mar} & \\text{Apr} & \\text{May} & \\text{June} & \\text{July} & \\text{Aug} & \\text{Sep} & \\text{Oct} & \\text{Nov} & \\text{Dec} \\\\ \\hline \\text{Temp } (^\\circ\\text{C}) & 26 & 27 & 26 & 25 & 23 & 22 & 21 & 22 & 22 & 23 & 24 & 25 \\\\ \\hline \\text{Precipitation (mm)} & 114 & 105 & 103 & 137 & 86 & 80 & 56 & 51 & 87 & a & 96 & 169 \\\\ \\hline \\end{array}$$\nUshuaia, Argentina:\n$$\\begin{array}{|l|c|c|c|c|c|c|c|c|c|c|c|c|} \\hline & \\text{Jan} & \\text{Feb} & \\text{Mar} & \\text{Apr} & \\text{May} & \\text{June} & \\text{July} & \\text{Aug} & \\text{Sep} & \\text{Oct} & \\text{Nov} & \\text{Dec} \\\\ \\hline \\text{Temp } (^\\circ\\text{C}) & 10 & 10 & 8 & 6 & 3 & 1 & b & c & 4 & 6 & 8 & 9 \\\\ \\hline \\text{Precipitation (mm)} & 40 & 30 & 30 & 40 & 30 & 40 & 30 & 30 & 20 & 30 & 20 & 30 \\\\ \\hline \\end{array}$$",
+  "parts": [
+   {
+    "text": "Find the annual mean temperature for Rio de Janeiro.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$23.8^\\circ$C",
+    "solution": "Sum of the 12 temperatures $= 26 + 27 + 26 + 25 + 23 + 22 + 21 + 22 + 22 + 23 + 24 + 25 = 286$\nMean $= \\frac{286}{12} = 23.833\\ldots$\nAnnual mean temperature $= 23.8^\\circ$C (3 s.f.)"
+   },
+   {
+    "text": "If the median precipitation for Rio de Janeiro is 92 mm, find the value of $a$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$a = 88$",
+    "solution": "There are 12 values, so the median is the mean of the 6th and 7th values when they are arranged in order.\nThe 11 known values in order are $51, 56, 80, 86, 87, 96, 103, 105, 114, 137, 169$.\nSince the median is 92, $a$ must lie between 87 and 96, giving the order\n$51, 56, 80, 86, 87, a, 96, 103, 105, 114, 137, 169$.\n$\\frac{a + 96}{2} = 92$\n$a + 96 = 184$\n$a = 88$, which does lie between 87 and 96."
+   },
+   {
+    "text": "Given that the annual mean temperature of Ushuaia is $5.75^\\circ$C, find the value of $b$ and of $c$, given that the coldest month is in June and there are four modal temperatures for the year.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$b = 2$, $c = 2$",
+    "solution": "Total of the 12 temperatures $= 5.75 \\times 12 = 69$\nSum of the ten known temperatures $= 10 + 10 + 8 + 6 + 3 + 1 + 4 + 6 + 8 + 9 = 65$\nSo $b + c = 69 - 65 = 4$.\nJune is the coldest month at $1^\\circ$C, so $b > 1$ and $c > 1$.\nThe only whole numbers greater than 1 adding to 4 are $b = 2$ and $c = 2$.\nCheck: the temperatures are $10, 10, 8, 6, 3, 1, 2, 2, 4, 6, 8, 9$, so $2$, $6$, $8$ and $10$ each occur twice, giving four modal temperatures."
+   },
+   {
+    "text": "With reference to the two tables, make 2 comparisons, 1 using the data on temperature and 1 using the data on precipitation, about the climate of Rio de Janeiro and Ushuaia.",
+    "label": "d",
+    "marks": 2,
+    "answer": "Temperature: Rio de Janeiro is much warmer, with an annual mean of $23.8^\\circ$C compared with $5.75^\\circ$C for Ushuaia. Precipitation: Rio de Janeiro is much wetter, receiving between 51 mm and 169 mm each month compared with only 20 mm to 40 mm for Ushuaia.",
+    "solution": "Temperature: the annual mean temperature of Rio de Janeiro is $23.8^\\circ$C, which is about four times the annual mean of $5.75^\\circ$C for Ushuaia, so Rio de Janeiro is much warmer all year round. Rio de Janeiro also has a smaller temperature range ($27 - 21 = 6^\\circ$C) than Ushuaia ($10 - 1 = 9^\\circ$C), so its temperature is more consistent.\nPrecipitation: Rio de Janeiro receives far more rain every month (from 51 mm to 169 mm) than Ushuaia (from 20 mm to 40 mm), so Rio de Janeiro is much wetter. Rio de Janeiro's monthly precipitation also varies a great deal, whereas Ushuaia's stays close to 30 mm throughout the year."
+   }
+  ],
+  "answer": "(a) $23.8^\\circ$C; (b) $a = 88$; (c) $b = 2$, $c = 2$; (d) Temperature: Rio de Janeiro is much warmer, with an annual mean of $23.8^\\circ$C compared with $5.75^\\circ$C for Ushuaia. Precipitation: Rio de Janeiro is much wetter, receiving between 51 mm and 169 mm each month compared with only 20 mm to 40 mm for Ushuaia.",
+  "solution": null,
+  "ip_syllabus": true,
+  "legacy_syllabus": true,
+  "level": "S1"
+ },
+ {
+  "id": "783f3abe-4be4-4042-8039-5f47c0f233a6",
+  "school": "CHIJ St Theresa",
+  "year": 2016,
+  "paper": "2",
+  "question_number": "5",
+  "topics": [
+   "Algebra (Factorization)",
+   "Algebra (Expansion)",
+   "Algebra (Fractions)"
+  ],
+  "question_text": "",
+  "parts": [
+   {
+    "text": "Factorize completely",
+    "label": "a",
+    "subparts": [
+     {
+      "text": "$3ab + ab^2$",
+      "label": "i",
+      "marks": 1,
+      "answer": "$ab(3 + b)$",
+      "solution": "Common factor is $ab$.\n$3ab + ab^2 = ab(3 + b)$"
+     },
+     {
+      "text": "$2m(3m - n) + 4n(3m - n)$",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$2(m + 2n)(3m - n)$",
+      "solution": "Common factor is $(3m - n)$.\n$2m(3m - n) + 4n(3m - n) = (3m - n)(2m + 4n)$\n$= 2(m + 2n)(3m - n)$"
+     }
+    ]
+   },
+   {
+    "text": "Expand and simplify $\\frac{3}{4}\\left[3(3p - 2q) - 5(p - 2q)\\right]$.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$3p + 3q$",
+    "solution": "$3(3p - 2q) - 5(p - 2q) = 9p - 6q - 5p + 10q = 4p + 4q$\n$\\frac{3}{4}(4p + 4q) = 3p + 3q$"
+   },
+   {
+    "text": "Simplify",
+    "label": "c",
+    "subparts": [
+     {
+      "text": "$\\frac{x}{5} - \\frac{x - 5}{15}$ ,",
+      "label": "i",
+      "marks": 2,
+      "answer": "$\\frac{2x + 5}{15}$",
+      "solution": "Common denominator is 15.\n$\\frac{x}{5} - \\frac{x - 5}{15} = \\frac{3x}{15} - \\frac{x - 5}{15} = \\frac{3x - x + 5}{15} = \\frac{2x + 5}{15}$"
+     },
+     {
+      "text": "$16yz^2 \\div \\frac{1}{3y}$",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$48y^2z^2$",
+      "solution": "Dividing by a fraction means multiplying by its reciprocal.\n$16yz^2 \\div \\frac{1}{3y} = 16yz^2 \\times 3y = 48y^2z^2$"
+     }
+    ]
+   }
+  ],
+  "answer": "",
+  "solution": null,
+  "ip_syllabus": false,
+  "legacy_syllabus": true,
+  "level": "S1"
+ }
+]
