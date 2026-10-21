@@ -558,3 +558,5 @@ H2 ones are, because nothing else holds them until they are published.
 
 Known gaps: the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).
+
+**O-Level "harder" means more thinking, not more working (22 Oct 2026, Adrian).** His words and the two graph-paper rules are at the top of `.claude/skills/gce-paper/reference/em-standard-2024-2025.md`; every E Math writer reads them.
