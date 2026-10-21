@@ -1,0 +1,825 @@
+{
+ "questions": [
+  {
+   "id": "038e7e98-60fd-42ea-9fe9-0d9d5be14c46",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "06ee85ca-f5ad-40bf-9b93-1717c2ffa07e",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "07019649-9896-4533-8276-84b6186855a9",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "088dd91f-6cda-4182-ab51-9e44676f29c5",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "0c9e5080-6d45-4119-8694-7485867cd09e",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "0ea6491c-e01a-4ac3-a2d6-188a23811127",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "11bba619-b711-4233-9fe5-d45a9036adf0",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "13a868e2-3a2f-43c9-b1c1-95c264ac0911",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "14c33a4b-8bd9-4d76-a2d8-822d8639ac2e",
+   "level": "S3_EM",
+   "topics": [
+    "Logarithms",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1b19e4d3-d680-4ef5-8deb-f6ddd1cb9ff5",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1c1cd612-9649-428f-b767-fc93932e8890",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1cf40a8e-c8eb-48db-8b0b-4c17ef3399cd",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1d198e26-1035-4535-ae5f-a22f72194bda",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1d1ca7cf-2267-4072-9150-225fd1b6ee9c",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1dd9b7cf-71e9-45f7-b9ef-6b986b418280",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1e9a6986-19b8-4558-a4c1-0bcdd1196ad1",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "1ef82e72-10f4-4056-bd60-91a03a0f50e1",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "206c15c5-1634-40eb-a3b9-02c1e6818f29",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "2309c667-4344-4efb-ad94-bb02a8c4fd93",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "247a6a5e-7c69-49ac-8099-bf6f5ed5283a",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "25285181-0717-4218-94fc-0dbcca409b15",
+   "level": "S2",
+   "topics": [
+    "Matrices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "2953605e-86f7-4948-af18-1dc47b480aba",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "29b4d559-9804-4254-9729-24d6d43174d7",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "2d463875-1984-44d6-a23f-a254b0b83f87",
+   "level": "S3_EM",
+   "topics": [
+    "Indices",
+    "Algebra (Graph on Graph Paper)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "331fba46-871a-427c-ab26-95147b64629b",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "37b64c46-ebcc-4625-84d2-fcc4a6770dd4",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "3ae563bc-f688-480e-a947-2d975fcaeaad",
+   "level": "S2",
+   "topics": [
+    "Circle Properties"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "3b032457-65a6-43ea-9d45-d04422629482",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "3fa189f0-dcd1-4602-87e0-3af1a8060de9",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "4088a83b-76c0-41cd-beeb-bef02d436ee7",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "421c94bf-89ec-4bc8-93e8-81664367e12b",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "43137f23-e3c0-4e69-a7b5-b8fb0e91468c",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "44294a4b-ea12-4c1b-a618-ed1b1bbd14bd",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "449a50a7-34ae-4424-81ff-ba696b4abe44",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "45343c39-2cea-4c5a-aea8-05da1f3cd476",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "48631071-b9e3-47dd-abb4-7e7d5f4044d0",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "4a7cc4ec-e6ba-4a73-ac7d-adda1b6fc72b",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "4d09c3c6-c5e9-49e5-b73b-073e77c515c7",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Coordinate Geometry"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "4f90906d-24a0-4317-bedf-3c779ec91bb9",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "53d1b319-64e4-4dff-a8d6-36b179a3054c",
+   "level": "S2",
+   "topics": [
+    "Indices",
+    "Algebra (Subject of Formula)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "55690286-aae6-4b3e-a02f-b791a1a99537",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Coordinate Geometry",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "5b1f4b69-3359-4b16-bf69-e0fe52b6711e",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "5d492980-b529-4f31-b46f-ca21816e3f0a",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "5e276662-e2d2-4d15-8d00-a9a1b077b047",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "5f915283-2bf9-4b45-b1e3-d4c9b456bcae",
+   "level": "S2",
+   "topics": [
+    "Indices",
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "6060252f-02eb-45ae-8c8e-554fc9f93d4c",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "63476bfd-a424-4faa-ab4b-4214f733e056",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "641a92a1-92f6-4b17-aae8-8722c07426bd",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "656d5989-cee0-46fe-a508-d6dfad7fa058",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Coordinate Geometry"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "701de988-96ef-4d3c-a0f0-a25c824b2ad7",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "72216724-8452-4b6c-94d0-49f6758a04a4",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "7680dda0-a32c-4c70-8577-2a98fffa82ca",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "7a980be7-f826-46d7-a81b-a4cb99b3b37f",
+   "level": "S2",
+   "topics": [
+    "Indices",
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "809af72c-8a86-4936-ba73-4e995be81c87",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "888b42c4-e689-495a-9dff-5233fb6727f9",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "89dcb2cc-1306-4e6e-a798-dba19e316961",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "9200ccab-bc94-4b92-a68d-767b497a203d",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "95c02713-43a5-4608-862d-dc45cb217cbc",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "97a8334f-3270-4541-b99f-02d3b49ecff6",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "98f7abea-b91d-4c7c-b538-947a4728575c",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Inequalities)",
+    "Algebra (Quadratic Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "9c1f2c5b-a414-4aa1-930c-ada2835a4fa0",
+   "level": "S2",
+   "topics": [
+    "Proportion",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "a4b46c3d-a471-4686-a5e5-91f2e7abce06",
+   "level": "S3_EM",
+   "topics": [
+    "Coordinate Geometry",
+    "Algebra (Subject of Formula)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "a613980e-dc49-4ab3-a5a1-6602a18172ef",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Graph on Graph Paper)",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "a8583718-3d35-44a6-93f7-255f037ef844",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "a8a299be-2b87-4a83-8c09-b0a00fae2562",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "a8ca5f41-b6dd-45d7-b093-9782e68659f3",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "a9b3a943-e88a-4ad6-a2f2-3ce6a94262b2",
+   "level": "S2",
+   "topics": [
+    "Circle Properties"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "b41b6c4e-4180-4626-860c-c113cbb07fe2",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "b553b928-7562-45ed-8065-5f23d0e18e33",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "b5d1f8ec-d5d9-4957-8d0a-561df8807fea",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "b6acb62b-ede1-4d2c-887a-ee84ad9b7430",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "b7133f00-1e94-45d8-9332-f3c4aa21128a",
+   "level": "S2",
+   "topics": [
+    "Proportion",
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "b86c7464-438f-47f4-8989-620c0c1b0326",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "bb6d0566-e11a-4321-b584-45bfc637af77",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "c008275e-a08e-40fc-9454-e6969ac16cef",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "c0c5f11f-0912-43f2-8b8a-2d1ed3c09589",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "c64448ce-b02e-4e8d-ac13-4cfe21884647",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "ca2d4545-23fa-4de6-bea1-53b236261776",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "cc46e216-c7cd-496f-85a5-1fe14adaece9",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "cea4e109-cc33-406a-b86a-74d51fecf683",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "cf3f4f43-2377-40d9-b976-e52cc02d95d0",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "cfdf2b2c-f1b8-4ed4-be19-7343dad15dda",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d051ceed-9113-4115-a893-662469f68b62",
+   "level": "S2",
+   "topics": [
+    "Indices (Standard Form)",
+    "Numbers (Percentages)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d2eb8f0c-836d-431d-934a-fa48ff7125f4",
+   "level": "S2",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d3bec4d8-a597-45ab-969d-b26f1e525834",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d4f6d578-7582-4ac5-a771-94f814b8059e",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d7c7a475-3611-4a83-9853-712053e8c5e2",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d950e2a8-9597-4ace-a394-a4edcfcad97f",
+   "level": "S2",
+   "topics": [
+    "Matrices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d987b809-82b2-44a1-b276-7df8c68edf81",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "d9a79298-ce46-41f7-95f6-9b9fcf469022",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "dcdc3a32-eff6-44ac-a418-def89366529c",
+   "level": "S3_EM",
+   "topics": [
+    "Logarithms",
+    "Indices",
+    "Algebra (Simultaneous Equations)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "e1402566-33dd-404d-8ebc-bd64d50834b8",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "e398777d-82a4-4004-97e1-21241b3e83bc",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "ec96efbe-aa07-4aa7-8582-ed82dfcebb54",
+   "level": "S2",
+   "topics": [
+    "Circle Properties"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "ee617224-ee36-44e6-9a65-310fc2be134d",
+   "level": "S3_EM",
+   "topics": [
+    "Indices",
+    "Algebra (Expressions)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "f56078d3-15f2-4b45-a15c-3e97378dcad2",
+   "level": "S3_EM",
+   "topics": [
+    "Algebra (Quadratic Equations)",
+    "Algebra (Inequalities)"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "f6331c6e-42c3-4ea8-96a5-731418bfc209",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "f9b6d00a-a243-484e-a14d-1f5838892cff",
+   "level": "S2",
+   "topics": [
+    "Sets"
+   ],
+   "legacy_syllabus": false
+  },
+  {
+   "id": "fefc5697-7f59-495c-9acc-75d87b334c2e",
+   "level": "S3_EM",
+   "topics": [
+    "Indices"
+   ],
+   "legacy_syllabus": false
+  }
+ ],
+ "filings": []
+}

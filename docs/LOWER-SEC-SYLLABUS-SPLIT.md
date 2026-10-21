@@ -199,3 +199,9 @@ factorization of 2 by 2. yes solving inequalities is now in sect 2"*.
   serves school rows for Inequalities, so Sec 2 students get them; Sec 1 has no open Inequalities list, so Sec 1 does
   not; `twin_queue` (own-level main skill) keeps them out of both levels' twin counts. The other 8 sit in topics Sec 1
   also teaches, where un-hiding would reach Sec 1 too — they need a "taught at" level separate from the paper's level.
+
+## Done 21 Oct 2026 (Adrian, typed in the session: "yes to all 4")
+1. **21 inequality rows on Sec 1 papers** → un-hidden and filed under the Sec 2 Inequalities sub-skills (`source 'level-recheck-2026-10-21'`), parts labelled (20). Checked: all 21 in `practice_pool('S2')`, none in Sec 1 (IP included). One old filing under an open Sec 1 sub-skill removed so it is no Sec 1 twin seed. Backup `_backups/inequality-unhide-before-2026-10-21.json`.
+2. **64 Sec 2 rows of Sec 3 work** (Indices, Sets, Standard Form, Circle Properties, Matrices) → level `S3_EM`. No clash with the one-row-per-number rule. The filer then files them in the E Math tree.
+3. **35 Sec 3 E Math rows that are A Math** (logarithms, discriminant …) → level `S3_AM`, topics set to the A Math topics a reader chose. 4 more could not move: the same school / year / paper / number already exists at Sec 3 A Math. Backup for 2 and 3: `_backups/level-moves-before-2026-10-21.json`.
+4. **Two new sub-skills:** Sec 2 Geometrical Constructions "Perpendicular and angle bisectors" (id 1562); Sec 1 Math In Real World Context "Reading bills, price tables and budgets" (id 1563). The questions set aside as "no skill fits" in those two topics were released to the filer (16 entries).
