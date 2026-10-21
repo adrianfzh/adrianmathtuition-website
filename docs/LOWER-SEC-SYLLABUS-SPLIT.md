@@ -171,3 +171,8 @@ above) — change both together.
 - `f713d637-c93c-4fe5-b92f-365715ffa307` RI 2020 — Sector area/perimeter for 75 degree angle
 - `fcb7961b-92c0-43c9-a730-82f70d215a5b` Bowen 2015 — (a) t^4 divided by t, indices with letters
 - `fdd78261-fecc-446b-accb-669766da99cf` RI 2021 — Sector area/arc for 60 degrees, plus Pythagoras
+
+## Sec 2 questions may use the Sec 1 skill list (21 Oct 2026, Adrian)
+Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will test sec 1 sometimes"*.
+- **Part labels: yes, safe.** A part of a Sec 2 question that tests Sec 1 work may be labelled with a Sec 1 sub-skill. Nothing that serves students or counts twins reads `question_part_subgroups`.
+- **Main filing: needs a decision first.** `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Not done until Adrian agrees how (21 Oct 2026).

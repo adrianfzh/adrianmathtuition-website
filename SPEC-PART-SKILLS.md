@@ -58,5 +58,17 @@ Science school part labels sat at 4,119 of 9,603 from 19 Oct evening to 20 Oct m
 - **Twins come back by themselves, in two phases** (bot 48c7ade6, SPEC-TWINS §1 "Paused for part labels"): when every lane last found nothing to do, `science-twins` comes ON for long questions to 3 a sub-skill only; once those are done, maths `twins` comes ON and everything goes on to 5.
 - Left on 20 Oct (re-tag, question×topic): maths ~16,000 (JC ~8,200), science ~7,000, maths twins ~1,300; plus new maths filings (~2,300).
 
+## Sec 2 questions may use the Sec 1 skill list (21 Oct 2026, Adrian)
+Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will test sec 1 sometimes"*.
+- **Part labels: yes, safe.** A part of a Sec 2 question that tests Sec 1 work may be labelled with a Sec 1 sub-skill. Nothing that serves students or counts twins reads `question_part_subgroups`.
+- **Main filing: needs a decision first.** `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Not done until Adrian agrees how (21 Oct 2026).
+
+**The ~420 maths long questions with parts and no filing at all (checked 21 Oct 2026, levels S1–AM, not legacy / national / unchecked AI):** why each was never filed, from the worker's set-aside list (kept 90 days):
+- **Two readers disagreed on the main sub-skill — ~170** (156 since 15 Oct, under the per-part method): long questions spanning several sub-skills; the two-reader rule holds them.
+- **Reader unsure (held) — ~35.**
+- **Wrong topic tag — ~146** (e.g. tagged Indices, about logarithms): the reader named the right topic (`main_topic`), nothing re-tags.
+- **No listed sub-skill fits — ~55.**
+- **Never fetched — 93**, mostly Sec 2 topics with no Sec 2 list: Indices 38, Sets 16, Standard Form 10, Circle Properties 3, Matrices 2 (Sec 3 work in today's syllabus), and Speed 10, Real Numbers 9, Integers 6, Exchange Rate 3, Interest 3 (Sec 1 work — Adrian's rule above).
+
 ## Next step (Adrian said yes, 15 Oct 2026)
 When the re-tag has finished (`FILING_PARTS=1` status shows 0 for both banks, `select * from question_main_vs_parts` looked at), adopt the part table in ONE place first: the bleed table / "where marks are lost" (report only, cannot change what a student is served). Then Practice photo, then Find, one at a time, each checked for what students are served. Remind Adrian when the re-tag backlog reaches 0.
