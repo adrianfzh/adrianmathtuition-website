@@ -914,7 +914,10 @@ not as the boxed worked examples of a revision sheet.
   with column 2 empty. Sub-parts keep their full label in column 2 (`(c)(ii)`).
 - **Column 3 = the working, one step a line** (§1): each line its own paragraph, line
   spacing 1.5, Word equations (OMML, Cambria Math) set left-aligned, text Times New Roman
-  12 pt. A chain continues under its "=" (the continuation line is indented to the
+  **9.5 pt, maths 9.5 pt too** — the house body size, same as every sheet (Adrian, 22 Oct
+  2026: *"there are guidelines on fontsize and fonts right?"* → *"yes, 9.5 pt is the rule
+  for solutions files too"*; this line said 12 pt until then). Title 12 pt bold, grey ←
+  notes 8 pt, A4 margins top 2 / bottom 1 / left and right 2.5 cm. A chain continues under its "=" (the continuation line is indented to the
   width of the left-hand side). Equation tags are fine: `a = b + d … (1)`,
   `(3) − 2(2):  ar⁷ − 2ar² = b … (4)`. Calculator steps read `Using GC, …`.
 - **Each part ends with its conclusion in bold, starting `∴`** — `∴ least n = 42`,
