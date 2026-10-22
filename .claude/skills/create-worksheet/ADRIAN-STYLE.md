@@ -920,9 +920,11 @@ not as the boxed worked examples of a revision sheet.
   notes 8 pt, A4 margins top 2 / bottom 1 / left and right 2.5 cm. A chain continues under its "=" (the continuation line is indented to the
   width of the left-hand side). Equation tags are fine: `a = b + d … (1)`,
   `(3) − 2(2):  ar⁷ − 2ar² = b … (4)`. Calculator steps read `Using GC, …`.
-- **Each part ends with its conclusion in bold, starting `∴`** — `∴ least n = 42`,
-  `∴ largest value of n = 28`. That is the "result stands out" rule of the readability
-  standard in this layout; there is no separate "Answer:" line.
+- **Each part ends with its answer in bold, starting `Ans:`** — `Ans: least n = 42`,
+  `Ans: 15`. That is the "result stands out" rule of the readability standard in this
+  layout. **Not `∴ 15`** (Adrian, 22 Oct 2026: *"instead of putting therefore [ans],
+  should put Ans: [ans]"*; until then this line said to start it with `∴`). A `∴`
+  mid-working, to draw a conclusion, is still fine.
 - **No thinking out loud.** Every line states a step; none asks a question or muses
   (Adrian, 22 Oct 2026, on the H2 Vectors worked solutions: *"are the models leaking out
   their thought process?"* → *"yes, add it to the solutions guide as a rule"*). Not
@@ -946,7 +948,7 @@ the table with
 
 (`/usr/bin/python3` has python-docx on this Mac.) It records the `Q` / `solution_box`
 calls instead of drawing boxes and emits the table above, turning each `Answer:` step
-into the bold `∴` line. Worked example: `examples/vectors_solutions_build.py` (the
+into the bold `Ans:` line. Worked example: `examples/vectors_solutions_build.py` (the
 H2 Vectors practice, 10 questions, 37 rows). Known limit: lines after an `=` only
 roughly align — check the rendered page in Word before handing it over.
 

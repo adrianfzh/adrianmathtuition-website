@@ -7,7 +7,7 @@ worksheet_lib's Worksheet API (ws.Q(...) then ws.solution_box([(label, steps), .
 This file RECORDS those calls instead of rendering a boxed sheet, then lays every
 question out as one 3-column table: number | part | working, one row per part,
 one step per line (Word equations, "=" continuation lines indented under the "="),
-the solution's "Answer: …" row becomes a bold "∴ …" conclusion line.
+the solution's "Answer: …" row becomes a bold "Ans: …" line (Adrian, 22 Oct 2026: not "∴ …").
 First used for "A REV 2026 5 Vectors (Practice Solutions) (table).docx".
 Run from this folder (it imports worksheet_lib) with python-docx + lxml installed.
 """
@@ -153,7 +153,7 @@ def step(cell, first, s):
     elif isinstance(s, list):
         p = new_para(cell, first)
         if s and s[0][0] == 'text' and s[0][1] == 'Answer: ':
-            fill(p, [('text', '∴ ')] + list(s[1:]), bold=True)
+            fill(p, [('text', 'Ans: ')] + list(s[1:]), bold=True)   # "Ans: 15", never "∴ 15" (Adrian, 22 Oct 2026)
         else:
             fill(p, s)
     else:
