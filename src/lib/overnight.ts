@@ -168,6 +168,8 @@ export function requestWords(r: RequestState): string {
   const verb = r.action === 'ship' ? ['Shipping', 'Shipped', 'Did not ship'] : r.action === 'drop' ? ['Dropping', 'Dropped', 'Not dropped'] : ['Changing', 'Changed — the new version is in Telegram', 'Not changed'];
   if (busy) return `⏳ ${verb[0]}… the answer comes in Telegram`;
   if (r.status === 'done') return `✅ ${verb[1]}`;
+  // clashed with newer work; a session has to redo it (22 Oct 2026)
+  if (r.status === 'needs_session') return `🛠 ${verb[2]} — it clashes with newer work, a session has to redo it`;
   return `❌ ${verb[2]} — see Telegram`;
 }
 

@@ -103,6 +103,8 @@ export async function POST(req: NextRequest) {
   if (body?.dryRun === true) return NextResponse.json({ ok: true, dryRun: true, row });
 
   const { data, error } = await sb.from('proposal_requests').insert(row).select('id').single();
+  // two taps at once: the database allows one live request per proposal (22 Oct 2026) — the second is a duplicate
+  if (error?.code === '23505') return NextResponse.json({ ok: true, duplicate: true, message: 'Already being done. The answer comes in Telegram.' });
   if (error) return NextResponse.json({ error: `Could not send it: ${error.message}` }, { status: 500 });
   const wake = await wakeWorker(`proposal ${tap.action} ${tap.slug} (website)`);
   return NextResponse.json({ ok: true, id: data.id, wake });
