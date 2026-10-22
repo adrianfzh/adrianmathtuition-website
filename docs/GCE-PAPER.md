@@ -155,6 +155,17 @@ own, matching the GCE layout; figures come from `Q<n>.figure.png` in `--figures`
 `solution_box` sets `w:tblGrid` widths as well as `w:tcW` since 9 Sep 2026 — LibreOffice
 (and the soffice PDF preview) split the columns 50/50 otherwise and clipped display math.
 
+**Parts are Word's own automatic numbering, never typed labels (Adrian, 22 Oct 2026:
+"can you subnumber them in docx in the future? with auto sub-numbering").** Typed
+"(a)\t(i)\t" pushed the text to the right edge in Word. Now (a)(b)… and (i)(ii)… are
+Word lists (`worksheet_lib.numbered(…, start=)`; pools of 400 restarts per level, each
+with a start-at-1 and a start-at-2 copy). Layout: question text 1 cm, part text 2 cm,
+sub-part text 3 cm (`STEP_CM = 1.0`). A part with no words of its own but with sub-parts
+prints "(a)" alone on a line, kept with the "(i)" below it. A question with no stem keeps
+"(a)" typed on the number line ("1.  (a) …") and the list below starts at (b). A sub-list
+restarts at its own "(i)"; a label-less block between (i) and (ii) carries the count on.
+First paper built this way: O-Level E Math Paper 2 Practice (Oct 2026) - auto-numbered.
+
 **PDF of the Word file (21 Sep 2026).** Use `scripts/gce-paper/lo-pdf.sh <file.docx> [pt]`,
 never a plain `soffice --convert-to pdf`. Two faults made the maths bigger than the text:
 the exporter wrote no size on maths runs (fixed by `size_math()` in `export-docx.py`), and

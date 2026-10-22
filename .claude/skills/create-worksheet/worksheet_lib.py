@@ -112,16 +112,25 @@ NUMBERING_XML = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 # 40 numIds each, so an Example's (i)(ii)(iii) parts, a practice question's (i)(ii)
 # sub-questions and any (i)(ii) sub-parts under a part are real Word numbering too
 # (Adrian, 12 Sep 2026: "can you autonumber the questions and subparts?").
-NUMBERED_POOLS = {('letter', 0): (102, 300), ('roman', 0): (103, 340), ('letter', 1): (101, 380),
-                  ('roman', 1): (104, 420), ('letter', 2): (106, 460), ('roman', 2): (105, 500)}
-for (_fmt, _lvl), (_abs, _base) in NUMBERED_POOLS.items():
-    for _i in range(40):
-        NUMBERING_XML += (
-            f'  <w:num w:numId="{_base+_i}">'
-            f'<w:abstractNumId w:val="{_abs}"/>'
-            f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
-            f'</w:num>\n'
-        )
+NUMBERED_POOLS = {('letter', 0): 102, ('roman', 0): 103, ('letter', 1): 101,
+                  ('roman', 1): 104, ('letter', 2): 106, ('roman', 2): 105}
+# 400 restarts per pool (was 40: a 53-question paper with a fresh (a)(b) list per
+# question ran out, 22 Oct 2026), plus a second pool per key that STARTS at the
+# second item -- a stemless question types "(a)" on the number's own line, so
+# the real list under it begins at (b) (`numbered(..., start=2)`).
+NUMBERED_POOL_SIZE = 400
+NUMBERED_BASES = {}
+for _k, ((_fmt, _lvl), _abs) in enumerate(NUMBERED_POOLS.items()):
+    for _start in (1, 2):
+        _base = 2000 + NUMBERED_POOL_SIZE * (2 * _k + _start - 1)
+        NUMBERED_BASES[(_fmt, _lvl, _start)] = _base
+        for _i in range(NUMBERED_POOL_SIZE):
+            NUMBERING_XML += (
+                f'  <w:num w:numId="{_base+_i}">'
+                f'<w:abstractNumId w:val="{_abs}"/>'
+                f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="{_start}"/></w:lvlOverride>'
+                f'</w:num>\n'
+            )
 
 # Sub-question numIds, each with startOverride so (a)(b)(c) restarts per question.
 # One is spent on EVERY Q() call, parts or not, so the pool has to cover every
@@ -893,7 +902,7 @@ class Worksheet:
         self._blocks = []        # every finished block, for block_heights()
         self._fig_cm = {}        # id(paragraph) -> rendered figure height in cm
         self._example_n = 0      # auto-counter for example() labels
-        self._numbered_next = {k: v[1] for k, v in NUMBERED_POOLS.items()}   # next free numId per (fmt, level)
+        self._numbered_next = dict(NUMBERED_BASES)   # next free numId per (fmt, level, start)
         self._numbered_cur = {}   # (fmt, level) -> numId of the list currently open
         self._setup_page()
         self._setup_styles()
@@ -1194,19 +1203,22 @@ class Worksheet:
         self._current_subq_id = self._auto_parts_id
         return self._current_subq_id
 
-    def numbered(self, parts, level=0, fmt='letter', restart=False, marks=None):
+    def numbered(self, parts, level=0, fmt='letter', restart=False, marks=None, start=1):
         """One item of a real Word list at `level` (0 = flush with the stem, 1 = one
         tab in, 2 = two tabs in) in `fmt` 'letter' → (a)(b)(c) or 'roman' → (i)(ii)(iii).
         `restart=True` opens a fresh list (the first part of a question); later items
-        continue it. Deleting or inserting an item in Word renumbers the rest."""
+        continue it. `start=2` makes that fresh list count from (b)/(ii) -- for a list
+        whose first label is typed on the line above. Deleting or inserting an item in
+        Word renumbers the rest."""
         key = (fmt, level)
-        if key not in NUMBERED_POOLS:
-            raise ValueError(f'no numbering pool for {key}')
+        if key not in NUMBERED_POOLS or start not in (1, 2):
+            raise ValueError(f'no numbering pool for {key} starting at {start}')
         if restart or key not in self._numbered_cur:
-            nid = self._numbered_next[key]
-            if nid >= NUMBERED_POOLS[key][1] + 40:
-                raise RuntimeError(f'more than 40 restarted {fmt} lists at level {level} on one sheet')
-            self._numbered_next[key] = nid + 1
+            pool = (fmt, level, start)
+            nid = self._numbered_next[pool]
+            if nid >= NUMBERED_BASES[pool] + NUMBERED_POOL_SIZE:
+                raise RuntimeError(f'more than {NUMBERED_POOL_SIZE} restarted {fmt} lists at level {level} on one sheet')
+            self._numbered_next[pool] = nid + 1
             self._numbered_cur[key] = nid
         style = 'SubQuestion' if level >= 1 else None
         return self._add(parts, style=style, num_id=self._numbered_cur[key], marks=marks)
