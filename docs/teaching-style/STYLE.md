@@ -96,6 +96,9 @@ visually inspect EVERY page before presenting.
 **Readability (BINDING, Adrian 2026-08-30 — see teaching_style/FEEDBACK.md):**
 - One idea per line: explanation prose never runs multiple thoughts into one
   continuous paragraph; each sentence starts its own line.
+- No thinking out loud in worked solutions (Adrian, 22 Oct 2026): each line states a
+  step — never "Parallel?", "Do they meet?", "we would need …". Write "If the lines
+  meet:" instead. Full rule: `.claude/skills/create-worksheet/ADRIAN-STYLE.md` §10.
 - Worked-solution equation steps go ONE PER LINE with the `=` signs vertically
   aligned (OMML eqArr aligned on `=`, or borderless two-column LHS|=RHS, or a
   fixed tab at the `=` column). Derivation chains (`a = b = c`) break into

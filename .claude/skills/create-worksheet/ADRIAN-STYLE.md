@@ -923,6 +923,13 @@ not as the boxed worked examples of a revision sheet.
 - **Each part ends with its conclusion in bold, starting `∴`** — `∴ least n = 42`,
   `∴ largest value of n = 28`. That is the "result stands out" rule of the readability
   standard in this layout; there is no separate "Answer:" line.
+- **No thinking out loud.** Every line states a step; none asks a question or muses
+  (Adrian, 22 Oct 2026, on the H2 Vectors worked solutions: *"are the models leaking out
+  their thought process?"* → *"yes, add it to the solutions guide as a rule"*). Not
+  "Parallel? … so we would need …", "Do they meet?", "When would the lines meet?", "We
+  need one more point", "the hardest corner". Instead: "If $l_1 \parallel l_2$, the middle
+  entries give …", "If the lines meet:", "Take (1, 0, 0) on q". No "we" / "you" / "?" in
+  the working — the question number and part label already say what is being done.
 - Asides stay quiet (grey, smaller) inside the row — e.g. a note that the question's own
   data is inconsistent. No mark codes.
 - A short centred bold title above the table ("Vectors — Practice Solutions") and nothing
