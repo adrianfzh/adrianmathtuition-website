@@ -13,6 +13,8 @@ Extracted from hand-made worksheets ("AM 16 Trigonometry 01 Trigonometric Ratios
 2. `Example Na / Nb` — worked examples, full annotated solution in a BORDERED BOX.
 3. `Practice N` — 2–4 bank questions, numbered, sub-parts a. b. c., answers as
    right-aligned orange `[Ans: (a) … (b) …]` immediately after each question.
+   ONE bracket per question holding every part, wrapping onto a second line if long —
+   never one `[Ans:]` line per part (Adrian, 22 Oct 2026).
    Stretch questions labelled `(Optional)`.
 4. Student instructions in bold where needed: "Memorize the table before attempting
    this practice. Do not refer to the table."
