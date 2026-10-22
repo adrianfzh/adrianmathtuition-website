@@ -43,6 +43,10 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
   annotate"*; pen_reports 32).
 - **A vector is written as a vector everywhere**: |→RS| with the arrow over RS, never "|RS|"
   (same paper Q8: *"magnitude |RS| should have an arrow on top of RS (its a vector)"*).
+- **The kind of mistake comes first, then a colon, then the fix**: "calculation error: should
+  be −15", never "should be −15, calculation error" (Adrian, 22 Oct 2026, Abel's H2 2023 P1:
+  *"it is clearer to put as calculation error: should be -15 instead"*). Bot `ai/annotate.js`
+  builds the label this way; science notes keep their own order.
 - **A missing geometric reason is labelled "missing reason"**, not "incomplete answer" (Chloe's
   EM 2020 P1 Q21: *"for not writing reasons for angle properties > say 'missing reason'"*).
 
