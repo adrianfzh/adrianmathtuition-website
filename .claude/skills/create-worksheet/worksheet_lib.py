@@ -596,6 +596,17 @@ def tag(*items, color=RULE_GREEN, bold=True, brackets=True):
 _FLUSH_LEFT_ABSTRACTS = {'102', '103'}
 _MAIN_Q_ABSTRACTS = {'100'}
 
+def prune_numbering(numbering_xml, used_ids):
+    """Keep only the <w:num> lists the document points at. The pools above
+    define ~5,600 restartable lists; writing them all made Word refuse an H2
+    paper as "unreadable content" (22 Oct 2026) — a paper uses a dozen or two.
+    The ids stay as they are, so nothing that reads them by number changes."""
+    return re.sub(
+        r'  <w:num w:numId="(\d+)">.*?</w:num>\n',
+        lambda m: m.group(0) if m.group(1) in used_ids else '',
+        numbering_xml, flags=re.S)
+
+
 def find_flush_parts_under_numbered(path):
     """Return [(text, why)] for every flush-left list paragraph that sits under a
     numbered main question. Reads the saved .docx; no python-docx needed."""
@@ -2132,7 +2143,12 @@ class Worksheet:
         with zipfile.ZipFile(buf, 'r') as zin:
             items = {name: zin.read(name) for name in zin.namelist()}
 
-        items['word/numbering.xml'] = NUMBERING_XML.encode('utf-8')
+        used = set()
+        for name, data in items.items():
+            if name.startswith('word/') and name.endswith('.xml') and name != 'word/numbering.xml':
+                used.update(re.findall(rb'<w:numId w:val="(\d+)"', data))
+        items['word/numbering.xml'] = prune_numbering(
+            NUMBERING_XML, {u.decode() for u in used}).encode('utf-8')
 
         # Schema fix: pandoc emits <m:mcJc> before <m:count> inside <m:mcPr>,
         # but OOXML requires count first (matrices fail strict validation otherwise).

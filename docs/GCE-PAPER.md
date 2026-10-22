@@ -165,6 +165,11 @@ prints "(a)" alone on a line, kept with the "(i)" below it. A question with no s
 "(a)" typed on the number line ("1.  (a) …") and the list below starts at (b). A sub-list
 restarts at its own "(i)"; a label-less block between (i) and (ii) carries the count on.
 First paper built this way: O-Level E Math Paper 2 Practice (Oct 2026) - auto-numbered.
+**Only the lists in use are saved (22 Oct 2026).** The pools add up to ~5,600 list
+definitions; writing them all made Word say "unreadable content" on the H2 Mock Set 1
+Paper 1. `Worksheet.save()` now keeps only the lists the document points at
+(`prune_numbering`; the ids are unchanged), usually under 30. Check:
+`python3 .claude/skills/create-worksheet/test_numbering.py`.
 
 **PDF of the Word file (21 Sep 2026).** Use `scripts/gce-paper/lo-pdf.sh <file.docx> [pt]`,
 never a plain `soffice --convert-to pdf`. Two faults made the maths bigger than the text:
