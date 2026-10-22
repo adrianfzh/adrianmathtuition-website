@@ -226,6 +226,25 @@ function detectHumanities(stem: string): { level: string; subject: SourceSubject
   return { level: HUMANITIES_ELECTIVE.test(stem) ? `${base}_E` : base, subject };
 }
 
+// ── Primary 6 / PSLE (23 Oct 2026, Adrian: "We just need 2018 to 2025 psle prelim papers and
+// for psle Tys - past 10 years") ────────────────────────────────────────────────────────────
+// Level P6 in both banks — maths in the maths bank, science in the science bank (the subject
+// tells them apart, like S1/S2). Read BEFORE science: "P6 SCI PRELIM 2022 Nanyang" is a Primary 6
+// science paper, not a refused combined science one. P6 must be the FIRST token (or "Primary 6" /
+// "Pri 6" anywhere), and PSLE anywhere also makes it primary — and "P6" is stripped before the
+// paper number is read, or it would be filed as paper 6. A PSLE name with no other exam token IS
+// the national paper: exam 'PSLE', school 'GCE', so every grounding-only rule for national papers
+// (served never, read by the marker and the writers) applies to it unchanged. SPEC-PSLE.md.
+const PRIMARY_LEVEL = /^P6\b|\bPRI(?:MARY)?\s?6\b/i;
+const PSLE = /\bPSLE\b/i;
+const PRIMARY_SCIENCE = /\bSCI(?:ENCE)?\b/i;
+/** The words that name the level, the subject or a booklet in a primary name; never part of a school. */
+const PRIMARY_WORDS = /^P6\b|\bPRI(?:MARY)?\s?6\b|\bPSLE\b|\bMATH(?:S|EMATICS)?\b|\bSCI(?:ENCE)?\b|\bBOOKLET\s?[AB]\b|\bBKLT?\s?[AB]\b/gi;
+function detectPrimary(stem: string): { level: string; subject: SourceSubject } | null {
+  if (!PRIMARY_LEVEL.test(stem) && !PSLE.test(stem)) return null;
+  return { level: 'P6', subject: PRIMARY_SCIENCE.test(stem) ? 'science' : 'math' };
+}
+
 function detectExam(stem: string): { examType: string | null; token: RegExp | null } {
   for (const [re, examType] of EXAM_RULES) if (re.test(stem)) return { examType, token: re };
   return { examType: null, token: null };
@@ -245,15 +264,16 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   const stem = String(name).replace(/\.(docx|pdf)$/i, '').replace(/\s+/g, ' ').trim();
   if (!ext) return { ok: false, reason: 'not a .docx or .pdf', stem, ext: null };
 
-  const sci = detectScience(stem);
+  const pri = detectPrimary(stem);
+  const sci = pri ? null : detectScience(stem);
   if (sci && 'refuse' in sci) return { ok: false, reason: sci.refuse, stem, ext };
-  const eng = sci ? null : detectEnglish(stem);
-  const hum = sci || eng ? null : detectHumanities(stem);
+  const eng = pri || sci ? null : detectEnglish(stem);
+  const hum = pri || sci || eng ? null : detectHumanities(stem);
   if (hum && 'refuse' in hum) return { ok: false, reason: hum.refuse, stem, ext };
-  const tagged = sci || eng || hum;
+  const tagged = pri || sci || eng || hum;
   const level = tagged ? tagged.level : detectLevel(stem);
   const subject: SourceSubject = tagged ? tagged.subject : 'math';
-  if (!level) return { ok: false, reason: 'no level token (AM/EM/S1–S3/JC1/JC2/BIO/CHEM/PHY/History/Geography/Social Studies)', stem, ext };
+  if (!level) return { ok: false, reason: 'no level token (P6/PSLE/AM/EM/S1–S3/JC1/JC2/BIO/CHEM/PHY/History/Geography/Social Studies)', stem, ext };
   const yearMatch = stem.match(/\b(19|20)\d{2}\b/);
   if (!yearMatch) return { ok: false, reason: 'no 4-digit year', stem, ext };
   const year = Number(yearMatch[0]);
@@ -261,7 +281,9 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   const { token } = detectExam(stem);
   // Papers 1–6 (5 Oct 2026): a Combined Science practical is "Paper 5" (5086–5088/05), and
   // "Paper 5" used to fall through as the school, filed as school "5".
-  const paperMatch = stem.match(/\bP(?:aper)?\s?([1-6])\b/i);
+  // "P6 PRELIM 2024 Nanyang P1": the level's P6 is never paper 6.
+  const paperStem = pri ? stem.replace(PRIMARY_LEVEL, ' ') : stem;
+  const paperMatch = paperStem.match(/\bP(?:aper)?\s?([1-6])\b/i);
   const paper = paperMatch ? `p${paperMatch[1]}` : 'all';
 
   let school = stem
@@ -274,7 +296,8 @@ export function parseSourceFilename(name: string): ParsedSourceName {
     // West Spring's scheme, and the queue pairs a scheme with its paper by the
     // school column — until then the source row said school "West Spring MS".
     .replace(KIND_PARENS, ' ').replace(KIND_WORDS, ' ');
-  if (HUMANITIES_SUBJECTS.has(subject)) school = school.replace(HUMANITIES_CODES, ' ').replace(HUMANITIES_WORDS, ' ');
+  if (pri) school = school.replace(PRIMARY_WORDS, ' ');
+  else if (HUMANITIES_SUBJECTS.has(subject)) school = school.replace(HUMANITIES_CODES, ' ').replace(HUMANITIES_WORDS, ' ');
   else if (subject === 'english') school = school.replace(ENGLISH_WORDS, ' ').replace(/\b(?:1184|1128|1190|1195)(?:\s?\/\s?0\d)?\b/g, ' ');
   else if (subject !== 'math') school = school.replace(SCIENCE_WORDS, ' ').replace(SCIENCE_CODES, ' ');
   if (token) school = school.replace(new RegExp(token.source, 'gi'), ' ');
@@ -286,7 +309,8 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   // bank files it — unless the name already says Specimen (10 Sep 2026; until
   // then such a book was queued as school "O Level TYS (Questions)", exam null,
   // and the fleet would have staged it as a PRELIM).
-  if (examType === null && NATIONAL.test(stem)) examType = 'GCE';
+  if (pri && examType === null && PSLE.test(stem)) { examType = 'PSLE'; school = 'GCE'; }
+  if (!pri && examType === null && NATIONAL.test(stem)) examType = 'GCE';
   if (examType === 'GCE' && NATIONAL.test(school)) school = 'GCE';
   if (!school) return { ok: false, reason: 'no school left in the name once level/exam/year/paper are removed', stem, ext };
 

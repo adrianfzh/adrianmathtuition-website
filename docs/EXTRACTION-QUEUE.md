@@ -419,6 +419,10 @@ has to be dropped in by name. The science bank's `bank_topics` is a view over th
 rows, so a level with no rows yet (`S3_*`) has no list: the section says to use the
 Sec 4 list for it.
 
+### 4a-ii. Primary 6 / PSLE through the one inbox (23 Oct 2026)
+
+`P6 PRELIM 2024 Nanyang.pdf` (maths) · `P6 SCI PRELIM 2022 Nanyang.pdf` (science) · `PSLE Maths 2019.pdf` (national: school `GCE`, exam `PSLE`, grounding-only) → level `P6`; the law's §Primary 6 and PSLE papers (`v2026-10-23-psle`, archive `exam-extraction-2026-10-23`, rule `xr-primary-6-psle-papers`) does the rest. A multi-school prelim book does not cut itself at its covers (every cover says Paper 1) — cut it by school before it goes in. Everything else → [`SPEC-PSLE.md`](../SPEC-PSLE.md).
+
 ### 4b. Humanities through the one inbox (5 Oct 2026)
 
 Adrian: *"why don't bank the questions? we can bank them and still use it for background

@@ -702,3 +702,10 @@ export async function questionClipsAdmin(): Promise<boolean> {
   const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
   return admin && !(await viewingAsStudent());
 }
+
+// Primary 6 / PSLE (23 Oct 2026, SPEC-PSLE.md — Adrian: "We just need 2018 to 2025 psle prelim
+// papers and for psle Tys - past 10 years"). The bank now takes level 'P6' questions (maths and
+// science); no student surface serves them yet. Closed = a P6 row is refused by the by-id gate
+// (lib/serve-gate PRIMARY_QLEVELS) even on a student's own list, and no student level maps to P6
+// (lib/qb-levels). National PSLE rows (school 'GCE') stay grounding-only whatever this says.
+export const PRIMARY_OPEN_TO_STUDENTS = false;

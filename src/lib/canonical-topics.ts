@@ -300,6 +300,61 @@ export const JC_TOPICS: TopicCategory[] = [
   },
 ];
 
+// ─── Primary 6 / PSLE Mathematics (23 Oct 2026, SPEC-PSLE.md) ───────────────
+// The bank's level 'P6' (maths bank). Topics follow the MOE primary syllabus
+// strands the PSLE papers of 2015–2025 test; Speed is on those papers (the
+// 2021 syllabus moves it on — legacy_syllabus question decided per SPEC-PSLE).
+// Mirrors the bot's extraction/canonical_topics.json "P6" key — change both.
+export const P6_EXAM_TOPICS: TopicCategory[] = [
+  {
+    label: 'Numbers',
+    topics: [
+      'Whole Numbers',
+      'Factors and Multiples',
+      'Fractions',
+      'Decimals',
+      'Percentage',
+      'Ratio',
+      'Rate',
+      'Speed',
+      'Average',
+      'Money',
+      'Number Patterns',
+    ],
+  },
+  {
+    label: 'Algebra',
+    topics: ['Algebra'],
+  },
+  {
+    label: 'Measurement',
+    topics: [
+      'Measurement (Length, Mass and Volume)',
+      'Measurement (Time)',
+      'Area and Perimeter',
+      'Area of Triangle',
+      'Circles',
+      'Volume of Cube and Cuboid',
+    ],
+  },
+  {
+    label: 'Geometry',
+    topics: [
+      'Angles',
+      'Triangles',
+      'Special Quadrilaterals',
+      'Composite Figures',
+      'Symmetry',
+      'Nets and Solids',
+      'Perpendicular and Parallel Lines',
+    ],
+  },
+  {
+    label: 'Statistics',
+    topics: ['Tables and Graphs', 'Pie Charts'],
+  },
+];
+
 // ─── Legacy flat arrays (used for topic chip lookups) ─────────────────────────
 const _s1Flat = S1_EXAM_TOPICS.flatMap(c => c.topics);
 const _s2Flat = S2_OWN_TOPICS.flatMap(c => c.topics);
@@ -359,6 +414,7 @@ export function getTopicsForPaperLevel(level: string): TopicCategory[] {
     case 'S1_NA': return S1_EXAM_TOPICS;              // Sec 1 N(A) shares Sec 1's list (28 Sep 2026)
     case 'S2':
     case 'S2_NA': return S2_EXAM_TOPICS;
+    case 'P6': return P6_EXAM_TOPICS;                 // Primary 6 / PSLE (23 Oct 2026)
     default: return [];
   }
 }

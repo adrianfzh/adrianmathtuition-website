@@ -84,6 +84,13 @@ describe('partFileName — every level reads back as itself (30 Sep 2026)', () =
   });
 });
 
+describe('partFileName — Primary 6 reads back, maths and science (23 Oct 2026)', () => {
+  it.each([['math', 'Nanyang', 'Prelim'], ['science', 'Nanyang', 'Prelim'], ['math', 'GCE', 'PSLE'], ['science', 'GCE', 'PSLE']])('%s %s', (subject, school, examType) => {
+    const name = partFileName({ level: 'P6', year: 2023, school, examType, subject }, { paper: 2, year: 2023 });
+    expect(parseSourceFilename(name)).toMatchObject({ ok: true, level: 'P6', subject, school, examType, year: 2023, paper: 'p2' });
+  });
+});
+
 describe('partFileName — a humanities national paper reads back (5 Oct 2026)', () => {
   it.each([['HIST', 'history'], ['HIST_E', 'history'], ['GEOG', 'geography'], ['GEOG_E', 'geography'], ['SS', 'social_studies']])('%s', (level, subject) => {
     const name = partFileName({ level, year: 2025, school: 'GCE', examType: 'GCE' }, { paper: 2, year: 2025 });

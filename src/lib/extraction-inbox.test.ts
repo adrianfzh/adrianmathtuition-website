@@ -446,3 +446,28 @@ describe('regroundNotice', () => {
       .toContain('re-marking “em tys 2025 p1” against it');
   });
 });
+
+describe('parseSourceFilename — Primary 6 and PSLE (23 Oct 2026)', () => {
+  const ok = (n: string) => { const r = parseSourceFilename(n); if (!r.ok) throw new Error(r.reason); return r; };
+  it('a P6 prelim is level P6 maths; its P6 is never read as paper 6', () => {
+    const r = ok('P6 PRELIM 2024 Nanyang.pdf');
+    expect([r.level, r.subject, r.examType, r.school, r.paper, r.year]).toEqual(['P6', 'math', 'Prelim', 'Nanyang', 'all', 2024]);
+    expect(ok('P6 SA2 2021 Rosyth P2.pdf').paper).toBe('p2');
+    expect(ok('P6 Math PRELIM 2023 Red Swastika P1.pdf').school).toBe('Red Swastika');
+  });
+  it('a P6 science paper goes to the science bank as P6, not refused as combined science', () => {
+    const r = ok('P6 SCI PRELIM 2022 Nanyang.pdf');
+    expect([r.level, r.subject, r.school]).toEqual(['P6', 'science', 'Nanyang']);
+    expect(ok('P6 Science SA2 2019 Henry Park.pdf').subject).toBe('science');
+  });
+  it('a PSLE name with no other exam token is the national paper: exam PSLE, school GCE', () => {
+    const m = ok('PSLE Maths 2019 Paper 1 Booklet A.pdf');
+    expect([m.level, m.subject, m.examType, m.school, m.paper]).toEqual(['P6', 'math', 'PSLE', 'GCE', 'p1']);
+    const s = ok('PSLE Science 2018 Booklet B.pdf');
+    expect([s.level, s.subject, s.examType, s.school, s.paper]).toEqual(['P6', 'science', 'PSLE', 'GCE', 'all']);
+  });
+  it('a secondary name is untouched (no P6 first token, no PSLE)', () => {
+    const r = ok('AM PRELIM 2024 Bedok South P1.pdf');
+    expect([r.level, r.paper]).toEqual(['AM', 'p1']);
+  });
+});

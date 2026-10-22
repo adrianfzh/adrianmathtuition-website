@@ -83,3 +83,14 @@ describe('tagDrawRefusal — the Print-a-paper mock draw never prints an old-syl
     expect(tagDrawRefusal(ok, [], jc)).toBe('level');
   });
 });
+
+describe('serveRefusal — Primary 6 rows (23 Oct 2026)', () => {
+  const p6 = { level: 'P6', school: 'Nanyang', national: false, verified: true };
+  it('a P6 row is refused while the switch is closed, even on the student\'s own list', () => {
+    expect(serveRefusal(p6, { allowedQLevels: ['P6'], isIp: false, assigned: true })).toBe('level');
+    expect(serveRefusal(p6, { allowedQLevels: ['P6'], isIp: false, assigned: false, primaryOpen: true })).toBeNull();
+  });
+  it('a national PSLE row (school GCE) is never served, switch or not', () => {
+    expect(serveRefusal({ ...p6, school: 'GCE' }, { allowedQLevels: ['P6'], isIp: false, assigned: true, primaryOpen: true })).toBe('national');
+  });
+});
