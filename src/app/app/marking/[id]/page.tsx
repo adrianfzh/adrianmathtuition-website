@@ -12,6 +12,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { fixOneOpenFor } from '@/lib/portal-beta';
 import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, explainClipVisible, questionClipsVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { bankQuestionsForRun, photoClipIdsForRun } from '@/lib/question-clip-store';
 import { lostPartLinks, type DefSubjectKey } from '@/lib/definition-asks';
@@ -187,6 +188,9 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   }
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
+  // 🎯 Fix one (SPEC-STUDENT-FIRST.md §Fix one, 22 Oct 2026): the same hide rules as the
+  // Practice Again button, behind its own switch (lib/portal-beta FIX_ONE_OPEN_TO_STUDENTS).
+  const showFixOne = !isScience && !isAdmin && !sheet && !supersededBy && !paper.tutorMarked && followUpDepth <= 1 && fixOneOpenFor(sid);
   // Why it was archived (Adrian, 7 Sep 2026: "should say the reason") — a
   // per-run line in result_json.superseded_reason when he wrote one, else the
   // honest default: the marking itself was wrong, so the paper was marked again.
@@ -401,7 +405,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
           {/* Every question that dropped marks, with the comment and the annotated
               worked solution — moved here from the Papers list on 17 Sep 2026. */}
-          <LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} />
+          <LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} fixOne={showFixOne} />
         </>
       ) : (
         <Suspense fallback={null}>
@@ -427,7 +431,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
                 </div>
               )}
             </>}
-            marks={<LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} />} />
+            marks={<LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} fixOne={showFixOne} />} />
         </Suspense>
       )}
 

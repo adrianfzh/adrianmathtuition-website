@@ -179,3 +179,47 @@ relevant tool then print what i need or the system is smart enough to suggest wh
   → `docs/SCHEDULE.md` §The lesson log that fills itself.
 - Routes: `api/admin/next-lesson` (GET card · POST prepare), `api/admin/student-materials` (+ `/pdf`),
   `api/admin/worksheet-chat`, `api/admin/progress-notes`; health-check `admin-next-lesson`.
+
+## 16. 🎯 Fix one on the paper screen (22 Oct 2026, built 23 Oct 2026)
+
+**Why.** Students open their marked papers (67% within 24 h) but rarely go on to practise: 233
+paper views vs 24 Practice-tab views since 5 Oct 2026. Baseline before Fix one: **6%** of released
+papers get a Practice Again request within 24 h; **11%** of students visit the Practice tab.
+So the practice comes to the paper: one question, answered right there on the phone.
+
+**What the student sees.** Under the first entry in "Where you lost marks" (the question that
+lost the most marks): "🎯 Try one like Q{n}", one question, an answer box (letter chips for an
+MCQ), Check.
+- Right → one bold line **"Answer: ✓ fixed"**.
+- Wrong → "Not yet. Here is how it goes:" and the worked solution.
+- Then one "Another one" button — at most 3 a paper.
+- No streaks, no points, no nag copy. **Any gamification waits until the fix-answered rate has
+  been measured** (Adrian, 22 Oct 2026).
+
+**Hidden when:** science paper, Adrian's admin view, a Practice Again sheet, a superseded paper,
+a paper the tutor marked on paper, a follow-up deeper than one. Behind
+`FIX_ONE_OPEN_TO_STUDENTS` (closed at build; the preview student sees it) — `docs/SWITCHES.md`.
+
+**Picking** (`POST /api/portal/marking/fix-one {runId, next?}`, pure rules in `lib/fix-one.ts`):
+the top dropped question's sub-skill (`result_json.revise`) → a bank question in that sub-skill
+the student has never attempted, inside what the Practice tab would serve them
+(`practice_pool`, the serve gate, part-syllabus view, no legacy / national / flagged / open
+figure flag), MCQ or short first, never Advanced/Challenging, never the question they lost
+marks on. Nothing left → a verified twin of the failed question. The pick is kept on the run
+(`paper_marking_runs.fix_one`), so a reload shows the same question.
+
+**Answering** goes through `/api/portal/practice/grade` with `fix: {runId}`: rule-marked for an
+MCQ, the normal marker for typed answers; stored as `attempted_via 'portal-fix'` with the run id
+in `marking_json.fix`; outside the daily practice cap; feeds the difficulty job, the notebook
+and weakness tags like any practice attempt. One answer per question per paper.
+
+**Events** (`portal_event_log`): `fix:shown` (once per run per day) and `fix:answered`, detail
+`{runId, questionId, correct}`. Adrian's admin cookie never counts.
+
+**Measure:** /admin/ops → 🎯 Fix one card, last 14 days, real students only: papers released,
+opened within 24 h, fix shown / answered / right, Practice Again asked within 24 h; the 6% / 11%
+baseline in its caption.
+
+**Fixed on the way (23 Oct 2026):** the practice marker refused every verified twin ("can't be
+marked"), so the ~4,600 twins on the Practice tab could be shown but never marked. Verified
+twins are now marked like school questions (`lib/fix-one.ts gradableRow`).

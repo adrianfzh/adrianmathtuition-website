@@ -444,6 +444,19 @@ export const PRACTICE_PHOTO_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREV
 export const IP_TOPICS_OPEN_TO_STUDENTS = true; // Adrian, 15 Oct 2026: "open ip topics"
 export const IP_TOPICS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
+// 🎯 Fix one (SPEC-STUDENT-FIRST.md §Fix one, 22 Oct 2026): one practice question
+// shown on the marked-paper screen under the question that lost the most marks,
+// answered right there. CLOSED until Adrian has tried it as the preview student;
+// his admin cookie (viewing as a student) and the preview student always see it.
+export const FIX_ONE_OPEN_TO_STUDENTS = false;
+export const FIX_ONE_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+/** May this portal identity see Fix one? (The page and the two API doors all ask.) */
+export function fixOneOpenFor(identity: string | null | undefined): boolean {
+  if (FIX_ONE_OPEN_TO_STUDENTS) return true;
+  return !!identity && FIX_ONE_PREVIEW_IDENTITIES.includes(identity);
+}
+
 export async function practicePhotoOpen(): Promise<boolean> {
   if (PRACTICE_PHOTO_OPEN_TO_STUDENTS) return true;
   if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;

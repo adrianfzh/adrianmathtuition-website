@@ -2,7 +2,7 @@
 //
 // 🎚 Students' first tries correct the maths practice levels Adrian tapped (SPEC-TWINS §12,
 // lib/practice-difficulty.ts maths section, pure/tested). Every maths practice attempt is a
-// `student_attempts` row (attempted_via 'portal', question_id set, no marking_json.science);
+// `student_attempts` row (attempted_via 'portal' or 'portal-fix' — Fix one on a marked paper, question_id set, no marking_json.science);
 // each student's first try per question is counted (wrong = under half marks, or any "Stuck?
 // next step" help), the preview identity left out. With ≥ 20 first tries: under 25 % wrong →
 // Core, over 55 % → Advanced, written to questions.difficulty (what practice_next and every
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
   for (let from = 0; ; from += 1000) {
     const { data, error } = await sb.from('student_attempts')
       .select('user_id, airtable_student_id, question_id, attempted_at, marking_verdict, score:marking_json->>score, out_of:marking_json->>outOf, revealed:marking_json->ladder->>revealed, science:marking_json->science')
-      .eq('attempted_via', 'portal').not('question_id', 'is', null)
+      .in('attempted_via', ['portal', 'portal-fix']).not('question_id', 'is', null)
       .order('id', { ascending: true }).range(from, from + 999);
     if (error) {
       await logJobRun('math-practice-difficulty', false, `read failed: ${error.message}`).catch(() => {});

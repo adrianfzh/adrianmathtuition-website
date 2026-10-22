@@ -51,6 +51,7 @@ Adrian, 1 Oct 2026: "gate keep science practice first", then "make sure future s
 | `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` | **open** | 🌏 A Geography feedback page shows the mark ("3 of 4 marks"; the 9-mark question shows its level and that level's marks band). Opened 7 Oct 2026 — Adrian, after seeing both pictures: "show marks". Sits inside `HUMANITIES_OPEN_TO_STUDENTS`, which is still closed |
 | `FIND_OPEN_TO_STUDENTS`, `PRACTICE_PHOTO_OPEN_TO_STUDENTS`, `PROOF_LADDER_OPEN_TO_STUDENTS` | **open** | Find a question · Practice photo · 🤔 Stuck? Next step (opened 1 Oct 2026) |
 | `IP_TOPICS_OPEN_TO_STUDENTS` | **open** | 🎓 IP-only topics (opened 15 Oct 2026, Adrian: "open ip topics"): an IP student is also served IP schools' questions on topics off the O-Level syllabus (A Math: Progressions, P&C, Vectors, Power Graphs, more Modulus). Rule in `lib/ip-content.ts`, SQL `migrations/ip_content.sql` (`p_ip_content`). Admin + the preview student (`IP_TOPICS_PREVIEW_IDENTITIES`) always see it. Kiosk, print-a-paper and the Telegram bot stay mainstream |
+| `FIX_ONE_OPEN_TO_STUDENTS` | closed | 🎯 Fix one (built 23 Oct 2026, `SPEC-STUDENT-FIRST.md` §16): one practice question under the question that lost the most marks on a marked maths paper, answered on the paper screen. Admin + the preview student (`FIX_ONE_PREVIEW_IDENTITIES`) always see it. Counts on /admin/ops (🎯 Fix one card) |
 
 The table is a snapshot; the file is the truth. When you add a switch, add a row. When Adrian
 opens one, update the row in the same commit.
