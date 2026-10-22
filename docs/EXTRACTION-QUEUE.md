@@ -255,6 +255,10 @@ the sciences … the rest put on hold first"*.
 - Release: `update paper_library set status='queued' where kind='source' and status='held'`
   plus whatever narrows it (a year, a level). `GET /api/admin/extraction-queue?status=held`
   lists them. Migration `migrations/paper_library_held_status.sql`.
+- **23 Oct 2026 — all released** (Adrian: *"unlock the rest of the papers for extraction"*): the 621
+  held rows (maths 352, social studies 120, physics 106, chemistry 22, biology 18, others 3) set back to
+  `queued`, each `notes` ending `RELEASED 23 Oct 2026`. The worker went to 2 extraction lanes the same day
+  (bot `fly.worker.toml`: maths twins 1, science twins 3, extraction 2).
 
 ## 3. The worker contract — `/api/admin/extraction-queue`
 
