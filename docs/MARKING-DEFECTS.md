@@ -1092,3 +1092,11 @@ All twelve papers (Alexis E Math 2025 P2 + A Math 2025 P1; Rainie E Math 2024 P2
 - **A note box on the facing page of an open booklet** — the explanation box drawn on the left page's margin, its arrow across the fold (Sophie EM 2019 P2 RWC p21) — 3c601bf0 covered answer-line marks only. Pen (box seat).
 - **Possible accuracy — Adrian's call**: EM 2019 P2 Q10(c) (Leila/Hamid fuel) — Eva M0 for using the combined 5.0 l/100 km (strip: city 6.3 + out-of-city 4.2 → $11.30); Sophie, same question, B1 for the same combined rate and told "$10.52" is right. Opposite rulings. Read.
 - **Possible accuracy — Adrian's call**: Alexis EM 2025 P2 Q4(b)(i) — green "2/2" with codes "M1 B0" and a ✗B0 "missing reason"; the read awarded 2 with a scheme summing to 1 (second sighting after Sophie 22 Oct). Read.
+
+# 24 Oct 2026 — the page reader: new defect classes (findings of 24 Oct: 1 paper, 2 pages; the fixer works them at 06:45)
+
+Rainie E Math "Ty's 4.0" (run cf093503) was marked 23 Oct 10:35 SGT, after every 23 Oct fixer push. One line per NEW class — returns (a ring taking in her words "Toner =", F146 family; marks on her "×100%", flagged by the ink audit and still released; an awarded M1 with no ✓) are in the reader's findings file.
+
+- **A verdict bracket with no verdict** — a tall red ")" down three of her lines, nothing beside it; the read's verdict_line "GST on every stationery item; 8 packs of paper" is not on the page (Rainie EM Ty's 4.0 p5 Q54(c)). Unlike 21 Oct's bare ✗, the read DID write the words. Pen (verdict drawn / bracket kept).
+- **A red follow-through ✓ that the note contradicts** — "He should charge around $9 ✓B1" (scheme B1ft) while the strip says "$9 does not cover it"; nothing on the page says the tick is for follow-through (same page). The 23 Oct grey-ft rule did not reach it. Words + pen (ft look and note on a conclusion).
+- **Reader tooling: two questions on one photo** — the pull writes both results to one `pNN.json`, the second overwrites the first (Q54's 4/7 notes lost under Q49's 4/4), and the page is picked twice (same page; also Rainie Chemistry p2 on 23 Oct). `scripts/marking-review-pull.js`.
