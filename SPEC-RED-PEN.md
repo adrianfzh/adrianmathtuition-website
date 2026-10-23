@@ -543,6 +543,12 @@ a side note printed `\begin{pmatrix} -3 \\ 4 …` as raw code (*"rendering issue
   the note injected (the stored read has no `student_note`; new markings will). Released papers
   are not re-inked (forward-only).
 
+- **Later the same day (bot `59bcd293`)**: a wrong value the answer did not use is a
+  *calculation error* beside the ✓ ("should be √14", √15 ringed), never "write it as"; a note beside a
+  ✓ stays with its own part; a line of three rows or more ends where its middle ends (a ✓ had been
+  drawn past the student's name); a question left out for the syllabus shows "out of syllabus" with
+  no score and no solution; half ticks follow a wrong line even when no single value was ringed.
+
 ## Page check before release (6 Oct 2026)
 
 Adrian: *"so we have to have all scenarios? can't model understand the idea?"*
