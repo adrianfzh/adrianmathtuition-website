@@ -518,6 +518,27 @@ annotation says its 1?"*. What changed (each behind its own `PEN_*=0` switch, bo
 - **Still open**: on Q2(b)(ii) a redraw drew only one of the two notes ("should be ionic"); the
   second ("should be covalent") is not drawn on some renders.
 
+## 23 Oct 2026 — her own note after the maths is answered, never ticked; a vector stays whole
+
+Adrian, on Abel's H2 TYS 2023 P1 (run faa82208): after "w = −4 + 4.2i or −4 + 3i" Abel wrote
+"→ wait why got 2 ans", and the A1 ✓ was drawn after his question — *"it's weird that marker mark
+student's question correct"* · *"put the tick right after the answer, before the student's own
+note"* · *"and if possible, give an answer to his note question"*. And on Q9(c) of the same paper,
+a side note printed `\begin{pmatrix} -3 \\ 4 …` as raw code (*"rendering issue"*).
+- **The marker names the note** (`ai/paper-marker.js`, rule "A STUDENT'S NOTE TO THEMSELVES"): a
+  remark or question on the same row, after the maths, is left out of the line's text and given
+  as `student_note: { text, reply }` — the reply answers it in ≤ 90 plain characters; a remark
+  that asks nothing gets no reply. Never marked.
+- **The ✓/✗ goes where the maths ends** (`ai/annotate.js _noteSplit`): the row is cut at the
+  blank nearest where the text says the maths ends, and the mark may not slide past the note.
+- **The reply is written in red** beside the note, or in the margin strip of the note's OWN part
+  (full marks or not) with its arrow on the note. `PEN_STUDENT_NOTE=0` turns both off.
+- **A column vector is never torn when a note wraps** (`ai/pen-math.js topLevelTokens`,
+  `termsAtTopSigns`: a `\begin…\end` block is one piece).
+- Verified: `npm test` 5131/5131, golden pen bench 1496/1496, `pen-dryrun` on Abel's photo 7 with
+  the note injected (the stored read has no `student_note`; new markings will). Released papers
+  are not re-inked (forward-only).
+
 ## Page check before release (6 Oct 2026)
 
 Adrian: *"so we have to have all scenarios? can't model understand the idea?"*
