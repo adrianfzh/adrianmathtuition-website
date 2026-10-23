@@ -198,7 +198,7 @@ MCQ), Check.
 
 **Hidden when:** science paper, Adrian's admin view, a Practice Again sheet, a superseded paper,
 a paper the tutor marked on paper, a follow-up deeper than one. Behind
-`FIX_ONE_OPEN_TO_STUDENTS` (closed at build; the preview student sees it) — `docs/SWITCHES.md`.
+`FIX_ONE_OPEN_TO_STUDENTS` (closed; on the main site since 23 Oct 2026 — Adrian: "promote, but gatekeep to admin first" — so only the preview student sees it) — `docs/SWITCHES.md`.
 
 **Picking** (`POST /api/portal/marking/fix-one {runId, next?}`, pure rules in `lib/fix-one.ts`):
 the top dropped question's sub-skill (`result_json.revise`) → a bank question in that sub-skill
