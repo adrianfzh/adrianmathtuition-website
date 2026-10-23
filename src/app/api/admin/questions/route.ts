@@ -130,6 +130,16 @@ function cardExcerpt(row: Row): string {
 /** Part image paths → public URLs, recursively, so the client renders them directly.
  *  `gate` (lib/solution-image-gate.ts) drops a part's `solution_image` when it
  *  is flagged, so the admin detail shows what a student's reveal would. */
+/** Inline figure markers `{{IMG:question_images/x.png}}` → `{{IMG:<full address>}}`, so the
+ *  admin page can draw them (it has no storage base of its own). Display only — the page never
+ *  writes this text back. Q8 Linear Regression showed the raw marker and a false
+ *  "figure not stored" warning (24 Oct 2026). */
+function resolveInlineImages(text: unknown): string {
+  if (typeof text !== 'string') return '';
+  return text.replace(/\{\{IMG:([^}]+)\}\}/g, (m, path: string) =>
+    isPlausibleImagePath(path.trim()) ? `{{IMG:${imgSrc(path.trim())}}}` : m);
+}
+
 function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: string): unknown {
   if (!Array.isArray(parts)) return [];
   return parts.map((pt) => {
@@ -145,6 +155,7 @@ function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: str
         if (first) o[k] = imgSrc(first); else delete o[k];
       }
     }
+    if (typeof o.text === 'string') o.text = resolveInlineImages(o.text);
     if (o.subparts) o.subparts = resolveParts(o.subparts, gate, questionId);
     // Solutions stay in — this is the ADMIN detail view; every other consumer
     // of parts (kiosk, worksheets) must keep using flattenParts, never this.
@@ -275,7 +286,7 @@ function detail(row: Row, flagged: Set<string> = new Set(), gate?: SolutionImage
       const n = storageObjectName(u);
       return !!n && flagged.has(n);
     }),
-    questionMd: row.question_text ?? '',
+    questionMd: resolveInlineImages(row.question_text),
     partSyllabus: partSyllabusOf(row),
     parts: resolveParts(row.parts, gate, String(row.id ?? '')),
     solution: row.solution ?? null,

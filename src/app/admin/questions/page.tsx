@@ -54,16 +54,33 @@ function partAnswerMap(parts: Part[], prefix = ''): Record<string, string> {
   return out;
 }
 
+/** `{{IMG:<address>}}` — a figure placed inside the words (the route fills in the full
+ *  address). Drawn as a picture instead of printing the marker (24 Oct 2026). */
+const INLINE_IMG = /\{\{IMG:(https?:[^}]+)\}\}/g;
+const hasInlineImage = (t?: string | null) => !!t && /\{\{IMG:/.test(t);
+const escAttr = (u: string) => u.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+function textHtml(text: string): string {
+  const out: string[] = [];
+  let last = 0;
+  for (const m of text.matchAll(INLINE_IMG)) {
+    out.push(mathHtml(text.slice(last, m.index)));
+    out.push(`<img src="${escAttr(m[1].trim())}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+    last = (m.index ?? 0) + m[0].length;
+  }
+  out.push(mathHtml(text.slice(last)));
+  return out.join('');
+}
+
 function MathBlock({ text }: { text: string }) {
   const blocks = splitPipeTables(text);
   if (blocks.length === 1 && blocks[0].kind === 'text') {
-    return <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
+    return <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: textHtml(text) }} />;
   }
   return (
     <>
       {blocks.map((b, i) => b.kind === 'text'
         ? (b.text.trim()
-            ? <div key={i} style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: mathHtml(b.text) }} />
+            ? <div key={i} style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: textHtml(b.text) }} />
             : null)
         : (
           // A wide table scrolls inside its own box rather than stretching the
@@ -944,7 +961,7 @@ export default function QuestionBankPage() {
       {ctx && key && !parentHidden && ctx.q.partSyllabus?.hidden.some(h => h.key === key) && partTools(ctx.q, key)}
       <div style={{ fontSize: 14.5, opacity: hiddenHere ? 0.45 : 1 }}>
         {pt.label && <strong>{pt.label} </strong>}
-        {pt.text && <MathText text={pt.text} />}
+        {pt.text && (hasInlineImage(pt.text) ? <MathBlock text={pt.text} /> : <MathText text={pt.text} />)}
         {pt.marks != null && <span style={{ float: 'right', color: C.muted }}>[{pt.marks}]</span>}
         {ctx && key && !ctx.q.partSyllabus?.hidden.some(h => h.key === key) && partTools(ctx.q, key)}
       </div>
@@ -998,9 +1015,9 @@ export default function QuestionBankPage() {
   /** has_image is set but nothing is stored — worth saying out loud on a paper
    *  that is about to be printed, rather than showing a silently figure-less Q. */
   const partsHaveImage = (list: Part[]): boolean =>
-    list.some(pt => !!pt.image_url || !!pt.image_url_after || partsHaveImage(pt.subparts || []));
+    list.some(pt => !!pt.image_url || !!pt.image_url_after || hasInlineImage(pt.text) || partsHaveImage(pt.subparts || []));
   const figureMissing = (d: Detail) =>
-    d.hasFigure && !(d.images || []).length && !partsHaveImage(d.parts || []);
+    d.hasFigure && !(d.images || []).length && !hasInlineImage(d.questionMd) && !partsHaveImage(d.parts || []);
 
   const detailCard = openDetail && (
     <section style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, marginBottom: 14 }}>
