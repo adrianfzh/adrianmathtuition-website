@@ -186,16 +186,6 @@ export default function AdminDashboard() {
       </header>
 
       <main className="gl-body">
-        {ships && ships.ok && ships.open.length > 0 && (
-          <section className="gl-ships" aria-label="Waiting for you to Ship">
-            <h2 className="gl-ships-h">✅ Waiting for you to Ship <span>{ships.open.length}</span></h2>
-            <div className="gl-ships-list">
-              {ships.open.map(p => <ProposalCard key={p.slug} p={p} req={ships.requests[p.slug]} onDone={loadShips} />)}
-            </div>
-          </section>
-        )}
-        {ships && !ships.ok && <div className="gl-error">Could not read the proposals waiting for Ship. They are still in Telegram.</div>}
-
         <section className="gl-nums" aria-label="Today">
           {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} />)}
         </section>
@@ -243,6 +233,17 @@ export default function AdminDashboard() {
             </div>
           </>
         )}
+
+        {/* At the BOTTOM of the page (24 Oct 2026, Adrian: "put the waiting for you to ship at the bottom") */}
+        {ships && ships.ok && ships.open.length > 0 && (
+          <section className="gl-ships" aria-label="Waiting for you to Ship">
+            <h2 className="gl-ships-h">✅ Waiting for you to Ship <span>{ships.open.length}</span></h2>
+            <div className="gl-ships-list">
+              {ships.open.map(p => <ProposalCard key={p.slug} p={p} req={ships.requests[p.slug]} onDone={loadShips} />)}
+            </div>
+          </section>
+        )}
+        {ships && !ships.ok && <div className="gl-error">Could not read the proposals waiting for Ship. They are still in Telegram.</div>}
       </main>
     </div>
   );
@@ -364,7 +365,7 @@ const CSS = `
 .gl-night-n { margin-left: auto; font-size: 13.5px; color: #4b5563; white-space: nowrap; }
 .gl-night-n b { font-size: 20px; font-weight: 800; color: #1c64b0; margin-right: 2px; }
 .gl-night-go { font-size: 20px; color: #9ca3af; }
-.gl-ships { margin-bottom: 14px; }
+.gl-ships { margin-top: 18px; }
 .gl-ships-h { font-size: 16px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
 .gl-ships-h span { background: #1c64b0; color: #fff; border-radius: 999px; font-size: 13px; padding: 1px 9px; }
 .gl-ships-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
