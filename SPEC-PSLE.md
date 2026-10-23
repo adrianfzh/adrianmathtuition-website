@@ -6,37 +6,9 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
 ## Where things stand (23 Oct 2026)
 
 - **Built:** the level, the filename reader, the worker's rules, the topic lists, the switch
-  (off).
-- **Queued (23 Oct 2026, Adrian said yes to the spend):** 310 files copied into the Extraction
-  Inbox; the cloud worker reads them at its usual pace (20 files every 10 minutes, then extraction).
-  - **Past papers (TYS):** `PSLE Maths <year>.pdf` 2015–2024 and `PSLE Science <year>.pdf`
-    2014–2023, one file each (Paper 1 A + B, Paper 2, answers). Grounding-only.
-  - **School prelims, schools per year:**
-
-    | | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 |
-    |---|---|---|---|---|---|---|---|
-    | Maths | 19 | 18 | 14 | 17 | 21 | 17 | 20 |
-    | Science | 16 | 18 | 14 | 13 | 13 | 0 | 17 |
-
-  - Single-school files keep their own name (`P6 PRELIM 2023 Nanyang.pdf`, read at the covers).
-    Combined books were cut by school on the Mac (rules: `~/PSLE-staging/_tools/BRIEF.md`) into
-    `… Paper 1` / `… Paper 2` (science: one `P6 SCI … Paper 1`), each with its answer key at
-    the end. Where a school was in both, the cut copy was kept.
-  - **Cutting a book with `pdfseparate`/`pdfunite` makes every part carry the whole book's
-    shared data** (a 20-page part came out 40–160 MB). Re-save with PyMuPDF
-    (`save(garbage=4, deflate=True, clean=True)`, `~/PSLE-staging/_tools/shrink.py`): about a
-    twelfth of the size, same pages.
-  - School names are short and the same everywhere: ACS Junior, ACS Primary, Singapore Chinese
-    Girls, Pei Hwa Presbyterian, CHIJ St Nicholas Girls, Christian Brothers (a joint paper of four
-    schools, 2019 science), CHIJ Combined (2024 maths).
-  - **Odd cases:** Nanyang 2024 science has no answer key; Northoaks 2024 science's cover is
-    misprinted "Booklet B"; Pei Hwa 2021 science's cover says 2019 but is dated Aug 2021;
-    Maris Stella 2018 (both) and 2022 science, Maha Bodhi 2022 science, ACS Primary 2021 maths
-    and ACS Primary / Ai Tong 2021 science have only CA1/SA1 in the books, so none; Townsville
-    2024 maths is on a contents page but not in the book.
-- **Not used:** the 2023 "Full" maths book (377 MB) and the 2023 science book (518 MB) are
-  online-only in Dropbox; maths 2023 comes from the single-school files and the 16-school book.
-  **No 2023 science prelims are queued** until that book is downloaded to this Mac.
+  (off). Nothing is queued yet.
+- **Next:** cut the multi-school books into one file per school and drop them into the
+  Extraction Inbox. This needs Adrian's yes on the agent spend.
 - **No student sees any of it.** No student surface for primary is built.
 
 ## 1. The level
@@ -108,5 +80,7 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
 
 ## 7. Open decisions
 
-- **Where the missing years come from:** everything for 2025; science prelims 2023 (the book
-  is in Dropbox but online-only) and 2025; science TYS 2024–25.
+- **The agent spend** to cut the combined books by school and stage everything. Asked
+  23 Oct 2026; waiting for Adrian.
+- **Where the missing years come from** (2025 maths; science prelims 2023–25; science TYS
+  2024–25). Adrian to supply them.

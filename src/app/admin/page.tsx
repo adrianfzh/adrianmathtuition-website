@@ -27,6 +27,8 @@ import PasswordInput from '@/components/PasswordInput';
 import { overallTone, type Glance, type Tile, type Tone } from '@/lib/glance';
 import { ADMIN_TOOLS, TAPS_KEY, TAPS_MERGED_KEY, parseTaps, topTools, type AdminTool } from '@/lib/admin-tools';
 import { countAdminOpen } from '@/components/AdminVisitCounter';
+import ProposalCard from '@/components/ProposalCard';
+import type { OpenProposal, RequestState } from '@/lib/overnight';
 
 const REFRESH_MS = 60_000;
 const TONE_COLOUR: Record<Tone, string> = { green: '#2f9e44', amber: '#e79e00', red: '#d03b3b', grey: '#9ca3af' };
@@ -62,7 +64,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [row, setRow] = useState<AdminTool[]>(() => topTools({}));
-  const [waiting, setWaiting] = useState<number | null>(null);
+  const [ships, setShips] = useState<{ ok: boolean; open: OpenProposal[]; requests: Record<string, RequestState> } | null>(null);
   const [, tick] = useState(0);
   const busy = useRef(false);
 
@@ -92,6 +94,15 @@ export default function AdminDashboard() {
     return () => window.removeEventListener('pageshow', both);
   }, []);
 
+  // The proposals waiting for his Ship, on this page itself (23 Oct 2026, Adrian: "just put it
+  // on the page itself, so i will see immediately and act on it") — its own read, so a slow
+  // proposal list never holds up the tiles.
+  const loadShips = useCallback(() => {
+    fetch('/api/admin/overnight', { cache: 'no-store' }).then(x => (x.ok ? x.json() : null))
+      .then(o => { if (o && Array.isArray(o.open)) setShips({ ok: !!o.ledger?.ok, open: o.open, requests: o.requests ?? {} }); })
+      .catch(() => {});
+  }, []);
+
   const load = useCallback(async (fresh = false) => {
     if (busy.current) return;
     busy.current = true; setLoading(true);
@@ -101,15 +112,13 @@ export default function AdminDashboard() {
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || `HTTP ${r.status}`);
       setData(d); setError('');
-      // 🌙 Overnight (12 Oct 2026): how many proposals wait for his Ship — its own small read
-      fetch('/api/admin/overnight?count=1', { cache: 'no-store' }).then(x => (x.ok ? x.json() : null))
-        .then(o => { if (o && typeof o.waiting === 'number') setWaiting(o.waiting); }).catch(() => {});
+      loadShips();
     } catch (e) {
       setError((e as Error).message);
     } finally {
       busy.current = false; setLoading(false);
     }
-  }, []);
+  }, [loadShips]);
 
   useEffect(() => {
     if (!authed) return;
@@ -177,6 +186,16 @@ export default function AdminDashboard() {
       </header>
 
       <main className="gl-body">
+        {ships && ships.ok && ships.open.length > 0 && (
+          <section className="gl-ships" aria-label="Waiting for you to Ship">
+            <h2 className="gl-ships-h">✅ Waiting for you to Ship <span>{ships.open.length}</span></h2>
+            <div className="gl-ships-list">
+              {ships.open.map(p => <ProposalCard key={p.slug} p={p} req={ships.requests[p.slug]} onDone={loadShips} />)}
+            </div>
+          </section>
+        )}
+        {ships && !ships.ok && <div className="gl-error">Could not read the proposals waiting for Ship. They are still in Telegram.</div>}
+
         <section className="gl-nums" aria-label="Today">
           {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} />)}
         </section>
@@ -184,7 +203,7 @@ export default function AdminDashboard() {
         <Link href="/admin/overnight" className="gl-night">
           <span className="gl-night-e" aria-hidden>🌙</span>
           <span className="gl-night-t">Overnight</span>
-          <span className="gl-night-n">{waiting == null ? '' : waiting === 0 ? 'nothing waiting' : <><b>{waiting}</b> waiting for Ship</>}</span>
+          <span className="gl-night-n">{ships == null ? '' : ships.ok && ships.open.length === 0 ? 'nothing waiting' : 'what ran last night'}</span>
           <span className="gl-night-go" aria-hidden>›</span>
         </Link>
 
@@ -345,6 +364,11 @@ const CSS = `
 .gl-night-n { margin-left: auto; font-size: 13.5px; color: #4b5563; white-space: nowrap; }
 .gl-night-n b { font-size: 20px; font-weight: 800; color: #1c64b0; margin-right: 2px; }
 .gl-night-go { font-size: 20px; color: #9ca3af; }
+.gl-ships { margin-bottom: 14px; }
+.gl-ships-h { font-size: 16px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+.gl-ships-h span { background: #1c64b0; color: #fff; border-radius: 999px; font-size: 13px; padding: 1px 9px; }
+.gl-ships-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+@media (min-width: 760px) { .gl-ships-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .gl-row-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @media (min-width: 760px) { .gl-row-tools { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
 .gl-tool { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px 4px 12px; text-decoration: none; color: #111827; min-width: 0; }
