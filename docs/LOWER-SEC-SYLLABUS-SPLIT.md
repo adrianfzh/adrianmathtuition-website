@@ -175,7 +175,7 @@ above) — change both together.
 ## Sec 2 questions may use the Sec 1 skill list (21 Oct 2026, Adrian)
 Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will test sec 1 sometimes"*.
 - **Part labels: yes, safe.** A part of a Sec 2 question that tests Sec 1 work may be labelled with a Sec 1 sub-skill. Nothing that serves students or counts twins reads `question_part_subgroups`.
-- **Main filing — Adrian said yes (21 Oct 2026), narrowly:** only under topics with no Sec 2 list (Speed, Integers, Real Numbers, Exchange Rate, Interest …), via the filer's S1 tree (bot 847b17c5); 27 Sec 2 questions filed so, served in Sec 1 practice. `twin_queue` takes the main skill from the question's own level, so Sec 2 twin counts do not move. Shared topics keep Sec 2 rows in the S2 tree. Background (why narrow): `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Not done until Adrian agrees how (21 Oct 2026).
+- **Main filing — Adrian said yes (21 Oct 2026), narrowly:** only under topics with no Sec 2 list (Speed, Integers, Real Numbers, Exchange Rate, Interest …), via the filer's S1 tree (bot 847b17c5); 27 Sec 2 questions filed so, served in Sec 1 practice. `twin_queue` takes the main skill from the question's own level, so Sec 2 twin counts do not move. Shared topics keep Sec 2 rows in the S2 tree. Background (why narrow): `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Done the narrow way above once Adrian agreed (21 Oct 2026, bot 847b17c5).
 
 **Taught-early check (21 Oct 2026):** of the 67 Sec 1 rows marked `legacy_syllabus` on 15 Oct, only 14 have `ip_syllabus = true`; the other 53 are served to no student (the note above says IP students still get them). And a row moved to another level is never seen by a lower level's students: Sec 2 practice reads only Sec 2 rows (`practice_qlevels`).
 
@@ -191,11 +191,11 @@ factorization of 2 by 2. yes solving inequalities is now in sect 2"*.
   Sec 1 serves no school rows today (every topic serves our twins), so they come back as twin seeds and filer work.
 - **19 have one Sec 2 part** (dividing algebraic fractions, forming/solving an inequality, factorising by grouping, one
   Pythagoras height). They are the part-marks case (`lib/part-syllabus.ts`), but that route is not switched on yet
-  (SPEC-PART-SYLLABUS: two migrations + the bot side are still open), so they stay hidden.
+  (SPEC-PART-SYLLABUS: the two migrations are still open; the bot side was done 9 Oct, bot 684ede17), so they stay hidden.
 - **29 are Sec 2 work all through** (inequalities 21, factorisation 2, expressions 2, ratio 2, fractions 1, expansion 1).
   51 of the 53 cannot simply change level: the bank allows one row per school, year, paper, number, level and exam type
   (`idx_questions_dedup`), and that school's own Sec 2 paper already has the same number.
-- **Proposed (not done):** the 21 inequality rows → un-hide and file under the Sec 2 Inequalities sub-skills. Sec 2
+- **Done 21 Oct 2026 (see "Done 21 Oct 2026" below):** the 21 inequality rows → un-hide and file under the Sec 2 Inequalities sub-skills. Sec 2
   serves school rows for Inequalities, so Sec 2 students get them; Sec 1 has no open Inequalities list, so Sec 1 does
   not; `twin_queue` (own-level main skill) keeps them out of both levels' twin counts. The other 8 sit in topics Sec 1
   also teaches, where un-hiding would reach Sec 1 too — they need a "taught at" level separate from the paper's level.

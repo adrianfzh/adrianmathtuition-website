@@ -51,7 +51,7 @@ Steps 3 and 4 are not started until he has seen step 1.
 - apply `migrations/part_syllabus_keep_marks.sql` (marks survive a re-write of `parts`);
 - apply `migrations/part_label_prints.sql` (the print record — without it a re-lettered question
   is left off every printed sheet, and the health check goes red);
-- the bot-side list at the foot of this file;
+- the bot-side list at the foot of this file — done 9 Oct 2026 (bot 684ede17);
 - the re-read of the 24 above.
 
 ## The problem
@@ -313,6 +313,8 @@ same label onto the new one unless the new one says otherwise. Apply it before t
 is marked. (A carried-over `checked` only counts if the content is still exactly what was read.)
 
 ## Still to do in the bot repo (not touched here)
+
+> **Done 9 Oct 2026** (bot 684ede17, `lib/part-view.js`): every reader below goes through the same rule — doc sweep 25 Oct 2026.
 
 The bot has its own copies of the readers. Until these go through the same rule, do not mark
 parts on questions the bot hands out:

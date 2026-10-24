@@ -61,7 +61,7 @@ Science school part labels sat at 4,119 of 9,603 from 19 Oct evening to 20 Oct m
 ## Sec 2 questions may use the Sec 1 skill list (21 Oct 2026, Adrian)
 Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will test sec 1 sometimes"*.
 - **Part labels: yes, safe.** A part of a Sec 2 question that tests Sec 1 work may be labelled with a Sec 1 sub-skill. Nothing that serves students or counts twins reads `question_part_subgroups`.
-- **Main filing: needs a decision first.** `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Not done until Adrian agrees how (21 Oct 2026).
+- **Main filing: needs a decision first.** `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Not done until Adrian agrees how (21 Oct 2026) → agreed and done 21 Oct, below (bot 847b17c5).
 
 **The ~420 maths long questions with parts and no filing at all (checked 21 Oct 2026, levels S1–AM, not legacy / national / unchecked AI):** why each was never filed, from the worker's set-aside list (kept 90 days):
 - **Two readers disagreed on the main sub-skill — ~170** (156 since 15 Oct, under the per-part method): long questions spanning several sub-skills; the two-reader rule holds them.
@@ -83,7 +83,7 @@ Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will 
 - **~50 no skill fits** — two real gaps proposed: Sec 2 Constructions has no perpendicular / angle bisector skill (6 questions); Sec 1 Real-World has no reading bills / price tables / budgets skill (6). The rest are scattered one or two a topic.
 - **~25 low confidence** (topic or main skill unclear), **11 never fetched** (topics with no list at their level: Proof, Functions, Probability at A Math …).
 - Also found: of the 67 Sec 1 rows marked old-syllabus on 15 Oct, only 14 carry `ip_syllabus`, so the other 53 reach no student (the 15 Oct note said IP students still get them).
-- The phase change record (`job_runs` 'twins-phase') did not save on 20 Oct; phase A itself ran (science long questions 14:38–22:45) until the switch was turned off by hand.
+- The phase change record (`job_runs` 'twins-phase') saved after all — phase A 20 Oct 14:38 SGT, phase B (maths twins switched ON by itself) 21 Oct 21:43 SGT (doc sweep 25 Oct 2026); phase A ran (science long questions 14:38–22:45) until the switch was turned off by hand.
 
 ## Next step (Adrian said yes, 15 Oct 2026)
 When the re-tag has finished (`FILING_PARTS=1` status shows 0 for both banks, `select * from question_main_vs_parts` looked at), adopt the part table in ONE place first: the bleed table / "where marks are lost" (report only, cannot change what a student is served). Then Practice photo, then Find, one at a time, each checked for what students are served. Remind Adrian when the re-tag backlog reaches 0.

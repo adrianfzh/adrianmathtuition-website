@@ -53,7 +53,7 @@ That's it. One script to run. The library produces a Word-ready docx in a single
 
 **Where the file goes (Adrian, 18 Sep 2026 — so a lesson-time request needs no follow-up
 question):** file it on the Dropbox shelf the kiosk reads, by what the sheet contains —
-`docs/KIOSK.md` §Dropbox library is the rule. A sheet WITH worked examples →
+`docs/KIOSK.md` §Printable PDFs — Dropbox drop-in folder is the rule. A sheet WITH worked examples →
 `Dropbox/Apps/AdrianMathNotes/Revision/<LEVEL>`; questions with a summary/formula page and
 no solutions → `Practice/<LEVEL>`; a full paper → `Prelim/`. Never overwrite a file already
 on the shelf — a rebuild goes beside it under a new name (ADRIAN-STYLE.md). In a headless

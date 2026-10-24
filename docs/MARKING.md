@@ -1245,10 +1245,10 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   tick; `result_json.auto_tag {at, by:'name'|'cover', read_name, cover_tried, reason}` is
   the ledger (never read twice). A tag is exactly "+ tag": `student_id`+`student_name` (the
   update is `.is('student_id', null)` so a tap on the desk in the same minute wins),
-  `autoQueueSheet('auto-tag')`, `refileUntaggedFolder`, one Telegram line (`autoTagLine`,
+  `autoQueueSheet('auto-tag')` (gone since 8 Sep 2026 — a tag no longer queues a sheet, bc79d884), `refileUntaggedFolder`, one Telegram line (`autoTagLine`,
   also one per paper the cover could not settle — "still 3 possible · tag the student on
   the desk"). **Sheet catch-up** in the same sweep: tagged · marked · unreleased · not a
-  hand-in · NO `sheet_jobs` row of any status → `autoQueueSheet('auto-tag:catch-up')` — the
+  hand-in · NO `sheet_jobs` row of any status → `autoQueueSheet('auto-tag:catch-up')` (gone since 8 Sep 2026 — a tag no longer queues a sheet, bc79d884) — the
   "papers the Fly queue worker marks by itself" gap below (Megan's JC2 set sat in "Marked,
   sheet on the way" for a week). `?dry=1` on the cron lists both plans; `job_runs`
   `scan-inbox` detail carries `tags: N tagged, N cover read, N waiting, N left, N sheet(s)
@@ -1271,7 +1271,7 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   `?dry=1` lists what it would file. `STUDENT_FILES_TO_DROPBOX=0` turns it off with
   the rest of the tray.
 - **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
-  `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
+  `queueSheetJob`, `autoQueueSheet` (gone since 8 Sep 2026, bc79d884)) is the ONE guard, now also what the
   sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·
   has results · not released · **no job of any status yet** (the button may
   re-queue after done/failed/cancelled; the auto path fires on repeating events)
@@ -1514,12 +1514,12 @@ Adrian: "does this apply to the 12 hour clock too?" It did not. The
 release-by-silence cron called `release-with-sheet` directly, so a paper with
 questions still flagged for review — which the desk's Approve & release refuses
 — would have gone out when the clock ran down (Denise, four open flags, 7:04pm).
-Now `autoReleaseGate` takes `pendingReviews` (`lib/mark-triage pendingCount`)
+Now `autoReleaseGate` takes `pendingReviews` (gone since 8 Sep 2026 — the gate takes the paper's hold, 30a928a9) (`lib/mark-triage pendingCount`)
 and refuses while any flag is open, and `/api/cron/sheet-auto-release` re-checks
 at fire time: open flags → `auto_release_at` cleared, stage "held — N questions
-still flagged for review", Telegram `heldByReviewLine`; already released from
+still flagged for review", Telegram `heldByReviewLine` (gone since 8 Sep 2026, 30a928a9); already released from
 the desk → stamped, nothing sent. The immediate hand-in auto-release is a
-separate switch (`AUTO_RELEASE_PAUSED` in `mark-triage`, off since 29 Aug 2026)
+separate switch (`AUTO_RELEASE_PAUSED` (gone since 8 Sep 2026 — now the Airtable Settings `auto_release_paused`, 30a928a9) in `mark-triage`, off since 29 Aug 2026)
 with its own accuracy gates (`computeAutoHold`).
 
 ### Practice Again on request (8 Sep 2026)

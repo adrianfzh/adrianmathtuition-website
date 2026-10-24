@@ -9,6 +9,7 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
   (off).
 - **Queued (23 Oct 2026, Adrian said yes to the spend):** 310 files copied into the Extraction
   Inbox; the cloud worker reads them at its usual pace (20 files every 10 minutes, then extraction).
+  > **25 Oct 2026 (doc sweep): NOT queued after all.** The inbox turned all 310 away on 23 Oct (08:20–10:50 SGT — "no level token": it read them before it knew P6) and moved them to `/extraction inbox/rejected/`; `paper_library` holds 310 `flagged` rows, `questions` holds 0 at P6, and the inbox never re-reads a file. The worker's `extract` switch is also off since 24 Oct ~07:42.
   - **Past papers (TYS):** `PSLE Maths <year>.pdf` 2015–2024 and `PSLE Science <year>.pdf`
     2014–2023, one file each (Paper 1 A + B, Paper 2, answers). Grounding-only.
   - **School prelims, schools per year:**
