@@ -50,6 +50,15 @@ function env() {
   for (const k of Object.keys(out)) out[k] = String(out[k]).trim();
   return out;
 }
+// 🔒 OFF (Adrian, 19 Oct 2026: "switch off the credit lane. just use the normal lanes"). On 23–24 Oct a run on
+// another machine — with its own empty ledger, so its US$ cap started from 0 — spent ≈US$32 more and took the
+// ledger past the US$200 credit. The runner now refuses to start unless Adrian has said yes in his own words
+// to THIS run and the caller passes --adrian-said-yes "<his words, dated>". The cap is per machine; check the
+// Console balance (platform.claude.com) before any run.
+if (['run', 'all', 'levels'].includes(MODE) && !argOf('--adrian-said-yes', '')) {
+  console.error('api-twins: the credit lane is OFF (Adrian, 19 Oct 2026). Ask Adrian first; then pass --adrian-said-yes "<his words, date>". Check the Console credit balance — the US$ cap counts this machine only.');
+  process.exit(2);
+}
 const ENV = env();
 const Anthropic = require('@anthropic-ai/sdk').default ?? require('@anthropic-ai/sdk');
 const client = new Anthropic({ apiKey: ENV.ANTHROPIC_API_KEY, maxRetries: 4 });
