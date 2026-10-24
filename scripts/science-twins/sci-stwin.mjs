@@ -28,7 +28,8 @@
 //   review   --runs <dir…> --out <file.html> → a phone-width page for Adrian
 //
 // Env as sci-twin.mjs (SUPABASE_URL_SCIENCE + SUPABASE_SERVICE_KEY_SCIENCE). Never prints a key.
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync, unlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -61,6 +62,7 @@ const BUCKET = 'question_images';
 const MCQ_RE = /^\s*([A-Da-d]\s*$|\*\*\(?[A-D]\)?\*\*)/;
 const POOLS = ['PHY', 'CHEM', 'BIO', 'CS_PHY', 'CS_CHEM', 'CS_BIO'];
 const COLS = 'id,level,subject,school,year,topics,answer,solution,question_text,parts,total_marks,has_image,image_url,images,image_watermark_status,verified,ai_generated,quarantined,not_in_syllabus,practice_hidden,practice_checked_at,practice_check_note,twin_of,exam_type,gen_meta';
+const BANK_COLS = COLS.replace(',gen_meta', ',gm_kind:gen_meta->>kind,gm_subskill:gen_meta->>subskill');
 
 /** One structured twin per seed PER POOL (its own key: an MCQ twin of the same seed id cannot clash). */
 export const stwinItem = (pool, seed, pass = 1) => `${String(pool).startsWith('CS_') ? `sci-stwin-${pool}-${seed}` : `sci-stwin-${seed}`}${pass > 1 ? `-${pass}` : ''}`;
@@ -105,13 +107,35 @@ async function retry(fn) {
     try { return await fn(); } catch (e) { if (i >= 3) throw e; await new Promise((r) => setTimeout(r, 2000 * (i + 1))); }
   }
 }
+// 24 Oct 2026 (Supabase egress over quota): loadBank() downloads every structured science row with
+// its full text — and queue, need (before every twin) and the stages each called it, many times a
+// run on every lane. One copy on disk is reused for SCI_BANK_CACHE_MIN (30) minutes; publish
+// deletes it, so the next `need` sees the new twin.
+const BANK_CACHE = join(process.env.SCI_BANK_CACHE_DIR || tmpdir(), 'sci-stwin-bank.json');
+const BANK_CACHE_MS = Number(process.env.SCI_BANK_CACHE_MIN ?? 30) * 60_000;
+export function dropBankCache() { try { unlinkSync(BANK_CACHE); } catch { /* none */ } }
+let bankMemo = null;
 async function loadBank() {
+  if (bankMemo) return bankMemo;
+  try {
+    if (BANK_CACHE_MS > 0 && Date.now() - statSync(BANK_CACHE).mtimeMs < BANK_CACHE_MS) {
+      const b = JSON.parse(readFileSync(BANK_CACHE, 'utf8'));
+      return (bankMemo = { ...b, combined: new Set(b.combined) });
+    }
+  } catch { /* no copy, or unreadable: fetch */ }
+  const b = await loadBankFresh();
+  try { writeFileSync(BANK_CACHE, JSON.stringify({ ...b, combined: [...b.combined] })); } catch { /* disk full: carry on */ }
+  return (bankMemo = b);
+}
+async function loadBankFresh() {
   const rows = [];
   for (const subject of ['physics', 'chemistry', 'biology']) {
     // structured rows only (no lettered answer), as lib/science-bank's kind 'structured'
-    rows.push(...await retry(() => all(() => sb().from('questions').select(COLS).eq('subject', subject)
+    rows.push(...await retry(() => all(() => sb().from('questions').select(BANK_COLS).eq('subject', subject)
       .or('answer.is.null,answer.not.match.^\\s*[A-Da-d]\\s*$').or('answer.is.null,answer.not.match.^\\s*[*][*][A-D][*][*]').order('id'))));
   }
+  // gen_meta arrives as its two used keys only (it is ~6 MB of the 57 MB copy in full)
+  for (const r of rows) { r.gen_meta = { kind: r.gm_kind ?? undefined, subskill: r.gm_subskill ?? undefined }; delete r.gm_kind; delete r.gm_subskill; }
   const filing = [];
   const ids = rows.map((r) => r.id);
   for (let i = 0; i < ids.length; i += 150) {
@@ -725,6 +749,7 @@ async function publish() {
   }, { onConflict: 'question_id' });
   if (pdErr) throw new Error(`practice_difficulty: ${pdErr.message}`);
   writeFileSync(join(dir, 'published.json'), JSON.stringify({ id: qid, item, at: now }, null, 1));
+  dropBankCache();   // the next queue / need must count this twin
   console.log(`${existing?.length ? 'updated' : 'inserted'} ${qid} (structured science twin of ${plan.source}, ${plan.pool}, ${label})`);
 }
 

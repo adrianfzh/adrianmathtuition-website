@@ -299,8 +299,18 @@ async function brief() {
   const subgroups = filing.map((f) => ({ id: f.subgroup_id, is_primary: f.is_primary, name: f.subgroups?.name, topic: f.subgroups?.topic, description: f.subgroups?.description }));
   const shape = shapeOf(src.level);
   // the whole real corpus at this level — the novelty gate compares against every one
-  const corpus = (await restAll(env, `questions?select=id,school,year,question_text,parts&level=eq.${src.level}&deleted_at=is.null&ai_generated=not.is.true&order=id.asc`))
-    .map((r) => ({ id: r.id, ref: `${r.school} ${r.year}`, text: questionText(r) })).filter((r) => r.text.length > 20);
+  // 24 Oct 2026 (Supabase egress over quota): the school rows of a level change rarely, so one copy
+  // per level is reused for TWIN_CORPUS_CACHE_HOURS (6) instead of downloading ~2 MB on every brief.
+  // Our own twins (below) are still read fresh every time.
+  const cacheFile = join(process.env.TWIN_CORPUS_CACHE_DIR || require('node:os').tmpdir(), `twin-corpus-${src.level}.json`);
+  const cacheMs = Number(process.env.TWIN_CORPUS_CACHE_HOURS ?? 6) * 3600_000;
+  let corpus = null;
+  try { if (cacheMs > 0 && Date.now() - require('node:fs').statSync(cacheFile).mtimeMs < cacheMs) corpus = JSON.parse(readFileSync(cacheFile, 'utf8')); } catch { /* no copy */ }
+  if (!corpus) {
+    corpus = (await restAll(env, `questions?select=id,school,year,question_text,parts&level=eq.${src.level}&deleted_at=is.null&ai_generated=not.is.true&order=id.asc`))
+      .map((r) => ({ id: r.id, ref: `${r.school} ${r.year}`, text: questionText(r) })).filter((r) => r.text.length > 20);
+    try { writeFileSync(cacheFile, JSON.stringify(corpus)); } catch { /* disk full: carry on */ }
+  }
   // 🌱 our own live twins at this level too — a new twin must not read as an earlier one
   const ours = await restAll(env, `questions?select=id,twin_of,question_text,parts&level=eq.${src.level}&school=eq.${TWIN_SCHOOL}&exam_type=eq.${TWIN_EXAM_TYPE}&deleted_at=is.null&order=id.asc`);
   for (const r of ours) { const text = questionText(r); if (text.length > 20) corpus.push({ id: r.id, ref: `our twin ${String(r.id).slice(0, 8)}`, text }); }
