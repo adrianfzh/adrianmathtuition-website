@@ -372,6 +372,18 @@ session checks a sample of the disagreements on the pages, and only then propose
 fixer. Skips itself when a training or OCR job is running; stamps every run (rhythm 60 h). Memory
 note `own-red-pen-model`.
 
+## 📦 Supabase download traffic (egress) — the quota (24 Oct 2026)
+
+On 24 Oct 2026 Supabase emailed that the org "Adrian's Projects" went over its plan quota (egress, the data downloaded OUT of Supabase; tip: stay under 275 GB a billing period). It is free until **23 Nov 2026**; after that the Fair Use Policy applies.
+
+**What did it (edge logs, 23 Oct; almost all from the Fly worker, "CacheFly"):**
+- **The science twin writer** (`scripts/science-twins/sci-stwin.mjs loadBank`) downloaded the whole structured science bank with full text — **57 MB a copy** — for every queue, every `need` before a twin, and every stage, on every lane run (~300 runs a day). **Fixed:** one copy on disk for 30 min (`SCI_BANK_CACHE_MIN`, dropped on publish), `gen_meta` cut to its two used keys (51 MB).
+- **The sub-skill filer's backlog count** (bot `scripts/file-subgroups.js --status`, run before AND after every filing run, 8 lanes back-to-back on 20–23 Oct) downloaded every question's answer, solution and parts — ~27k pages a day. **Fixed** (bot 38176612): light columns for all, heavy ones only for the unfiled candidates; the same counts, checked old vs new.
+- **The maths twin brief** downloaded every school question of the level (~2 MB) per twin. **Fixed:** one copy per level for 6 h (`TWIN_CORPUS_CACHE_HOURS`); our own twins still read fresh.
+- Smaller: the filer's paged reads of `question_subgroups` / `question_part_subgroups` (many small pages), storage pictures (a few thousand a day — no cache needed yet).
+
+**Checking it:** the total is only on the Supabase website (Organization → Usage). The server cannot read it without a Supabase personal access token, so an automatic Monday warning waits for Adrian to make one. A rule for every new bulk job: **never page a whole table with full text inside a loop** — fetch light columns, then heavy ones for the few rows that need them, or keep one copy on disk.
+
 ## 🧹 The stale-doc sweeper (5 Oct 2026)
 
 Adrian: *"stale-doc sweeper"* — sessions kept following instructions the code had left behind.
