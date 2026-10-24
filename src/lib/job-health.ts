@@ -36,9 +36,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // the 2-day reminder and the 7-day "no reply" note. Every 30 min on the bot; stamps every pass.
   'trial-followup':    { kind: 'interval', hours: 2, label: 'every 30 min (bot)' },
   // 🗂 The sub-skill filer: on the Fly worker since 2 Oct 2026 (the Mac task had not run since
-  // 9 Sep), maths 04:15 + 16:15, science 10:15 + 22:15 (bot worker/fly/jobs.sh job_file_subgroups).
+  // 9 Sep), since 19–20 Oct 2026 one filing lane per tree, back to back while there is work, else hourly (bot worker/fly/jobs.sh DEFAULT_FILING_LANES).
   'file-subgroups':    { kind: 'interval', hours: 36, label: 'back to back while there is work, else hourly (19 Oct 2026; was every 3 hours)' },
-  'file-subgroups-science': { kind: 'interval', hours: 12, label: 'every 2 hours at :15' },
+  'file-subgroups-science': { kind: 'interval', hours: 12, label: 'back to back while there is work, else hourly (20 Oct 2026; was every 2 hours)' },
   // 17 Oct 2026 (SPEC-PART-SKILLS.md §Twins): the PART skills of our own twins, four times a day per bank
   // (bot worker/fly/jobs.sh job_file_subgroups … twins); stamps also when nothing is waiting.
   'file-twin-parts':   { kind: 'interval', hours: 12, label: 'back to back while there is work, else hourly (19 Oct 2026; was 4 a day)' },
