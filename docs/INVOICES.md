@@ -496,7 +496,8 @@ earlier EmailLog row carried a PDF is classified as an AMENDMENT — subject bec
 invoice, disregard the earlier email"*. That is correct when the figures changed and
 misleading when they did not; the classifier cannot tell the cases apart, so the
 caller declares which it is. Add `preview: true` to see the exact email without
-sending. Note the Email Log's own resend button replays the ARCHIVED body verbatim —
+sending. **A session sending for Adrian shows him that preview first and sends only
+after his "send"** (Adrian, 24–25 Oct 2026: *"show me the email first?"*). Note the Email Log's own resend button replays the ARCHIVED body verbatim —
 use it only when you want the original bytes, mistakes included.
 
 ## Delivery receipts — the webhook, and why the log said `sent` for three months
