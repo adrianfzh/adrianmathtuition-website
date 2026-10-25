@@ -309,13 +309,13 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   ] = await Promise.all([
     safe(() => count(sb.from('authored_question_proposals').select('id', { count: 'exact', head: true }).eq('status', 'pending'))),
     safe(() => count(sb.from('extraction_rules').select('id', { count: 'exact', head: true }).eq('status', 'proposed'))),
-    safe(() => count(sb.from('proposal_requests').select('id', { count: 'exact', head: true }).eq('status', 'failed').gte('requested_at', new Date(now - 7 * 86400_000).toISOString()))),
+    safe(() => count(sb.from('proposal_requests').select('id', { count: 'exact', head: true }).in('status', ['failed', 'needs_session']).gte('requested_at', new Date(now - 7 * 86400_000).toISOString()))),
     safe(() => papersToCheck(sb)),
     safe(() => count(sb.from('paper_library').select('id', { count: 'exact', head: true }).eq('kind', 'source').in('status', ['flagged', 'failed']))),
     safe(() => count(sb.from('portal_event_log').select('id', { count: 'exact', head: true }).eq('kind', 'submit:failed').gte('created_at', new Date(now - 86400_000).toISOString()))),
     safe(() => count(sb.from('portal_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
     safe(async () => {
-      const { data, error } = await sb.from('proposal_requests').select('slug, action, result, requested_at').eq('status', 'failed')
+      const { data, error } = await sb.from('proposal_requests').select('slug, action, result, requested_at').in('status', ['failed', 'needs_session'])
         .gte('requested_at', new Date(now - 7 * 86400_000).toISOString()).order('requested_at', { ascending: false }).limit(LIST_ROWS);
       if (error) throw new Error(error.message);
       return (data ?? []).map((r) => ({ slug: String(r.slug), action: String(r.action), result: (r.result as string | null) ?? null, at: String(r.requested_at) }));

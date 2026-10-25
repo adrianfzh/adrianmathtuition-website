@@ -491,7 +491,7 @@ Read-only student history view. Cookie-auth protected (same 30-day session), PWA
 | File | Purpose |
 |---|---|
 | `app/admin/progress/page.tsx` | Student timeline page |
-| `app/api/admin/progress/student-timeline/route.ts` | Timeline data + aggregations |
+| `app/api/admin/progress/{students,students/[id]/*,lessons,exams/[examId]}/route.ts` | Timeline data + aggregations |
 | `app/api/admin/exam-season/route.ts` | GET/POST exam season override |
 | `lib/exam-season.ts` | `EXAM_WINDOWS`, `resolveActiveExamType()`, `checkExamInfoStatus()` |
 | `lib/exam-notes-markers.ts` | `encodeExamNotes()`/`decodeExamNotes()` — `~|` approx prefix + `📷 <url>` photo suffix in Exam Notes |

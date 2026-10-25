@@ -212,7 +212,7 @@ def whole_math(line):
 # --------------------------------------------------------------- layout ----
 
 Q_TEXT_CM = 1.0   # numbering.xml puts question text at 567 twips
-STEP_CM = 0.9     # each part level steps in by this much
+STEP_CM = 1.0     # each part level steps in by this much = numbering.xml's 1134 / 1701 twips
 
 LABEL_RE = re.compile(r'^\s*\(([a-z]{1,3})\)\s*(?:\(([ivx]{1,5})\))?\s*', re.I)
 ROMAN = {'i', 'ii', 'iii', 'iv', 'v', 'vi'}
@@ -286,7 +286,7 @@ def number_line(ws, labels, line, marks, level):
         text_cm = Q_TEXT_CM + STEP_CM * (level + 1)
         pf.left_indent = Cm(text_cm)
         pf.first_line_indent = Cm(-text_cm)
-        for lv in range(level + 1):
+        for lv in range(level + 2):     # the label stops AND the text's own stop
             pf.tab_stops.add_tab_stop(Cm(Q_TEXT_CM + STEP_CM * lv))
     return p
 
@@ -319,6 +319,41 @@ def _labelled_blocks(ws, bl, last_line, labels, marks, level, numbered):
             indent(p, level if any(labels) else -1, len(labels) if i == 0 and any(labels) else 0)
         if i + 1 < len(bl):
             ws.keep_with_next()      # a part is never cut across two pages, its table included
+
+
+def auto_part(ws, level, fmt, restart, text, marks, start=1):
+    """One part or sub-part as a real Word list item: (a)(b) at level 1, (i)(ii) at
+    level 2. Word writes the label and lines the text up by itself, so inserting or
+    deleting a part in Word renumbers the rest -- typed "(a)\t(i)\t" labels pushed
+    the text off the right edge in Word (Adrian, 22 Oct 2026: "can you subnumber
+    them in docx in the future? with auto sub-numbering"). An empty `text` prints
+    the label alone ("(a)" over its "(i)"), glued to the line below."""
+    bl = blocks(text) or [('line', '')]
+    last_line = max((i for i, b in enumerate(bl) if b[0] == 'line'), default=-1)
+    saved_space = ws.working_space
+    if bl[-1][0] == 'table':         # a table to complete IS the answer space
+        ws.working_space = 0
+    try:
+        first = True
+        for i, (kind, body) in enumerate(bl):
+            if kind != 'line':
+                special_block(ws, kind, body)
+                continue
+            m = marks if i == last_line else None
+            if first:
+                ws.numbered(segs(body), level=level, fmt=fmt, restart=restart, marks=m, start=start)
+                first = False
+            else:
+                p = ws._add(segs(body), marks=m)
+                indent(p, level - 1, 0)
+            if i + 1 < len(bl) or not text.strip():
+                ws.keep_with_next()  # a part is never cut across two pages, its table included
+    finally:
+        ws.working_space = saved_space
+
+
+def fmt_of(label):
+    return 'roman' if label.strip('()').lower() in ROMAN else 'letter'
 
 
 def stem_paras(ws, q, marks_on_stem):
@@ -553,6 +588,8 @@ def question(ws, s, figures, with_marks=True):
             ws.workspace(marks=s['target'])
     prev_outer = None
     numbered = not has_stem          # no stem: the first part carries the number
+    letter_open, letter_start = False, 1   # the question's (a)(b) list
+    roman_open = False                     # an (i)(ii) list opened in this question
     for part in parts:
         saved_space = ws.working_space
         part_fig = part.get('figure')                       # "a" → Q<n>a.figure.png under this part
@@ -564,16 +601,32 @@ def question(ws, s, figures, with_marks=True):
         subs = part.get('subparts') or []
         marks = part.get('marks') if with_marks else None
         text = part.get('text', '')
-        merge_first_sub = bool(subs) and not text.strip()   # "(a)  (i)  …" on one line
-        if merge_first_sub:
-            pass
-        elif inner:
-            labels = [outer if outer != prev_outer else '', inner]
-            labelled(ws, labels, text, None if subs else marks, level=1, numbered=numbered)
+        merge_first_sub = bool(subs) and not text.strip()   # "(a)" with its (i) below
+        part_marks = None if subs else marks
+        if not outer and not text.strip():
+            pass                                             # nothing of its own to print
+        elif not outer:
+            labelled(ws, [''], text, part_marks, level=0, numbered=numbered)   # new information between parts
+            numbered = False
+        elif numbered:
+            # no stem: "(a)" is typed on the number's own line, the real list
+            # below it counts on from (b)
+            line = '' if (merge_first_sub or inner) else text
+            labelled(ws, [outer], line, None if (merge_first_sub or inner) else part_marks,
+                     level=0, numbered=True)
+            letter_start = 2               # the next part opens the list at (b)
+            if inner:
+                auto_part(ws, 2, fmt_of(inner), True, text, part_marks)
+                roman_open = True
             numbered = False
         else:
-            labelled(ws, [outer], text, None if subs else marks, level=0, numbered=numbered)
-            numbered = False
+            if outer != prev_outer:
+                auto_part(ws, 1, 'letter', not letter_open, '' if (merge_first_sub or inner) else text,
+                          None if (merge_first_sub or inner) else part_marks, start=letter_start)
+                letter_open = True
+            if inner:
+                auto_part(ws, 2, fmt_of(inner), outer != prev_outer, text, part_marks)
+                roman_open = True
         if part_fig and not subs:
             # the part's own figure sits right under its text (before the writing space);
             # an answer-space figure IS the space, otherwise the space follows the figure
@@ -588,9 +641,16 @@ def question(ws, s, figures, with_marks=True):
         prev_outer = outer
         for k, sub in enumerate(subs):
             so, si = split_label(sub.get('label', ''))
-            labels = [outer if k == 0 else '', si or so] if merge_first_sub else [si or so]
-            labelled(ws, labels, sub.get('text', ''), sub.get('marks') if with_marks else None, level=1,
-                     numbered=numbered)
+            lab = si or so
+            # a list restarts at its own "(i)" -- a label-less part holding the rest
+            # of the sub-parts (new information between (i) and (ii)) carries on
+            if lab:
+                restart = lab.strip('()').lower() in ('i', 'a')
+            else:
+                restart = k == 0 and (bool(outer) or not roman_open)
+            roman_open = True
+            auto_part(ws, 2, fmt_of(lab) if lab else 'roman', restart, sub.get('text', ''),
+                      sub.get('marks') if with_marks else None)
             numbered = False
         ws.working_space = saved_space
         if part is after_part:

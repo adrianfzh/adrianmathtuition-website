@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
 import { createServiceClient } from '@/lib/supabase-server';
-import { gradeAttempt, upsertWeaknessTags, topWeaknessTags, DAILY_GRADE_CAP, GRADING_MODEL } from '@/lib/practice-grade';
+import { gradeAttempt, upsertWeaknessTags, topWeaknessTags, DAILY_GRADE_CAP, GRADING_MODEL, type GradeResult } from '@/lib/practice-grade';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
@@ -29,6 +29,8 @@ import { sciencePoolLevels } from '@/lib/science-levels';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 import { bankLevelSubject } from '@/lib/portal-find';
 import { hasRenames, partLabelsOf, studentRow } from '@/lib/part-syllabus';
+import { gradableRow, readFixCache } from '@/lib/fix-one';
+import { fixOneOpenFor } from '@/lib/portal-beta';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -207,6 +209,24 @@ export async function POST(req: NextRequest) {
     assignment = row;
   }
 
+  // 🎯 Fix one (SPEC-STUDENT-FIRST.md §Fix one): the question shown on a marked paper.
+  // It must be one the fix-one route picked for THIS student's run; it is answered
+  // once, stored as 'portal-fix', and sits outside the daily cap (a few a paper at most).
+  let fixRunId: string | null = null;
+  const fixRaw = (body as { fix?: { runId?: unknown } }).fix;
+  if (fixRaw && typeof fixRaw.runId === 'string') {
+    if (assignment || !fixOneOpenFor(identity)) return NextResponse.json({ error: 'That question isn’t available' }, { status: 404 });
+    const { data: run } = await admin.from('paper_marking_runs').select('id, fix_one')
+      .eq('id', fixRaw.runId).eq('student_id', identity).maybeSingle();
+    if (!run || !readFixCache(run.fix_one).picks.some(p => p.id === questionId)) {
+      return NextResponse.json({ error: 'That question isn’t available' }, { status: 404 });
+    }
+    const { count: done } = await admin.from('student_attempts').select('id', { count: 'exact', head: true })
+      .eq('user_id', account.id).eq('attempted_via', 'portal-fix').eq('question_id', questionId);
+    if ((done ?? 0) > 0) return NextResponse.json({ error: 'Already answered' }, { status: 409 });
+    fixRunId = run.id as string;
+  }
+
   // Daily caps (lib/grade-limit.ts, re-done 5 Oct 2026): Adrian-sent work not yet
   // marked is exempt from the 20 a day; self-made practice (find, practice-photo)
   // and re-grades are not; nothing passes the hard ceiling of 60 a day.
@@ -218,13 +238,13 @@ export async function POST(req: NextRequest) {
     .eq('attempted_via', 'portal')
     .gte('attempted_at', dayStart.toISOString());
   const limit = gradeLimit({ assignment, countToday: count || 0 });
-  if (!limit.ok) return NextResponse.json({ error: limit.message }, { status: 429 });
+  if (!limit.ok && !fixRunId) return NextResponse.json({ error: limit.message }, { status: 429 });
 
   // Question WITH mark scheme (service role; never sent to the client)
   type GradeQuestion = {
     id: string; level: string | null; question_text: string | null; parts: unknown; answer: string | null;
     solution: string | null; total_marks: number | null; topics: string[] | null;
-    ai_generated?: boolean | null; solution_source?: string | null;
+    ai_generated?: boolean | null; solution_source?: string | null; verified?: boolean | null; twin_of?: string | null;
   };
   let q: GradeQuestion;
   const generated = assignment?.kind === 'generated' ? assignment : null;
@@ -241,16 +261,19 @@ export async function POST(req: NextRequest) {
   } else {
     const { data } = await admin
       .from('questions')
-      .select('id, level, question_text, parts, answer, solution, total_marks, topics, ai_generated, solution_source')
+      .select('id, level, question_text, parts, answer, solution, total_marks, topics, ai_generated, solution_source, verified, twin_of')
       .eq('id', questionId)
       .maybeSingle();
     if (!data) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-    if (data.ai_generated === true && data.solution_source !== 'ai_opus') {
+    if (!gradableRow(data)) {
       // E7 rule (amended 2026-07-06): AI questions that passed the bot worker's
       // four verification gates (code/blind/skill/grade — solution_source='ai_opus',
       // written ONLY by the bot's generation worker) are gradable. Any other
       // ai_generated row (e.g. /similar's weaker-verified 'ai_generated_v1' cache)
       // stays ungraded until it goes through the gates.
+      // Amended 23 Oct 2026: a TWIN that passed the twin checks (verified, twin_of set —
+      // SPEC-TWINS, Adrian 30 Sep 2026: "if they pass the checks consider them verified")
+      // is gradable too; the Practice tab served ~4,600 of them and the grader refused all.
       return NextResponse.json({ error: 'This AI practice question isn’t gradable yet — check the solution instead' }, { status: 409 });
     }
     // Part marks: the marker is given the student's row, so a hidden part is neither
@@ -262,7 +285,17 @@ export async function POST(req: NextRequest) {
     q = view;
   }
 
-  const weaknessTags = await topWeaknessTags(account.id, 3);
+  // Fix one, MCQ: the option letter is marked by rule — no model call.
+  const fixMcq = fixRunId ? mcqKey(q.answer) : null;
+  let result: GradeResult | undefined;
+  if (fixMcq) {
+    if (attemptImage) return NextResponse.json({ error: 'Pick an option (A–D) for this question' }, { status: 400 });
+    const choice = normaliseMcqChoice((cleanLines || []).find(l => l.trim()));
+    if (!choice) return NextResponse.json({ error: 'Answer with the option letter — A, B, C or D' }, { status: 400 });
+    result = gradeMcq(fixMcq, choice, q.total_marks) as unknown as GradeResult;
+  }
+
+  const weaknessTags = fixMcq ? [] : await topWeaknessTags(account.id, 3);
   // Adrian's method + curated traps for this question's topic, from the
   // teaching-knowledge layer (src/lib/teaching-knowledge.ts). Feedback-wording
   // help only. Fails soft to empty so a knowledge outage can never stop a
@@ -273,9 +306,8 @@ export async function POST(req: NextRequest) {
     methods: 2, pitfalls: 4,
   });
 
-  let result;
   try {
-    result = await gradeAttempt({ question: q as Record<string, unknown>, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls: knowledge.pitfalls, methods: knowledge.methods });
+    if (!result) result = await gradeAttempt({ question: q as Record<string, unknown>, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls: knowledge.pitfalls, methods: knowledge.methods });
   } catch {
     return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
   }
@@ -291,12 +323,14 @@ export async function POST(req: NextRequest) {
       // The FK points at the math bank; a generated question has no row there —
       // marking_json.generated names the assignment instead.
       question_id: generated ? null : q.id,
-      attempted_via: 'portal',
+      // 'portal-fix' = Fix one on a marked paper: outside the daily cap (which counts 'portal').
+      attempted_via: fixRunId ? 'portal-fix' : 'portal',
       answer_text: storedLines.join('\n'),
       marking_verdict: result.verdict,
       duration_seconds: timedMeta?.elapsedSec ?? null,
       marking_json: {
-        ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics,
+        ...result, model: fixMcq ? 'rule:mcq' : GRADING_MODEL, lines: storedLines,
+        ...(fixRunId ? { fix: { runId: fixRunId } } : {}), source: attemptImage ? 'photo' : 'typed', topics: q.topics,
         ...(timedMeta ? { timed: timedMeta } : {}),
         ...(ladderMeta ? { ladder: ladderMeta } : {}),
         // Re-lettered parts: partBreakdown labels are the ones the student saw. This is the

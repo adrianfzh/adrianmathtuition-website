@@ -155,7 +155,7 @@ export function planSplit(covers: CoverHit[], pageCount: number): SplitPlan {
  * the cover's when it printed one, else the book's. Pure.
  */
 export function partFileName(
-  book: { level: string; year: number; school: string; examType: string | null },
+  book: { level: string; year: number; school: string; examType: string | null; subject?: string | null },
   part: Pick<BookPart, 'paper' | 'year'>,
   ext = 'pdf',
 ): string {
@@ -163,7 +163,11 @@ export function partFileName(
   const year = part.year ?? book.year;
   const national = book.school.toUpperCase() === 'GCE' || exam === 'GCE';
   const school = national ? '' : ` ${book.school}`;
-  return `${levelNameTokens(book.level)} ${national ? 'GCE' : exam} ${year}${school} Paper ${part.paper}.${ext}`;
+  // Primary 6 (23 Oct 2026, SPEC-PSLE.md): one level for both subjects, so the name says
+  // SCI for science; the national paper is the PSLE, not "GCE".
+  const levelTokens = book.level === 'P6' && book.subject === 'science' ? 'P6 SCI' : levelNameTokens(book.level);
+  const nationalWord = book.level === 'P6' ? 'PSLE' : 'GCE';
+  return `${levelTokens} ${national ? nationalWord : exam} ${year}${school} Paper ${part.paper}.${ext}`;
 }
 
 /**
@@ -183,6 +187,7 @@ const LEVEL_NAME: Record<string, string> = {
   // School humanities + English (6 Oct 2026).
   SS_NA: 'Social Studies NA', EL: 'English', EL_NA: 'English NA', EL_NT: 'English NT', S3_EL_NA: 'English S3 NA',
   S1_EL: 'English S1', S2_EL: 'English S2', S3_EL: 'English S3',
+  S1_HIST: 'S1 History', S2_HIST: 'S2 History', S1_GEOG: 'S1 Geography', S2_GEOG: 'S2 Geography',
 };
 export function levelNameTokens(level: string): string {
   return LEVEL_NAME[level] ?? level;

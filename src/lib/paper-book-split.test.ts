@@ -77,10 +77,17 @@ describe('planSplit — where the book is cut', () => {
 describe('partFileName — every level reads back as itself (30 Sep 2026)', () => {
   const LEVELS = ['AM', 'EM', 'EM_NA', 'AM_NA', 'S1', 'S2', 'S1_NA', 'S2_NA', 'S1_NT', 'S2_NT', 'S3_EM', 'S3_AM', 'S3_EM_NA', 'S3_EM_NT', 'S3_AM_NA',
     'JC1', 'JC2', 'JC2_H1', 'BIO', 'CHEM', 'PHYS', 'S3_BIO', 'S3_CHEM', 'S3_PHYS', 'CS_CHEM', 'CS_PHYS', 'CS_BIO', 'CS_CHEM_NA', 'CS_PHYS_NA', 'CS_BIO_NA',
-    'HIST', 'HIST_E', 'GEOG', 'GEOG_E', 'SS'];
+    'HIST', 'HIST_E', 'GEOG', 'GEOG_E', 'SS', 'S1_HIST', 'S2_HIST', 'S1_GEOG', 'S2_GEOG', 'S1_EL', 'S2_EL'];
   it.each(LEVELS)('%s', (level) => {
     const name = partFileName({ level, year: 2023, school: 'Dunearn', examType: 'Prelim' }, { paper: 2, year: 2023 });
     expect(parseSourceFilename(name)).toMatchObject({ ok: true, level, school: 'Dunearn', year: 2023, paper: 'p2' });
+  });
+});
+
+describe('partFileName — Primary 6 reads back, maths and science (23 Oct 2026)', () => {
+  it.each([['math', 'Nanyang', 'Prelim'], ['science', 'Nanyang', 'Prelim'], ['math', 'GCE', 'PSLE'], ['science', 'GCE', 'PSLE']])('%s %s', (subject, school, examType) => {
+    const name = partFileName({ level: 'P6', year: 2023, school, examType, subject }, { paper: 2, year: 2023 });
+    expect(parseSourceFilename(name)).toMatchObject({ ok: true, level: 'P6', subject, school, examType, year: 2023, paper: 'p2' });
   });
 });
 

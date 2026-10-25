@@ -46,7 +46,12 @@ export interface GateContext {
   ipContent?: boolean;
   /** The question is on the student's own list (Adrian sent it, or they were given it). */
   assigned: boolean;
+  /** portal-beta PRIMARY_OPEN_TO_STUDENTS. Absent/false = no primary row reaches a student. */
+  primaryOpen?: boolean;
 }
+
+/** Primary-school bank levels (23 Oct 2026, SPEC-PSLE.md): closed to students until the switch opens. */
+export const PRIMARY_QLEVELS: readonly string[] = ['P6'];
 
 export type Refusal = 'removed' | 'national' | 'unverified' | 'flagged' | 'legacy' | 'level';
 
@@ -60,6 +65,8 @@ export function serveRefusal(q: GateRow, ctx: GateContext): Refusal | null {
   // Part marks (lib/part-syllabus.ts): nothing left, or a person has yet to check the
   // student view → never, not even on the student's own list; too little left → like legacy_syllabus.
   if (partMarksBlockAlways(q)) return 'legacy';
+  // Primary 6 rows: not even on a student's own list while the switch is closed.
+  if (q.level && PRIMARY_QLEVELS.includes(q.level) && !ctx.primaryOpen) return 'level';
   if (ctx.assigned) return null;
   if (partMarksBlockServing(q)) return 'legacy';
   if (q.legacy_syllabus === true && !ctx.isIp && !(ctx.ipContent && q.ip_syllabus === true)) return 'legacy';

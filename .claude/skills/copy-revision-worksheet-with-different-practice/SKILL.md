@@ -317,6 +317,7 @@ trailing-`\n`-stripped. Reads `NEXT_PUBLIC_SUPABASE_URL` (or `SUPABASE_URL`) +
 Filter (all applied server-side):
 
 - `deleted_at=is.null`
+- `national=is.false` (no national GCE papers) and `legacy_syllabus=is.false` (no old-syllabus rows) — `revision_lib.py` adds both
 - `topics=cs.{"<CanonicalTopic>"}` — array containment. **EXACT tag spelling required**
   (bank tags are granular: AM has no `Differentiation`, only `Differentiation (Techniques)`
   etc.) — check `../worksheet-clerk/references/bank-topics.md` (or the live `bank_topics`

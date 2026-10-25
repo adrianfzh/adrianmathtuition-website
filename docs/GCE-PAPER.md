@@ -155,6 +155,22 @@ own, matching the GCE layout; figures come from `Q<n>.figure.png` in `--figures`
 `solution_box` sets `w:tblGrid` widths as well as `w:tcW` since 9 Sep 2026 — LibreOffice
 (and the soffice PDF preview) split the columns 50/50 otherwise and clipped display math.
 
+**Parts are Word's own automatic numbering, never typed labels (Adrian, 22 Oct 2026:
+"can you subnumber them in docx in the future? with auto sub-numbering").** Typed
+"(a)\t(i)\t" pushed the text to the right edge in Word. Now (a)(b)… and (i)(ii)… are
+Word lists (`worksheet_lib.numbered(…, start=)`; pools of 400 restarts per level, each
+with a start-at-1 and a start-at-2 copy). Layout: question text 1 cm, part text 2 cm,
+sub-part text 3 cm (`STEP_CM = 1.0`). A part with no words of its own but with sub-parts
+prints "(a)" alone on a line, kept with the "(i)" below it. A question with no stem keeps
+"(a)" typed on the number line ("1.  (a) …") and the list below starts at (b). A sub-list
+restarts at its own "(i)"; a label-less block between (i) and (ii) carries the count on.
+First paper built this way: O-Level E Math Paper 2 Practice (Oct 2026) - auto-numbered.
+**Only the lists in use are saved (22 Oct 2026).** The pools add up to ~5,600 list
+definitions; writing them all made Word say "unreadable content" on the H2 Mock Set 1
+Paper 1. `Worksheet.save()` now keeps only the lists the document points at
+(`prune_numbering`; the ids are unchanged), usually under 30. Check:
+`python3 .claude/skills/create-worksheet/test_numbering.py`.
+
 **PDF of the Word file (21 Sep 2026).** Use `scripts/gce-paper/lo-pdf.sh <file.docx> [pt]`,
 never a plain `soffice --convert-to pdf`. Two faults made the maths bigger than the text:
 the exporter wrote no size on maths runs (fixed by `size_math()` in `export-docx.py`), and
@@ -558,3 +574,7 @@ H2 ones are, because nothing else holds them until they are published.
 
 Known gaps: the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).
+
+**O-Level "harder" means more thinking, not more working (22 Oct 2026, Adrian).** His words and the two graph-paper rules are at the top of `.claude/skills/gce-paper/reference/em-standard-2024-2025.md`; every E Math writer reads them.
+
+**Between Paper 1 and Paper 2: reuse the Paper 1 ideas that were left out (22 Oct 2026, Adrian).** *"you could have gotten paper 1 questions from tys that were not tested (concepts and parts) and generate them as questions (perhaps as parts of questions) for paper 2 as well."* After the real Paper 1 is sat, practice for Paper 2 should also include the short ideas past Paper 1s test that this year's Paper 1 did not, written as PARTS of Paper 2-length questions (two versions each, for him to tick). The 2026 round's brief and types list: `~/Dropbox/AdrianMath Work/O-Level EM Paper 2 Practice (Oct 2026)/BRIEF-round5.md`, `TYPES-round5.md`.

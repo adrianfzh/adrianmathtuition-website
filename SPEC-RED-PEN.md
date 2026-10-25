@@ -43,6 +43,10 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
   annotate"*; pen_reports 32).
 - **A vector is written as a vector everywhere**: |→RS| with the arrow over RS, never "|RS|"
   (same paper Q8: *"magnitude |RS| should have an arrow on top of RS (its a vector)"*).
+- **The kind of mistake comes first, then a colon, then the fix**: "calculation error: should
+  be −15", never "should be −15, calculation error" (Adrian, 22 Oct 2026, Abel's H2 2023 P1:
+  *"it is clearer to put as calculation error: should be -15 instead"*). Bot `ai/annotate.js`
+  builds the label this way; science notes keep their own order.
 - **A missing geometric reason is labelled "missing reason"**, not "incomplete answer" (Chloe's
   EM 2020 P1 Q21: *"for not writing reasons for angle properties > say 'missing reason'"*).
 
@@ -538,6 +542,12 @@ a side note printed `\begin{pmatrix} -3 \\ 4 …` as raw code (*"rendering issue
 - Verified: `npm test` 5131/5131, golden pen bench 1496/1496, `pen-dryrun` on Abel's photo 7 with
   the note injected (the stored read has no `student_note`; new markings will). Released papers
   are not re-inked (forward-only).
+
+- **Later the same day (bot `59bcd293`)**: a wrong value the answer did not use is a
+  *calculation error* beside the ✓ ("should be √14", √15 ringed), never "write it as"; a note beside a
+  ✓ stays with its own part; a line of three rows or more ends where its middle ends (a ✓ had been
+  drawn past the student's name); a question left out for the syllabus shows "out of syllabus" with
+  no score and no solution; half ticks follow a wrong line even when no single value was ringed.
 
 ## Page check before release (6 Oct 2026)
 

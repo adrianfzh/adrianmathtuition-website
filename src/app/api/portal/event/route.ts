@@ -12,6 +12,10 @@
 //     lib/portal-tabs.ts TAB_LABELS (never a URL); at most one per tab per
 //     device per 30 minutes. Adrian's admin cookie and the demo student are
 //     skipped here too, so testing never counts.
+//   • 'fix:shown' | 'fix:answered' (23 Oct 2026) — app/marking/FixOne.tsx: the
+//     one practice question on a marked paper (SPEC-STUDENT-FIRST.md §Fix one).
+//     detail { runId, questionId, correct? } (lib/fix-one-events.ts), only for a
+//     paper this student owns; fix:shown is kept once per run per SGT day.
 //
 // Rows land in portal_event_log (identity, kind, created_at — no migration;
 // the same ledger ask-log / lesson-event / timed-set write). Auth + identity +
@@ -32,6 +36,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { TAB_VIEW_KIND, isTabName } from '@/lib/portal-tabs';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
+import { FIX_EVENT_KINDS, isFixEventKind, sanitizeFixDetail } from '@/lib/fix-one-events';
 import { SCIENCE_FEEDBACK_DAILY_CAP, SCIENCE_FEEDBACK_KIND, sanitizeScienceFeedback, scienceFeedbackLine } from '@/lib/science-feedback';
 
 // A hand-in that failed on the phone after every retry (lib/submit-failure.ts,
@@ -49,6 +54,8 @@ const MARKING_DAILY_CAP = 500;
 const CLIENT_DAILY_CAP = 100;
 // ~40 tab names, each at most once per 30 min per device — a busy day is far below this.
 const TAB_DAILY_CAP = 300;
+// At most 3 questions a paper, a few papers a day.
+const FIX_DAILY_CAP = 100;
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -69,6 +76,7 @@ export async function POST(req: NextRequest) {
     : kind === SUBMIT_FAILED_KIND ? 'submit'
     : kind === SCIENCE_FEEDBACK_KIND ? 'science'
     : kind === TAB_VIEW_KIND ? 'tab'
+    : isFixEventKind(kind) ? 'fix'
     : isPortalClientEventKind(kind) ? 'client' : null;
   if (!family) return NextResponse.json({ error: 'Unknown kind' }, { status: 400 });
   const failure = family === 'submit' ? sanitizeSubmitFailure(body.detail) : null;
@@ -78,17 +86,24 @@ export async function POST(req: NextRequest) {
   const feedback = family === 'science' ? sanitizeScienceFeedback(body.detail) : null;
   if (family === 'science' && !feedback) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
 
+  const fixDetail = isFixEventKind(kind) ? sanitizeFixDetail(kind, body.detail) : null;
+  if (family === 'fix' && !fixDetail) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
+
   if (family === 'tab' && !isTabName(body.detail)) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
 
   const identity = portalIdentity(account);
   // Testing never counts as a student opening a tab: Adrian's admin cookie, the demo student.
+  // Adrian's admin cookie never counts as a student fixing a question.
+  if (family === 'fix' && verifyAdminSession(req.cookies.get(ADMIN_SESSION_COOKIE)?.value)) {
+    return NextResponse.json({ ok: true, skipped: true });
+  }
   if (family === 'tab' && (SCIENCE_PREVIEW_IDENTITIES.includes(identity) || verifyAdminSession(req.cookies.get(ADMIN_SESSION_COOKIE)?.value))) {
     return NextResponse.json({ ok: true, skipped: true });
   }
   try {
     const svc = createServiceClient();
-    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : family === 'science' ? [SCIENCE_FEEDBACK_KIND] : family === 'tab' ? [TAB_VIEW_KIND] : [...PORTAL_CLIENT_EVENT_KINDS];
-    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : family === 'science' ? SCIENCE_FEEDBACK_DAILY_CAP : family === 'tab' ? TAB_DAILY_CAP : CLIENT_DAILY_CAP;
+    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : family === 'science' ? [SCIENCE_FEEDBACK_KIND] : family === 'tab' ? [TAB_VIEW_KIND] : family === 'fix' ? [...FIX_EVENT_KINDS] : [...PORTAL_CLIENT_EVENT_KINDS];
+    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : family === 'science' ? SCIENCE_FEEDBACK_DAILY_CAP : family === 'tab' ? TAB_DAILY_CAP : family === 'fix' ? FIX_DAILY_CAP : CLIENT_DAILY_CAP;
     const { count } = await svc
       .from('portal_event_log')
       .select('id', { count: 'exact', head: true })
@@ -113,6 +128,18 @@ export async function POST(req: NextRequest) {
       if (!run) return NextResponse.json({ error: 'Not found' }, { status: 404 });
       await svc.from('portal_event_log').insert({ identity, kind, detail: feedback });
       await sendTelegram(scienceFeedbackLine(account.display_name, run.paper_name, feedback), 'marking').catch(() => {});
+    } else if (fixDetail) {
+      // Only a paper this student owns; fix:shown once per run per SGT day.
+      const { data: run } = await svc.from('paper_marking_runs').select('id')
+        .eq('id', fixDetail.runId).eq('student_id', identity).maybeSingle();
+      if (!run) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      if (kind === 'fix:shown') {
+        const { count: seen } = await svc.from('portal_event_log').select('id', { count: 'exact', head: true })
+          .eq('identity', identity).eq('kind', kind).eq('detail->>runId', fixDetail.runId)
+          .gte('created_at', sgtDayStart().toISOString());
+        if ((seen ?? 0) > 0) return NextResponse.json({ ok: true, skipped: true });
+      }
+      await svc.from('portal_event_log').insert({ identity, kind, detail: fixDetail });
     } else if (family === 'tab') {
       await svc.from('portal_event_log').insert({ identity, kind, detail: body.detail });
     } else {

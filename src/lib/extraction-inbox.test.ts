@@ -102,11 +102,21 @@ describe('parseSourceFilename — the humanities (5 Oct 2026)', () => {
     expect(parseSourceFilename('Combined Humanities Geography 2260/02 PRELIM 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'GEOG_E', school: 'Bedok View' });
     expect(parseSourceFilename('History 2174 PRELIM 2024 Bedok View P2.pdf')).toMatchObject({ ok: true, level: 'HIST', school: 'Bedok View', paper: 'p2' });
   });
-  it('a maths or science name is never humanities, and two subjects or a lower-sec level are refused', () => {
+  it('a maths or science name is never humanities, and two subjects are refused', () => {
     expect(parseSourceFilename('EM PRELIM 2024 Bukit Merah SS P1.pdf')).toMatchObject({ ok: true, level: 'EM', subject: 'math' });
     expect(parseSourceFilename('S2 SA2 2021 Clementi Town SS.pdf')).toMatchObject({ ok: true, level: 'S2', subject: 'math' });
     expect(parseSourceFilename('History Geography GCE 2020 Paper 1.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('two humanities') });
-    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('upper-sec humanities') });
+  });
+  it('Sec 1–2 History and Geography have their own levels (21 Oct 2026); Sec 1–2 Social Studies is refused', () => {
+    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: true, level: 'S2_HIST', subject: 'history', school: 'Hua Yi', examType: 'SA2' });
+    expect(parseSourceFilename('S1 Geography SA2 2022 Ang Mo Kio.pdf')).toMatchObject({ ok: true, level: 'S1_GEOG', subject: 'geography', school: 'Ang Mo Kio' });
+    expect(parseSourceFilename('S2 History SA2 (G2) 2025 Bendemeer (with scheme).pdf')).toMatchObject({ ok: true, level: 'S2_HIST', school: 'Bendemeer' });
+    expect(parseSourceFilename('S1 History WA2 2024 Victoria.pdf')).toMatchObject({ ok: true, level: 'S1_HIST', examType: 'WA2', school: 'Victoria' });
+    expect(parseSourceFilename('S2 Geography SA2 2022 West Spring MS.pdf')).toMatchObject({ ok: true, level: 'S2_GEOG', school: 'West Spring' });
+    expect(libraryKindOf('S2 Geography SA2 2022 West Spring MS.pdf')).toBe('solutions');
+    expect(parseSourceFilename('S2 Social Studies SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('Sec 3') });
+    // Sec 3 stays on the upper-sec level, as before
+    expect(parseSourceFilename('History S3 EOY 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'HIST' });
   });
   it('a humanities paper is never filed for the maths marker', () => {
     const name = 'History GCE 2025 Paper 1.pdf';
@@ -434,5 +444,30 @@ describe('regroundNotice', () => {
   it('an untagged run is named by its paper', () => {
     expect(regroundNotice('GCE 2025 EM P1', { student_name: null, paper_name: 'em tys 2025 p1' }))
       .toContain('re-marking “em tys 2025 p1” against it');
+  });
+});
+
+describe('parseSourceFilename — Primary 6 and PSLE (23 Oct 2026)', () => {
+  const ok = (n: string) => { const r = parseSourceFilename(n); if (!r.ok) throw new Error(r.reason); return r; };
+  it('a P6 prelim is level P6 maths; its P6 is never read as paper 6', () => {
+    const r = ok('P6 PRELIM 2024 Nanyang.pdf');
+    expect([r.level, r.subject, r.examType, r.school, r.paper, r.year]).toEqual(['P6', 'math', 'Prelim', 'Nanyang', 'all', 2024]);
+    expect(ok('P6 SA2 2021 Rosyth P2.pdf').paper).toBe('p2');
+    expect(ok('P6 Math PRELIM 2023 Red Swastika P1.pdf').school).toBe('Red Swastika');
+  });
+  it('a P6 science paper goes to the science bank as P6, not refused as combined science', () => {
+    const r = ok('P6 SCI PRELIM 2022 Nanyang.pdf');
+    expect([r.level, r.subject, r.school]).toEqual(['P6', 'science', 'Nanyang']);
+    expect(ok('P6 Science SA2 2019 Henry Park.pdf').subject).toBe('science');
+  });
+  it('a PSLE name with no other exam token is the national paper: exam PSLE, school GCE', () => {
+    const m = ok('PSLE Maths 2019 Paper 1 Booklet A.pdf');
+    expect([m.level, m.subject, m.examType, m.school, m.paper]).toEqual(['P6', 'math', 'PSLE', 'GCE', 'p1']);
+    const s = ok('PSLE Science 2018 Booklet B.pdf');
+    expect([s.level, s.subject, s.examType, s.school, s.paper]).toEqual(['P6', 'science', 'PSLE', 'GCE', 'all']);
+  });
+  it('a secondary name is untouched (no P6 first token, no PSLE)', () => {
+    const r = ok('AM PRELIM 2024 Bedok South P1.pdf');
+    expect([r.level, r.paper]).toEqual(['AM', 'p1']);
   });
 });

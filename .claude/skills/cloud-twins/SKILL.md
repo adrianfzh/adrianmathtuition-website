@@ -6,7 +6,7 @@ description: Write twins (our own questions, maths or science) from a claude.ai 
 # Cloud twins — the playbook
 
 Adrian, 5 Oct 2026: cloud sessions may write twins, maths and science, **without the database
-master key ever reaching the cloud**. Everything goes through four doors on the website with
+master key ever reaching the cloud**. Everything goes through five doors (`figure`, `figure-need`, `queue`, `retire`, `submit`) on the website with
 `AGENT_TOKEN_TWINS` (docs/CLOUD.md §Cloud twins). The server re-runs every deterministic gate
 itself, so a mistake here is refused, not filed. What a twin IS: `SPEC-TWINS.md` §1–4 (maths)
 and §11 (science) — read them once before the first batch.

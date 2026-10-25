@@ -7,7 +7,7 @@ worksheet_lib's Worksheet API (ws.Q(...) then ws.solution_box([(label, steps), .
 This file RECORDS those calls instead of rendering a boxed sheet, then lays every
 question out as one 3-column table: number | part | working, one row per part,
 one step per line (Word equations, "=" continuation lines indented under the "="),
-the solution's "Answer: …" row becomes a bold "∴ …" conclusion line.
+the solution's "Answer: …" row becomes a bold "Ans: …" line (Adrian, 22 Oct 2026: not "∴ …").
 First used for "A REV 2026 5 Vectors (Practice Solutions) (table).docx".
 Run from this folder (it imports worksheet_lib) with python-docx + lxml installed.
 """
@@ -36,20 +36,20 @@ ns = {'Recorder': Recorder, '__name__': 'rec'}
 exec(compile(src, BUILD, 'exec'), ns)
 split = wl._split_aligned   # patched by build.py (keeps pmatrix rows whole)
 
-FS = 12
+FS = 9.5   # the house body size, text and maths alike: Times New Roman 9.5 pt (Adrian, 22 Oct 2026)
 doc = Document()
 sec = doc.sections[0]
 sec.page_width, sec.page_height = Cm(21), Cm(29.7)
-sec.left_margin = sec.right_margin = Cm(2.0); sec.top_margin = Cm(2.0); sec.bottom_margin = Cm(1.5)
+sec.left_margin = sec.right_margin = Cm(2.5); sec.top_margin = Cm(2.0); sec.bottom_margin = Cm(1.0)   # the house margins
 st = doc.styles['Normal']; st.font.name = 'Times New Roman'; st.font.size = Pt(FS)
-st.element.rPr.rFonts.set(qn('w:eastAsia'), 'Times New Roman')
+[st.element.rPr.rFonts.set(qn(f'w:{a}'), 'Times New Roman') for a in ('ascii', 'hAnsi', 'eastAsia', 'cs')]
 pf = st.paragraph_format; pf.space_before = Pt(0); pf.space_after = Pt(0); pf.line_spacing = 1.5
 
 t = doc.add_paragraph(); t.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r = t.add_run(sys.argv[3] if len(sys.argv) > 3 else 'Solutions'); r.bold = True; r.font.size = Pt(14)
+r = t.add_run(sys.argv[3] if len(sys.argv) > 3 else 'Solutions'); r.bold = True; r.font.size = Pt(12)
 t.paragraph_format.space_after = Pt(8)
 
-W = [Cm(1.1), Cm(1.6), Cm(14.3)]
+W = [Cm(1.1), Cm(1.6), Cm(13.3)]   # 16 cm = A4 less the 2.5 cm margins
 table = doc.add_table(rows=0, cols=3); table.style = 'Table Grid'; table.autofit = False
 
 def set_size(elem, half_pts):
@@ -106,7 +106,7 @@ def math_elem(latex, bold=False, colour=None):
     wl._style_annotations(e)
     if colour: wl._colour_math(e, colour)
     if bold: bolden(e)
-    set_size(e, FS * 2)
+    set_size(e, int(FS * 2))   # half-points must be a whole number (19)
     return e
 
 def new_para(cell, first):
@@ -153,7 +153,7 @@ def step(cell, first, s):
     elif isinstance(s, list):
         p = new_para(cell, first)
         if s and s[0][0] == 'text' and s[0][1] == 'Answer: ':
-            fill(p, [('text', '∴ ')] + list(s[1:]), bold=True)
+            fill(p, [('text', 'Ans: ')] + list(s[1:]), bold=True)   # "Ans: 15", never "∴ 15" (Adrian, 22 Oct 2026)
         else:
             fill(p, s)
     else:

@@ -13,6 +13,8 @@ Extracted from hand-made worksheets ("AM 16 Trigonometry 01 Trigonometric Ratios
 2. `Example Na / Nb` — worked examples, full annotated solution in a BORDERED BOX.
 3. `Practice N` — 2–4 bank questions, numbered, sub-parts a. b. c., answers as
    right-aligned orange `[Ans: (a) … (b) …]` immediately after each question.
+   ONE bracket per question holding every part, wrapping onto a second line if long —
+   never one `[Ans:]` line per part (Adrian, 22 Oct 2026).
    Stretch questions labelled `(Optional)`.
 4. Student instructions in bold where needed: "Memorize the table before attempting
    this practice. Do not refer to the table."
@@ -94,6 +96,9 @@ visually inspect EVERY page before presenting.
 **Readability (BINDING, Adrian 2026-08-30 — see teaching_style/FEEDBACK.md):**
 - One idea per line: explanation prose never runs multiple thoughts into one
   continuous paragraph; each sentence starts its own line.
+- No thinking out loud in worked solutions (Adrian, 22 Oct 2026): each line states a
+  step — never "Parallel?", "Do they meet?", "we would need …". Write "If the lines
+  meet:" instead. Full rule: `.claude/skills/create-worksheet/ADRIAN-STYLE.md` §10.
 - Worked-solution equation steps go ONE PER LINE with the `=` signs vertically
   aligned (OMML eqArr aligned on `=`, or borderless two-column LHS|=RHS, or a
   fixed tab at the `=` column). Derivation chains (`a = b = c`) break into

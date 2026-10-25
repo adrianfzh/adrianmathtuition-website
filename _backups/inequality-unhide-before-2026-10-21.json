@@ -1,0 +1,211 @@
+{
+ "questions": [
+  {
+   "id": "11fac00f-7aa1-4f75-9e8c-2a06852dcd68",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "19498239-12f2-47c8-b14a-20ff6da2dde7",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "1b8686c1-28f8-4969-a6dc-4d3be2b4869d",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "1ba3dff0-02f6-4ec4-b613-8102567919b6",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "33239afe-a7e3-4667-9c19-afb929b6efa4",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "3f0303ca-c8f7-463f-ba86-780dcd734887",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "40abc917-917a-4b76-a3bf-149863400e10",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "4880db84-4528-4060-9150-092392e5be37",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "49e12945-e54b-478b-9c6a-c2a2641b6e0d",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "4ccd8f90-1094-4ce6-9aac-0ef36fe5b892",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "4d667cf8-d7bb-4e6e-8431-74079fd335ae",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "5006b40a-6c96-41e4-9ef5-40a810a4c03f",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "524382e7-6641-4409-adb8-d037d00cecf7",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "567e96db-40b6-40c8-b8cf-98a41a65504b",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "56ac31d5-5a4d-46ec-af81-95e4598b038f",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "56c45640-62a3-4624-a25f-9ddc8181dc4d",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "89c3a6b7-1435-435c-a684-463faac3ed4c",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "9eedd0be-8018-44c0-b94a-8e79bd0a3bf7",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "aad3d695-b390-481b-958d-122887de6f72",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "b5aeb58e-2e59-4f96-8b89-6d357368b743",
+   "level": "S1",
+   "legacy_syllabus": true
+  },
+  {
+   "id": "e6caa946-3562-46e8-9ee6-8573f92b2871",
+   "level": "S1",
+   "legacy_syllabus": true
+  }
+ ],
+ "filings": [
+  {
+   "id": 73785,
+   "question_id": "11fac00f-7aa1-4f75-9e8c-2a06852dcd68",
+   "subgroup_id": 350,
+   "is_primary": true,
+   "confidence": 0.92,
+   "source": "cc_backfill",
+   "reason": "Both parts solve a one-step linear inequality (incl. sign flip on -3x<24) and show it on a number line.",
+   "created_at": "2026-08-23T14:45:06.947626+00:00"
+  },
+  {
+   "id": 76516,
+   "question_id": "19498239-12f2-47c8-b14a-20ff6da2dde7",
+   "subgroup_id": 355,
+   "is_primary": true,
+   "confidence": 0.62,
+   "source": "cc_backfill",
+   "reason": "Writing down the inequality that a number line represents is forming, not solving; 350 was close since the answer is a stated interval.",
+   "created_at": "2026-08-31T17:43:20.519036+00:00"
+  },
+  {
+   "id": 73784,
+   "question_id": "1ba3dff0-02f6-4ec4-b613-8102567919b6",
+   "subgroup_id": 350,
+   "is_primary": true,
+   "confidence": 0.7,
+   "source": "cc_backfill",
+   "reason": "(a) solve x/3+1 >= 10+2x with number line = 3 of 6 marks (plus 1 for the greatest integer, 351); (b) smallest ab / largest (b-a)^4 is 2 marks of 352/353.",
+   "created_at": "2026-08-23T14:45:06.880914+00:00"
+  },
+  {
+   "id": 75646,
+   "question_id": "3f0303ca-c8f7-463f-ba86-780dcd734887",
+   "subgroup_id": 386,
+   "is_primary": true,
+   "confidence": 0.6,
+   "source": "cc_backfill",
+   "reason": "Only part (b), listing rational numbers, maps here; the dominant 2-mark part is solving an inequality, a type this tree does not list.",
+   "created_at": "2026-08-31T05:05:16.765454+00:00"
+  },
+  {
+   "id": 76515,
+   "question_id": "3f0303ca-c8f7-463f-ba86-780dcd734887",
+   "subgroup_id": 350,
+   "is_primary": true,
+   "confidence": 0.85,
+   "source": "cc_backfill",
+   "reason": "(a) solving the fractional linear inequality carries 2 of 3 marks; (b) is an unrelated 1-mark rational-number recall.",
+   "created_at": "2026-08-31T17:43:20.436253+00:00"
+  },
+  {
+   "id": 85821,
+   "question_id": "49e12945-e54b-478b-9c6a-c2a2641b6e0d",
+   "subgroup_id": 351,
+   "is_primary": true,
+   "confidence": 0.8,
+   "source": "cc_backfill",
+   "reason": "solve then smallest prime/integer x; integer-solution skill spans both parts",
+   "created_at": "2026-10-05T09:01:46.121474+00:00"
+  },
+  {
+   "id": 73786,
+   "question_id": "524382e7-6641-4409-adb8-d037d00cecf7",
+   "subgroup_id": 352,
+   "is_primary": true,
+   "confidence": 0.75,
+   "source": "cc_backfill",
+   "reason": "All 3 marks are max/min of y-x, x/y, x^2y^2 from bounded integer ranges; each variable keeps a fixed sign (x positive, y negative), so 353 (mixed-sign) is the near miss.",
+   "created_at": "2026-08-23T14:45:07.016518+00:00"
+  },
+  {
+   "id": 73787,
+   "question_id": "567e96db-40b6-40c8-b8cf-98a41a65504b",
+   "subgroup_id": 350,
+   "is_primary": true,
+   "confidence": 0.78,
+   "source": "cc_backfill",
+   "reason": "(a) solve m/2+3m >= 2/5 carries 2 of 3 marks; (b) smallest integer m is the 1-mark follow-up (351).",
+   "created_at": "2026-08-23T14:45:07.160995+00:00"
+  },
+  {
+   "id": 76517,
+   "question_id": "56c45640-62a3-4624-a25f-9ddc8181dc4d",
+   "subgroup_id": 350,
+   "is_primary": true,
+   "confidence": 0.82,
+   "source": "cc_backfill",
+   "reason": "Solving 19-2x<x+28 plus its number line is 3 of 4 marks; the smallest-integer part is a 1-mark tail.",
+   "created_at": "2026-08-31T17:43:20.648781+00:00"
+  },
+  {
+   "id": 73789,
+   "question_id": "aad3d695-b390-481b-958d-122887de6f72",
+   "subgroup_id": 350,
+   "is_primary": true,
+   "confidence": 0.78,
+   "source": "cc_backfill",
+   "reason": "(a) solve x-4 >= 3x+3 carries 2 of 3 marks; (b) largest integer value is the 1-mark hence (351).",
+   "created_at": "2026-08-23T14:45:07.305872+00:00"
+  }
+ ]
+}

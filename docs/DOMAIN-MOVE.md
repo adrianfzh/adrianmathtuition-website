@@ -6,7 +6,7 @@ Adrian, 13 Oct 2026: SiteGround plan is expiring → "yes" to: check the old inb
 ## Where things stood on 13 Oct 2026
 
 - **Website** = Vercel (A `216.198.79.1`). Not on SiteGround any more.
-- **Domain registration** = via SiteGround (registrar Tucows). **Expires 12 Nov 2026.**
+- **Domain registration** = via Vercel since 14 Oct 2026 (was SiteGround / Tucows). **Expires 12 Nov 2027** (log below).
 - **DNS** = SiteGround (`ns1/ns2.siteground.net`).
 - **Inbound mail** = SiteGround (`mx10/20/30.mailspamprotection.com`). The site footer and
   `/signup` print `adrian@adrianmathtuition.com`, so parents may have written there.

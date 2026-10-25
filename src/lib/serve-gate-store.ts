@@ -6,6 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { qbLevelsFor, bankScope } from '@/lib/qb-levels';
 import { portalIdentity } from '@/lib/portal-auth';
 import { accountIpContent } from '@/lib/practice';
+import { PRIMARY_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { practiceQLevels, serveRefusal, type GateRow, type Refusal } from '@/lib/serve-gate';
 
 export const GATE_COLUMNS = 'level, school, national, deleted_at, ai_generated, verified, flagged_count, legacy_syllabus, ip_syllabus';
@@ -19,7 +20,7 @@ export async function studentRefusal(admin: SupabaseClient, account: Account, qu
   const { data: asg } = await admin.from('portal_assignments').select('id')
     .eq('airtable_student_id', portalIdentity(account)).eq('question_id', questionId).neq('status', 'revoked').limit(1);
   const ipContent = accountIpContent(account);
-  const ctx = { allowedQLevels: allowed, isIp: !!account.is_ip, ipContent, assigned: (asg?.length ?? 0) > 0 };
+  const ctx = { allowedQLevels: allowed, isIp: !!account.is_ip, ipContent, assigned: (asg?.length ?? 0) > 0, primaryOpen: PRIMARY_OPEN_TO_STUDENTS };
   const refusal = serveRefusal(q, ctx);
   if (refusal !== 'level') return refusal;
   for (const level of [...new Set(scopes.map((s) => s.level))]) {

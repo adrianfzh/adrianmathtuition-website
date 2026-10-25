@@ -175,4 +175,39 @@ above) — change both together.
 ## Sec 2 questions may use the Sec 1 skill list (21 Oct 2026, Adrian)
 Adrian: *"for sec 2, they will also share sec 1 skill list > because sec 2 will test sec 1 sometimes"*.
 - **Part labels: yes, safe.** A part of a Sec 2 question that tests Sec 1 work may be labelled with a Sec 1 sub-skill. Nothing that serves students or counts twins reads `question_part_subgroups`.
-- **Main filing: needs a decision first.** `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Not done until Adrian agrees how (21 Oct 2026).
+- **Main filing — Adrian said yes (21 Oct 2026), narrowly:** only under topics with no Sec 2 list (Speed, Integers, Real Numbers, Exchange Rate, Interest …), via the filer's S1 tree (bot 847b17c5); 27 Sec 2 questions filed so, served in Sec 1 practice. `twin_queue` takes the main skill from the question's own level, so Sec 2 twin counts do not move. Shared topics keep Sec 2 rows in the S2 tree. Background (why narrow): `practice_pool` serves a question by its sub-skill's tree and never checks the question's level, so a Sec 2 question filed (main, `question_subgroups`) under a Sec 1 sub-skill would be served to Sec 1 students — undoing part of the 15 Oct Sec 1 clean-up — and would enter the Sec 1 twins seeds. Done the narrow way above once Adrian agreed (21 Oct 2026, bot 847b17c5).
+
+**Taught-early check (21 Oct 2026):** of the 67 Sec 1 rows marked `legacy_syllabus` on 15 Oct, only 14 have `ip_syllabus = true`; the other 53 are served to no student (the note above says IP students still get them). And a row moved to another level is never seen by a lower level's students: Sec 2 practice reads only Sec 2 rows (`practice_qlevels`).
+
+## The hidden Sec 1 questions, re-checked (21 Oct 2026)
+Adrian, 21 Oct 2026: *"isn't linear equations, algebraic fractions, ratio, mensuration, patterns, integers,
+percentages, rate, and algebraic expressions all sec 1 topics? yes, some factorization are in sec 2, for example
+factorization of 2 by 2. yes solving inequalities is now in sect 2"*.
+- **The 53** Sec 1 rows with `legacy_syllabus` and no `ip_syllabus` (Inequalities 23, Expressions 7, Factorisation 6,
+  Linear Equations 4, Fractions 3, Mensuration 2, Ratio 2, one each Expansion, Patterns, Integers, Percentages, Rate,
+  Statistics) were read again against this list (one Opus reader; a part is out only if it cannot be done without
+  the later step). **5 were genuine Sec 1** (cuboid, statistics, number patterns, a cone with the formula given,
+  percentages) → **un-hidden 21 Oct 2026** (backup `_backups/s1-legacy-rows-before-recheck-2026-10-21.json`).
+  Sec 1 serves no school rows today (every topic serves our twins), so they come back as twin seeds and filer work.
+- **19 have one Sec 2 part** (dividing algebraic fractions, forming/solving an inequality, factorising by grouping, one
+  Pythagoras height). They are the part-marks case (`lib/part-syllabus.ts`), but that route is not switched on yet
+  (SPEC-PART-SYLLABUS: the two migrations are still open; the bot side was done 9 Oct, bot 684ede17), so they stay hidden.
+- **29 are Sec 2 work all through** (inequalities 21, factorisation 2, expressions 2, ratio 2, fractions 1, expansion 1).
+  51 of the 53 cannot simply change level: the bank allows one row per school, year, paper, number, level and exam type
+  (`idx_questions_dedup`), and that school's own Sec 2 paper already has the same number.
+- **Done 21 Oct 2026 (see "Done 21 Oct 2026" below):** the 21 inequality rows → un-hide and file under the Sec 2 Inequalities sub-skills. Sec 2
+  serves school rows for Inequalities, so Sec 2 students get them; Sec 1 has no open Inequalities list, so Sec 1 does
+  not; `twin_queue` (own-level main skill) keeps them out of both levels' twin counts. The other 8 sit in topics Sec 1
+  also teaches, where un-hiding would reach Sec 1 too — they need a "taught at" level separate from the paper's level.
+
+## Done 21 Oct 2026 (Adrian, typed in the session: "yes to all 4")
+1. **21 inequality rows on Sec 1 papers** → un-hidden and filed under the Sec 2 Inequalities sub-skills (`source 'level-recheck-2026-10-21'`), parts labelled (20). Checked: all 21 in `practice_pool('S2')`, none in Sec 1 (IP included). One old filing under an open Sec 1 sub-skill removed so it is no Sec 1 twin seed. Backup `_backups/inequality-unhide-before-2026-10-21.json`.
+2. **64 Sec 2 rows of Sec 3 work** (Indices, Sets, Standard Form, Circle Properties, Matrices) → level `S3_EM`. No clash with the one-row-per-number rule. The filer then files them in the E Math tree.
+3. **35 Sec 3 E Math rows that are A Math** (logarithms, discriminant …) → level `S3_AM`, topics set to the A Math topics a reader chose. 4 more could not move: the same school / year / paper / number already exists at Sec 3 A Math. Backup for 2 and 3: `_backups/level-moves-before-2026-10-21.json`.
+4. **Two new sub-skills:** Sec 2 Geometrical Constructions "Perpendicular and angle bisectors" (id 1562); Sec 1 Math In Real World Context "Reading bills, price tables and budgets" (id 1563). The questions set aside as "no skill fits" in those two topics were released to the filer (16 entries).
+
+## Not maths — Sec 1–2 History, Geography, English (21 Oct 2026)
+
+This file is the maths split. The lower-sec humanities and English levels (`S1_HIST`, `S2_HIST`, `S1_GEOG`,
+`S2_GEOG`, `S1_EL`, `S2_EL`) and their topic lists live in `SPEC-HUMANITIES.md` §4b and
+`docs/EXTRACTION-QUEUE.md` §4f.

@@ -10,13 +10,15 @@ import { mathHtml } from '@/lib/math-inline';
 import { canExplain, explainHref } from '@/lib/explain-clip';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipDoor from '../clip/q/[id]/clip-door';
+import FixOne from './FixOne';
 // Questions carry inline $…$ TeX — mathHtml KaTeXes only the math spans, and
 // this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
 
 /** `clipIds`: question number → its bank row, when the paper matched the bank — the 🎬 solution-clip door (SPEC-CLIP-PIPELINE.md §9).
- *  `photoClipIds`: question number → its photo-question clip id, for the rest (§9b). */
-export default function LostMarks({ paper, explain = false, clipIds = {}, photoClipIds = {} }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string>; photoClipIds?: Record<string, string> }) {
+ *  `photoClipIds`: question number → its photo-question clip id, for the rest (§9b).
+ *  `fixOne`: show 🎯 Fix one under the question that lost the most marks (SPEC-STUDENT-FIRST.md §Fix one) — the page decides. */
+export default function LostMarks({ paper, explain = false, clipIds = {}, photoClipIds = {}, fixOne = false }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string>; photoClipIds?: Record<string, string>; fixOne?: boolean }) {
   if (paper.dropped.length === 0) {
     return paper.questions.length > 0
       ? <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">✅ Full marks on every question marked.</p>
@@ -130,6 +132,7 @@ export default function LostMarks({ paper, explain = false, clipIds = {}, photoC
                 </a>
               </div>
             )}
+            {fixOne && i === 0 && <FixOne runId={paper.id} questionNumber={q.questionNumber} />}
           </li>
         ))}
       </ul>
