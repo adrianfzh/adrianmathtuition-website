@@ -23,6 +23,19 @@
  *    the next generator run billed them again. Found 2026-09-02; fixed here
  *    for every month. To remove a billed Additional lesson that was later
  *    cancelled, amend the invoice.
+ *
+ * 3. A MOVED lesson is billed ONCE, on the row that happens (25 Oct 2026).
+ *    The admin reschedule leaves the original as Status 'Rescheduled' and adds
+ *    a Type 'Rescheduled' replacement that carries the original's
+ *    `Billing Month`. The rebuild used to bill both — Ian Chen's November 2026:
+ *    three Sundays moved to Saturdays came out as 6 lessons / $480 instead of
+ *    3 / $240, every line labelled with the old Sunday slot. Now:
+ *    - an original with Status 'Rescheduled' is never a line (its replacement is);
+ *    - a lesson whose `Billing Month` names another month belongs to that
+ *      month's invoice, even when it is dated inside this one; the caller also
+ *      fetches rows whose `Billing Month` names this month, so a lesson moved
+ *      out of the month is still billed here;
+ *    - the line shows the slot the lesson actually happens in (`slotLabel`).
  */
 
 export interface StoredLineItem {
@@ -39,6 +52,10 @@ export interface MonthLesson {
   type?: string;
   /** Airtable Lessons `Status`: Scheduled | Completed | Cancelled | Cancelled - Prorated. */
   status?: string;
+  /** Airtable Lessons `Billing Month` ("November 2026"); blank → the month it is dated in. */
+  billingMonth?: string;
+  /** The lesson's own slot, e.g. "Sat 1-3pm" — wins over the enrollment's label. */
+  slotLabel?: string;
 }
 
 export interface RebuildInput {
@@ -51,6 +68,8 @@ export interface RebuildInput {
   slotDayLabel: string;
   /** e.g. "Sec 4 E Math — October 2026" */
   regularDescription: string;
+  /** The invoice's Month ("November 2026"). Given → lessons owned by another month are left out. */
+  invoiceMonthLabel?: string;
 }
 
 export interface RebuildResult {
@@ -62,10 +81,13 @@ export interface RebuildResult {
 export function rebuildLineItems(input: RebuildInput): RebuildResult {
   const regulars: StoredLineItem[] = input.monthLessons
     .filter(l => (l.type || 'Regular') !== 'Additional')
+    // Moved away — the replacement row is the one that is billed.
+    .filter(l => l.status !== 'Rescheduled')
+    .filter(l => !input.invoiceMonthLabel || !l.billingMonth || l.billingMonth === input.invoiceMonthLabel)
     .filter(l => !input.prorated || l.status === 'Completed')
     .map(l => ({
       date: l.date,
-      day: input.slotDayLabel,
+      day: l.slotLabel || input.slotDayLabel,
       type: l.type || 'Regular',
       description: input.regularDescription,
     }));

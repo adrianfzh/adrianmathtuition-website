@@ -218,23 +218,39 @@ export async function POST(req: NextRequest) {
       // {Date}<='lastDayStr' on Airtable's date-typed field silently drops a
       // lesson ON the month's last day, so regenerating undercounted those
       // months (found 2026-09-02).
+      // Rows whose Billing Month names this month come too: a lesson moved OUT
+      // of the month stays billed here (the reschedule carries the original's
+      // Billing Month onto the replacement). lib/regenerate-line-items.ts bills
+      // a moved lesson once — on the replacement — under its own slot label.
       const lessonFormula = encodeURIComponent(
-        `AND(${monthWindowClause(year, monthIdx + 1)},{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
+        `AND(OR(AND(${monthWindowClause(year, monthIdx + 1)}),{Billing Month}='${month}'),{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
       );
       const allLessonsData = await airtableRequestAll(
         'Lessons',
-        `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
+        `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&fields[]=Billing Month&fields[]=Slot&sort[0][field]=Date&sort[0][direction]=asc`
       );
       // Exam-year students: nothing regular after the last paper (the recurring
       // generator doesn't know about exams; the advance run stops there too).
-      const monthLessons: MonthLesson[] = allLessonsData.records
+      const studentLessons = allLessonsData.records
         .filter((r: any) => r.fields['Student']?.[0] === studentId)
-        .filter((r: any) => !cutoff || (r.fields['Date'] as string) <= cutoff.iso)
-        .map((r: any) => ({
-          date: r.fields['Date'] as string,
-          type: (r.fields['Type'] || 'Regular') as string,
-          status: r.fields['Status'] as string | undefined,
-        }));
+        .filter((r: any) => !cutoff || (r.fields['Date'] as string) <= cutoff.iso);
+      const slotLabels = new Map<string, string>();
+      if (slotId) slotLabels.set(slotId, slotDayLabel);
+      for (const sid of new Set(studentLessons.map((r: any) => r.fields['Slot']?.[0] as string | undefined))) {
+        if (!sid || slotLabels.has(sid)) continue;
+        const slot = await at('Slots', `/${sid}`).catch(() => null);
+        const dayName = ((slot?.fields['Day'] || '') as string).replace(/^\d+\s+/, '').trim();
+        const slotTime = ((slot?.fields['Time'] || '') as string).trim();
+        const dayAbbrev = DAY_ABBREV[dayName] || dayName;
+        if (dayAbbrev) slotLabels.set(sid, slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev);
+      }
+      const monthLessons: MonthLesson[] = studentLessons.map((r: any) => ({
+        date: r.fields['Date'] as string,
+        type: (r.fields['Type'] || 'Regular') as string,
+        status: r.fields['Status'] as string | undefined,
+        billingMonth: (r.fields['Billing Month'] as string | undefined) || undefined,
+        slotLabel: slotLabels.get(r.fields['Slot']?.[0] as string),
+      }));
       let stored: any[] = [];
       try { stored = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
       const rebuilt = rebuildLineItems({
@@ -243,6 +259,7 @@ export async function POST(req: NextRequest) {
         prorated: false,
         slotDayLabel,
         regularDescription: `${level} ${subjects} \u2014 ${month}`,
+        invoiceMonthLabel: month,
       });
       lineItems = rebuilt.lineItems;
       regularCount = rebuilt.regularCount;

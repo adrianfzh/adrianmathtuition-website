@@ -255,6 +255,16 @@ Notes — *exam cut-off* / *attended lessons (exam-year student)* — before the
   unticked (double-billed by the next run). Fixed 2026-09-02 for every month.
 - Due date follows the same `invoiceDueDateISO` rule as the run; Issue Date still goes
   through `resolveInvoiceIssueDate`.
+- **A moved lesson is billed once, on the row that happens** (25 Oct 2026, Ian Chen's
+  November: three Sundays moved to Saturdays rebuilt as 6 lessons / $480 instead of
+  3 / $240). The advance rebuild skips an original with Status `Rescheduled`, bills the
+  `Type = Rescheduled` replacement under the month in its `Billing Month` (fetched even when
+  it is dated outside the month; left out when it names another month), and labels the line
+  with the lesson's own slot. Holiday opt-outs (Cancelled) stay out as before. The 14th's
+  advance run is not affected: it projects regulars from the enrollment's weekly slot and never
+  reads lesson rows, so a move made before the 14th still shows the old dates and slot label,
+  with the right count. Tested in `lib/regenerate-line-items.test.ts`. A scan of every 2026
+  invoice that day found no other bill carrying both halves of a move.
 
 ### Manual re-runs
 
