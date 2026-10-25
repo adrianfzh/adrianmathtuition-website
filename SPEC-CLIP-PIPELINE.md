@@ -596,7 +596,14 @@ whole domain) and `misses` (the values of c for which y = c misses the curve —
 Checks: maths 20/20; storyboard reviews 2 must (write the aim; show the split line) → 0 → 0; voice
 once, 19/19 heard (worst 94 %); the 1280 × 640 look first hid the split line under the top fade (a
 note under the line above, then two tall fractions in one beat) → the note became a highlight and
-the next line waits for the next beat (voice unchanged). Not promoted. Waiting for Adrian's notes.
+the next line waits for the next beat (voice unchanged). Reviews with phone frames: 2 must (c = 4 on
+the dashed y = 4 — both labels crossed mid-slide → the line slides in 0.65 s, labels outlined; the
+4x + 4 − 2 = 4x + 2 working only said → a note) → 2 must (the curve "goes down forever near x = −1"
+with no x = −1 drawn → a new sketch `edge` stage, a dashed vertical line; "it equals four" said a beat
+before the 4 → beats 8–9 re-worded, two lines re-recorded) → pass (0 must; shoulds left for Adrian:
+"so it cancels" → "dividing top and bottom by x + 1 leaves four", light the −2 as b, drop the "sign
+of b/(x+1)" sentence). Test site: phone 27/27 cues, 0 problems; 1280 × 640: 0 problems. **Gate green
+25 Oct 2026.** Not promoted. Waiting for Adrian's notes.
 
 ### The player layout for clips (Adrian, 15 Oct 2026)
 
