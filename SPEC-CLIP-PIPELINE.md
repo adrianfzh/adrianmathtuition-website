@@ -556,6 +556,28 @@ decimal answer printed by sympy as `2.65000000000000` counted 14 places — trai
 **Cost per photo clip**: the bank clip's cost (§9) plus three agent runs (the reading, two solves,
 ≈ 1 min together); voice ≈ US$0.08. A copy for the next student costs one reading (≈ 20 s).
 
+### Made by hand from a photo Adrian sent (25 Oct 2026)
+
+Adrian sent a photo of a student's attempt: *"able to create a clip to explain this question?"* The
+automatic pipeline would refuse it (three parts, a "show that", and no approved Kinematics notes), so
+it was made by hand with the skill-clip recipe (§8 + `_house.md` §6) as a lesson slug:
+**`oscillating-dot-am`** — `/app/lesson/oscillating-dot-am` (admin + preview student). The question
+is in the bank (`3fd0c2a4`, A Math Kinematics: a dot on a 120 cm screen, x = a sin nt, period 6 s);
+the student got (a) and (b) and stopped on (c) at "when t = 6/4". The clip: the plan
+`x → dx/dt → d²x/dt²` pinned in the corner; "what it says" (each letter lit, the A–O–B picture with
+120 cm across and 60 each side); (a) −1 ≤ sin nt ≤ 1 ⇒ −a ≤ x ≤ a, a = 120/2 = 60, period 2π/n = 6
+⇒ n = π/3 (why 2π/n: a drop-down); (b) v = 20π cos(πt/3), max speed 20π cm/s; (c) THE TRAP — "at A"
+is the END of the swing: the picture again with x = −60 at A, so sin(πt/3) = −1, no t needed (why
+t = 1.5 is the other end: a drop-down), acceleration 20π²/3 = 65.8 cm/s² (3 s.f.). 18 lines, 30
+beats, 458 words, ~2.6 min. Checks: maths 29/29 (derivatives by `identity`); two storyboard reviews
+(1 must both runs — "divide by sixty" said with no move → reworded), then two passes; voice once,
+30/30 heard (worst 85 %; `asr-score` now reads "cm"/"centre" and "one hundred and twenty");
+look at 1280 × 640: 0 problems; phone look first failed — **a long 3-part question card pushed the
+board under the bottom bar (board bottom 907 > 783 px)** → the card's question cut to its story-free
+wording (every number kept; board bottom 775 px), phone look 46/46 cues, 0 problems; review with
+phone frames: 1 must (the corner plan covered the long heading) → heading "What it says". Not
+promoted. Waiting for Adrian's notes.
+
 ### The player layout for clips (Adrian, 15 Oct 2026)
 
 *"can we have the whole question on one side, then the explanation part by part on another side,

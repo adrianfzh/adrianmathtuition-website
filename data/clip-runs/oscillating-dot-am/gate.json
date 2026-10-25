@@ -1,0 +1,35 @@
+{
+ "slug": "oscillating-dot-am",
+ "at": "2026-10-25T14:38:32.333Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "29/29 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "18 lines = the checked plan"
+  },
+  "read": {
+   "ok": true,
+   "detail": "one draft — the stand-in reviewer judges it (see review)"
+  },
+  "voice": {
+   "ok": true,
+   "detail": "30/30 beats voiced + timed · speech round trip worst 85 %"
+  },
+  "look": {
+   "ok": true,
+   "detail": "46/46 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+  },
+  "review": {
+   "ok": true,
+   "detail": "0 must, 2 should · 29 frames"
+  }
+ },
+ "pass": true
+}
