@@ -106,6 +106,12 @@
      "inside": "f",
      "tone": "orange",
      "on": "Four lots of"
+    },
+    {
+     "do": "note",
+     "text": "4x + 4 − 2 = 4x + 2",
+     "near": "d1",
+     "on": "so take away"
     }
    ]
   },

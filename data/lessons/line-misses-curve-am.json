@@ -141,7 +141,8 @@
           "say": "Four lots of X plus one make four X plus four. That is two too many, so take away two.",
           "asks": ["Why take away two?"],
           "do": [
-            { "do": "highlight", "token": "d1", "inside": "f", "tone": "orange", "on": "Four lots of" }
+            { "do": "highlight", "token": "d1", "inside": "f", "tone": "orange", "on": "Four lots of" },
+            { "do": "note", "text": "4x + 4 − 2 = 4x + 2", "near": "d1", "on": "so take away" }
           ],
           "audio": "/lessons/line-misses-curve-am/scene-01-b7.mp3",
           "timing": "/lessons/line-misses-curve-am/scene-01-b7.timing.json"

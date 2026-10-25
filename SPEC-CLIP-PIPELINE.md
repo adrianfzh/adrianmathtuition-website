@@ -578,6 +578,26 @@ wording (every number kept; board bottom 775 px), phone look 46/46 cues, 0 probl
 phone frames: 1 must (the corner plan covered the long heading) → heading "What it says". Not
 promoted. Waiting for Adrian's notes.
 
+**`line-misses-curve-am`** (25 Oct 2026) — `/app/lesson/line-misses-curve-am`. Adrian: *"create a clip
+to explain this too"* — a photo of his own red/blue marking of a student's (c): the bank's `b071686f`
+(A Math, the curve y = (4x + 2)/(x + 1) for x > −1; (c) the line y = c does not meet it — by writing
+it as a + b/(x + 1), explain why c ≥ 4). The clip follows HIS chain from the ink, in his order: the
+question (x > −1 lit; the curve drawn on a side sketch; "y = c is a horizontal line" drawn on it);
+`Explain why c ≥ 4` written; the plan `y = a + b/(x+1)` in the corner; divide — y = (4(x+1) − 2)/(x+1),
+the split line, y = 4 − 2/(x+1), a = 4, b = −2; the sign chain one line each (x > −1 ⇒ x + 1 > 0,
+2/(x+1) > 0, −2/(x+1) < 0, y = 4 − 2/(x+1) < 4); "think graph is below y = 4" — the dashed y = 4
+over the curve; "think y = c horizontal line must be 4 and above" — the line y = c SLIDES: c = 1 cuts
+the curve (a dot), c = 4 still misses (the curve never touches 4 — why c = 4 is allowed, said at
+that step), c = 5 misses; c ≥ 4 boxed. 11 lines (scrolls), 19 beats, ~1.8 min. **New for every clip:**
+a side sketch may leave out the corner shapes (`inset`; the `shape` stage then draws the curve on),
+and may carry `hline` — a horizontal line that slides between heights (`{do: "sketch", line: i}`)
+with a dot wherever it meets the curve; `chain-check.py` gains `ineq` (an inequality true on the
+whole domain) and `misses` (the values of c for which y = c misses the curve — it fails "c > 4").
+Checks: maths 20/20; storyboard reviews 2 must (write the aim; show the split line) → 0 → 0; voice
+once, 19/19 heard (worst 94 %); the 1280 × 640 look first hid the split line under the top fade (a
+note under the line above, then two tall fractions in one beat) → the note became a highlight and
+the next line waits for the next beat (voice unchanged). Not promoted. Waiting for Adrian's notes.
+
 ### The player layout for clips (Adrian, 15 Oct 2026)
 
 *"can we have the whole question on one side, then the explanation part by part on another side,

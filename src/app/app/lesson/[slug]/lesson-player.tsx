@@ -902,7 +902,7 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
             // The line y = c, one line that SLIDES to each new height; a dot wherever it then meets
             // the curve (Adrian, 25 Oct 2026: "think y = c horizontal line must be 4 and above").
             <g className="lsn-sketch-hline">
-              <g style={{ transform: `translate(0px, ${sy(hl.c) - sy(0)}px)`, transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
+              <g style={{ transform: `translate(0px, ${sy(hl.c) - sy(0)}px)`, transition: 'transform 650ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
                 <line x1={P - 4} y1={sy(0)} x2={W - P + 4} y2={sy(0)} />
                 <text x={W - P + 2} y={sy(0) - 6} textAnchor="end" className="lsn-graph-lab">{sk.hline!.labels?.[Number(hl.stage.slice(1))] ?? sk.hline!.label}</text>
               </g>
@@ -3700,7 +3700,10 @@ const PLAYER_CSS = `
 .lsn-sketch-hline { animation: lsnFade 400ms ease both; }
 .lsn-sketch-hline line { stroke: #fdba74; stroke-width: 2.6; stroke-linecap: round; }
 .lsn-sketch-hline text { fill: #fdba74; font-weight: 700; }
-.lsn-sketch-hit { fill: #fb7185; animation: lsnFade 400ms ease 1200ms both; }
+/* A dark outline round the labels: the line y = c can sit on a dashed asymptote (c = 4 on y = 4,
+   25 Oct 2026) and both labels must still read. */
+.lsn-sketch-hline text, .lsn-sketch-asy text { paint-order: stroke; stroke: rgba(15,23,42,0.9); stroke-width: 4px; stroke-linejoin: round; }
+.lsn-sketch-hit { fill: #fb7185; animation: lsnFade 400ms ease 650ms both; }
 /* The corner plan owns the top-right corner: the side sketch starts under it. */
 .lsn-scene:has([data-lsn-corner]) .lsn-sketch { top: calc(100% + 54px); }
 /* With a side sketch the working takes the left of the board, the sketch the right. */
