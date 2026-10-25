@@ -40,6 +40,7 @@ import logScalesAm from '../../data/lessons/log-scales-am.json';
 import logOfNegativeUndefinedAm from '../../data/lessons/log-of-negative-undefined-am.json';
 import whyLnWhenEAm from '../../data/lessons/why-ln-when-e-am.json';
 import rationaliseConjugateAm from '../../data/lessons/rationalise-conjugate-am.json';
+import oscillatingDotAm from '../../data/lessons/oscillating-dot-am.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -80,6 +81,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'log-scales-am': logScalesAm,
   'log-of-negative-undefined-am': logOfNegativeUndefinedAm,
   'why-ln-when-e-am': whyLnWhenEAm,
+  'oscillating-dot-am': oscillatingDotAm,
 };
 
 /**

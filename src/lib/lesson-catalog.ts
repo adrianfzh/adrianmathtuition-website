@@ -241,6 +241,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Two terms below: multiply by the conjugate',
     minutes: 2,
   },
+  {
+    slug: 'oscillating-dot-am',
+    level: 'AM',
+    topic: 'Kinematics',
+    title: 'A dot swinging on a screen: x = a sin nt',
+    minutes: 3,
+  },
 ];
 
 /**

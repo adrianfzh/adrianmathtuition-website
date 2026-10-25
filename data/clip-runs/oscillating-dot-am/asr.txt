@@ -1,0 +1,43 @@
+Verifying 30 clip(s) of oscillating-dot-am by transcription (gemini-2.5-flash)…
+
+  scene-01-b1: 83% of narration words heard  ⚠ LOW
+      heard: A dot swings across a screen 120 cm wide. X = A sin Nt. One oscillation takes 6 seconds.
+  scene-01-b2: 68% of narration words heard  ⚠ LOW
+      heard: velocity is dxdt, and acceleration is d2xdt squared. So, we differentiate x once, then again.
+  scene-01-b3: 73% of narration words heard  ⚠ LOW
+      heard: First, what the question says. x = a sin nt
+  scene-01-b4: 92% of narration words heard
+  scene-01-b5: 100% of narration words heard
+  scene-01-b6: 100% of narration words heard
+  scene-01-b7: 82% of narration words heard  ⚠ LOW
+      heard: The screen is 120 cm wide. So AB is 120.
+  scene-01-b8: 83% of narration words heard  ⚠ LOW
+      heard: Oh is the center. So the dot swings 60 cm either side of O from A to B.
+  scene-01-b9: 69% of narration words heard  ⚠ LOW
+      heard: For part A, sin always lies between -1 and 1.
+  scene-01-b10: 100% of narration words heard
+  scene-01-b11: 100% of narration words heard
+  scene-01-b12: 100% of narration words heard
+  scene-01-b13: 92% of narration words heard
+  scene-01-b14: 100% of narration words heard
+  scene-01-b15: 89% of narration words heard
+  scene-01-b16: 76% of narration words heard  ⚠ LOW
+      heard: Part B. Velocity is the rate of change of displacement. So V equals dxdt.
+  scene-01-b17: 94% of narration words heard
+  scene-01-b18: 100% of narration words heard
+  scene-01-b19: 100% of narration words heard
+  scene-01-b20: 86% of narration words heard
+  scene-01-b21: 88% of narration words heard
+  scene-01-b22: 91% of narration words heard
+  scene-01-b23: 94% of narration words heard
+  scene-01-b24: 85% of narration words heard  ⚠ LOW
+      heard: for the acceleration at A, we need sin pi t over three.
+  scene-01-b25: 96% of narration words heard
+  scene-01-b26: 82% of narration words heard  ⚠ LOW
+      heard: at A 60 sign pi T over 3 equals -60
+  scene-01-b27: 93% of narration words heard
+  scene-01-b28: 93% of narration words heard
+  scene-01-b29: 100% of narration words heard
+  scene-01-b30: 88% of narration words heard
+
+9 clip(s) below 85% — listen to those.

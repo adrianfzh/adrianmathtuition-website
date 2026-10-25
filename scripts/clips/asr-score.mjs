@@ -34,6 +34,8 @@ export function numberWordsToDigits(text) {
       const v = val(toks[j]);
       if (v !== null) { cur += v; j += 1; continue; }
       if (c === 'hundred') { cur *= 100; j += 1; continue; }
+      // "one hundred and twenty" is one number (25 Oct 2026); "negative one and one" stays two.
+      if (c === 'and' && cur >= 100 && cur % 100 === 0 && j + 1 < toks.length && val(toks[j + 1]) !== null) { j += 1; continue; }
       if (c === 'thousand') { n += cur * 1000; cur = 0; j += 1; continue; }
       break;
     }
@@ -59,6 +61,8 @@ const SPOKEN_SYMBOLS = [
   [/\^|\bto the power( of)?\b/g, ' pow '], [/\b(write|rite)\b/g, ' right '],
   // 'negative one' is heard as '-1' (the transcript writes the sign): both read as minus.
   [/\bnegative\b/g, ' minus '],
+  // 25 Oct 2026 (kinematics): "centimetres" heard as "cm", "centre" as the US "center".
+  [/\bcentimet(re|er)s?\b|\bcm\b/g, ' cm '], [/\bcent(re|er)\b/g, ' centre '],
 ];
 const spoken = (t) => SPOKEN_SYMBOLS.reduce((acc, [re, to]) => acc.replace(re, to), t.toLowerCase());
 const canon = (t) => numberWordsToDigits(spoken(t)).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.\/]/g, '').replace(/\.(?![0-9])/g, '');

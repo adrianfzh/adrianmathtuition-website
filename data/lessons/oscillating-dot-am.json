@@ -1,0 +1,442 @@
+{
+  "slug": "oscillating-dot-am",
+  "title": "A dot swinging on a screen: x = a sin nt",
+  "level": "AM",
+  "topic": "Kinematics",
+  "minutes": 3,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "The diagram shows a computer screen $120$ cm wide. A dot oscillates in a straight line on the screen between the two points $A$ and $B$ on the edge of the screen. $AB$ is parallel to the base of the screen. The displacement of the dot from $O$, the centre of $AB$, is modelled by the equation $x = a\\sin nt$, where $x$ cm is the displacement, $t$ is the time in seconds after passing through $O$, and $a$ and $n$ are constants. The time for one oscillation is $6$ seconds.\n\n(a) Explain why $a = 60$ and show that $n = \\frac{1}{3}\\pi$. [3]\n\n(b) Obtain an expression for the velocity of the dot at time $t$ and hence deduce its maximum speed. [3]\n\n(c) Find the magnitude of the acceleration of the dot when it is at $A$. [2]",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "intro": "$x = a\\sin nt$. Screen $120$ cm wide. One oscillation: $6$ s. (a) Why $a = 60$; show $n = \\frac{\\pi}{3}$. (b) Velocity; maximum speed. (c) Size of the acceleration at $A$.",
+      "scroll": true,
+      "steps": [
+        {
+          "tokens": [
+            { "id": "plan", "tex": "\\text{Plan: }x\\to\\tfrac{dx}{dt}\\to\\tfrac{d^2x}{dt^2}", "hl": "sky" }
+          ],
+          "corner": true
+        },
+        {
+          "heading": "First, what the question says",
+          "tokens": [
+            {
+              "id": "f1",
+              "tex": "\\htmlClass{lsn-pc-x}{x}=\\htmlClass{lsn-pc-a}{a}\\sin \\htmlClass{lsn-pc-n}{n}\\htmlClass{lsn-pc-t}{t}"
+            }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mx", "tex": "x:\\text{ displacement from }O\\text{ (cm)}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mt", "tex": "t:\\text{ time (s)}," },
+            { "id": "man", "tex": "\\;\\;a,\\,n:\\text{ constants}" }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "id": "pic",
+              "tex": "\\overbrace{\\htmlClass{lsn-pc-pa}{\\underset{A}{\\bullet}}\\;\\underset{\\htmlClass{lsn-pc-l}{60}}{\\rule[0.22em]{2.6em}{1.4pt}}\\;\\htmlClass{lsn-pc-po}{\\underset{O}{\\bullet}}\\;\\underset{\\htmlClass{lsn-pc-r}{60}}{\\rule[0.22em]{2.6em}{1.4pt}}\\;\\htmlClass{lsn-pc-pb}{\\underset{B}{\\bullet}}}^{\\htmlClass{lsn-pc-w}{120\\text{ cm}}}"
+            }
+          ]
+        },
+        {
+          "heading": "(a)",
+          "tokens": [
+            { "id": "sb", "tex": "-1\\le\\sin nt\\le 1" },
+            { "id": "xb", "tex": "\\;\\Rightarrow\\;-\\htmlClass{lsn-pc-a}{a}\\le x\\le \\htmlClass{lsn-pc-a}{a}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "a1", "tex": "a=\\dfrac{120}{2}" },
+            { "id": "a2", "tex": "=60", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "per", "tex": "\\text{Period}=\\dfrac{2\\pi}{n}" },
+            { "id": "six", "tex": "=6" },
+            { "id": "n2", "tex": "\\;\\Rightarrow\\;n=\\dfrac{\\pi}{3}", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "xm", "tex": "x=60\\sin\\dfrac{\\pi t}{3}" }
+          ]
+        },
+        {
+          "heading": "(b)",
+          "tokens": [
+            { "id": "v0", "tex": "v=\\dfrac{dx}{dt}" },
+            { "id": "v1", "tex": "=60\\cos\\dfrac{\\pi t}{3}\\times\\htmlClass{lsn-pc-k}{\\dfrac{\\pi}{3}}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "v2", "tex": "=20\\pi\\cos\\dfrac{\\pi t}{3}", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "ms1", "tex": "\\text{Max speed}=20\\pi(1)" },
+            { "id": "ms2", "tex": "=20\\pi\\text{ cm/s}", "hl": "emerald" }
+          ]
+        },
+        {
+          "heading": "(c)",
+          "tokens": [
+            { "id": "c0", "tex": "\\dfrac{d^2x}{dt^2}" },
+            { "id": "c1", "tex": "=-20\\pi\\sin\\dfrac{\\pi t}{3}\\times\\dfrac{\\pi}{3}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "c2", "tex": "=-\\dfrac{20\\pi^2}{3}\\htmlClass{lsn-pc-s}{\\sin\\dfrac{\\pi t}{3}}" }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "id": "pic2",
+              "tex": "\\htmlClass{lsn-pc-pa}{\\underset{\\substack{A\\\\x=-60}}{\\bullet}}\\;\\rule[0.22em]{2.6em}{1.4pt}\\;\\underset{\\substack{O\\\\x=0}}{\\bullet}\\;\\rule[0.22em]{2.6em}{1.4pt}\\;\\htmlClass{lsn-pc-pb}{\\underset{\\substack{B\\\\x=60}}{\\bullet}}"
+            }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "e1", "tex": "60\\sin\\dfrac{\\pi t}{3}=-60" },
+            { "id": "e2", "tex": "\\;\\Rightarrow\\;\\sin\\dfrac{\\pi t}{3}=-1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "g1", "tex": "\\dfrac{d^2x}{dt^2}=-\\dfrac{20\\pi^2}{3}\\htmlClass{lsn-pc-s}{(-1)}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "g2", "tex": "=\\dfrac{20\\pi^2}{3}" },
+            { "id": "ans", "tex": "=65.8\\text{ cm/s}^2\\ (3\\text{ s.f.})", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "A dot swings across a screen one hundred and twenty centimetres wide: X equals A sine N T. One oscillation takes six seconds.",
+          "asks": ["What does oscillate mean?", "What are we asked to find?"],
+          "do": [],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b1.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Velocity is D X D T, and acceleration is D two X D T squared. So we differentiate X once, then again.",
+          "asks": ["Why differentiate for velocity?", "What does D two X D T squared mean?"],
+          "do": [
+            { "do": "write", "step": 0, "on": "So we differentiate" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b2.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "First, what the question says. X equals A sine N T.",
+          "asks": ["What is X?"],
+          "do": [
+            { "do": "write", "step": 1, "on": "X equals A" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b3.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "X is the displacement: how far the dot is from O, in centimetres.",
+          "asks": ["What is displacement?", "Can X be negative?"],
+          "do": [
+            { "do": "highlight", "token": "f1", "inside": "x", "tone": "orange" },
+            { "do": "write", "step": 2, "on": "how far the" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b4.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "T is the time in seconds since the dot passed through O.",
+          "asks": ["Where is the dot when T is zero?"],
+          "do": [
+            { "do": "highlight", "token": "f1", "inside": "t", "tone": "orange" },
+            { "do": "write", "token": "mt", "on": "since the dot" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b5.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Both A and N are constants: fixed numbers we will find.",
+          "asks": ["What is a constant?"],
+          "do": [
+            { "do": "highlight", "token": "f1", "inside": "a", "tone": "orange" },
+            { "do": "highlight", "token": "f1", "inside": "n", "tone": "orange", "on": "N are constants" },
+            { "do": "write", "token": "man", "on": "fixed numbers we" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b6.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "The screen is one hundred and twenty centimetres wide, so A B is one hundred and twenty.",
+          "asks": ["Why is A B the width of the screen?"],
+          "do": [
+            { "do": "write", "step": 4 },
+            { "do": "highlight", "token": "pic", "inside": "w", "tone": "orange", "on": "so A B" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b7.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "O is the centre, so the dot swings sixty centimetres either side of O, from A to B.",
+          "asks": ["Why sixty on each side?"],
+          "do": [
+            { "do": "highlight", "token": "pic", "inside": "po", "tone": "sky" },
+            { "do": "highlight", "token": "pic", "inside": "l", "tone": "orange", "on": "swings sixty centimetres" },
+            { "do": "highlight", "token": "pic", "inside": "r", "tone": "orange", "on": "either side of" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b8.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b8.timing.json"
+        },
+        {
+          "say": "For part A: sine N T always lies between negative one and one.",
+          "asks": ["Why does sine stay between negative one and one?"],
+          "do": [
+            { "do": "write", "token": "sb", "on": "sine N T" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b9.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "Multiply by A: X lies between negative A and A. So the constant A is the dot's furthest distance from O.",
+          "asks": ["Why multiply by A?", "Why is A the furthest?"],
+          "do": [
+            { "do": "write", "token": "xb", "on": "X lies between" },
+            { "do": "highlight", "token": "xb", "inside": "a", "tone": "orange", "on": "furthest distance from" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b10.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b10.timing.json"
+        },
+        {
+          "say": "The furthest is sixty, half of one hundred and twenty. So the constant A is sixty.",
+          "asks": ["Why half of one hundred and twenty?"],
+          "do": [
+            { "do": "write", "token": "a1", "on": "half of one" },
+            { "do": "write", "token": "a2", "on": "the constant A" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b11.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b11.timing.json"
+        },
+        {
+          "say": "Next, N. One oscillation is one period. For sine N T, the period is two pi over N.",
+          "asks": ["Why is the period two pi over N?", "What is a period?"],
+          "aside": {
+            "text": "Why is the period 2π/n?",
+            "slug": "kinematics-period-of-sin-nt",
+            "read": [
+              "$\\sin\\theta$ repeats every $2\\pi$.",
+              "$\\sin nt$ repeats when $nt$ grows by $2\\pi$.",
+              "$nt$ grows by $2\\pi$ when $t$ grows by $\\dfrac{2\\pi}{n}$.",
+              "**Period of $\\sin nt$ $= \\dfrac{2\\pi}{n}$.**"
+            ]
+          },
+          "do": [
+            { "do": "write", "token": "per", "on": "For sine N" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b12.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b12.timing.json"
+        },
+        {
+          "say": "One oscillation takes six seconds, so two pi over N equals six.",
+          "asks": ["Why is the period six?"],
+          "do": [
+            { "do": "write", "token": "six", "on": "equals six" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b13.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b13.timing.json"
+        },
+        {
+          "say": "Solve it: N equals pi over three.",
+          "asks": ["How do I make N the subject?"],
+          "do": [
+            { "do": "write", "token": "n2", "on": "N equals pi" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b14.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b14.timing.json"
+        },
+        {
+          "say": "So X equals sixty sine pi T over three.",
+          "asks": ["Where did sixty and pi over three come from?"],
+          "do": [
+            { "do": "write", "step": 8 }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b15.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b15.timing.json"
+        },
+        {
+          "say": "Part B. Velocity is the rate of change of displacement, so V equals D X D T.",
+          "asks": ["What is the difference between velocity and speed?"],
+          "do": [
+            { "do": "write", "token": "v0", "on": "V equals D" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b16.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b16.timing.json"
+        },
+        {
+          "say": "Differentiate sine: it becomes cosine, times the derivative of pi T over three, which is pi over three.",
+          "asks": ["Why times pi over three?", "What is the chain rule?"],
+          "do": [
+            { "do": "write", "token": "v1", "on": "it becomes cosine" },
+            { "do": "note", "text": "Chain rule", "near": "v1", "on": "times the derivative" },
+            { "do": "highlight", "token": "v1", "inside": "k", "tone": "orange", "on": "which is pi" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b17.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b17.timing.json"
+        },
+        {
+          "say": "Sixty times pi over three is twenty pi. So V equals twenty pi cosine pi T over three.",
+          "asks": ["How is sixty times pi over three twenty pi?"],
+          "do": [
+            { "do": "write", "step": 10, "on": "is twenty pi" },
+            { "do": "mark", "kind": "box", "token": "v2", "on": "So V equals" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b18.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b18.timing.json"
+        },
+        {
+          "say": "Speed is the size of the velocity. Cosine is at most one in size, so the biggest speed is twenty pi times one.",
+          "asks": ["Why is speed the size of the velocity?", "Where is the dot when the speed is biggest?"],
+          "do": [
+            { "do": "note", "text": "size of cos is at most 1", "near": "v2", "on": "in size" },
+            { "do": "write", "token": "ms1", "on": "twenty pi times" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b19.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b19.timing.json"
+        },
+        {
+          "say": "That is twenty pi centimetres per second.",
+          "asks": ["Why centimetres per second?"],
+          "do": [
+            { "do": "write", "token": "ms2" },
+            { "do": "mark", "kind": "box", "token": "ms2", "on": "centimetres per second" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b20.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b20.timing.json"
+        },
+        {
+          "say": "Part C wants the size of the acceleration at A. Acceleration, D two X D T squared, is the rate of change of velocity.",
+          "asks": ["Why differentiate the velocity?", "What does magnitude mean?"],
+          "do": [
+            { "do": "write", "token": "c0", "on": "D two X" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b21.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b21.timing.json"
+        },
+        {
+          "say": "Differentiate again: cosine becomes negative sine, times pi over three again.",
+          "asks": ["Why does cosine become negative sine?"],
+          "do": [
+            { "do": "write", "token": "c1", "on": "cosine becomes negative" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b22.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b22.timing.json"
+        },
+        {
+          "say": "So the acceleration is negative twenty pi squared over three, times sine pi T over three.",
+          "asks": ["How did pi become pi squared?"],
+          "do": [
+            { "do": "write", "step": 13, "on": "negative twenty pi" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b23.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b23.timing.json"
+        },
+        {
+          "say": "For the acceleration at A, we need sine pi T over three there.",
+          "asks": ["Why do we not need T?", "Can I find T instead?"],
+          "aside": {
+            "text": "Why not find t?",
+            "slug": "kinematics-no-t-needed",
+            "read": [
+              "You could find a time instead.",
+              "$t = 1.5$ s is a quarter of the $6$ s swing.",
+              "At $t = 1.5$, $\\sin\\dfrac{\\pi}{2} = 1$: the dot is at an end, but that end is $B$.",
+              "At $A$, $t = 4.5$ s and $\\sin\\dfrac{3\\pi}{2} = -1$.",
+              "At either end, the size of $\\sin$ is $1$.",
+              "**At an end of the swing, $\\sin = \\pm 1$: no $t$ needed.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "c2", "inside": "s", "tone": "orange", "on": "sine pi T" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b24.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b24.timing.json"
+        },
+        {
+          "say": "A is an end of the swing, sixty from O. Take B as positive, either side works: at A, X is negative sixty.",
+          "asks": ["Why is X negative at A?", "Does it matter which side is positive?"],
+          "do": [
+            { "do": "write", "step": 14 },
+            { "do": "highlight", "token": "pic2", "inside": "pa", "tone": "orange", "on": "X is negative" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b25.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b25.timing.json"
+        },
+        {
+          "say": "At A, sixty sine pi T over three equals negative sixty.",
+          "asks": ["Where does sixty sine pi T over three come from?"],
+          "do": [
+            { "do": "write", "token": "e1", "on": "sixty sine pi" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b26.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b26.timing.json"
+        },
+        {
+          "say": "So sine pi T over three is negative one, the end of its range.",
+          "asks": ["Why is sine negative one at A?"],
+          "do": [
+            { "do": "write", "token": "e2", "on": "sine pi T" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b27.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b27.timing.json"
+        },
+        {
+          "say": "Put negative one into the acceleration, in place of sine pi T over three.",
+          "asks": ["Where does the negative one go?"],
+          "do": [
+            { "do": "write", "step": 16 },
+            { "do": "highlight", "token": "g1", "inside": "s", "tone": "orange", "on": "in place of" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b28.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b28.timing.json"
+        },
+        {
+          "say": "Negative times negative is positive: twenty pi squared over three.",
+          "asks": ["Why is it positive?"],
+          "do": [
+            { "do": "write", "token": "g2", "on": "twenty pi squared" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b29.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b29.timing.json"
+        },
+        {
+          "say": "Magnitude means its size: sixty-five point eight centimetres per second squared, correct to three significant figures.",
+          "asks": ["What does magnitude mean?", "Would it be the same at B?"],
+          "do": [
+            { "do": "write", "token": "ans", "on": "sixty-five point eight" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "correct to three" }
+          ],
+          "audio": "/lessons/oscillating-dot-am/scene-01-b30.mp3",
+          "timing": "/lessons/oscillating-dot-am/scene-01-b30.timing.json"
+        }
+      ]
+    }
+  ]
+}
