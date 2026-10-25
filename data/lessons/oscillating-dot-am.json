@@ -6,7 +6,7 @@
   "minutes": 3,
   "kind": "clip",
   "theme": "chalk",
-  "question": "The diagram shows a computer screen $120$ cm wide. A dot oscillates in a straight line on the screen between the two points $A$ and $B$ on the edge of the screen. $AB$ is parallel to the base of the screen. The displacement of the dot from $O$, the centre of $AB$, is modelled by the equation $x = a\\sin nt$, where $x$ cm is the displacement, $t$ is the time in seconds after passing through $O$, and $a$ and $n$ are constants. The time for one oscillation is $6$ seconds.\n\n(a) Explain why $a = 60$ and show that $n = \\frac{1}{3}\\pi$. [3]\n\n(b) Obtain an expression for the velocity of the dot at time $t$ and hence deduce its maximum speed. [3]\n\n(c) Find the magnitude of the acceleration of the dot when it is at $A$. [2]",
+  "question": "A dot oscillates in a straight line between $A$ and $B$, the edges of a screen $120$ cm wide. Its displacement from $O$, the centre of $AB$, is $x = a\\sin nt$ cm, $t$ s after passing $O$. One oscillation takes $6$ s. (a) Why is $a = 60$? Show that $n = \\frac{1}{3}\\pi$. (b) Find the velocity; deduce the maximum speed. (c) Find the magnitude of the acceleration at $A$.",
   "scenes": [
     {
       "type": "equation-steps",
