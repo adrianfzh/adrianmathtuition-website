@@ -1,19 +1,19 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-25T15:05:26.534Z",
+ "at": "2026-10-25T15:16:39.862Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 51428,
+  "input_tokens": 51699,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 2691,
+  "output_tokens": 2386,
   "output_tokens_details": {
-   "thinking_tokens": 1839
+   "thinking_tokens": 1720
   },
   "service_tier": "standard",
   "inference_geo": "global",
@@ -22,39 +22,32 @@
  "verdict": "fix",
  "findings": [
   {
-   "beat": 18,
-   "rule": "layout",
+   "beat": 17,
+   "rule": "said = shown / a picture where a picture teaches",
    "severity": "must",
-   "problem": "On the phone the solid c = 4 line sits on the dashed y = 4 line. Its label 'c = 4' is struck through by the dashes and the 'y = 4' label is crossed by the orange line, so neither can be read. The orange line also looks slightly below the asymptote, closer to the curve, which goes against 'the curve never touches four'.",
-   "fix": "Draw the c = 4 line exactly on y = 4. Move its label clear of the dashed line, for example above it at the left end, and keep the 'y = 4' label on its own spot so both stay readable."
+   "problem": "The voice says the curve goes down forever near X equals negative one, but the sketch has no x = −1 and the curve just stops near the bottom, so the student cannot see why every line below four must cut it.",
+   "fix": "Draw a dashed vertical asymptote labelled x = −1 on the sketch on 'Near X equals negative one', with the curve running down beside it to the bottom edge, and light that part of the curve as it is said."
   },
   {
-   "beat": 7,
+   "beat": 8,
    "rule": "said = shown",
    "severity": "must",
-   "problem": "The voice works out 'four lots of X plus one make four X plus four, two too many, so take away two', but none of this is written. A student cannot see why 4(x + 1) − 2 equals the old top 4x + 2.",
-   "fix": "Add a note under the 4(x + 1) − 2 top, on these words, reading '4(x + 1) − 2 = 4x + 4 − 2 = 4x + 2'."
+   "problem": "The voice says the first fraction equals four, but nothing on the board shows it until the next beat writes y = 4 − 2/(x+1).",
+   "fix": "Write line 5 (y = 4 − 2/(x+1)) on 'so it equals four' in beat 8, with the 4 under the lit first fraction, and keep beat 9 for naming a and b."
   },
   {
-   "beat": 17,
-   "rule": "picture where a picture teaches",
+   "beat": 9,
+   "rule": "the part talked about is lit",
    "severity": "should",
-   "problem": "The voice says the curve 'goes down forever' near x = −1, but the sketch has no x = −1 line and the curve just stops. The student cannot see why every line below four must cut it.",
-   "fix": "Draw a dashed vertical asymptote x = −1, labelled, on these words, with the curve heading down alongside it."
+   "problem": "'A is four, and B is negative two' is said, but neither the 4 nor the −2 in y = 4 − 2/(x+1) is lit, so the student does not see which part is a and which is b.",
+   "fix": "Light the 4 (the lsn-pc-a piece) on 'A is four', then wrap and light the −2 on 'B is negative two'."
   },
   {
    "beat": 5,
-   "rule": "said = shown",
+   "rule": "every move says what, how, why",
    "severity": "should",
-   "problem": "The second half of the plan ('the sign of B over X plus one tells us where the curve sits') is only said. Nothing on the board or in the corner plan carries it.",
-   "fix": "Light the b/(x+1) part of the corner plan on 'the sign of B over X plus one', so the student sees which piece we will study."
-  },
-  {
-   "beat": 2,
-   "rule": "picture where a picture teaches",
-   "severity": "should",
-   "problem": "The voice says the curve is drawn only where X is greater than negative one, but the sketch shows no x = −1 boundary. The student cannot see where the curve starts.",
-   "fix": "Mark x = −1 on the x-axis, as a dashed vertical line with its label, when 'greater than negative one' is said."
+   "problem": "'The sign of B over X plus one tells us where the curve sits' is only said, so the student hears an aim with nothing on the board to tie it to.",
+   "fix": "Merge this sentence into beat 10 ('Now the sign'), where the sign working is written, or light b/(x+1) in the corner plan as it is said."
   }
  ]
 }

@@ -8,7 +8,7 @@ Verifying 19 clip(s) of line-misses-curve-am by transcription (gemini-2.5-flash)
   scene-01-b6: 100% of narration words heard
   scene-01-b7: 100% of narration words heard
   scene-01-b8: 100% of narration words heard
-  scene-01-b9: 94% of narration words heard
+  scene-01-b9: 96% of narration words heard
   scene-01-b10: 94% of narration words heard
   scene-01-b11: 100% of narration words heard
   scene-01-b12: 94% of narration words heard
@@ -16,7 +16,7 @@ Verifying 19 clip(s) of line-misses-curve-am by transcription (gemini-2.5-flash)
   scene-01-b14: 100% of narration words heard
   scene-01-b15: 100% of narration words heard
   scene-01-b16: 100% of narration words heard
-  scene-01-b17: 100% of narration words heard
+  scene-01-b17: 94% of narration words heard
   scene-01-b18: 100% of narration words heard
   scene-01-b19: 95% of narration words heard
 

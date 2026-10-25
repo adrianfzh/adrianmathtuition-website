@@ -321,11 +321,11 @@ export type BeatAction =
   | ({ do: 'sketch'; show?: SketchStage; point?: number; line?: number } & Timed)
   /** The scene's `pinned` steps: `show` n writes the first n (as the voice lists them), `lit` n lights step n. */
   | ({ do: 'pin'; show?: number; lit?: number } & Timed);
-export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'stretch' | 'shift';
+export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'stretch' | 'shift' | 'edge';
 
 export type BeatActionKind = BeatAction['do'];
 export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin'];
-export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'stretch', 'shift'];
+export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'stretch', 'shift', 'edge'];
 
 export interface Beat {
   /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
@@ -393,6 +393,9 @@ export interface SceneSketch {
   /** A horizontal line y = c that SLIDES between heights (Adrian, 25 Oct 2026: "think y = c horizontal
    *  line must be 4 and above"): `{do: 'sketch', line: i}` draws it at `at[i]` (or slides it there),
    *  and where it meets the curve a dot is marked — so "above 4 it misses, below 4 it hits" is seen. */
+  /** The edge of the curve's domain, a dashed vertical line drawn on the `edge` stage — the curve
+   *  runs down beside it (25 Oct 2026: x > −1, "near x = −1 the curve goes down forever"). */
+  edge?: { x: number; label: string };
   hline?: { label: string; at: number[]; /** the label at each height, when it should name the value ("c = 2") */ labels?: string[] };
 }
 export type GraphMorphScene = NarrationFields & BeatFields & {

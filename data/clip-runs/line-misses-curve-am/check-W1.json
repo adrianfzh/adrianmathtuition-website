@@ -14,11 +14,12 @@
       "sketch": {
         "xMin": -1.6,
         "xMax": 2,
-        "yMin": -2,
+        "yMin": -4,
         "yMax": 6,
         "shape": "4 - 2/(x + 1) + 0*sqrt(x + 1)",
         "asymptote": { "y": 4, "label": "y = 4" },
-        "hline": { "label": "y = c", "at": [5, 1, 4, 5], "labels": ["y = c", "c = 1", "c = 4", "c = 5"] }
+        "hline": { "label": "y = c", "at": [5, 1, 4, 5], "labels": ["y = c", "c = 1", "c = 4", "c = 5"] },
+        "edge": { "x": -1, "label": "x = −1" }
       },
       "steps": [
         {
@@ -134,7 +135,7 @@
           ]
         },
         {
-          "say": "Split it into two fractions. In the first, X plus one is a factor of the top and the bottom, so it equals four.",
+          "say": "Split it into two fractions. In the first, X plus one is a factor of the top and the bottom, so it cancels.",
           "asks": ["Why can we split the fraction?", "Why does it cancel to 4?"],
           "do": [
             { "do": "write", "step": 4 },
@@ -142,11 +143,12 @@
           ]
         },
         {
-          "say": "So Y equals four minus two over X plus one. A is four, and B is negative two.",
+          "say": "So the first fraction is four: Y equals four minus two over X plus one. A is four, and B is negative two.",
           "asks": ["Why is b negative?"],
           "do": [
-            { "do": "write", "step": 5 },
-            { "do": "note", "text": "a = 4, b = −2", "near": "d2", "on": "A is four" }
+            { "do": "write", "step": 5, "on": "Y equals four" },
+            { "do": "highlight", "token": "d2", "inside": "a", "tone": "orange", "on": "A is four" },
+            { "do": "note", "text": "a = 4, b = −2", "near": "d2", "on": "B is negative" }
           ]
         },
         {
@@ -200,7 +202,9 @@
         {
           "say": "Near X equals negative one the curve goes down forever, so every line below four cuts it.",
           "asks": ["Why does every line below 4 cut the curve?"],
-          "do": []
+          "do": [
+            { "do": "sketch", "show": "edge", "on": "Near X equals" }
+          ]
         },
         {
           "say": "At C equals four, it still misses: the curve never touches four. So C equals four is allowed.",

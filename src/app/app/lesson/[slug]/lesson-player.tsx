@@ -878,6 +878,12 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               {sk.asymptote.label && <text x={sx(sk.asymptote.x) + 4} y={P + 9} className="lsn-graph-lab">{sk.asymptote.label}</text>}
             </g>
           )}
+          {has('edge') && sk.edge && (
+            <g className="lsn-sketch-asy">
+              <line x1={sx(sk.edge.x)} y1={P - 4} x2={sx(sk.edge.x)} y2={H - P + 4} />
+              <text x={sx(sk.edge.x) + 3} y={P + 9} className="lsn-graph-lab">{sk.edge.label}</text>
+            </g>
+          )}
           {has('asymptote') && sk.asymptote?.y !== undefined && (
             <g className="lsn-sketch-asy" style={{ transform: has('shift') ? `translate(0px, ${dy}px)` : 'none', transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
               <line x1={P - 4} y1={sy(sk.asymptote.y)} x2={W - P + 4} y2={sy(sk.asymptote.y)} />

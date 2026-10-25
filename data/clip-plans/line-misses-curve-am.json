@@ -36,7 +36,7 @@
   "sketch": {
     "xMin": -1.6,
     "xMax": 2,
-    "yMin": -2,
+    "yMin": -4,
     "yMax": 6,
     "shape": "4 - 2/(x + 1) + 0*sqrt(x + 1)",
     "asymptote": {
@@ -57,6 +57,10 @@
         "c = 4",
         "c = 5"
       ]
+    },
+    "edge": {
+      "x": -1,
+      "label": "x = −1"
     }
   },
   "lines": [

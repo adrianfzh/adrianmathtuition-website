@@ -1,6 +1,6 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-25T14:39:23.107Z",
+ "at": "2026-10-25T15:18:37.324Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -15,16 +15,20 @@
    "detail": "11 lines = the checked plan"
   },
   "read": {
-   "ok": false,
-   "detail": "no blind read yet"
+   "ok": true,
+   "detail": "one draft — the stand-in reviewer judges it (see review)"
+  },
+  "voice": {
+   "ok": true,
+   "detail": "19/19 beats voiced + timed · speech round trip worst 94 %"
   },
   "look": {
-   "ok": false,
-   "detail": "24/24 actions on the voice · cues worst 99.00 s (gate 0.3 s) · look problems 0"
+   "ok": true,
+   "detail": "25/25 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": false,
-   "detail": "not reviewed yet (scripts/clips/review.mjs)"
+   "detail": "reviewed before the clip last changed — run scripts/clips/review.mjs again"
   }
  },
  "pass": false
