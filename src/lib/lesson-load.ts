@@ -41,6 +41,7 @@ import logOfNegativeUndefinedAm from '../../data/lessons/log-of-negative-undefin
 import whyLnWhenEAm from '../../data/lessons/why-ln-when-e-am.json';
 import rationaliseConjugateAm from '../../data/lessons/rationalise-conjugate-am.json';
 import oscillatingDotAm from '../../data/lessons/oscillating-dot-am.json';
+import lineMissesCurveAm from '../../data/lessons/line-misses-curve-am.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -82,6 +83,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'log-of-negative-undefined-am': logOfNegativeUndefinedAm,
   'why-ln-when-e-am': whyLnWhenEAm,
   'oscillating-dot-am': oscillatingDotAm,
+  'line-misses-curve-am': lineMissesCurveAm,
 };
 
 /**

@@ -1,0 +1,60 @@
+{
+ "slug": "line-misses-curve-am",
+ "at": "2026-10-25T14:35:12.168Z",
+ "model": "claude-opus-5-5",
+ "frames": 0,
+ "usage": {
+  "input_tokens": 32233,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 2794,
+  "output_tokens_details": {
+   "thinking_tokens": 1927
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "verdict": "fix",
+ "findings": [
+  {
+   "beat": 4,
+   "rule": "said = shown",
+   "severity": "must",
+   "problem": "The voice says what we must show (why c is at least four), but the board does not write the target until the very end, so the student has no written aim to work towards.",
+   "fix": "On \"explain why C is at least four\", write a line under the question such as `We want: why c ≥ 4`; the plan stays in the corner."
+  },
+  {
+   "beat": 6,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "\"Divide by X plus one\" does not describe the move: the top is being rewritten in lots of (x + 1). The voice never says why we do this (to reach the form a + b/(x + 1)), and line 2 appears before any reason is given.",
+   "fix": "Say \"To get the form A plus B over X plus one, write the top in terms of X plus one: four lots of X plus one make four X plus four, two too many, so take away two\", and write line 2 on \"write the top\"."
+  },
+  {
+   "beat": 7,
+   "rule": "said = shown",
+   "severity": "must",
+   "problem": "\"Split the fraction\" is said, but no split line is written. The board jumps from the single fraction to 4 − 2/(x + 1), and \"is just four\" gives no reason.",
+   "fix": "Write the next line of the whole equation, `y = \\dfrac{4(x+1)}{x+1} - \\dfrac{2}{x+1}`, on \"Split the fraction\". Light the first fraction and say \"the top and bottom are the same, so it equals four\" instead of \"is just four\"."
+  },
+  {
+   "beat": 15,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "One example (c = 2) shows a line below four cutting the curve. A student is not told why EVERY line below four must cut it, which is the half of the argument that rules out c < 4.",
+   "fix": "Add one sentence: \"Near X equals negative one the curve goes down forever, and it climbs towards four, so it reaches every height below four. Any line below four cuts it.\""
+  },
+  {
+   "beat": 16,
+   "rule": "layout",
+   "severity": "should",
+   "problem": "The line y = c slides onto the dashed asymptote y = 4. Its label \"c = 4\" and the asymptote label \"y = 4\" sit at the same height, so they may overlap on a phone.",
+   "fix": "Check the phone frame and offset the \"c = 4\" label (for example to the other end of the line) so both labels can be read."
+  }
+ ]
+}

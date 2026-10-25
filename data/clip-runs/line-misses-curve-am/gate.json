@@ -1,0 +1,31 @@
+{
+ "slug": "line-misses-curve-am",
+ "at": "2026-10-25T14:39:23.107Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "20/20 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "11 lines = the checked plan"
+  },
+  "read": {
+   "ok": false,
+   "detail": "no blind read yet"
+  },
+  "look": {
+   "ok": false,
+   "detail": "24/24 actions on the voice · cues worst 99.00 s (gate 0.3 s) · look problems 0"
+  },
+  "review": {
+   "ok": false,
+   "detail": "not reviewed yet (scripts/clips/review.mjs)"
+  }
+ },
+ "pass": false
+}

@@ -413,3 +413,21 @@ describe('into + replaces: the line is rewritten in place as the piece moves ins
     expect(tokenPieceWaiting(b1, scene, 0, 4)).toBe(null);
   });
 });
+
+describe('the side sketch — the line y = c slides (25 Oct 2026)', () => {
+  it('keeps ONE line stage, the newest height, beside the other stages', () => {
+    const scene: EquationStepsScene = {
+      ...recipe([
+        { say: 'Draw the axes and the curve.', do: [{ do: 'sketch', show: 'axes' }, { do: 'sketch', show: 'shape', at: 0.5 }] },
+        { say: 'The line y equals c.', do: [{ do: 'sketch', line: 0 }] },
+        { say: 'Slide it down to two.', do: [{ do: 'sketch', line: 1 }] },
+      ]),
+      sketch: { xMin: -1.6, xMax: 4.5, yMin: -3, yMax: 6.5, shape: '4 - 2/(x + 1)', hline: { label: 'y = c', at: [5, 2] } },
+    };
+    expect(boardStateAt(scene, 1, 9999).sketch).toEqual(['axes', 'shape', 'l0']);
+    expect(boardStateAt(scene, 2, 9999).sketch).toEqual(['axes', 'shape', 'l1']);
+    const v = validateLessonScript({ slug: 't', title: 't', level: 'AM', topic: 'x', minutes: 1, scenes: [{ ...scene, beats: [...(scene.beats ?? []), { say: 'Again.', do: [{ do: 'sketch', line: 2 }] }] }] });
+    expect(v.ok).toBe(false);
+    expect(v.ok ? [] : v.errors.join(' ')).toMatch(/line must be an index of sketch\.hline\.at/);
+  });
+});

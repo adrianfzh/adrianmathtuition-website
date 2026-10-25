@@ -1,0 +1,284 @@
+{
+ "slug": "line-misses-curve-am",
+ "draft": "W1",
+ "by": "session, 25 Oct 2026, question clip from Adrian's marked photo, his chain in his order, to the house rules",
+ "beats": [
+  {
+   "say": "Y equals four X plus two, over X plus one, for X greater than negative one. The line Y equals C misses this curve.",
+   "asks": [
+    "What are we asked to explain?",
+    "What does x > −1 mean here?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1
+    }
+   ]
+  },
+  {
+   "say": "First, what the question says. This is the curve, drawn only where X is greater than negative one.",
+   "asks": [
+    "Why only x greater than negative one?",
+    "What happens at x = −1?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "show": "axes"
+    },
+    {
+     "do": "sketch",
+     "show": "shape",
+     "on": "This is the"
+    },
+    {
+     "do": "highlight",
+     "token": "qd",
+     "tone": "orange",
+     "on": "where X is"
+    }
+   ]
+  },
+  {
+   "say": "Y equals C is a horizontal line, at height C. It never touches the curve, anywhere.",
+   "asks": [
+    "Why is y = c a horizontal line?",
+    "What is c?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "line": 0,
+     "on": "a horizontal line"
+    }
+   ]
+  },
+  {
+   "say": "We must explain why C is at least four, by writing the fraction as A plus B over X plus one.",
+   "asks": [
+    "Why write it in this form?",
+    "What are a and b?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "explain why C"
+    },
+    {
+     "do": "write",
+     "step": 0,
+     "on": "writing the fraction"
+    }
+   ]
+  },
+  {
+   "say": "Then the sign of B over X plus one tells us where the curve sits.",
+   "asks": [
+    "Why does the sign matter?"
+   ],
+   "do": []
+  },
+  {
+   "say": "To get that form, write the top using X plus one, so that part of it divides exactly by the bottom.",
+   "asks": [
+    "Why write the top using x + 1?",
+    "Can I use long division instead?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "write the top"
+    }
+   ]
+  },
+  {
+   "say": "Four lots of X plus one make four X plus four. That is two too many, so take away two.",
+   "asks": [
+    "Why take away two?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "d1",
+     "inside": "f",
+     "tone": "orange",
+     "on": "Four lots of"
+    }
+   ]
+  },
+  {
+   "say": "Split it into two fractions. In the first, X plus one is a factor of the top and the bottom, so it equals four.",
+   "asks": [
+    "Why can we split the fraction?",
+    "Why does it cancel to 4?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4
+    },
+    {
+     "do": "highlight",
+     "token": "sp1",
+     "tone": "orange",
+     "on": "In the first"
+    }
+   ]
+  },
+  {
+   "say": "So Y equals four minus two over X plus one. A is four, and B is negative two.",
+   "asks": [
+    "Why is b negative?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5
+    },
+    {
+     "do": "note",
+     "text": "a = 4, b = −2",
+     "near": "d2",
+     "on": "A is four"
+    }
+   ]
+  },
+  {
+   "say": "Now the sign. Since X is greater than negative one, X plus one is greater than zero.",
+   "asks": [
+    "Why is x + 1 positive?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 6,
+     "on": "Since X is"
+    }
+   ]
+  },
+  {
+   "say": "Two over a positive number is positive, so two over X plus one is greater than zero.",
+   "asks": [
+    "Why is 2 over a positive number positive?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 7,
+     "on": "so two over"
+    }
+   ]
+  },
+  {
+   "say": "Times by negative one, and the sign flips: negative two over X plus one is less than zero.",
+   "asks": [
+    "Why does the sign flip?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 8,
+     "on": "negative two over"
+    }
+   ]
+  },
+  {
+   "say": "So Y equals four minus two over X plus one: four take away a positive number, so less than four.",
+   "asks": [
+    "Why is y less than 4?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 9
+    },
+    {
+     "do": "highlight",
+     "token": "s4",
+     "inside": "l",
+     "tone": "orange",
+     "on": "so less than"
+    }
+   ]
+  },
+  {
+   "say": "Think of the graph: the curve is always below the line Y equals four.",
+   "asks": [
+    "Is y = 4 an asymptote?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "show": "asymptote",
+     "on": "below the line"
+    }
+   ]
+  },
+  {
+   "say": "As X grows, the curve gets closer and closer to four, but never touches it.",
+   "asks": [
+    "Why does it never reach 4?"
+   ],
+   "do": []
+  },
+  {
+   "say": "Now slide the line Y equals C down below four, say C equals one. Now it cuts the curve.",
+   "asks": [
+    "What if c is below 4?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "line": 1,
+     "on": "say C equals"
+    }
+   ]
+  },
+  {
+   "say": "Near X equals negative one the curve goes down forever, so every line below four cuts it.",
+   "asks": [
+    "Why does every line below 4 cut the curve?"
+   ],
+   "do": []
+  },
+  {
+   "say": "At C equals four, it still misses: the curve never touches four. So C equals four is allowed.",
+   "asks": [
+    "Why is c = 4 allowed?",
+    "Why not c > 4?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "line": 2
+    }
+   ]
+  },
+  {
+   "say": "Above four, it misses too. So the line must be at four or above: C is greater than or equal to four.",
+   "asks": [
+    "Why c ≥ 4 and not c > 4?"
+   ],
+   "do": [
+    {
+     "do": "sketch",
+     "line": 3
+    },
+    {
+     "do": "write",
+     "step": 10,
+     "on": "C is greater"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "or equal to"
+    }
+   ]
+  }
+ ]
+}

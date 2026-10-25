@@ -1,0 +1,251 @@
+{
+  "slug": "line-misses-curve-am",
+  "title": "Why c ≥ 4: the line y = c misses the curve",
+  "kind": "question",
+  "heading": null,
+  "intro": null,
+  "level": "AM",
+  "topic": "Partial Fractions",
+  "subgroup": null,
+  "source": {
+    "bank": "b071686f-de36-479e-8f36-4638bf3fe287",
+    "part": "c",
+    "photo": "Adrian's own marking of a student's (c) (25 Oct 2026): long division to 4 − 2/(x+1); since x > −1, x+1 > 0, 2/(x+1) > 0, −2/(x+1) < 0; y = 4 − 2/(x+1) < 4 \"(think graph is below y = 4)\"; for y = c not to intersect the curve \"(think y = c horizontal line must be 4 and above)\", c ≥ 4"
+  },
+  "bible": null,
+  "answer": {
+    "facts": [
+      "a = 4",
+      "b = -2"
+    ],
+    "display": "c ≥ 4",
+    "bank": "$c \\geqslant 4$"
+  },
+  "outline": [
+    "Question clip (hand-made 25 Oct 2026), Adrian's own chain from his red/blue ink on the photo, in his order.",
+    "The question first: the curve y = (4x+2)/(x+1) for x > −1 (x > −1 lit), drawn on the side sketch; the line y = c is a HORIZONTAL line (Adrian's blue note), drawn on the sketch, missing the curve; what we must explain: why c ≥ 4.",
+    "Plan pinned in the corner: write y as a + b/(x+1) — the question's own move; the sign of the fraction then tells us where the curve is.",
+    "Divide: 4(x+1) = 4x + 4, two too many, so 4x + 2 = 4(x+1) − 2; split: 4(x+1)/(x+1) = 4, so y = 4 − 2/(x+1); a = 4, b = −2.",
+    "The sign chain, one line each: since x > −1, x + 1 > 0; two over a positive is positive, 2/(x+1) > 0; times negative one flips it, −2/(x+1) < 0.",
+    "So y = 4 − 2/(x+1) < 4: four take away a positive number. His picture: the curve is below y = 4 — the dashed line y = 4 on the sketch, the curve under it, closer and closer, never reaching it.",
+    "His second picture: y = c is a horizontal line; slide it — at c = 2 it cuts the curve (a dot); at c = 4 it still misses, because the curve never reaches 4 (the reason c = 4 is allowed, said at this step); above 4 it misses. So c ≥ 4, boxed."
+  ],
+  "question": "The diagram shows part of the curve $y = \\frac{4x + 2}{x + 1}$ for $x > -1$. (c) The line $y = c$ does not intersect the curve. By expressing $\\frac{4x + 2}{x + 1}$ in the form $a + \\frac{b}{x + 1}$, where $a$, $b$ and $c$ are constants, explain why $c \\geqslant 4$.",
+  "minutes": 2,
+  "scroll": true,
+  "sketch": {
+    "xMin": -1.6,
+    "xMax": 2,
+    "yMin": -2,
+    "yMax": 6,
+    "shape": "4 - 2/(x + 1) + 0*sqrt(x + 1)",
+    "asymptote": {
+      "y": 4,
+      "label": "y = 4"
+    },
+    "hline": {
+      "label": "y = c",
+      "at": [
+        5,
+        1,
+        4,
+        5
+      ],
+      "labels": [
+        "y = c",
+        "c = 1",
+        "c = 4",
+        "c = 5"
+      ]
+    }
+  },
+  "lines": [
+    {
+      "tokens": [
+        {
+          "id": "plan",
+          "tex": "\\text{Plan: }y=a+\\tfrac{b}{x+1}",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "y = a + b/(x + 1)"
+        }
+      ],
+      "corner": true
+    },
+    {
+      "tokens": [
+        {
+          "id": "q",
+          "tex": "y=\\dfrac{4x+2}{x+1},"
+        },
+        {
+          "id": "qd",
+          "tex": "\\;x>-1"
+        }
+      ],
+      "checks": [
+        {
+          "model": {
+            "y": "(4*x + 2)/(x + 1)"
+          }
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "want",
+          "tex": "\\text{Explain why }c\\ge 4"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the aim: explain why c >= 4"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "d1",
+          "tex": "y=\\dfrac{4(x+1)-2}{x+1}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "4*x + 2 = 4*(x + 1) - 2"
+        },
+        {
+          "identity": "y = (4*(x + 1) - 2)/(x + 1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "sy",
+          "tex": "y="
+        },
+        {
+          "id": "sp1",
+          "tex": "\\dfrac{4(x+1)}{x+1}"
+        },
+        {
+          "id": "sp2",
+          "tex": "-\\dfrac{2}{x+1}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "y = 4*(x + 1)/(x + 1) - 2/(x + 1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "d2",
+          "tex": "y=\\htmlClass{lsn-pc-a}{4}-\\dfrac{2}{x+1}"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "y = 4 - 2/(x + 1)"
+        },
+        {
+          "fact": "a = 4"
+        },
+        {
+          "fact": "b = -2"
+        },
+        {
+          "identity": "y = a + b/(x + 1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s1",
+          "tex": "x>-1\\Rightarrow x+1>0"
+        }
+      ],
+      "checks": [
+        {
+          "ineq": "x + 1 > 0",
+          "var": "x",
+          "domain": "x > -1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s2",
+          "tex": "\\dfrac{2}{x+1}>0"
+        }
+      ],
+      "checks": [
+        {
+          "ineq": "2/(x + 1) > 0",
+          "var": "x",
+          "domain": "x > -1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s3",
+          "tex": "-\\dfrac{2}{x+1}<0"
+        }
+      ],
+      "checks": [
+        {
+          "ineq": "-2/(x + 1) < 0",
+          "var": "x",
+          "domain": "x > -1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "s4",
+          "tex": "y=4-\\dfrac{2}{x+1}\\htmlClass{lsn-pc-l}{<4}"
+        }
+      ],
+      "checks": [
+        {
+          "ineq": "4 - 2/(x + 1) < 4",
+          "var": "x",
+          "domain": "x > -1"
+        },
+        {
+          "identity": "y = 4 - 2/(x + 1)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "id": "ans",
+          "tex": "c\\ge 4",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "misses": "4 - 2/(x + 1)",
+          "var": "x",
+          "domain": "x > -1",
+          "param": "c",
+          "gives": "c >= 4"
+        }
+      ]
+    }
+  ]
+}

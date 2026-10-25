@@ -327,8 +327,10 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       board.sticker = { kind: action.kind, near: action.near ?? null, seq };
       break;
     case 'sketch': {
-      const stage = action.show ?? (action.point !== undefined ? `p${action.point}` : null);
-      if (stage && !board.sketch.includes(stage)) board.sketch = [...board.sketch, stage];
+      const stage = action.show ?? (action.point !== undefined ? `p${action.point}` : action.line !== undefined ? `l${action.line}` : null);
+      // The line y = c is ONE line that slides: its newest height is the last `l` stage.
+      if (stage?.startsWith('l')) board.sketch = [...board.sketch.filter(s => !/^l\d+$/.test(s)), stage];
+      else if (stage && !board.sketch.includes(stage)) board.sketch = [...board.sketch, stage];
       break;
     }
     case 'pin':

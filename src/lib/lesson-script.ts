@@ -317,8 +317,8 @@ export type BeatAction =
   | ({ do: 'sticker'; kind: StickerKind; near?: string } & Timed)
   /** The scene's side `sketch` grows one stage (Adrian, 18 Oct 2026): the corner shapes, the empty
    *  axes, the dashed asymptote, the shape lifted from the corner, the shape slid to its place, or
-   *  one labelled point (`point`: its index). */
-  | ({ do: 'sketch'; show?: SketchStage; point?: number } & Timed)
+   *  one labelled point (`point`: its index), or the horizontal line y = c at its `line`-th height. */
+  | ({ do: 'sketch'; show?: SketchStage; point?: number; line?: number } & Timed)
   /** The scene's `pinned` steps: `show` n writes the first n (as the voice lists them), `lit` n lights step n. */
   | ({ do: 'pin'; show?: number; lit?: number } & Timed);
 export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'stretch' | 'shift';
@@ -373,8 +373,10 @@ export type EquationStepsScene = NarrationFields & BeatFields & {
   sketch?: SceneSketch;
 };
 export interface SceneSketch {
-  /** The basic shapes in the corner: a graph with `curves`, each with an `id` a highlight can light. */
-  inset: StepGraph;
+  /** The basic shapes in the corner: a graph with `curves`, each with an `id` a highlight can light.
+   *  Leave it out when there is no family of shapes to show: the `shape` stage then draws the curve
+   *  straight onto the axes (25 Oct 2026, y = (4x + 2)/(x + 1)). */
+  inset?: StepGraph;
   /** The working sketch's window. */
   xMin: number; xMax: number; yMin: number; yMax: number;
   /** The basic shape lifted from the corner (its fn on the big axes), and the inset curve it comes from. */
@@ -388,6 +390,10 @@ export interface SceneSketch {
   /** `labelAfter`: the asymptote's label once the `shift` stage has moved it (y = 0 → y = 1). */
   asymptote?: { x?: number; y?: number; label?: string; labelAfter?: string };
   points?: { x: number; y: number; label: string }[];
+  /** A horizontal line y = c that SLIDES between heights (Adrian, 25 Oct 2026: "think y = c horizontal
+   *  line must be 4 and above"): `{do: 'sketch', line: i}` draws it at `at[i]` (or slides it there),
+   *  and where it meets the curve a dot is marked — so "above 4 it misses, below 4 it hits" is seen. */
+  hline?: { label: string; at: number[]; /** the label at each height, when it should name the value ("c = 2") */ labels?: string[] };
 }
 export type GraphMorphScene = NarrationFields & BeatFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
@@ -657,6 +663,8 @@ interface BeatScope {
   tokenIds: Set<string>;
   /** equation-steps: how many points its sketch has (undefined = no sketch). */
   sketchPoints?: number;
+  /** equation-steps: how many heights its sketch's line y = c has (0 = no line). */
+  sketchLines?: number;
   /** equation-steps: how many pinned steps (undefined = none). */
   pinned?: number;
   /** `from` ids some later token flies from (equation-steps). */
@@ -798,7 +806,8 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       break;
     case 'sketch':
       if (!scope.sketchPoints && scope.sketchPoints !== 0) errors.push(`${where}: sketch actions need the scene's "sketch"`);
-      else if ((a.show === undefined) === (a.point === undefined)) errors.push(`${where}: a sketch action has ONE of show (${SKETCH_STAGES.join('/')}) or point (an index)`);
+      else if ([a.show, a.point, a.line].filter(v => v !== undefined).length !== 1) errors.push(`${where}: a sketch action has ONE of show (${SKETCH_STAGES.join('/')}), point (an index) or line (an index of sketch.hline.at)`);
+      else if (a.line !== undefined && (!Number.isInteger(a.line) || Number(a.line) < 0 || Number(a.line) >= (scope.sketchLines ?? 0))) errors.push(`${where}: line must be an index of sketch.hline.at`);
       else if (a.show !== undefined && !(SKETCH_STAGES as readonly unknown[]).includes(a.show)) errors.push(`${where}: show must be one of ${SKETCH_STAGES.join('/')}`);
       else if (a.point !== undefined && (!Number.isInteger(a.point) || Number(a.point) < 0 || Number(a.point) >= (scope.sketchPoints ?? 0))) errors.push(`${where}: point must be an index of sketch.points`);
       break;
@@ -951,13 +960,15 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
       if (scene.sketch !== undefined) {
         const k = scene.sketch as Record<string, unknown>;
         const inset = k?.inset as Record<string, unknown> | undefined;
-        if (!isRecord(k) || !isRecord(inset) || !nonEmptyString(inset.fn) || !graphFn(inset.fn as string) || !nonEmptyString(k.shape) || !graphFn(k.shape as string)
+        if (!isRecord(k) || (inset !== undefined && (!isRecord(inset) || !nonEmptyString(inset.fn) || !graphFn(inset.fn as string))) || !nonEmptyString(k.shape) || !graphFn(k.shape as string)
+          || (k.hline !== undefined && (!isRecord(k.hline) || !nonEmptyString((k.hline as Record<string, unknown>).label) || !Array.isArray((k.hline as Record<string, unknown>).at) || !((k.hline as Record<string, unknown>).at as unknown[]).length || ((k.hline as Record<string, unknown>).at as unknown[]).some(v => typeof v !== 'number')))
           || !['xMin', 'xMax', 'yMin', 'yMax'].every(f => typeof k[f] === 'number')
-          || (k.to !== undefined && (!nonEmptyString(k.to) || !graphFn(k.to as string)))) errors.push(`${at}: sketch is { inset (a graph), xMin, xMax, yMin, yMax, shape (fn in x), from?, shift?, to? (fn in x), asymptote?, points? }`);
+          || (k.to !== undefined && (!nonEmptyString(k.to) || !graphFn(k.to as string)))) errors.push(`${at}: sketch is { inset? (a graph), xMin, xMax, yMin, yMax, shape (fn in x), from?, shift?, to? (fn in x), asymptote?, points?, hline? { label, at: number[] } }`);
         else {
-          if (nonEmptyString(inset.id)) sceneIds.add(inset.id as string);
-          for (const c of (Array.isArray(inset.curves) ? inset.curves : []) as Record<string, unknown>[]) if (nonEmptyString(c?.id)) sceneIds.add(c.id as string);
+          if (inset && nonEmptyString(inset.id)) sceneIds.add(inset.id as string);
+          for (const c of (Array.isArray(inset?.curves) ? inset!.curves : []) as Record<string, unknown>[]) if (nonEmptyString(c?.id)) sceneIds.add(c.id as string);
           scope.sketchPoints = Array.isArray(k.points) ? k.points.length : 0;
+          scope.sketchLines = isRecord(k.hline) ? ((k.hline as Record<string, unknown>).at as unknown[]).length : 0;
         }
       }
       if (scene.pinned !== undefined) {

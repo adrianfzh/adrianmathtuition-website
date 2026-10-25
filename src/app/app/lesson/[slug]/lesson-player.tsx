@@ -753,7 +753,7 @@ function plotPath(fn: string, win: { xMin: number; xMax: number; yMin: number; y
  *  shape lifted out of the corner and enlarged onto the axes, slid to its place, then each point. */
 function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
   const has = (s: string) => stages.includes(s);
-  const iw = { xMin: sk.inset.xMin, xMax: sk.inset.xMax, yMin: sk.inset.yMin, yMax: sk.inset.yMax };
+  const iw = sk.inset ? { xMin: sk.inset.xMin, xMax: sk.inset.xMax, yMin: sk.inset.yMin, yMax: sk.inset.yMax } : { xMin: -1, xMax: 1, yMin: -1, yMax: 1 };
   // Big enough to read on a phone (Adrian, 20 Oct 2026: "graph is hard to see, y=e^x can hardly been
   // seen (too small) - make sure graphs are clearly seen").
   const IW = 180, IH = 118, IP = 8;
@@ -762,7 +762,7 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
   const sy = (y: number) => H - P - ((y - sk.yMin) / (sk.yMax - sk.yMin)) * (H - 2 * P);
   const isx = (x: number) => IP + ((x - iw.xMin) / (iw.xMax - iw.xMin)) * (IW - 2 * IP);
   const isy = (y: number) => IH - IP - ((y - iw.yMin) / (iw.yMax - iw.yMin)) * (IH - 2 * IP);
-  const insetCurves = [{ fn: sk.inset.fn, id: sk.inset.id, label: sk.inset.label, labelAt: sk.inset.labelAt }, ...(sk.inset.curves ?? [])];
+  const insetCurves = sk.inset ? [{ fn: sk.inset.fn, id: sk.inset.id, label: sk.inset.label, labelAt: sk.inset.labelAt }, ...(sk.inset.curves ?? [])] : [];
   // The shape is cut where it would leave the window AFTER its shift (it slides up by dy).
   const cut = { yMin: sk.yMin - (sk.shift?.dy ?? 0), yMax: sk.yMax - (sk.shift?.dy ?? 0) };
   const shapeD = useMemo(() => plotPath(sk.shape, sk, W, H, P, cut), [sk]);   // eslint-disable-line react-hooks/exhaustive-deps
@@ -817,9 +817,32 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [shiftOn]);
+  // The line y = c at its newest height, and where it meets the curve as drawn (stretched, slid).
+  const hlStage = [...stages].reverse().find(st => /^l\d+$/.test(st));
+  // (A few hundred cheap evaluations, only once the line is on — no memo needed.)
+  const hl = (() => {
+    if (!sk.hline || !hlStage) return null;
+    const c = sk.hline.at[Number(hlStage.slice(1))];
+    if (typeof c !== 'number') return null;
+    const f0 = graphFn(sk.to && has('stretch') ? sk.to : sk.shape);
+    const sdx = has('shift') ? sk.shift?.dx ?? 0 : 0, sdy = has('shift') ? sk.shift?.dy ?? 0 : 0;
+    const g = (x: number) => (f0 ? f0(x - sdx) + sdy - c : NaN);
+    const hits: number[] = [];
+    let px = NaN, py = NaN;
+    for (let i = 0; i <= 600; i++) {
+      const x = sk.xMin + ((sk.xMax - sk.xMin) * i) / 600, y = g(x);
+      if (Number.isFinite(y) && Number.isFinite(py) && py * y <= 0 && Math.abs(py - y) < 1) {
+        let a = px, b = x;
+        for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (g(a) * g(m) <= 0) b = m; else a = m; }
+        if (!hits.length || Math.abs(a - hits[hits.length - 1]) > 1e-3) hits.push(a);
+      }
+      px = x; py = y;
+    }
+    return { c, hits, stage: hlStage };
+  })();
   return (
     <div className="lsn-sketch">
-      {has('inset') && (
+      {has('inset') && sk.inset && (
         <svg ref={insetRef} viewBox={`0 0 ${IW} ${IH}`} className="lsn-graph lsn-sketch-inset on" aria-hidden>
           <line x1={IP} y1={isy(0)} x2={IW - IP} y2={isy(0)} className="lsn-graph-axis" />
           <line x1={isx(0)} y1={IH - IP} x2={isx(0)} y2={IP} className="lsn-graph-axis" />
@@ -864,7 +887,8 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
           {shapeOn && (
             <g style={{ transform: has('shift') ? `translate(${dx}px, ${dy}px)` : 'none', transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
               <g ref={flyRef} className="lsn-sketch-shape" style={{ transformBox: 'fill-box', transformOrigin: '0 0' }}>
-                <path ref={curveRef} d={sk.to && shiftOn ? toD : shapeD} className="lsn-sketch-curve" data-ci={Math.max(0, insetCurves.findIndex(c => c.id === sk.from))} />
+                {/* No corner shape to lift (no `from`): the pen draws the curve on, left to right. */}
+                <path ref={curveRef} d={sk.to && shiftOn ? toD : shapeD} pathLength={sk.from ? undefined : 1} className={`lsn-sketch-curve${sk.from ? '' : ' lsn-sketch-draw'}`} data-ci={Math.max(0, insetCurves.findIndex(c => c.id === sk.from))} />
               </g>
             </g>
           )}
@@ -874,6 +898,19 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               <text x={sx(pt.x) + (sx(pt.x) > W * 0.6 ? -6 : 6)} y={sy(pt.y) + (pt.y > 0.05 ? -6 : 13)} textAnchor={sx(pt.x) > W * 0.6 ? 'end' : 'start'} className="lsn-graph-lab">{pt.label}</text>
             </g>
           ))}
+          {hl && (
+            // The line y = c, one line that SLIDES to each new height; a dot wherever it then meets
+            // the curve (Adrian, 25 Oct 2026: "think y = c horizontal line must be 4 and above").
+            <g className="lsn-sketch-hline">
+              <g style={{ transform: `translate(0px, ${sy(hl.c) - sy(0)}px)`, transition: 'transform 1200ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
+                <line x1={P - 4} y1={sy(0)} x2={W - P + 4} y2={sy(0)} />
+                <text x={W - P + 2} y={sy(0) - 6} textAnchor="end" className="lsn-graph-lab">{sk.hline!.labels?.[Number(hl.stage.slice(1))] ?? sk.hline!.label}</text>
+              </g>
+              {hl.hits.map((x, i) => (
+                <circle key={`${hl.stage}-${i}`} cx={sx(x)} cy={sy(hl.c)} r={4.2} className="lsn-sketch-hit" />
+              ))}
+            </g>
+          )}
         </svg>
       )}
     </div>
@@ -3658,6 +3695,14 @@ const PLAYER_CSS = `
 .lsn-sketch-asy line { stroke: #a8ecfb; stroke-width: 1.5; stroke-dasharray: 5 4; }
 .lsn-sketch-pt { animation: lsnFade 400ms ease both; }
 .lsn-sketch-pt circle { fill: #f9a8d4; }
+.lsn-sketch-draw { stroke-dasharray: 1; animation: lsnSketchDraw 1.8s ease-in-out both; }
+@keyframes lsnSketchDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.lsn-sketch-hline { animation: lsnFade 400ms ease both; }
+.lsn-sketch-hline line { stroke: #fdba74; stroke-width: 2.6; stroke-linecap: round; }
+.lsn-sketch-hline text { fill: #fdba74; font-weight: 700; }
+.lsn-sketch-hit { fill: #fb7185; animation: lsnFade 400ms ease 1200ms both; }
+/* The corner plan owns the top-right corner: the side sketch starts under it. */
+.lsn-scene:has([data-lsn-corner]) .lsn-sketch { top: calc(100% + 54px); }
 /* With a side sketch the working takes the left of the board, the sketch the right. */
 .lsn-scene:has(.lsn-sidewrap[data-has-sketch]) .lsn-zoom { width: 54%; flex: none; }
 /* The pinned steps own the top of the card: the Paused chip moves down, above the subtitle. */

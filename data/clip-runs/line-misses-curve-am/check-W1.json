@@ -1,0 +1,223 @@
+{
+  "slug": "line-misses-curve-am",
+  "title": "Why c ≥ 4: the line y = c misses the curve",
+  "level": "AM",
+  "topic": "Partial Fractions",
+  "minutes": 2,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "The diagram shows part of the curve $y = \\frac{4x + 2}{x + 1}$ for $x > -1$. (c) The line $y = c$ does not intersect the curve. By expressing $\\frac{4x + 2}{x + 1}$ in the form $a + \\frac{b}{x + 1}$, where $a$, $b$ and $c$ are constants, explain why $c \\geqslant 4$.",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "scroll": true,
+      "sketch": {
+        "xMin": -1.6,
+        "xMax": 2,
+        "yMin": -2,
+        "yMax": 6,
+        "shape": "4 - 2/(x + 1) + 0*sqrt(x + 1)",
+        "asymptote": { "y": 4, "label": "y = 4" },
+        "hline": { "label": "y = c", "at": [5, 1, 4, 5], "labels": ["y = c", "c = 1", "c = 4", "c = 5"] }
+      },
+      "steps": [
+        {
+          "tokens": [
+            { "id": "plan", "tex": "\\text{Plan: }y=a+\\tfrac{b}{x+1}", "hl": "sky" }
+          ],
+          "corner": true
+        },
+        {
+          "tokens": [
+            { "id": "q", "tex": "y=\\dfrac{4x+2}{x+1}," },
+            { "id": "qd", "tex": "\\;x>-1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "want", "tex": "\\text{Explain why }c\\ge 4" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "d1", "tex": "y=\\dfrac{4(x+1)-2}{x+1}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "sy", "tex": "y=" },
+            { "id": "sp1", "tex": "\\dfrac{4(x+1)}{x+1}" },
+            { "id": "sp2", "tex": "-\\dfrac{2}{x+1}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "d2", "tex": "y=\\htmlClass{lsn-pc-a}{4}-\\dfrac{2}{x+1}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "s1", "tex": "x>-1\\Rightarrow x+1>0" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "s2", "tex": "\\dfrac{2}{x+1}>0" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "s3", "tex": "-\\dfrac{2}{x+1}<0" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "s4", "tex": "y=4-\\dfrac{2}{x+1}\\htmlClass{lsn-pc-l}{<4}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "ans", "tex": "c\\ge 4", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Y equals four X plus two, over X plus one, for X greater than negative one. The line Y equals C misses this curve.",
+          "asks": ["What are we asked to explain?", "What does x > −1 mean here?"],
+          "do": [
+            { "do": "write", "step": 1 }
+          ]
+        },
+        {
+          "say": "First, what the question says. This is the curve, drawn only where X is greater than negative one.",
+          "asks": ["Why only x greater than negative one?", "What happens at x = −1?"],
+          "do": [
+            { "do": "sketch", "show": "axes" },
+            { "do": "sketch", "show": "shape", "on": "This is the" },
+            { "do": "highlight", "token": "qd", "tone": "orange", "on": "where X is" }
+          ]
+        },
+        {
+          "say": "Y equals C is a horizontal line, at height C. It never touches the curve, anywhere.",
+          "asks": ["Why is y = c a horizontal line?", "What is c?"],
+          "do": [
+            { "do": "sketch", "line": 0, "on": "a horizontal line" }
+          ]
+        },
+        {
+          "say": "We must explain why C is at least four, by writing the fraction as A plus B over X plus one.",
+          "asks": ["Why write it in this form?", "What are a and b?"],
+          "do": [
+            { "do": "write", "step": 2, "on": "explain why C" },
+            { "do": "write", "step": 0, "on": "writing the fraction" }
+          ]
+        },
+        {
+          "say": "Then the sign of B over X plus one tells us where the curve sits.",
+          "asks": ["Why does the sign matter?"],
+          "do": []
+        },
+        {
+          "say": "To get that form, write the top using X plus one, so that part of it divides exactly by the bottom.",
+          "asks": ["Why write the top using x + 1?", "Can I use long division instead?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "write the top" }
+          ]
+        },
+        {
+          "say": "Four lots of X plus one make four X plus four. That is two too many, so take away two.",
+          "asks": ["Why take away two?"],
+          "do": [
+            { "do": "highlight", "token": "d1", "inside": "f", "tone": "orange", "on": "Four lots of" }
+          ]
+        },
+        {
+          "say": "Split it into two fractions. In the first, X plus one is a factor of the top and the bottom, so it equals four.",
+          "asks": ["Why can we split the fraction?", "Why does it cancel to 4?"],
+          "do": [
+            { "do": "write", "step": 4 },
+            { "do": "highlight", "token": "sp1", "tone": "orange", "on": "In the first" }
+          ]
+        },
+        {
+          "say": "So Y equals four minus two over X plus one. A is four, and B is negative two.",
+          "asks": ["Why is b negative?"],
+          "do": [
+            { "do": "write", "step": 5 },
+            { "do": "note", "text": "a = 4, b = −2", "near": "d2", "on": "A is four" }
+          ]
+        },
+        {
+          "say": "Now the sign. Since X is greater than negative one, X plus one is greater than zero.",
+          "asks": ["Why is x + 1 positive?"],
+          "do": [
+            { "do": "write", "step": 6, "on": "Since X is" }
+          ]
+        },
+        {
+          "say": "Two over a positive number is positive, so two over X plus one is greater than zero.",
+          "asks": ["Why is 2 over a positive number positive?"],
+          "do": [
+            { "do": "write", "step": 7, "on": "so two over" }
+          ]
+        },
+        {
+          "say": "Times by negative one, and the sign flips: negative two over X plus one is less than zero.",
+          "asks": ["Why does the sign flip?"],
+          "do": [
+            { "do": "write", "step": 8, "on": "negative two over" }
+          ]
+        },
+        {
+          "say": "So Y equals four minus two over X plus one: four take away a positive number, so less than four.",
+          "asks": ["Why is y less than 4?"],
+          "do": [
+            { "do": "write", "step": 9 },
+            { "do": "highlight", "token": "s4", "inside": "l", "tone": "orange", "on": "so less than" }
+          ]
+        },
+        {
+          "say": "Think of the graph: the curve is always below the line Y equals four.",
+          "asks": ["Is y = 4 an asymptote?"],
+          "do": [
+            { "do": "sketch", "show": "asymptote", "on": "below the line" }
+          ]
+        },
+        {
+          "say": "As X grows, the curve gets closer and closer to four, but never touches it.",
+          "asks": ["Why does it never reach 4?"],
+          "do": []
+        },
+        {
+          "say": "Now slide the line Y equals C down below four, say C equals one. Now it cuts the curve.",
+          "asks": ["What if c is below 4?"],
+          "do": [
+            { "do": "sketch", "line": 1, "on": "say C equals" }
+          ]
+        },
+        {
+          "say": "Near X equals negative one the curve goes down forever, so every line below four cuts it.",
+          "asks": ["Why does every line below 4 cut the curve?"],
+          "do": []
+        },
+        {
+          "say": "At C equals four, it still misses: the curve never touches four. So C equals four is allowed.",
+          "asks": ["Why is c = 4 allowed?", "Why not c > 4?"],
+          "do": [
+            { "do": "sketch", "line": 2 }
+          ]
+        },
+        {
+          "say": "Above four, it misses too. So the line must be at four or above: C is greater than or equal to four.",
+          "asks": ["Why c ≥ 4 and not c > 4?"],
+          "do": [
+            { "do": "sketch", "line": 3 },
+            { "do": "write", "step": 10, "on": "C is greater" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "or equal to" }
+          ]
+        }
+      ]
+    }
+  ]
+}

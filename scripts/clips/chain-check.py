@@ -34,6 +34,11 @@ The kinds:
   {"limit": "3*exp(2*x)", "var": "x",          the limit as var → at (an asymptote)
    "at": "-oo", "gives": 0}
   {"form": "Y = m*X + c"}                       a reference line (Y = mX + c) — no claim
+  {"ineq": "2/(x + 1) > 0", "var": "x",        an inequality TRUE for every x in the domain
+   "domain": "x > -1"}                         (25 Oct 2026, the sign chain from x > −1)
+  {"misses": "4 - 2/(x + 1)", "var": "x",      the values of c for which the line y = c does
+   "domain": "x > -1", "param": "c",           NOT meet the curve are exactly `gives`
+   "gives": "c >= 4"}                          (the curve's range over the domain, complemented)
   {"system": ["4*a - 2*b = 6", "9*a + 3*b = -54"], unknowns found together (question clips,
    "vars": ["a", "b"]}                         15 Oct 2026): starts a system chain
   {"system_step": ["...", "..."]}              every solution of the system before solves this one
@@ -206,7 +211,7 @@ def check_plan(plan):
         for c in checks:
             kind = next((k for k in ('model', 'given', 'start', 'step', 'start_expr', 'step_expr', 'roots',
                                      'approx', 'identity', 'fact', 'solves', 'none', 'limit', 'shape', 'form',
-                                     'system', 'system_step', 'solution') if k in c), None)
+                                     'ineq', 'misses', 'system', 'system_step', 'solution') if k in c), None)
             if kind is None:
                 raise PlanError(f'line {li}: unknown check {c}')
             ok, detail = True, ''
@@ -328,6 +333,20 @@ def check_plan(plan):
                 sols, _ = real_solutions(S(lhs), S(rhs), var)
                 ok = len(sols) == 0
                 detail = f"{c['none']} → " + ('no real solutions' if ok else f'HAS solutions {fmt(sols)}')
+            elif kind == 'ineq':
+                var = local[c['var']]
+                dom = sp.solve_univariate_inequality(P(c['domain'], local), var, relational=False) if c.get('domain') else sp.S.Reals
+                holds_on = sp.solve_univariate_inequality(S(P(c['ineq'], local)), var, relational=False, domain=sp.S.Reals)
+                ok = dom.is_subset(holds_on)
+                detail = f"{c['ineq']} for every {c['var']} with {c.get('domain', 'any value')}: " + ('true' if ok else f'FALSE (true only on {holds_on})')
+            elif kind == 'misses':
+                var, par = local[c['var']], local[c['param']]
+                dom = sp.solve_univariate_inequality(P(c['domain'], local), var, relational=False) if c.get('domain') else sp.S.Reals
+                rng = sp.calculus.util.function_range(S(P(c['misses'], local)), var, dom)
+                miss = sp.S.Reals - rng
+                want = sp.solve_univariate_inequality(P(c['gives'], local), par, relational=False)
+                ok = miss == want
+                detail = f"y = {c['param']} misses y = {c['misses']} ({c.get('domain', '')}) exactly when {c['param']} ∈ {miss} ({'= ' if ok else '≠ '}{c['gives']})"
             elif kind == 'limit':
                 var = local[c['var']]
                 L = sp.limit(S(P(c['limit'], local)), var, sp.sympify(c['at']))

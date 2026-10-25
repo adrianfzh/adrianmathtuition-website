@@ -248,6 +248,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'A dot swinging on a screen: x = a sin nt',
     minutes: 3,
   },
+  {
+    slug: 'line-misses-curve-am',
+    level: 'AM',
+    topic: 'Partial Fractions',
+    title: 'Why c ≥ 4: the line y = c misses the curve',
+    minutes: 2,
+  },
 ];
 
 /**

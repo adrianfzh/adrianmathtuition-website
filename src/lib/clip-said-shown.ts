@@ -115,7 +115,9 @@ export function boardTextAfter(scene: Scene | PlayScene, k: number): string {
     if (scene.pinned) bits.push(...scene.pinned.slice(0, b.pinShown));
     const sk = scene.sketch;
     if (sk) {
-      if (b.sketch.includes('inset')) bits.push(sk.inset.label ?? '', ...(sk.inset.curves ?? []).map(c => c.label ?? ''));
+      if (b.sketch.includes('inset') && sk.inset) bits.push(sk.inset.label ?? '', ...(sk.inset.curves ?? []).map(c => c.label ?? ''));
+      const ls = b.sketch.find(s => /^l\d+$/.test(s));
+      if (sk.hline && ls) bits.push(sk.hline.labels?.[Number(ls.slice(1))] ?? sk.hline.label);
       if (b.sketch.includes('asymptote')) bits.push(b.sketch.includes('shift') && sk.asymptote?.labelAfter ? sk.asymptote.labelAfter : sk.asymptote?.label ?? '');
       (sk.points ?? []).forEach((p, i) => { if (b.sketch.includes(`p${i}`)) bits.push(p.label); });
     }

@@ -104,6 +104,11 @@ no focus, no clear.
   curve; the sketch window keeps the curve's tail clearly off its asymptote; big enough to read on a phone.
 - **A set of basic shapes first**: one `graph` with `curves` (each `id` + `label` + `labelAt`), a beat
   per curve that `highlight`s its id as the voice names it and says how it is flipped.
+- **A horizontal line y = c that slides** (25 Oct 2026, "for which c does y = c miss / meet the curve"):
+  the plan's `sketch.hline` `{label, at: [heights], labels?: [one per height]}`; `{"do": "sketch", "line": i}`
+  draws it at `at[i]` or slides it there, and a dot appears wherever it then meets the curve — show a
+  height that cuts the curve, the boundary, and one above. A sketch with no family of shapes leaves out
+  `inset`: the `shape` stage then draws the curve on (a domain like x > −1: add `+ 0*sqrt(x + 1)` to `shape`).
 - **Explain a word problem first** (house rules §2): a question with a story or a formula the student
   may not know opens with a "First, what the question says" step — the formula on the board, what each
   letter means (its own line each, the letter lit: `part` "num"/"den" for a fraction's top/bottom), each
