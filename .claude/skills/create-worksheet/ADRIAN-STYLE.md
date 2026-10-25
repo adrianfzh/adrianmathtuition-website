@@ -952,6 +952,25 @@ into the bold `Ans:` line. Worked example: `examples/vectors_solutions_build.py`
 H2 Vectors practice, 10 questions, 37 rows). Known limit: lines after an `=` only
 roughly align — check the rendered page in Word before handing it over.
 
+## 11 · A recap / watch-out sheet SHOWS the mistake (25 Oct 2026)
+
+Adrian, 25 Oct 2026, on an A Math "things to remember" list written as bullet points:
+*"you are not getting it. more like substantiate with examples like that … of course not
+the full fledge notes … but students must SEE the mistakes/things to know, not just read
+about them"*. His reference is the published "Revision Notes at your fingertips" layout.
+Use it for the shape only. Never copy its examples or wording.
+
+- Each point is a **short worked example**: a bold one-line title naming the skill, a 1–2
+  line question, then working of 3–8 lines (§1).
+- **The trap is marked on the line where it happens**: a grey ← note at that line (§2),
+  e.g. "dividing by a negative number reverses the sign". A student sees it happen.
+- Show the wrong working beside the right working only for mistakes that are common on
+  marked papers.
+- A point that is a picture (nature of roots, graph shapes) gets a table of small sketches
+  (`figure_lib`), not sentences.
+- Keep it short: one example per point, never the full notes. Fewer points with real
+  examples beat many points in words.
+
 ## Adding a rule (how this list grows)
 
 1. Quote what Adrian said, with the date, in the section it belongs to (new section if
