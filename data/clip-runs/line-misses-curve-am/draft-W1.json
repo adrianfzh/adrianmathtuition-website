@@ -240,7 +240,7 @@
    ]
   },
   {
-   "say": "As X grows, the curve gets closer and closer to four, but never touches it.",
+   "say": "Y equals four is the asymptote: the curve gets close to it, but never touches it.",
    "asks": [
     "Why does it never reach 4?"
    ],

@@ -935,7 +935,8 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
             <g className="lsn-sketch-hline">
               <g style={{ transform: `translate(0px, ${sy(hl.c) - sy(0)}px)`, transition: 'transform 650ms cubic-bezier(0.45, 0, 0.3, 1)' }}>
                 <line x1={P - 4} y1={sy(0)} x2={W - P + 4} y2={sy(0)} />
-                <text x={W - P + 2} y={sy(0) - 6} textAnchor="end" className="lsn-graph-lab">{sk.hline!.labels?.[Number(hl.stage.slice(1))] ?? sk.hline!.label}</text>
+                {/* At the LEFT end: the curve's own label sits to the right (26 Oct 2026, "c = 1" landed on it). */}
+                <text x={P - 2} y={sy(0) - 6} className="lsn-graph-lab">{sk.hline!.labels?.[Number(hl.stage.slice(1))] ?? sk.hline!.label}</text>
               </g>
               {hl.hits.map((x, i) => (
                 <circle key={`${hl.stage}-${i}`} cx={sx(x)} cy={sy(hl.c)} r={4.2} className="lsn-sketch-hit" />

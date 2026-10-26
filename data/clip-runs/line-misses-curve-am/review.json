@@ -1,46 +1,46 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-25T15:28:54.434Z",
+ "at": "2026-10-26T02:03:35.166Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 51818,
+  "input_tokens": 55728,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 2567,
+  "output_tokens": 1947,
   "output_tokens_details": {
-   "thinking_tokens": 2105
+   "thinking_tokens": 1389
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "pass",
+ "verdict": "fix",
  "findings": [
   {
-   "beat": 8,
-   "rule": "what, how, why",
-   "severity": "should",
-   "problem": "\"So it cancels\" is the shortcut word; the student hears the reason (a common factor) but never sees that the first fraction becomes 4 before the next line drops it in.",
-   "fix": "Say \"dividing the top and the bottom by X plus one leaves four\" in place of \"so it cancels\", keeping the first fraction lit as it is said."
+   "beat": 16,
+   "rule": "layout: labels readable on a phone",
+   "severity": "must",
+   "problem": "When the line slides down to c = 1, its label 'c = 1' lands on top of the curve's label 'y = (4x+2)/(x+1)'. In the frames for beats 16 and 17 both read as a garbled 'xc+=1', so the student cannot read either the curve's equation or the value of c.",
+   "fix": "Place the 'c = 1' label where it does not overlap the curve's equation label, for example at the left end of the line or just below it, so both labels stay wholly readable at phone width."
   },
   {
-   "beat": 9,
-   "rule": "part talked about is lit",
+   "beat": 15,
+   "rule": "voice (Adrian, 20 Oct: no 'as x grows')",
    "severity": "should",
-   "problem": "\"A is four\" lights the 4, but on \"B is negative two\" the −2 over x + 1 is not lit, so the student must work out which part is b.",
-   "fix": "Wrap the −2 in line 5 as its own piece and light it in a second colour on \"B is negative two\", alongside the a = 4, b = −2 note."
+   "problem": "'As X grows, the curve gets closer and closer to four' is the 'as x grows' explanation of an asymptote that Adrian asked not to use, and nothing is added to the board on this beat.",
+   "fix": "Say it plainly instead, e.g. 'Y equals four is the asymptote: the curve never touches it', and light the dashed y = 4 on the sketch as it is said."
   },
   {
-   "beat": 5,
+   "beat": 17,
    "rule": "said = shown",
    "severity": "should",
-   "problem": "The second half of the plan, using the sign of b/(x+1) to see where the curve sits, is only spoken; nothing on the board shows it.",
-   "fix": "Fold this sentence into beat 4 or drop it, since beats 10–13 show the sign working on the board when it is used."
+   "problem": "The key conclusion 'every line below four intersects it' is only said. It is the step that rules out c < 4, but nothing on the board records it before the answer appears.",
+   "fix": "Write a short line on those words, e.g. 'c < 4: intersects', so the board shows why values below four are rejected before c ≥ 4 is boxed."
   }
  ]
 }
