@@ -1,19 +1,19 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-26T02:03:35.166Z",
+ "at": "2026-10-26T02:16:28.370Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 55728,
+  "input_tokens": 56154,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 1947,
+  "output_tokens": 2205,
   "output_tokens_details": {
-   "thinking_tokens": 1389
+   "thinking_tokens": 1790
   },
   "service_tier": "standard",
   "inference_geo": "global",
@@ -22,25 +22,18 @@
  "verdict": "fix",
  "findings": [
   {
-   "beat": 16,
-   "rule": "layout: labels readable on a phone",
+   "beat": 19,
+   "rule": "layout",
    "severity": "must",
-   "problem": "When the line slides down to c = 1, its label 'c = 1' lands on top of the curve's label 'y = (4x+2)/(x+1)'. In the frames for beats 16 and 17 both read as a garbled 'xc+=1', so the student cannot read either the curve's equation or the value of c.",
-   "fix": "Place the 'c = 1' label where it does not overlap the curve's equation label, for example at the left end of the line or just below it, so both labels stay wholly readable at phone width."
-  },
-  {
-   "beat": 15,
-   "rule": "voice (Adrian, 20 Oct: no 'as x grows')",
-   "severity": "should",
-   "problem": "'As X grows, the curve gets closer and closer to four' is the 'as x grows' explanation of an asymptote that Adrian asked not to use, and nothing is added to the board on this beat.",
-   "fix": "Say it plainly instead, e.g. 'Y equals four is the asymptote: the curve never touches it', and light the dashed y = 4 on the sketch as it is said."
+   "problem": "On the phone frame the moving line's label \"c = 5\" runs into the \"x = −1\" label at the top of the sketch, so neither label can be read while the voice says \"Above four, it does not intersect either\".",
+   "fix": "Place the y = c label where it cannot meet the x = −1 label at every height it slides to, for example at the right end of the line, so both labels stay clear and readable at phone size."
   },
   {
    "beat": 17,
    "rule": "said = shown",
    "severity": "should",
-   "problem": "The key conclusion 'every line below four intersects it' is only said. It is the step that rules out c < 4, but nothing on the board records it before the answer appears.",
-   "fix": "Write a short line on those words, e.g. 'c < 4: intersects', so the board shows why values below four are rejected before c ≥ 4 is boxed."
+   "problem": "The deciding step of the explanation is only spoken: \"every line below four intersects it\" (beat 17) and \"C equals four is allowed\" (beat 18). The board goes straight from y < 4 to the boxed c ≥ 4, so a student does not see why c < 4 is ruled out.",
+   "fix": "Write a short line as each is said, for example \"c < 4: intersects\" on \"every line below four intersects it\" and \"c ≥ 4: does not intersect\" on \"C equals four is allowed\", then box c ≥ 4 as now."
   }
  ]
 }

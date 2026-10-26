@@ -78,7 +78,7 @@ import ClipAskPanel, { type ClipAskStep } from './clip-ask-panel';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
-  type GraphMorphScene, type GraphPiece, type MotionGraphScene, type StepGraph, graphFn, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
+  type GraphMorphScene, type GraphPiece, type MotionGraphScene, type StepGraph, type StepSwing, graphFn, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
   type ResolvedCheckScene, type StepToken, type TitleScene, type SceneSketch,
 } from '@/lib/lesson-script';
 import {
@@ -712,6 +712,99 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
   );
 }
 
+/**
+ * A swing under its line (StepSwing — Adrian, 26 Oct 2026: "you should have animation that shows how
+ * the dot moves from O to A to O to B to O and how the graph draws out > that's the most important
+ * understanding part. then how to find the values of unknowns from the graph"). The path stands upright
+ * on the left (the first end at the top), the graph of x against t on the right, on the same heights.
+ * When its `swing` action fires the dot goes once round the path while the graph is drawn at the dot's
+ * height, a dashed line joining them; then the values to read off appear (the highest value, the
+ * period, the first end at the top of the graph). Reached by a seek, it shows the finished picture.
+ */
+function ClipSwing({ sw, played }: { sw: StepSwing; played: boolean }) {
+  const W = 300, H = 186, PT = 18, PB = 30;
+  const LX = 30, GX0 = 82, GX1 = 284;
+  const half = (H - PT - PB) / 2, midY = PT + half;
+  const yOf = (x: number) => midY - (x / sw.amp) * half;
+  const tx = (t: number) => GX0 + (t / sw.period) * (GX1 - GX0);
+  const xAt = (q: number) => sw.amp * Math.sin(2 * Math.PI * q);
+  const [p, setP] = useState(played ? 1 : 0);
+  const was = useRef(played);
+  useEffect(() => {
+    const before = was.current;
+    was.current = played;
+    if (!played) { setP(0); return; }
+    if (before) { setP(1); return; }
+    // Played just now: the dot goes round once, the graph drawn with it.
+    const ms = (sw.seconds ?? 6) * 1000;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const q = Math.min(1, (now - t0) / ms);
+      setP(q);
+      if (q < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); setP(1); };
+  }, [played, sw.seconds]);
+  const N = 160;
+  let d = '';
+  for (let i = 0; i <= Math.round(N * p); i++) {
+    const q = i / N;
+    d += `${i ? 'L' : 'M'}${tx(q * sw.period).toFixed(1)} ${yOf(xAt(q)).toFixed(1)} `;
+  }
+  const dotY = yOf(xAt(p >= 1 ? 0 : p));
+  const penX = tx(p * sw.period);
+  const done = p >= 1;
+  const [ax, at] = sw.axes ?? ['x', 't'];
+  const id = sw.id;
+  const neg = `\u2212${sw.amp}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="lsn-graph lsn-swing on" data-token-id={id} aria-hidden>
+      {/* The path, upright: the first end at the top, the centre in the middle, the other end below. */}
+      <line x1={LX} y1={yOf(sw.amp)} x2={LX} y2={yOf(-sw.amp)} className="lsn-swing-path" />
+      {[sw.amp, 0, -sw.amp].map((v, k) => (
+        <g key={k}>
+          <line x1={LX - 5} y1={yOf(v)} x2={LX + 5} y2={yOf(v)} className="lsn-swing-path" />
+          <text x={LX - 10} y={yOf(v) + 4.5} textAnchor="end" className="lsn-graph-lab lsn-swing-end">{sw.ends[k]}</text>
+        </g>
+      ))}
+      {/* The graph's axes. */}
+      <line x1={GX0} y1={PT - 8} x2={GX0} y2={H - PB + 8} className="lsn-graph-axis" />
+      <line x1={GX0} y1={midY} x2={GX1 + 10} y2={midY} className="lsn-graph-axis" />
+      <text x={GX0 + 6} y={PT - 6} className="lsn-graph-lab">{ax}</text>
+      <text x={GX1 + 12} y={midY + 4} className="lsn-graph-lab">{at}</text>
+      {/* The graph so far, and the dashed line from the dot to the pen. */}
+      <path d={d} className="lsn-swing-curve" />
+      {p > 0 && !done && <line x1={LX} y1={dotY} x2={penX} y2={dotY} className="lsn-swing-join" />}
+      <circle cx={LX} cy={dotY} r={6} className="lsn-swing-dot" data-token-id={`${id}-dot`} />
+      {/* What to read off, once it has gone round. */}
+      <g className={`lsn-swing-read ${done ? 'on' : ''}`}>
+        <g data-token-id={`${id}-amp`} className="lsn-swing-val">
+          <line x1={GX0} y1={yOf(sw.amp)} x2={tx(sw.period / 4)} y2={yOf(sw.amp)} className="lsn-swing-guide" />
+          <line x1={GX0} y1={yOf(-sw.amp)} x2={tx((3 * sw.period) / 4)} y2={yOf(-sw.amp)} className="lsn-swing-guide" />
+          <text x={GX0 - 5} y={yOf(sw.amp) + 4.5} textAnchor="end" className="lsn-graph-lab">{sw.amp}</text>
+          <text x={GX0 - 5} y={yOf(-sw.amp) + 4.5} textAnchor="end" className="lsn-graph-lab">{neg}</text>
+        </g>
+        <g data-token-id={`${id}-top`} className="lsn-swing-val">
+          <circle cx={tx(sw.period / 4)} cy={yOf(sw.amp)} r={4} className="lsn-swing-pt" />
+          <text x={tx(sw.period / 4)} y={yOf(sw.amp) - 8} textAnchor="middle" className="lsn-graph-lab">{sw.ends[0]}</text>
+        </g>
+        <g data-token-id={`${id}-bot`} className="lsn-swing-val">
+          <circle cx={tx((3 * sw.period) / 4)} cy={yOf(-sw.amp)} r={4} className="lsn-swing-pt" />
+          <text x={tx((3 * sw.period) / 4) + 9} y={yOf(-sw.amp) + 4.5} className="lsn-graph-lab">{sw.ends[2]}</text>
+        </g>
+        <g data-token-id={`${id}-per`} className="lsn-swing-val">
+          <line x1={GX0} y1={H - 14} x2={GX1} y2={H - 14} className="lsn-swing-guide lsn-swing-span" />
+          <line x1={GX0} y1={H - 19} x2={GX0} y2={H - 9} className="lsn-swing-span" />
+          <line x1={GX1} y1={H - 19} x2={GX1} y2={H - 9} className="lsn-swing-span" />
+          <text x={(GX0 + GX1) / 2} y={H - 18} textAnchor="middle" className="lsn-graph-lab">{`one oscillation: ${sw.period}`}</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 /** A graph label with its power raised: "e^−x" draws e with −x up as a power (the font has no
  *  raised minus, so "e⁻ˣ" lost its minus on a phone, 20 Oct 2026). */
 function SvgPower({ text }: { text: string }) {
@@ -905,7 +998,8 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
           {has('edge') && sk.edge && (
             <g className="lsn-sketch-asy">
               <line x1={sx(sk.edge.x)} y1={P - 4} x2={sx(sk.edge.x)} y2={H - P + 4} />
-              <text x={sx(sk.edge.x) + 3} y={P + 9} className="lsn-graph-lab">{sk.edge.label}</text>
+              {/* Bottom-left of its line: the top-left is where the sliding line y = c puts its label. */}
+              <text x={sx(sk.edge.x) - 3} y={H - P - 2} textAnchor="end" className="lsn-graph-lab">{sk.edge.label}</text>
             </g>
           )}
           {has('asymptote') && sk.asymptote?.y !== undefined && (
@@ -1491,6 +1585,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
                   tokens above it arrive per step and are never walked word by
                   word. The intro (the question) stays at full ink throughout. */}
               {s.graph && <ClipGraph g={s.graph} on={on} />}
+              {s.swing && <ClipSwing sw={s.swing} played={!!board?.swung.includes(i)} />}
               {s.note && (
                 <p data-fit className="lsn-step-note mt-1.5 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug"><Prose text={s.note} group={ng.group} from={ng.from} timed={timed} /></p>
               )}
@@ -3768,6 +3863,20 @@ const PLAYER_CSS = `
 .lsn-graph:has(.lsn-graph-c.lsn-lit) .lsn-graph-c:not(.lsn-lit) { opacity: 0.3; transition: opacity 300ms ease; }
 .lsn-graph-c.lsn-lit .lsn-graph-curve { stroke-width: 3.6; filter: drop-shadow(0 0 4px currentColor); }
 .lsn-graph-c.lsn-lit .lsn-graph-clab { font-weight: bold; }
+.lsn-swing-path { stroke: rgba(248,250,252,0.85); stroke-width: 2.2; stroke-linecap: round; }
+.lsn-swing-end { font-size: 14px; font-weight: 600; }
+.lsn-swing-curve { fill: none; stroke: #ffe89a; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.lsn-swing-join { stroke: rgba(168,236,251,0.8); stroke-width: 1.3; stroke-dasharray: 4 4; }
+.lsn-swing-dot { fill: #fb923c; }
+.lsn-swing-read { opacity: 0; transition: opacity 500ms ease; }
+.lsn-swing-read.on { opacity: 1; }
+.lsn-swing-guide { stroke: #a8ecfb; stroke-width: 1.3; stroke-dasharray: 5 4; }
+.lsn-swing-span { stroke: #a8ecfb; stroke-width: 1.4; }
+.lsn-swing-pt { fill: #f9a8d4; }
+.lsn-swing-val.lsn-lit-orange text, .lsn-swing-val.lsn-lit text { fill: #fb923c; font-weight: bold; }
+.lsn-swing-val.lsn-lit-orange line, .lsn-swing-val.lsn-lit line { stroke: #fb923c; }
+.lsn-swing-val.lsn-lit-blue text { fill: #7dd3fc; font-weight: bold; }
+.lsn-swing-val.lsn-lit-blue line { stroke: #7dd3fc; }
 .lsn-graph-asy line { stroke: #a8ecfb; stroke-width: 1.4; stroke-dasharray: 5 4; }
 .lsn-graph-asy, .lsn-graph-pt { opacity: 0; }
 .lsn-graph.on .lsn-graph-asy { opacity: 1; transition: opacity 0.5s ease 0s; }
