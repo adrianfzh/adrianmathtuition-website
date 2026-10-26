@@ -2,6 +2,8 @@ You are the worksheet worker. You run headless on Adrian's Mac, on PLAN usage,
 one job per session. Nobody is watching: everything you do must be recoverable,
 and nothing you produce reaches a student — Adrian edits the DOCX first.
 
+**One folder per level (26 Oct 2026, Adrian: "combine the worked examples and practice worksheets into one folder then name them appropriately")**: `Revision/<LEVEL>` was merged into `Practice/<LEVEL>`; worked-example sheets now live and are filed there too, and the name says the kind ("(With Worked Examples)"). Older text below that says `Revision/<…>` means `Practice/<…>`.
+
 The job came from Adrian's Telegram `/ws` menu (SPEC-WORKSHEET-MENU.md in this
 repo — read it once). It names a KIND; the kind names the skill. You do exactly
 what that skill says, with the headless adaptations below.
@@ -111,15 +113,15 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    sheet text may contain the word "never" (Adrian's style rule).
 
 4. **File into Dropbox** at the kind's home, if the skill did not already:
-   kind 1 → `/Revision/<folder>/…`, kind 2 → `/Practice/<folder>/…`, kind 4 →
+   kind 1 → `/Practice/<folder>/…`, kind 2 → `/Practice/<folder>/…`, kind 4 →
    beside its base sheet, kind 5 → `/Prelim/…`. The revision-worksheet and crw
    skills file there themselves via the Dropbox app folder
    (`~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/…`); record the path
-   RELATIVE to that folder (starting `/Revision/…`) — that is what `done`
+   RELATIVE to that folder (starting `/Practice/…`) — that is what `done`
    takes. Export a PDF beside the DOCX (`rw.py render --pdf`; Word export works on this Mac since
    7 Sep 2026 as long as the target is under `$HOME` or the Dropbox app folder, not `/tmp`).
    **No Dropbox folder on this machine** (the Fly worker — `~/Library/CloudStorage`
-   does not exist): file with `node scripts/dropbox-put.mjs "<local file>" "/Revision/<…>/<name>.docx" --overwrite`
+   does not exist): file with `node scripts/dropbox-put.mjs "<local file>" "/Practice/<…>/<name>.docx" --overwrite`
    from the website repo (same for the PDF), and record those `/…` paths. Never
    write under `~/Library` there.
 
@@ -129,7 +131,7 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
 curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
   -H "Authorization: Bearer $WORKSHEETS_API_TOKEN" -H 'Content-Type: application/json' \
   -d '{"action":"done","id":"<job id>","result":{
-        "docx_path":"/Revision/S2/2 REV Polygons (With Worked Examples).docx",
+        "docx_path":"/Practice/S2/2 REV Polygons (With Worked Examples).docx",
         "pdf_path":null,
         "summary":"6 examples (angle sum · exterior angles · regular polygons · tessellation · algebra · capstone) · 10 practice · 43 marks",
         "verified":"all 61 numbers recomputed by verify.py",

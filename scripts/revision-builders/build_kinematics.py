@@ -297,7 +297,7 @@ def main():
     worked(ws)
     n = practice(ws, rows)
 
-    out = Path.home()/"Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/Revision/AM/30 Kinematics Revision (S4).docx"
+    out = Path.home()/"Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/Practice/AM/30 Kinematics Revision (S4).docx"
     ws.save(str(out))
     print(f"worked examples: 6")
     print(f"practice questions: {n}/{len(PRACTICE)}")

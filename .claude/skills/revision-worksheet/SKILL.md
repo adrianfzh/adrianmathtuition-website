@@ -6,7 +6,7 @@ description: >
   skills from the bank's subgroups, pick ONE real past-paper question per skill so the
   examples cover the whole topic without repeating, write every worked solution in Adrian's
   captured style, put similar-by-embedding practice questions under them, draft the Notes
-  formula box, verify every number, and land the DOCX in Dropbox Revision/<folder> for Adrian
+  formula box, verify every number, and land the DOCX in Dropbox Practice/<folder> for Adrian
   to vet. Thin topics pool the whole E-Math family (Sec 1–4) because Sec 4 E-Math contains
   every S1–S4 topic. Trigger on "revision worksheet for <topic>", "worked examples sheet for
   <level> <topic>", "make the S2 polygons revision sheet", "build a revision sheet on
@@ -19,12 +19,14 @@ description: >
   hand). NOT self-study-sheet (driven by one student's marked paper).
 ---
 
+**One folder per level (26 Oct 2026, Adrian: "combine the worked examples and practice worksheets into one folder then name them appropriately")**: `Revision/<LEVEL>` was merged into `Practice/<LEVEL>`; worked-example sheets now live and are filed there too, and the name says the kind ("(With Worked Examples)"). Older text below that says `Revision/<…>` means `Practice/<…>`.
+
 # Revision worksheet — a worked-examples sheet from the bank
 
 > **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
 
 **Starts from** the question bank plus a topic. **Produces** the "(With Worked Examples)"
-sheet — Notes → Examples → Practice — in `Dropbox/Apps/AdrianMathNotes/Revision/<folder>/`,
+sheet — Notes → Examples → Practice — in `Dropbox/Apps/AdrianMathNotes/Practice/<folder>/`,
 named the way Adrian's own sheets are named, so it is the base that
 `copy-revision-worksheet-with-different-practice` can later extend with fresh practice.
 
@@ -169,7 +171,7 @@ instead (pandoc + MathJax, figures extracted); open it and check content, order,
 every equation, and say in the hand-over that the page-level look happens in Word.
 (LibreOffice is not an option — it mangles OMML `&` alignment; tried 31 Aug 2026.)
 
-Output lands as `Revision/<folder>/<n> REV <Topic> Revision (With Worked Examples).docx`
+Output lands as `Practice/<folder>/<n> REV <Topic> Revision (With Worked Examples).docx`
 (Adrian, 5 Sep 2026) — `<n>` is his chapter number, taken from his own sheet for the topic
 or from the August builders' filename (`--prefix` overrides; empty when neither exists).
 **Existing files are never overwritten**: a clash becomes `… (another version).docx`, then

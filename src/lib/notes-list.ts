@@ -5,8 +5,14 @@
 //
 // Four kinds live in the same app folder, one parent folder each:
 //   notes     → /Notes/<LEVEL>      e.g. /Notes/AM    (kiosk "Learn" + admin)
-//   revision  → /Revision/<LEVEL>   e.g. /Revision/AM (kiosk "Revise" + admin)
+//   revision  → /Practice/<LEVEL>   the SAME folder as practice since 26 Oct 2026
 //   practice  → /Practice/<LEVEL>   e.g. /Practice/AM (kiosk "Practice" + admin)
+//
+// One folder per level for every worksheet (Adrian, 26 Oct 2026: "combine the worked
+// examples and practice worksheets into one folder then name them appropriately … one
+// folder to find them under one topic"). Revision/<LEVEL> was merged into Practice/<LEVEL>
+// (undo log: Practice/.merge-undo-2026-10-26.json); a sheet's name says what it is.
+// The `revision` kind stays as an alias so old callers and links keep working.
 //   prelim    → /Prelim/<LEVEL>     e.g. /Prelim/AM   (admin only, 2026-07-30 —
 //               O-Level EM/AM + A-Level JC prelim practice sets; S1/S2 folders
 //               are valid but in practice never created, since prelims don't
@@ -55,8 +61,7 @@ export function isKioskKind(v: string | null | undefined): v is PrintableKind {
 export function dropboxFolderFor(kind: PrintableKind, slug: string): string | null {
   const folder = SLUG_TO_DBX_FOLDER[slug];
   if (!folder) return null;
-  if (kind === 'revision') return `Revision/${folder}`;
-  if (kind === 'practice') return `Practice/${folder}`;
+  if (kind === 'revision' || kind === 'practice') return `Practice/${folder}`;
   if (kind === 'prelim') return `Prelim/${folder}`;
   return `Notes/${folder}`;
 }

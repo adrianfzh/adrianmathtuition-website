@@ -60,8 +60,9 @@ re-runs itself under `/usr/bin/python3` when python-docx is missing (the Homebre
 none). Still LOOK at one page of each PDF before handing it over.
 
 **One shelf (Adrian, 26 Oct 2026):** every practice sheet a session makes goes to
-`Apps/AdrianMathNotes/Practice/<level>` — sheets with worked examples to `Revision/<level>`,
-full papers to `Prelim/<level>`. `AdrianMath Work/` is only the workshop (scripts, drafts);
+`Apps/AdrianMathNotes/Practice/<level>` — sheets with worked examples go there TOO since
+26 Oct 2026 (one folder per level; the name says "(With Worked Examples)"), full papers to
+`Prelim/<level>`. `AdrianMath Work/` is only the workshop (scripts, drafts);
 a finished sheet never stays only there.
 
 ## Workflow
@@ -89,7 +90,7 @@ That's it. One script to run. The library produces a Word-ready docx in a single
 **Where the file goes (Adrian, 18 Sep 2026 — so a lesson-time request needs no follow-up
 question):** file it on the Dropbox shelf the kiosk reads, by what the sheet contains —
 `docs/KIOSK.md` §Printable PDFs — Dropbox drop-in folder is the rule. A sheet WITH worked examples →
-`Dropbox/Apps/AdrianMathNotes/Revision/<LEVEL>`; questions with a summary/formula page and
+`Dropbox/Apps/AdrianMathNotes/Practice/<LEVEL>` (merged with Revision 26 Oct 2026); questions with a summary/formula page and
 no solutions → `Practice/<LEVEL>`; a full paper → `Prelim/`. Never overwrite a file already
 on the shelf — a rebuild goes beside it under a new name (ADRIAN-STYLE.md). In a headless
 or Remote Control session also send the PDF to Adrian's Telegram (CLAUDE.md §📱).

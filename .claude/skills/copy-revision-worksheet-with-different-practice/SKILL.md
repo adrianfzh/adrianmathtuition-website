@@ -17,6 +17,8 @@ description: >
   create-worksheet (authors bare questions from scratch).
 ---
 
+**One folder per level (26 Oct 2026, Adrian: "combine the worked examples and practice worksheets into one folder then name them appropriately")**: `Revision/<LEVEL>` was merged into `Practice/<LEVEL>`; worked-example sheets now live and are filed there too, and the name says the kind ("(With Worked Examples)"). Older text below that says `Revision/<…>` means `Practice/<…>`.
+
 # Copy Revision Worksheet (with different practice) Skill
 
 > **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
@@ -34,7 +36,7 @@ mutated.
 | Kind | Base document | Result | Lands in → kiosk button |
 |---|---|---|---|
 | `notes` | Notes-bank fragment (`notes_bank/<BANK>/<Topic>.docx`) — Adrian's formulas + his "Reminders" section | Fragment verbatim, then `Practice` | `Practice/<folder>` → **Practice** |
-| `worked` | Existing revision sheet (`Revision/<FOLDER>/… (With Worked Examples).docx`) | Whole worked sheet verbatim, then `Practice` | `Revision/<folder>` → **Revise** |
+| `worked` | Existing revision sheet (`Practice/<FOLDER>/… (With Worked Examples).docx`) | Whole worked sheet verbatim, then `Practice` | `Practice/<folder>` → **Revise** |
 
 Requires `pandoc` (equation conversion), `python-docx` + `lxml`, and the sibling
 [`create-worksheet`](../create-worksheet/SKILL.md) skill — its `worksheet_lib.py` is the
@@ -229,7 +231,7 @@ save in Word. Run it after adding a fragment from a new source sheet.
 ## Content source 2 — worked-examples sheets (kind=worked)
 
 ```
-~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/Revision/<AM|EM|S1|S2|JC|AM G2|EM G2>/
+~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/Practice/<AM|EM|S1|S2|JC|AM G2|EM G2>/
 ```
 
 Filenames carry ordering digits and decorations — `3 REV AM Binomial Theorem (With Worked
@@ -240,13 +242,13 @@ scores a "with worked examples" variant above a bare one, and penalises decorate
 duplicates (`… 2`, `… (Without Graphs)`).
 
 If nothing matches, it says so and lists what the folder actually has — same failure
-format as above. **`Revision/AM G2` is currently empty**, so any `--folder "AM G2"` request
+format as above. **`Practice/AM G2` is currently empty**, so any `--folder "AM G2"` request
 will fail that way until Adrian puts sheets in it.
 
 ### Building a NEW worked-examples sheet from the bank (first built 2026-08-13)
 
 The kinematics proof-of-concept: `30 Kinematics Revision (With Worked Examples) (Past
-Papers) (S4).docx` in `Revision/AM` — a bank-sourced twin of Adrian's authored sheet
+Papers) (S4).docx` in `Practice/AM` — a bank-sourced twin of Adrian's authored sheet
 (subtitle carries the differentiator: *Kinematics (Past-Paper Edition)*). Reference build:
 [`bank_worked_sheet.py`](bank_worked_sheet.py) — copy-adapt per topic; everything
 layout-mechanical is already solved in it, only the content changes.
@@ -645,7 +647,7 @@ Notes sheets came out byte-identical.
   stops before it, so the number/label columns are spelled out rather than left to the
   hanging indent's implicit stop.
 - **The skill's own output is excluded from base resolution.** `worked` worksheets land in
-  `Revision/<folder>` — the very folder scanned for `worked` bases — so a second run would
+  `Practice/<folder>` — the very folder scanned for `worked` bases — so a second run would
   otherwise clone the first run's worksheet and compound the Practice section (this
   happened: 25 `[Ans:]` lines instead of 6). `list_worked`/`list_fragments` skip any stem
   matching `^REV .+\((Notes|Worked Examples)\)$`, which is exactly `default_out_path`'s
@@ -683,7 +685,7 @@ would now file every practice sheet under the wrong button.
 
 | Kind | Folder |
 |---|---|
-| `worked` | `Revision/<folder>` — the folder the base sheet came from, so the worksheet lands beside its source |
+| `worked` | `Practice/<folder>` — the folder the base sheet came from, so the worksheet lands beside its source |
 | `notes` | `Practice/<folder>`, with `S4_AM`/`S3_AM` → `AM`, `S4_EM`/`S3_EM` → `EM` (a notes bank has no folder of its own) |
 | `--base` with no bank/folder | `~/Desktop` |
 

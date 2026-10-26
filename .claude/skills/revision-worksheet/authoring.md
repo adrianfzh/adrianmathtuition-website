@@ -1,5 +1,7 @@
 # Authoring brief — worked examples in Adrian's style
 
+**One folder per level (26 Oct 2026, Adrian: "combine the worked examples and practice worksheets into one folder then name them appropriately")**: `Revision/<LEVEL>` was merged into `Practice/<LEVEL>`; worked-example sheets now live and are filed there too, and the name says the kind ("(With Worked Examples)"). Older text below that says `Revision/<…>` means `Practice/<…>`.
+
 > **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
 
 The binding source is `docs/teaching-style/FEEDBACK.md` (his own
@@ -9,8 +11,8 @@ the exact code shapes that renderer accepts. When FEEDBACK.md has a newer dated 
 than 5 Sep 2026, read that entry too; it wins.
 
 Two of his own sheets are the reference for this surface, and worth opening once:
-`Revision/S2/2 REV Polygons (With Worked Examples).docx` and
-`Revision/EM/O REV Number Patterns (With Worked Examples).docx`.
+`Practice/S2/2 REV Polygons (With Worked Examples).docx` and
+`Practice/EM/O REV Number Patterns (With Worked Examples).docx`.
 
 **Plain Singapore classroom English in every lede, note and annotation — no idioms**
 (Adrian, 7 Sep 2026, on "That same line hands you the factor (x − a) to divide by":
@@ -263,7 +265,7 @@ What render does, in order — each **stop** is a `SystemExit` before any file i
    unless `--flow`. Part marks ≠ `total_marks` → warning, not a stop.
 5. Page break → `Practice` → Word numbering restarted → each question with its
    `ANSWERS` line; parts-only questions hoist the first part onto the number line.
-6. Writes the DOCX to `Revision/<folder>/…` named as SKILL.md §5 says, **never
+6. Writes the DOCX to `Practice/<folder>/…` named as SKILL.md §5 says, **never
    overwriting** (`--out` for an exact path). `--pdf` exports through Word (works since 7 Sep 2026;
    refuses a target under `/private/tmp`) and falls back to `<workdir>/preview.html`. Every
    warning lands in `<workdir>/report.md`; repeat them in the hand-over.

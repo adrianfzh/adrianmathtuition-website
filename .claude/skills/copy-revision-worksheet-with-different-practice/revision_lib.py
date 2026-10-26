@@ -62,7 +62,11 @@ from skill_pick import pick_by_skill   # noqa: E402  — docs/SKILL-PICK.md, the
 # --------------------------------------------------------------------------
 
 DROPBOX = Path.home() / "Library/CloudStorage/Dropbox/Apps/AdrianMathNotes"
-REVISION_ROOT = DROPBOX / "Revision"
+# One folder per level since 26 Oct 2026 (Adrian: "combine the worked examples and practice
+# worksheets into one folder"): Revision/<folder> was merged into Practice/<folder>, so the
+# worked-example sheets are read from, and written to, Practice/<folder>. A file's name says
+# which kind it is ("(With Worked Examples)", "(Revision)", "Practice").
+REVISION_ROOT = DROPBOX / "Practice"
 # The two kinds print to two different kiosk buttons, so they go to two folders:
 # worked → Revision/<folder> (kiosk "Revise"), notes → Practice/<folder> (kiosk
 # "Practice"). Both were writing into Revision/ until 2026-08-11, which put the

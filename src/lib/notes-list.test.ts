@@ -11,25 +11,17 @@ describe('dropboxFolderFor', () => {
     expect(dropboxFolderFor('notes', 'jc')).toBe('Notes/JC');
   });
 
-  it('puts revision worksheets under Revision/<LEVEL>', () => {
-    expect(dropboxFolderFor('revision', 'am')).toBe('Revision/AM');
-    expect(dropboxFolderFor('revision', 'em')).toBe('Revision/EM');
-    expect(dropboxFolderFor('revision', 's2')).toBe('Revision/S2');
+  // One folder per level since 26 Oct 2026 — worked examples and practice together.
+  it('lists revision (worked-example) worksheets from Practice/<LEVEL> too', () => {
+    expect(dropboxFolderFor('revision', 'am')).toBe('Practice/AM');
+    expect(dropboxFolderFor('revision', 'em')).toBe('Practice/EM');
+    expect(dropboxFolderFor('revision', 's2')).toBe('Practice/S2');
   });
 
   it('puts practice worksheets under Practice/<LEVEL>', () => {
     expect(dropboxFolderFor('practice', 'am')).toBe('Practice/AM');
     expect(dropboxFolderFor('practice', 'em')).toBe('Practice/EM');
     expect(dropboxFolderFor('practice', 's1')).toBe('Practice/S1');
-  });
-
-  // practice and revision are one character apart in the switch and hold
-  // different worksheets (summary+questions vs worked examples) — a crossed
-  // wire would serve the wrong sheet to a student, silently and plausibly.
-  it('keeps practice and revision on separate folders', () => {
-    for (const slug of Object.keys(NOTE_SLUG_TO_LEVELS)) {
-      expect(dropboxFolderFor('practice', slug)).not.toBe(dropboxFolderFor('revision', slug));
-    }
   });
 
   it('puts prelim practice sets under Prelim/<LEVEL>', () => {

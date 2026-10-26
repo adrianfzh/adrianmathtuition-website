@@ -265,8 +265,8 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
           <div className="nl-seg">
             <button className={`nl-seg-btn${kind === 'notes' ? ' on' : ''}`}
               onClick={() => { setKind('notes'); }}>📘 Notes</button>
-            <button className={`nl-seg-btn${kind === 'revision' ? ' on' : ''}`}
-              onClick={() => { setKind('revision'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>📝 Revision</button>
+            {/* No separate Revision button since 26 Oct 2026: worked-example and practice
+                sheets share Practice/<LEVEL>, and each file's name says which it is. */}
             <button className={`nl-seg-btn${kind === 'practice' ? ' on' : ''}`}
               onClick={() => { setKind('practice'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>✏️ Practice</button>
             <button className={`nl-seg-btn${kind === 'prelim' ? ' on' : ''}`}

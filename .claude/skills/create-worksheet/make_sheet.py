@@ -25,10 +25,11 @@ What it does, in order:
      own folder, no Grant-File-Access dialog, never interrupts Adrian).
   4. Looks at the write-on PDF: a question whose number lands in the bottom
      30 % of a page starts on a new page instead (rebuild, at most 2 passes).
-  5. Files all four files on the kiosk shelf
-     Dropbox/Apps/AdrianMathNotes/<Practice|Revision>/<level>/ — never over an
-     existing file (a new copy gets " v2", " v3"). Practice = questions (+
-     answers), Revision = sheets WITH worked examples (docs/KIOSK.md).
+  5. Files all four files in the ONE worksheet folder of the level,
+     Dropbox/Apps/AdrianMathNotes/Practice/<level>/ — never over an existing
+     file (a new copy gets " v2", " v3"). Worked-example and practice sheets
+     share it since 26 Oct 2026; kind='revision' adds "(With Worked Examples)"
+     to the name when it does not say so already (docs/KIOSK.md).
 Prints the four paths at the end.
 """
 from __future__ import annotations
@@ -132,7 +133,12 @@ def make_sheet(build, name: str, level: str, kind: str = 'practice', working_spa
     both=False makes only the write-on copy. file=False keeps the files in out_dir."""
     if level not in LEVELS:
         raise SystemExit(f'level must be one of {LEVELS}')
-    shelf = SHELF / {'practice': 'Practice', 'revision': 'Revision'}[kind] / level
+    if kind not in ('practice', 'revision'):
+        raise SystemExit("kind must be 'practice' or 'revision'")
+    # one folder per level for both kinds since 26 Oct 2026; the NAME says which it is
+    if kind == 'revision' and not re.search(r'worked|example', name, re.I):
+        name += ' (With Worked Examples)'
+    shelf = SHELF / 'Practice' / level
     out = Path(out_dir) if out_dir else Path(sys.argv[0]).resolve().parent / 'out'
     out.mkdir(parents=True, exist_ok=True)
 

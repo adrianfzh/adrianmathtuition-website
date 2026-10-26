@@ -45,7 +45,7 @@ async function existingSheets(level: string, topic: string): Promise<string[]> {
   if (!folder) return [];
   const words = topic.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !/^(and|the|of|with)$/.test(w));
   if (!words.length) return [];
-  const entries = await listFolder(`/Revision/${folder}`).catch(() => []);
+  const entries = await listFolder(`/Practice/${folder}`).catch(() => []);
   return entries
     .map(e => e.name)
     .filter(n => /\.docx$/i.test(n) && !/^~\$/.test(n))
