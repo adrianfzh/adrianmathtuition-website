@@ -722,7 +722,7 @@ function ClipGraph({ g, on }: { g: StepGraph; on: boolean }) {
  * period, the first end at the top of the graph). Reached by a seek, it shows the finished picture.
  */
 function ClipSwing({ sw, played }: { sw: StepSwing; played: boolean }) {
-  const W = 300, H = 186, PT = 18, PB = 30;
+  const W = 300, H = 128, PT = 11, PB = 25;
   const LX = 30, GX0 = 82, GX1 = 284;
   const half = (H - PT - PB) / 2, midY = PT + half;
   const yOf = (x: number) => midY - (x / sw.amp) * half;
@@ -802,7 +802,7 @@ function ClipSwing({ sw, played }: { sw: StepSwing; played: boolean }) {
           <line x1={GX0} y1={H - 14} x2={GX1} y2={H - 14} className="lsn-swing-guide lsn-swing-span" />
           <line x1={GX0} y1={H - 19} x2={GX0} y2={H - 9} className="lsn-swing-span" />
           <line x1={GX1} y1={H - 19} x2={GX1} y2={H - 9} className="lsn-swing-span" />
-          <text x={(GX0 + GX1) / 2} y={H - 18} textAnchor="middle" className="lsn-graph-lab">{`one oscillation: ${sw.period}${sw.unit ? ` ${sw.unit}` : ''}`}</text>
+          <text x={(GX0 + GX1) / 2} y={H - 1} textAnchor="middle" className="lsn-graph-lab">{`one oscillation: ${sw.period}${sw.unit ? ` ${sw.unit}` : ''}`}</text>
         </g>
       </g>
     </svg>
@@ -3870,6 +3870,7 @@ const PLAYER_CSS = `
 .lsn-swing-path { stroke: rgba(248,250,252,0.85); stroke-width: 2.2; stroke-linecap: round; }
 .lsn-swing-end { font-size: 14px; font-weight: 600; }
 .lsn-swing-label { fill: #ffe89a; font-size: 13px; }
+.lsn-graph.lsn-swing { margin: 2px 0 0; }
 .lsn-swing-curve { fill: none; stroke: #ffe89a; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .lsn-swing-join { stroke: rgba(168,236,251,0.8); stroke-width: 1.3; stroke-dasharray: 4 4; }
 .lsn-swing-dot { fill: #fb923c; }
