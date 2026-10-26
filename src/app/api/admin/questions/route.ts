@@ -1217,6 +1217,10 @@ export async function POST(req: NextRequest) {
       opts: { workingSpace, answerKey, originalNumbering, withSolutions, answersOnly, title: titleBits },
       // The stored print width decides a grid's size, so it is part of the key (28 Sep 2026).
       rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image, (r.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm ?? null, (r.gen_meta as { figure?: { width_mm?: unknown } } | null)?.figure?.width_mm ?? null]),
+      // The worked solutions are in the file only with withSolutions, so only then do they key
+      // it — a solutions-only edit reprinted the OLD solutions (H2 Set 2, 26 Oct 2026). Absent
+      // otherwise, so the stored prints without solutions keep their keys.
+      ...(withSolutions ? { sols: rows.map((r) => [r.solution ?? null, r.solution_images ?? null]) } : {}),
     })).digest('hex');
     const payload = {
       count: rows.length, marksTotal,
