@@ -500,6 +500,18 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       for (const [el, c] of pcWant) el.classList.add(c);
     }
 
+    // 2c. A piece a `write … inside` writes is hidden until then (a long division built row by row —
+    // Adrian, 26 Oct 2026: "do long division instead").
+    for (const key of board.heldPieces ?? []) {
+      const k = key.lastIndexOf(':');
+      const tok = zoom.querySelector(`[data-token-id="${CSS.escape(key.slice(0, k))}"]`);
+      const on = board.pieces?.has(key);
+      tok?.querySelectorAll<HTMLElement>(`.lsn-pc-${CSS.escape(key.slice(k + 1))}`).forEach(el => {
+        el.style.transition = 'opacity 450ms ease';
+        el.style.opacity = on ? '' : '0';
+      });
+    }
+
     // 3. Marks: draw new ones, drop cleared ones.
     const svg = marksRef.current;
     if (svg) {

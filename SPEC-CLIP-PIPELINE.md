@@ -603,7 +603,17 @@ with no x = −1 drawn → a new sketch `edge` stage, a dashed vertical line; "i
 before the 4 → beats 8–9 re-worded, two lines re-recorded) → pass (0 must; shoulds left for Adrian:
 "so it cancels" → "dividing top and bottom by x + 1 leaves four", light the −2 as b, drop the "sign
 of b/(x+1)" sentence). Test site: phone 27/27 cues, 0 problems; 1280 × 640: 0 problems. **Gate green
-25 Oct 2026.** Not promoted. Waiting for Adrian's notes.
+25 Oct 2026.**
+**Adrian's first notes (26 Oct 2026), all five applied the same day** (rules in `_house.md` §2, `writer.md`,
+`reviewer.md` item 19): "say it does not intersect the curve" (not "misses"); "don't have to read the
+question, but explain what the question is asking" (beat 1 now says what it is about); "do long division
+instead" — the division drawn the way he writes it and built ROW BY ROW as it is said (new: `write` with
+`inside` writes one piece of a token; pieces some write names stay hidden until then), then "quotient plus
+remainder over x + 1" gives y = 4 − 2/(x+1), the −2 lit as b; "put the equation y=(4x+2)/(x+1) beside the
+graph" (new sketch `label`, a stacked fraction beside the curve); "i can't scroll up to the very top" while
+it plays → fixed in the player for every clip (the look-back may go past the faded top strip under the
+corner plan; checked in a browser at beat 13: the first line in full view). Voice re-recorded (19 lines,
+19/19 heard). Not promoted. Waiting for more notes.
 
 ### The player layout for clips (Adrian, 15 Oct 2026)
 

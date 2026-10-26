@@ -579,7 +579,12 @@ function attachBoardLook(cont: HTMLElement): () => void {
   let timer = 0;
   const show = (v: number, glide: boolean) => {
     const a = auto();
-    const at = Math.max(0, Math.min(a, v));
+    // The very top is reachable: once the board has scrolled, its top strip fades (and the corner
+    // plan sits there), so looking back may go past 0 until the first line clears it (Adrian, 26 Oct
+    // 2026: "when i try to scroll up while video is playing > there is only a limit it can scroll up
+    // to (i can't scroll up to the very top)").
+    const top = -Number(cont.dataset.fadeTop ?? 0);
+    const at = Math.max(top, Math.min(a, v));
     if (at >= a - 2) delete cont.dataset.viewAt; else cont.dataset.viewAt = String(at);
     zoom.style.transition = glide ? GLIDE : 'none';
     zoom.style.translate = `0 ${-(cont.dataset.viewAt ? at : a)}px`;
@@ -748,6 +753,25 @@ function plotPath(fn: string, win: { xMin: number; xMax: number; yMin: number; y
   return path;
 }
 
+/** The curve's equation beside it (Adrian, 26 Oct 2026: "label the graph"): "y = (a)/(b)" is drawn
+ *  as a stacked fraction centred at (x, y); anything else as one line. */
+function SketchLabel({ text, x, y }: { text: string; x: number; y: number }) {
+  const m = text.match(/^(.*?=\s*)\((.+)\)\/\((.+)\)$/);
+  if (!m) return <text x={x} y={y} textAnchor="middle" className="lsn-graph-lab lsn-sketch-label">{text}</text>;
+  const [, pre, num, den] = m;
+  const fw = Math.max(num.length, den.length) * 6.6 + 4;   // the fraction's width, 13 px italic serif
+  const pw = pre.length * 6.2;
+  const fx = x + pw / 2;                                    // the fraction's centre
+  return (
+    <g className="lsn-sketch-label">
+      <text x={fx - fw / 2 - 3} y={y + 4.5} textAnchor="end" className="lsn-graph-lab">{pre.trim()}</text>
+      <text x={fx} y={y - 4} textAnchor="middle" className="lsn-graph-lab">{num}</text>
+      <line x1={fx - fw / 2} y1={y} x2={fx + fw / 2} y2={y} />
+      <text x={fx} y={y + 13} textAnchor="middle" className="lsn-graph-lab">{den}</text>
+    </g>
+  );
+}
+
 /** The side sketch (Adrian, 18 Oct 2026): the basic shapes small in the corner (each lit by its id),
  *  and under them the working sketch, built stage by stage — empty axes, the dashed asymptote, the
  *  shape lifted out of the corner and enlarged onto the axes, slid to its place, then each point. */
@@ -898,6 +922,7 @@ function SketchPanel({ sk, stages }: { sk: SceneSketch; stages: string[] }) {
               </g>
             </g>
           )}
+          {shapeOn && sk.label && <SketchLabel text={sk.label.text} x={sx(sk.label.x)} y={sy(sk.label.y)} />}
           {(sk.points ?? []).map((pt, i) => has(`p${i}`) && (
             <g key={i} className="lsn-sketch-pt">
               <circle cx={sx(pt.x)} cy={sy(pt.y)} r={3.4} />
@@ -1050,6 +1075,7 @@ function scrollClipBoard(cont: HTMLElement) {
   // The first placement (a fresh board, or one drawn afresh by a seek) is instant; after that it glides.
   if (!zoom.style.transition) requestAnimationFrame(() => { zoom.style.transition = 'translate 1100ms cubic-bezier(0.45, 0, 0.3, 1)'; });
   const fade = offset ? `linear-gradient(to bottom, transparent 0, transparent ${band}px, #000 ${band + 36}px)` : '';
+  cont.dataset.fadeTop = String(offset ? band + 36 : 0);
   boardEl.style.maskImage = fade;
   boardEl.style.setProperty('-webkit-mask-image', fade);
 }
@@ -3709,6 +3735,9 @@ const PLAYER_CSS = `
 /* A dark outline round the labels: the line y = c can sit on a dashed asymptote (c = 4 on y = 4,
    25 Oct 2026) and both labels must still read. */
 .lsn-sketch-hline text, .lsn-sketch-asy text { paint-order: stroke; stroke: rgba(15,23,42,0.9); stroke-width: 4px; stroke-linejoin: round; }
+.lsn-sketch-label { animation: lsnFade 500ms ease 1.6s both; }
+.lsn-sketch-label text, text.lsn-sketch-label { fill: #ffe89a; font-size: 13px; paint-order: stroke; stroke: rgba(15,23,42,0.9); stroke-width: 4px; stroke-linejoin: round; }
+.lsn-sketch-label line { stroke: #ffe89a; stroke-width: 1.2; }
 .lsn-sketch-hit { fill: #fb7185; animation: lsnFade 400ms ease 650ms both; }
 /* The corner plan owns the top-right corner: the side sketch starts under it. */
 .lsn-scene:has([data-lsn-corner]) .lsn-sketch { top: calc(100% + 54px); }

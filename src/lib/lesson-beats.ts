@@ -212,6 +212,10 @@ export interface BoardState {
   /** The pinned steps: how many are written, and which one is lit (0 = none). */
   pinShown: number;
   pinLit: number;
+  /** Pieces inside a token that some `write … inside` writes (`<token id>:<piece>`): hidden until then. */
+  heldPieces: Set<string>;
+  /** …and those written so far. */
+  pieces: Set<string>;
 }
 
 /** The write/reveal targets and move ids of a whole scene (what waits for an action). */
@@ -234,6 +238,8 @@ export function emptyBoard(scene: Scene | PlayScene): BoardState {
     shown: new Set(), written: new Set(), targeted, movable, moved: new Set(),
     state: 0, pulses: [], marks: [], notes: [], focus: null, pose: 'idle', sticker: null, seq: 0,
     sketch: [], pinShown: 0, pinLit: 0,
+    heldPieces: new Set(hasBeats(scene) ? scene.beats.flatMap(b => b.do.flatMap(a => (a.do === 'write' && a.inside && typeof a.token === 'string' ? [`${a.token}:${a.inside}`] : []))) : []),
+    pieces: new Set(),
   };
 }
 
@@ -260,6 +266,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
     case 'write':
     case 'reveal': {
       const write = action.do === 'write';
+      if (action.do === 'write' && action.inside && typeof action.token === 'string') board.pieces = new Set(board.pieces).add(`${action.token}:${action.inside}`);
       for (const key of targetKeys(scene, action)) {
         if (key.startsWith('line:')) {
           const line = Number(key.slice(5));

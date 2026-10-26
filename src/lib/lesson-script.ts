@@ -294,7 +294,10 @@ interface Timed {
 
 export type BeatAction =
   /** The target appears by DRAW-ON (a pen sweep in the chalk/paper themes). */
-  | ({ do: 'write' } & BeatTarget & Timed)
+  /** `inside` (a clip, with `token`): write only that piece of the token — `\htmlClass{lsn-pc-<piece>}{…}`
+   *  in its tex — so a long division builds row by row as it is said (Adrian, 26 Oct 2026: "do long
+   *  division instead"). A piece some action writes stays hidden until then. */
+  | ({ do: 'write'; inside?: string } & BeatTarget & Timed)
   /** The target appears by the plain reveal (fade/rise) — no pen. */
   | ({ do: 'reveal' } & BeatTarget & Timed)
   /** Pulse a token (or several) — the eye goes there. */
@@ -396,6 +399,10 @@ export interface SceneSketch {
   /** The edge of the curve's domain, a dashed vertical line drawn on the `edge` stage — the curve
    *  runs down beside it (25 Oct 2026: x > −1, "near x = −1 the curve goes down forever"). */
   edge?: { x: number; label: string };
+  /** The curve's equation written beside it, centred at (x, y) in the sketch's units, shown with the
+   *  `shape` stage; "y = (4x + 2)/(x + 1)" is drawn as a stacked fraction (Adrian, 26 Oct 2026: "put
+   *  the equation y=(4x+2)/(x+1) beside the graph drawn (label the graph)"). */
+  label?: { text: string; x: number; y: number };
   hline?: { label: string; at: number[]; /** the label at each height, when it should name the value ("c = 2") */ labels?: string[] };
 }
 export type GraphMorphScene = NarrationFields & BeatFields & {
@@ -751,6 +758,7 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
     case 'write':
     case 'reveal':
       validateTarget(a, scope, where, errors);
+      if (a.do === 'write' && a.inside !== undefined && (a.token === undefined || typeof a.inside !== 'string' || !/^[a-z0-9-]+$/.test(a.inside))) errors.push(`${where}: a write with inside names one token and a piece like "q" (its tex wraps it in \\htmlClass{lsn-pc-<piece>}{…})`);
       break;
     case 'focus':
       validateTarget(a, scope, where, errors);

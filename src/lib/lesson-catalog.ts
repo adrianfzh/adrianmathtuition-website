@@ -252,7 +252,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     slug: 'line-misses-curve-am',
     level: 'AM',
     topic: 'Partial Fractions',
-    title: 'Why c ≥ 4: the line y = c misses the curve',
+    title: 'Why c ≥ 4: the line y = c does not intersect the curve',
     minutes: 2,
   },
 ];

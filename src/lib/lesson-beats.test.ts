@@ -431,3 +431,23 @@ describe('the side sketch — the line y = c slides (25 Oct 2026)', () => {
     expect(v.ok ? [] : v.errors.join(' ')).toMatch(/line must be an index of sketch\.hline\.at/);
   });
 });
+
+describe('write … inside — a long division built row by row (26 Oct 2026)', () => {
+  it('holds every piece a write names until that write, and validates the shape', () => {
+    const scene: EquationStepsScene = {
+      type: 'equation-steps',
+      steps: [{ tokens: [{ id: 'ld', tex: '\\htmlClass{lsn-pc-q}{4}\;x+1)\\,4x+2\;\\htmlClass{lsn-pc-r}{-2}' }] }],
+      beats: [
+        { say: 'Divide four X plus two.', do: [{ do: 'write', step: 0 }] },
+        { say: 'It goes four times.', do: [{ do: 'write', token: 'ld', inside: 'q' }] },
+        { say: 'Remainder negative two.', do: [{ do: 'write', token: 'ld', inside: 'r' }] },
+      ],
+    };
+    expect([...boardStateAt(scene, 0, 9999).heldPieces].sort()).toEqual(['ld:q', 'ld:r']);
+    expect([...boardStateAt(scene, 0, 9999).pieces]).toEqual([]);
+    expect([...boardStateAt(scene, 1, 9999).pieces]).toEqual(['ld:q']);
+    expect([...boardStateAt(scene, 2, 9999).pieces].sort()).toEqual(['ld:q', 'ld:r']);
+    const bad = validateLessonScript({ slug: 't', title: 't', level: 'AM', topic: 'x', minutes: 1, scenes: [{ ...scene, beats: [{ say: 'Write it.', do: [{ do: 'write', step: 0, inside: 'q' }] }] }] });
+    expect(bad.ok ? '' : bad.errors.join(' ')).toMatch(/a write with inside names one token/);
+  });
+});

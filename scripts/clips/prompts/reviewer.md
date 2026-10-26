@@ -94,7 +94,13 @@ You get:
    a part the voice is not naming ("a lot of blinking … only have to do it at the right moment"); a
    loose name ("two terms" for "two surd terms"); a new object said but not written as a sentence on the
    board ("put the conjugate of sqrt 5+ sqrt 3 is sqrt 5 - sqrt 3 on the screen").
-19. Anything else in the house rules this clip breaks.
+19. **Adrian, 26 Oct 2026 (the y = c question clip)** — each a must: a question clip whose first beat
+   READS the question out instead of saying what it is asking ("don't have to read the question, but
+   explain what the question is asking"); the voice paraphrasing the question's words ("misses" for
+   "does not intersect"); dividing a polynomial any way but long division on the board, built row by
+   row as it is said ("do long division instead"); a graph with no equation written beside its curve
+   ("label the graph").
+20. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

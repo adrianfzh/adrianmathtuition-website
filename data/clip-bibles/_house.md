@@ -369,6 +369,24 @@ the history.
   steps sit above the board, shown as the voice lists them (`pin` show) and lit on each one's turn
   (`pin` lit). An ordinary solve says its plan in the voice and shows it as maths on the board, with
   no strip.
+- **Don't read the question out — explain what it is asking** (26 Oct 2026, the y = c question clip:
+  "don't have to read the question, but explain what the question is asking"). The whole question is
+  already shown beside / above the clip. Beat 1 says what the question is about and gives ("This
+  question is about a curve, drawn only where X is greater than negative one"); the next says what it
+  wants ("We must explain why C has to be at least four…"), then the plan.
+- **Use the question's own words** (26 Oct 2026: "instead of saying y=c misses this curve > say it does
+  not intersect the curve"): the voice says "does not intersect", never a paraphrase like "misses".
+- **Dividing a polynomial: long division, on the board** (26 Oct 2026: "do long division instead" — the
+  clip had rewritten the top as 4(x + 1) − 2). The division is drawn the way he writes it — divisor,
+  bracket, dividend, quotient on top, the product row underlined, the remainder — and built ROW BY ROW
+  as it is said (`write` with `inside`, a piece at a time); then "the quotient plus the remainder over
+  the divisor" gives the next line.
+- **Label the graph with its equation** (26 Oct 2026: "put the equation y=(4x+2)/(x+1) beside the graph
+  drawn (label the graph)"): the curve's equation is written beside the curve on the sketch (`label`).
+- **Scrolling back while it plays reaches the very top** (26 Oct 2026: "when i try to scroll up while
+  video is playing > there is only a limit it can scroll up to (i can't scroll up to the very top)").
+  Fixed in the player for every clip: the look-back may go past the top strip that fades under the
+  corner plan, so the first line can be read.
 - **Draw it when a picture teaches it** (17 Oct 2026: "if you need to include diagrams in the clips,
   please do so"): a graph question gets real sketches on the board — give the line a `graph`
   (curve, dashed asymptote, labelled points); show the shape, then the curve against its asymptote,
@@ -402,7 +420,8 @@ the history.
 
 ## 4. Stock phrases (the series voice)
 
-- Opening line = the question, no warm-up. Never "Hi", "Today", "Let's", "In this video".
+- Opening line = what the question is asking, in plain words — never a reading of it (26 Oct 2026). No
+  warm-up. Never "Hi", "Today", "Let's", "In this video".
 - Each beat: the step, then why, in its own short sentence.
 - The last beat says the answer in full. No "That's it", no "Easy", no "See".
 - The trap: one plain sentence, where it bites ("Rounding never removes a minus.").

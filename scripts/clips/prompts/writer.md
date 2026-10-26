@@ -7,12 +7,14 @@ not change the board. You write what the voice says and when each piece appears.
 ## Read first (all of it)
 
 0. The house rules `data/clip-bibles/_house.md` (every topic). A QUESTION clip (plan `kind:
-   "question"`) explains how to do THIS question: the first beat reads the question in `intro`
-   (shorten story words, keep every number) — beat 1 is the question and nothing else, never
-   "Let F of X be…" first, never a fragment — the second says the plan. Read the question in
-   the printed word order, as a sentence, and say what each power or root covers ("ten plus K X,
-   times two minus a half X, all to the power eight" / "the bracket two minus a half X, to the
-   power eight"). Each later beat names the move AND why it is the move (the bible's lead-in
+   "question"`) explains how to do THIS question. **Do not read the question out — explain what it
+   is asking** (Adrian, 26 Oct 2026: "don't have to read the question, but explain what the question
+   is asking"; the whole question is shown beside / above the clip already): beat 1 says what the
+   question is about and what it gives, in plain words ("This question is about a curve, drawn only
+   where X is greater than negative one."), the next what it wants us to show or find — then the
+   plan. Say it in the QUESTION'S words, not your own ("does not intersect the curve", never "misses
+   it" — Adrian, 26 Oct 2026). When a power or root's reach matters, say what it covers ("the bracket
+   two minus a half X, to the power eight"). Each later beat names the move AND why it is the move (the bible's lead-in
    question where it has one, e.g. "What do we sub?"). Never say a sentence that seems to
    contradict an earlier beat — if two steps look alike, say what is different.
 1. The topic bible named in the plan (`bible`) — Adrian's method, his words, the traps,
@@ -54,8 +56,14 @@ no focus, no clear.
 - **Beats ≤ 24 words each, ≤ 460 words in all** — as many beats as the explanation needs (house rules §2).
 - **House rules §2 is Adrian's standard** — every point in it is something he asked for after watching
   a clip. Read all of it before writing; a draft that breaks one is sent back.
-- **The first beat states the question** (if `intro` is present, read it; the first
-  beat writes line 0). First word = the first word of the maths. No warm-up.
+- **The first beat says what the question is asking** — not a reading of it (Adrian, 26 Oct 2026); it
+  writes the question's line. No warm-up.
+- **The method Adrian uses, shown as he writes it**: dividing a polynomial is LONG DIVISION on the board
+  (Adrian, 26 Oct 2026: "do long division instead"), built row by row as it is said — one token with
+  pieces `\htmlClass{lsn-pc-q}{…}` (quotient), `p` (the product row), `r` (the remainder), each
+  written with `{"do": "write", "token": "<id>", "inside": "<piece>"}` (copy `line-misses-curve-am`).
+- **A graph is labelled with its equation** beside the curve (Adrian, 26 Oct 2026: "put the equation
+  y=(4x+2)/(x+1) beside the graph drawn (label the graph)") — the side sketch's `label` {text, x, y}.
 - **Each beat: the step, then why** — in its own short sentence. ("Take log on both
   sides. Seven and five cannot be made the same base.")
 - **Every line of the board is shown by some beat** (`write step: n`, or every token of

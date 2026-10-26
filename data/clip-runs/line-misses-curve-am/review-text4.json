@@ -1,0 +1,60 @@
+{
+ "slug": "line-misses-curve-am",
+ "at": "2026-10-26T01:43:11.322Z",
+ "model": "claude-opus-5-5",
+ "frames": 0,
+ "usage": {
+  "input_tokens": 35266,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 2687,
+  "output_tokens_details": {
+   "thinking_tokens": 1878
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "verdict": "pass",
+ "findings": [
+  {
+   "beat": 4,
+   "rule": "said = shown",
+   "severity": "should",
+   "problem": "The whole long division, including −(4x+4) and the remainder −2, appears on \"use long division\". The student sees the results before the voice works them out in beats 5 and 6.",
+   "fix": "Write the division frame with the quotient 4 on beat 5's \"four times\", the −(4x+4) row on \"is four X plus four\", and the −2 on beat 6's \"leaves negative two\"."
+  },
+  {
+   "beat": 7,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "The jump from the division to y = 4 − 2/(x+1) uses \"quotient plus remainder over divisor\" without showing it. The student does not see how the −2 became −2/(x+1).",
+   "fix": "Write the middle line y = 4 + (−2)/(x+1) on \"plus the remainder over X plus one\", with the note \"quotient + remainder/divisor\". Then write y = 4 − 2/(x+1) on the next line."
+  },
+  {
+   "beat": 8,
+   "rule": "the part talked about is lit",
+   "severity": "should",
+   "problem": "\"B is negative two\" is said, but the −2 in y = 4 − 2/(x+1) is not lit. Only the 4 is lit for a.",
+   "fix": "Wrap the −2 as a piece and light it in sky on \"B is negative two\", next to the orange 4."
+  },
+  {
+   "beat": 9,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "\"Now the sign\" does not say why the sign of the fraction matters. The student is not told that it decides whether y sits above or below 4.",
+   "fix": "Say \"Y is four minus this fraction, so we need to know if the fraction is positive or negative\" before the x > −1 line."
+  },
+  {
+   "beat": 16,
+   "rule": "what, how, why",
+   "severity": "should",
+   "problem": "\"The curve goes down forever near X equals negative one\" is only asserted. The student is not told it is because x + 1 gets close to zero, so 2/(x+1) gets very large.",
+   "fix": "Add one sentence: \"As X gets close to negative one, X plus one gets close to zero, so two over X plus one gets huge, and Y gets very negative.\""
+  }
+ ]
+}

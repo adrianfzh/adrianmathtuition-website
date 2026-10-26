@@ -1,6 +1,6 @@
 {
   "slug": "line-misses-curve-am",
-  "title": "Why c ≥ 4: the line y = c misses the curve",
+  "title": "Why c ≥ 4: the line y = c does not intersect the curve",
   "kind": "question",
   "heading": null,
   "intro": null,
@@ -23,9 +23,9 @@
   },
   "outline": [
     "Question clip (hand-made 25 Oct 2026), Adrian's own chain from his red/blue ink on the photo, in his order.",
-    "The question first: the curve y = (4x+2)/(x+1) for x > −1 (x > −1 lit), drawn on the side sketch; the line y = c is a HORIZONTAL line (Adrian's blue note), drawn on the sketch, missing the curve; what we must explain: why c ≥ 4.",
+    "Explain what the question is asking — not read it out (Adrian, 26 Oct 2026): a curve, drawn for x > −1 only, labelled with its equation on the sketch; y = c is a horizontal line that does not intersect it; we must explain why c ≥ 4.",
     "Plan pinned in the corner: write y as a + b/(x+1) — the question's own move; the sign of the fraction then tells us where the curve is.",
-    "Divide: 4(x+1) = 4x + 4, two too many, so 4x + 2 = 4(x+1) − 2; split: 4(x+1)/(x+1) = 4, so y = 4 − 2/(x+1); a = 4, b = −2.",
+    "Long division (Adrian, 26 Oct 2026: \"do long division instead\"): x + 1 into 4x + 2 goes 4, 4(x + 1) = 4x + 4, take away: remainder −2; so y = 4 − 2/(x+1), a = 4, b = −2.",
     "The sign chain, one line each: since x > −1, x + 1 > 0; two over a positive is positive, 2/(x+1) > 0; times negative one flips it, −2/(x+1) < 0.",
     "So y = 4 − 2/(x+1) < 4: four take away a positive number. His picture: the curve is below y = 4 — the dashed line y = 4 on the sketch, the curve under it, closer and closer, never reaching it.",
     "His second picture: y = c is a horizontal line; slide it — at c = 2 it cuts the curve (a dot); at c = 4 it still misses, because the curve never reaches 4 (the reason c = 4 is allowed, said at this step); above 4 it misses. So c ≥ 4, boxed."
@@ -61,6 +61,11 @@
     "edge": {
       "x": -1,
       "label": "x = −1"
+    },
+    "label": {
+      "text": "y = (4x + 2)/(x + 1)",
+      "x": 1.3,
+      "y": 1.9
     }
   },
   "lines": [
@@ -114,8 +119,8 @@
     {
       "tokens": [
         {
-          "id": "d1",
-          "tex": "y=\\dfrac{4(x+1)-2}{x+1}"
+          "id": "ld",
+          "tex": "\\begin{array}{l} \\phantom{x+1\\,\\big)\\,}\\htmlClass{lsn-pc-q}{4} \\\\[-2pt] x+1\\,\\big)\\overline{\\,4x+2\\,} \\\\[-2pt] \\phantom{x+1\\,\\big)}\\htmlClass{lsn-pc-p}{\\underline{-(4x+4)}} \\\\[-2pt] \\phantom{x+1\\,\\big)\\,-(4x}\\htmlClass{lsn-pc-r}{{-2}} \\end{array}"
         }
       ],
       "checks": [
@@ -123,28 +128,7 @@
           "identity": "4*x + 2 = 4*(x + 1) - 2"
         },
         {
-          "identity": "y = (4*(x + 1) - 2)/(x + 1)"
-        }
-      ]
-    },
-    {
-      "tokens": [
-        {
-          "id": "sy",
-          "tex": "y="
-        },
-        {
-          "id": "sp1",
-          "tex": "\\dfrac{4(x+1)}{x+1}"
-        },
-        {
-          "id": "sp2",
-          "tex": "-\\dfrac{2}{x+1}"
-        }
-      ],
-      "checks": [
-        {
-          "identity": "y = 4*(x + 1)/(x + 1) - 2/(x + 1)"
+          "identity": "y = 4 + (-2)/(x + 1)"
         }
       ]
     },
@@ -152,7 +136,7 @@
       "tokens": [
         {
           "id": "d2",
-          "tex": "y=\\htmlClass{lsn-pc-a}{4}-\\dfrac{2}{x+1}"
+          "tex": "y=\\htmlClass{lsn-pc-a}{4}\\htmlClass{lsn-pc-f}{\\htmlClass{lsn-pc-b}{-}\\dfrac{\\htmlClass{lsn-pc-b}{2}}{x+1}}"
         }
       ],
       "checks": [

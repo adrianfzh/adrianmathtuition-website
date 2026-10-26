@@ -1,17 +1,17 @@
 {
  "slug": "line-misses-curve-am",
- "worst": 0.94,
+ "worst": 0.89,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.96,
-   "score": 0.96,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
    "beat": 2,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -46,20 +46,20 @@
   },
   {
    "beat": 8,
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
+  },
+  {
+   "beat": 9,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
-   "beat": 9,
-   "bag": 0.96,
-   "score": 0.96,
-   "heard": null
-  },
-  {
    "beat": 10,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -70,14 +70,14 @@
   },
   {
    "beat": 12,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.89,
+   "score": 0.89,
    "heard": null
   },
   {
    "beat": 13,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.9,
+   "score": 0.9,
    "heard": null
   },
   {
@@ -100,8 +100,8 @@
   },
   {
    "beat": 17,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -112,8 +112,8 @@
   },
   {
    "beat": 19,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   }
  ]
