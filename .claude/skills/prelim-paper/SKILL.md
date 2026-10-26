@@ -109,6 +109,28 @@ request).
 Always end with the manifest table: Qn · topic · marks · source school ·
 year — plus the setter-pass swaps made and why. He audits by manifest.
 
+## 7. Always add a per-topic practice worksheet (Adrian, 26 Oct 2026)
+
+Adrian, 26 Oct 2026, after the 2026 O-Level A Math Paper 1, asking for Paper 2 practice:
+*"generate the mock paper, only choose suitable ones from question bank, if there are no
+suitable questions, generate them by yourself. i always want practice questions for each topic
+for general practice and also questions that are like tys style - basically a practice worksheet
+to help students prepare for the paper 2. should be around 2-3 questions per topic/question"*.
+
+A standing rule, for every mock or exam-practice request, not only this one:
+- **Two deliverables**: the mock paper AND a practice worksheet.
+- **Worksheet shape**: one section per topic likely in the paper, 2–3 questions each — short
+  "general practice" questions on the core skills, then one exam-style question worded the
+  way the real O-Level papers word them (TYS style). No two questions testing the same move.
+- **Suitable bank questions first** (right level and paper, current syllabus, never `national`
+  rows, not near-copies of a paper the students just sat). Write our own only where the bank has
+  nothing suitable, through the `gce-paper` gates (author → blind solve → check).
+- Mock and worksheet never share a question (split the bank by year to guarantee it).
+- Every answer checked independently; orange `[Ans: …]` per question on the worksheet, an answer
+  key at the back of the mock, and a solutions table (ADRIAN-STYLE §10) when time allows.
+- Look at every rendered page; Word + PDF; Desktop + the Dropbox shelf (`Prelim/<level>` for the
+  mock, `Practice/<level>` for the worksheet).
+
 ## Maintenance
 
 Blueprint stale after big QB growth? `node scripts/derive-paper-blueprints.mjs

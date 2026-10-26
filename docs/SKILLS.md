@@ -90,6 +90,16 @@ paper from scratch**, `finish-practice-set`
 from a student's own marked work, and the only one whose content is chosen by
 what that student got wrong). `setter-pass` is not a maker — it reviews what `prelim-paper` saved.
 
+**A mock always comes with a per-topic practice sheet (Adrian, 26 Oct 2026).** Adrian, after
+the 2026 O-Level A Math Paper 1: *"i always want practice questions for each topic for general
+practice and also questions that are like tys style - basically a practice worksheet to help
+students prepare for the paper 2. should be around 2-3 questions per topic/question"*. Whenever he
+asks for exam practice or a mock paper (`prelim-paper`, `gce-paper`, or a paper analysis that ends in
+practice), ALSO build a practice worksheet: 2–3 questions per topic likely in that paper, mixing
+general practice (short, core skills) with exam-style questions worded like the real O-Level
+papers; suitable bank questions first, our own (through the gates) only where the bank has none;
+orange `[Ans: …]` per question, plus a solutions table when time allows. Detail: `prelim-paper` SKILL.md §7.
+
 ## The four area skills are different in kind
 
 `marking`, `kiosk`, `schedule`, `invoices` don't *do* anything. They fire when

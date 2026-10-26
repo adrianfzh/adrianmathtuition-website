@@ -150,6 +150,10 @@ def step(cell, first, s):
     elif isinstance(s, tuple) and s[0] == 'check':
         p = new_para(cell, first)
         fill(p, [('text', '✓ Check: ', {'bold': True})] + list(s[1]), colour=wl.CHECK_GREEN)
+    elif isinstance(s, tuple) and s[0] == 'figure':   # a sketch inside the working (26 Oct 2026)
+        p = new_para(cell, first)
+        wl.trim_to_ink(s[1])
+        p.add_run().add_picture(s[1], width=Cm(min(float(s[2]) if len(s) > 2 else 8.0, 12.5)))
     elif isinstance(s, list):
         p = new_para(cell, first)
         if s and s[0][0] == 'text' and s[0][1] == 'Answer: ':
