@@ -576,7 +576,22 @@ look at 1280 × 640: 0 problems; phone look first failed — **a long 3-part que
 board under the bottom bar (board bottom 907 > 783 px)** → the card's question cut to its story-free
 wording (every number kept; board bottom 775 px), phone look 46/46 cues, 0 problems; review with
 phone frames: 1 must (the corner plan covered the long heading) → heading "What it says". Not
-promoted. Waiting for Adrian's notes.
+promoted.
+**Adrian's first notes (26 Oct 2026), all three applied the same day** (rules in `_house.md` §2): "include
+the diagram on the board straight away" → the screen picture is the first line; "the front part before
+what the question says seems unnecessary" → no question read-out, no corner plan; "animation that shows
+how the dot moves from O to A to O to B to O and how the graph draws out … then how to find the values of
+unknowns from the graph" → a NEW board figure, the **swing** (`EquationStep.swing` + the `swing` action,
+`ClipSwing` in `lesson-player.tsx`, test `lesson-swing.test.ts`): the path A–O–B upright beside an x–t
+graph labelled x = a sin nt, the dot going O → A → O → B → O in 6 s while the curve is drawn at its height
+(a dashed line joins them), then 60 / −60, A at the top, B at the bottom and "one oscillation: 6 s" appear
+and light as (a) reads a = 60 and the period 6 off the graph (A's side positive, so at A x = 60, sin = 1,
+and the student's t = 1.5 is when it first gets there — a drop-down). 32 beats, 458 words. Storyboard
+reviews: musts (label the curve; say "magnitude"; "part A"/"point A"/"constant A" heard alike → "the first
+part", "point A") fixed, then two passes. Voice: the changed lines re-recorded, 32/32 heard. Looks: the
+figure first pushed its own line into the top fade (phone board only ~276 px under the question card) →
+the figure shortened to 128 px; phone and 1280 × 640 both 0 problems. Review with phone frames 0 must; gate
+green. Waiting for Adrian's notes.
 
 **`line-misses-curve-am`** (25 Oct 2026) — `/app/lesson/line-misses-curve-am`. Adrian: *"create a clip
 to explain this too"* — a photo of his own red/blue marking of a student's (c): the bank's `b071686f`

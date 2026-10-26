@@ -1,6 +1,6 @@
 {
  "slug": "oscillating-dot-am",
- "at": "2026-10-25T14:38:32.333Z",
+ "at": "2026-10-26T03:07:22.641Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -20,15 +20,15 @@
   },
   "voice": {
    "ok": true,
-   "detail": "30/30 beats voiced + timed · speech round trip worst 85 %"
+   "detail": "32/32 beats voiced + timed · speech round trip worst 86 %"
   },
   "look": {
    "ok": true,
-   "detail": "46/46 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "51/51 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": true,
-   "detail": "0 must, 2 should · 29 frames"
+   "detail": "0 must, 2 should · 32 frames"
   }
  },
  "pass": true
