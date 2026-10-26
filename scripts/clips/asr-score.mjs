@@ -63,6 +63,8 @@ const SPOKEN_SYMBOLS = [
   [/\bnegative\b/g, ' minus '],
   // 25 Oct 2026 (kinematics): "centimetres" heard as "cm", "centre" as the US "center".
   [/\bcentimet(re|er)s?\b|\bcm\b/g, ' cm '], [/\bcent(re|er)\b/g, ' centre '],
+  // 26 Oct 2026: "pi" heard as "π", "sine" as "sin" / "sign" (both sides mapped alike).
+  [/π/g, ' pi '], [/\b(sine|sin|sign)\b/g, ' sine '],
 ];
 const spoken = (t) => SPOKEN_SYMBOLS.reduce((acc, [re, to]) => acc.replace(re, to), t.toLowerCase());
 const canon = (t) => numberWordsToDigits(spoken(t)).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.\/]/g, '').replace(/\.(?![0-9])/g, '');

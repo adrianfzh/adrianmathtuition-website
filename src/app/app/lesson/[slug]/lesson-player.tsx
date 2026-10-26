@@ -774,6 +774,10 @@ function ClipSwing({ sw, played }: { sw: StepSwing; played: boolean }) {
       <line x1={GX0} y1={midY} x2={GX1 + 10} y2={midY} className="lsn-graph-axis" />
       <text x={GX0 + 6} y={PT - 6} className="lsn-graph-lab">{ax}</text>
       <text x={GX1 + 12} y={midY + 4} className="lsn-graph-lab">{at}</text>
+      {/* Which side is positive, and the curve's equation. */}
+      <text x={LX + 9} y={yOf(sw.amp) + 4.5} className="lsn-graph-lab">+</text>
+      <text x={LX + 9} y={yOf(-sw.amp) + 4.5} className="lsn-graph-lab">{'\u2212'}</text>
+      {sw.label && <text x={GX1 + 4} y={PT + 2} textAnchor="end" className="lsn-graph-lab lsn-swing-label">{sw.label}</text>}
       {/* The graph so far, and the dashed line from the dot to the pen. */}
       <path d={d} className="lsn-swing-curve" />
       {p > 0 && !done && <line x1={LX} y1={dotY} x2={penX} y2={dotY} className="lsn-swing-join" />}
@@ -798,7 +802,7 @@ function ClipSwing({ sw, played }: { sw: StepSwing; played: boolean }) {
           <line x1={GX0} y1={H - 14} x2={GX1} y2={H - 14} className="lsn-swing-guide lsn-swing-span" />
           <line x1={GX0} y1={H - 19} x2={GX0} y2={H - 9} className="lsn-swing-span" />
           <line x1={GX1} y1={H - 19} x2={GX1} y2={H - 9} className="lsn-swing-span" />
-          <text x={(GX0 + GX1) / 2} y={H - 18} textAnchor="middle" className="lsn-graph-lab">{`one oscillation: ${sw.period}`}</text>
+          <text x={(GX0 + GX1) / 2} y={H - 18} textAnchor="middle" className="lsn-graph-lab">{`one oscillation: ${sw.period}${sw.unit ? ` ${sw.unit}` : ''}`}</text>
         </g>
       </g>
     </svg>
@@ -3865,6 +3869,7 @@ const PLAYER_CSS = `
 .lsn-graph-c.lsn-lit .lsn-graph-clab { font-weight: bold; }
 .lsn-swing-path { stroke: rgba(248,250,252,0.85); stroke-width: 2.2; stroke-linecap: round; }
 .lsn-swing-end { font-size: 14px; font-weight: 600; }
+.lsn-swing-label { fill: #ffe89a; font-size: 13px; }
 .lsn-swing-curve { fill: none; stroke: #ffe89a; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .lsn-swing-join { stroke: rgba(168,236,251,0.8); stroke-width: 1.3; stroke-dasharray: 4 4; }
 .lsn-swing-dot { fill: #fb923c; }

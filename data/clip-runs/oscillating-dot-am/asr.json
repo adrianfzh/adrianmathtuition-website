@@ -1,27 +1,26 @@
 {
  "slug": "oscillating-dot-am",
- "worst": 0.854,
+ "worst": 0.86,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.83,
-   "score": 0.986,
-   "heard": "A dot swings across a screen 120 cm wide. X = A sin Nt. One oscillation takes 6 seconds.",
-   "said": "A dot swings across a screen one hundred and twenty centimetres wide: X equals A sine N T. One oscillation takes six seconds."
+   "bag": 0.81,
+   "score": 1,
+   "heard": "First, what the question says. AB is the screen's width, 120 cm.",
+   "said": "First, what the question says. A B is the screen's width, one hundred and twenty centimetres."
   },
   {
    "beat": 2,
-   "bag": 0.68,
-   "score": 1,
-   "heard": "velocity is dxdt, and acceleration is d2xdt squared. So, we differentiate x once, then again.",
-   "said": "Velocity is D X D T, and acceleration is D two X D T squared. So we differentiate X once, then again."
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
   },
   {
    "beat": 3,
-   "bag": 0.73,
-   "score": 0.974,
-   "heard": "First, what the question says. x = a sin nt",
-   "said": "First, what the question says. X equals A sine N T."
+   "bag": 0.67,
+   "score": 1,
+   "heard": "Its position is X equals A sin NT",
+   "said": "Its position is X equals A sine N T."
   },
   {
    "beat": 4,
@@ -43,24 +42,21 @@
   },
   {
    "beat": 7,
-   "bag": 0.82,
+   "bag": 1,
    "score": 1,
-   "heard": "The screen is 120 cm wide. So AB is 120.",
-   "said": "The screen is one hundred and twenty centimetres wide, so A B is one hundred and twenty."
+   "heard": null
   },
   {
    "beat": 8,
-   "bag": 0.83,
-   "score": 0.981,
-   "heard": "Oh is the center. So the dot swings 60 cm either side of O from A to B.",
-   "said": "O is the centre, so the dot swings sixty centimetres either side of O, from A to B."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 9,
-   "bag": 0.69,
-   "score": 0.927,
-   "heard": "For part A, sin always lies between -1 and 1.",
-   "said": "For part A: sine N T always lies between negative one and one."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 10,
@@ -70,9 +66,10 @@
   },
   {
    "beat": 11,
-   "bag": 1,
+   "bag": 0.69,
    "score": 1,
-   "heard": null
+   "heard": "in the formula sin NT always lies between -1 and 1.",
+   "said": "In the formula, sine N T always lies between negative one and one."
   },
   {
    "beat": 12,
@@ -82,8 +79,8 @@
   },
   {
    "beat": 13,
-   "bag": 0.92,
-   "score": 0.92,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -94,21 +91,21 @@
   },
   {
    "beat": 15,
-   "bag": 0.89,
-   "score": 0.89,
-   "heard": null
+   "bag": 0.72,
+   "score": 1,
+   "heard": "For sign NT, one wave takes 2π over N. So 2π over N equals 6.",
+   "said": "For sine N T, one wave takes two pi over N. So two pi over N equals six."
   },
   {
    "beat": 16,
-   "bag": 0.76,
-   "score": 1,
-   "heard": "Part B. Velocity is the rate of change of displacement. So V equals dxdt.",
-   "said": "Part B. Velocity is the rate of change of displacement, so V equals D X D T."
+   "bag": 0.86,
+   "score": 0.86,
+   "heard": null
   },
   {
    "beat": 17,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.89,
+   "score": 0.89,
    "heard": null
   },
   {
@@ -119,76 +116,87 @@
   },
   {
    "beat": 19,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 20,
-   "bag": 0.86,
-   "score": 0.86,
-   "heard": null
-  },
-  {
-   "beat": 21,
-   "bag": 0.88,
-   "score": 0.88,
-   "heard": null
-  },
-  {
-   "beat": 22,
-   "bag": 0.91,
-   "score": 0.91,
-   "heard": null
-  },
-  {
-   "beat": 23,
    "bag": 0.94,
    "score": 0.94,
    "heard": null
   },
   {
-   "beat": 24,
-   "bag": 0.85,
-   "score": 0.854,
-   "heard": "for the acceleration at A, we need sin pi t over three.",
-   "said": "For the acceleration at A, we need sine pi T over three there."
-  },
-  {
-   "beat": 25,
-   "bag": 0.96,
-   "score": 0.96,
-   "heard": null
-  },
-  {
-   "beat": 26,
-   "bag": 0.82,
-   "score": 0.926,
-   "heard": "at A 60 sign pi T over 3 equals -60",
-   "said": "At A, sixty sine pi T over three equals negative sixty."
-  },
-  {
-   "beat": 27,
-   "bag": 0.93,
-   "score": 0.93,
-   "heard": null
-  },
-  {
-   "beat": 28,
-   "bag": 0.93,
-   "score": 0.93,
-   "heard": null
-  },
-  {
-   "beat": 29,
+   "beat": 20,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
-   "beat": 30,
+   "beat": 21,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 22,
+   "bag": 0.86,
+   "score": 0.86,
+   "heard": null
+  },
+  {
+   "beat": 23,
+   "bag": 0.87,
+   "score": 0.87,
+   "heard": null
+  },
+  {
+   "beat": 24,
+   "bag": 0.91,
+   "score": 0.91,
+   "heard": null
+  },
+  {
+   "beat": 25,
    "bag": 0.88,
    "score": 0.88,
+   "heard": null
+  },
+  {
+   "beat": 26,
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
+  },
+  {
+   "beat": 27,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 28,
+   "bag": 0.78,
+   "score": 1,
+   "heard": "So 60 sin π t over 3 equals 60",
+   "said": "So sixty sine pi T over three equals sixty."
+  },
+  {
+   "beat": 29,
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
+  },
+  {
+   "beat": 30,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 31,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 32,
+   "bag": 0.87,
+   "score": 0.87,
    "heard": null
   }
  ]

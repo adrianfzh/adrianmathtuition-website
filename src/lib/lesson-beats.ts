@@ -209,6 +209,8 @@ export interface BoardState {
   seq: number;
   /** The side sketch's stages shown so far (`inset`, `axes`, …, and `p0`, `p1` … for its points). */
   sketch: string[];
+  /** The lines whose swing has played (StepSwing): the dot has gone round and the graph is drawn. */
+  swung: number[];
   /** The pinned steps: how many are written, and which one is lit (0 = none). */
   pinShown: number;
   pinLit: number;
@@ -237,7 +239,7 @@ export function emptyBoard(scene: Scene | PlayScene): BoardState {
   return {
     shown: new Set(), written: new Set(), targeted, movable, moved: new Set(),
     state: 0, pulses: [], marks: [], notes: [], focus: null, pose: 'idle', sticker: null, seq: 0,
-    sketch: [], pinShown: 0, pinLit: 0,
+    sketch: [], pinShown: 0, pinLit: 0, swung: [],
     heldPieces: new Set(hasBeats(scene) ? scene.beats.flatMap(b => b.do.flatMap(a => (a.do === 'write' && a.inside && typeof a.token === 'string' ? [`${a.token}:${a.inside}`] : []))) : []),
     pieces: new Set(),
   };
@@ -340,6 +342,9 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       else if (stage && !board.sketch.includes(stage)) board.sketch = [...board.sketch, stage];
       break;
     }
+    case 'swing':
+      if (!board.swung.includes(action.step)) board.swung = [...board.swung, action.step];
+      break;
     case 'pin':
       if (action.show !== undefined) board.pinShown = Math.max(board.pinShown, action.show);
       if (action.lit !== undefined) { board.pinLit = action.lit; board.pinShown = Math.max(board.pinShown, action.lit); }

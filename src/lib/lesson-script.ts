@@ -103,6 +103,32 @@ export interface EquationStep {
    *  indices: "because the aim is to change to base 2, 3 and 7 > we should put that plan at perhaps
    *  the top right hand corner (always) so that it is a constant reminder"). One line per scene. */
   corner?: boolean;
+  /** A swing drawn under this line (Adrian, 26 Oct 2026: "you should have animation that shows how
+   *  the dot moves from O to A to O to B to O and how the graph draws out > that's the most important
+   *  understanding part"): the path stood upright beside a graph of x against t. A `swing` action plays
+   *  it — the dot moves along the path while the graph is drawn at the same moment. */
+  swing?: StepSwing;
+}
+
+/** An oscillation on a clip board: x = amp·sin(2πt / period), one full swing. Its parts light by id:
+ *  `<id>-dot` the dot, `<id>-amp` the highest value (and its dashed guide), `<id>-per` one full wave
+ *  along t (the period), `<id>-top` / `<id>-bot` the graph's highest / lowest point (labelled with the
+ *  first / last end). */
+export interface StepSwing {
+  id: string;
+  /** The furthest it goes from the centre (the amplitude) and the time for one full swing. */
+  amp: number;
+  period: number;
+  /** Labels: the end it reaches first, the centre, the other end — ["A", "O", "B"]. */
+  ends: [string, string, string];
+  /** Axis letters: displacement, time (default ["x", "t"]). */
+  axes?: [string, string];
+  /** Seconds on screen for the one swing (default 6). */
+  seconds?: number;
+  /** The time unit after the period ("s" → "one oscillation: 6 s"). */
+  unit?: string;
+  /** The curve's equation, written beside it (KaTeX-free plain text, e.g. "x = a sin nt"). */
+  label?: string;
 }
 
 /** A curve sketch on a clip board. `fn` is plain maths in x: + − * / ^ ( ) and ln, log (base 10),
@@ -323,11 +349,14 @@ export type BeatAction =
    *  one labelled point (`point`: its index), or the horizontal line y = c at its `line`-th height. */
   | ({ do: 'sketch'; show?: SketchStage; point?: number; line?: number } & Timed)
   /** The scene's `pinned` steps: `show` n writes the first n (as the voice lists them), `lit` n lights step n. */
-  | ({ do: 'pin'; show?: number; lit?: number } & Timed);
+  | ({ do: 'pin'; show?: number; lit?: number } & Timed)
+  /** Play the swing under line `step` (StepSwing): the dot goes once round its path while the graph
+   *  draws out with it (Adrian, 26 Oct 2026). */
+  | ({ do: 'swing'; step: number } & Timed);
 export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'stretch' | 'shift' | 'edge';
 
 export type BeatActionKind = BeatAction['do'];
-export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin', 'swing'];
 export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'stretch', 'shift', 'edge'];
 
 export interface Beat {
@@ -677,6 +706,8 @@ interface BeatScope {
   sketchLines?: number;
   /** equation-steps: how many pinned steps (undefined = none). */
   pinned?: number;
+  /** equation-steps: the lines that carry a swing. */
+  swings?: Set<number>;
   /** `from` ids some later token flies from (equation-steps). */
   fromIds: Set<string>;
   /** Prose fields present on this scene (only these may be written). */
@@ -822,6 +853,9 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       else if (a.show !== undefined && !(SKETCH_STAGES as readonly unknown[]).includes(a.show)) errors.push(`${where}: show must be one of ${SKETCH_STAGES.join('/')}`);
       else if (a.point !== undefined && (!Number.isInteger(a.point) || Number(a.point) < 0 || Number(a.point) >= (scope.sketchPoints ?? 0))) errors.push(`${where}: point must be an index of sketch.points`);
       break;
+    case 'swing':
+      if (!Number.isInteger(a.step) || !scope.swings?.has(a.step as number)) errors.push(`${where}: step must be the index of a line that has a swing`);
+      break;
     case 'pin': {
       const n = scope.pinned ?? 0;
       if (!n) errors.push(`${where}: pin actions need the scene's "pinned" steps`);
@@ -956,6 +990,20 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         if (step.heading !== undefined && !nonEmptyString(step.heading)) errors.push(`${sAt}: heading must be a non-empty string when present`);
         if (step.corner !== undefined && step.corner !== true) errors.push(`${sAt}: corner is true (the plan line that floats in the top-right corner) or absent`);
         if (step.cols !== undefined && (step.cols !== true || !Array.isArray(step.tokens) || step.tokens.length < 2 || step.tokens.length > 3)) errors.push(`${sAt}: cols is true on a line of 2 tokens (left, right) or 3 (left, middle, right)`);
+        if (step.swing !== undefined) {
+          const w = step.swing as Record<string, unknown>;
+          const ok = isRecord(w) && nonEmptyString(w.id) && typeof w.amp === 'number' && (w.amp as number) > 0 && typeof w.period === 'number' && (w.period as number) > 0
+            && Array.isArray(w.ends) && w.ends.length === 3 && w.ends.every(nonEmptyString)
+            && (w.axes === undefined || (Array.isArray(w.axes) && w.axes.length === 2 && w.axes.every(nonEmptyString)))
+            && (w.seconds === undefined || (typeof w.seconds === 'number' && (w.seconds as number) >= 1 && (w.seconds as number) <= 20))
+            && (w.unit === undefined || (nonEmptyString(w.unit) && (w.unit as string).length <= 6))
+            && (w.label === undefined || (nonEmptyString(w.label) && (w.label as string).length <= 24));
+          if (!ok) errors.push(`${sAt}: swing is { id, amp > 0, period > 0, ends: [first end, centre, other end], axes?: [x, t], seconds? (1–20), unit?, label? (≤ 24 chars) }`);
+          else {
+            for (const part of ['', '-dot', '-amp', '-per', '-top', '-bot']) sceneIds.add(`${w.id as string}${part}`);
+            (scope.swings ??= new Set()).add(si);
+          }
+        }
         if (step.graph !== undefined) {
           const g = step.graph as Record<string, unknown>;
           const nums = ['xMin', 'xMax', 'yMin', 'yMax'].every(k => typeof g?.[k] === 'number' && Number.isFinite(g[k] as number));

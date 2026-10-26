@@ -107,6 +107,14 @@ no focus, no clear.
   phone AND `--width 1280 --height 640`.
 - **Pinned steps only for graph sketching** (or when Adrian asks): the plan's `pinned` + `pin` actions
   (`show` as the voice lists them, `lit` on each step's turn). An ordinary solve has no strip.
+- **Motion is animated, and its graph draws out with it** (Adrian, 26 Oct 2026: "animation that shows how
+  the dot moves from O to A to O to B to O and how the graph draws out > that's the most important
+  understanding part. then how to find the values of unknowns from the graph"): for an oscillation give a
+  line a `swing` ({ id, amp, period, ends: [first end, centre, other end], unit?, label? }) and play it with
+  `{"do": "swing", "step": n}` on the words that describe the motion; then read a and n OFF the graph —
+  light `<id>-amp` (the highest value), `<id>-per` (one full wave), `<id>-top` / `<id>-bot`. A question
+  with a diagram starts with the diagram on the board, and nothing comes before "what the question says"
+  (reference: `data/lessons/oscillating-dot-am.json`).
 - **A graph is drawn as you go** (Adrian, 20 Oct 2026): no "draw it" step — each pinned step adds to the
   sketch; a stretch/slide of the basic shape comes BEFORE the intercepts, so each point is marked ON the
   curve; the sketch window keeps the curve's tail clearly off its asymptote; big enough to read on a phone.

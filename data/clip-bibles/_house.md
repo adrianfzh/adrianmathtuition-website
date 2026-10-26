@@ -134,6 +134,20 @@ the history.
   clearly"): when the voice says "X terms to the left", light those terms, and keep the x in the same
   colour on the lines that follow.
 
+- **A question with a diagram: the diagram is on the board from the start** (26 Oct 2026, the
+  oscillating-dot question clip: "you should include the diagram on the board straight away"). The
+  first thing written is the question's picture (the screen with A, O, B, 60 each side), not a line
+  of algebra.
+- **No opening before "what the question says"** (26 Oct 2026, same clip: "the front part before
+  what the question says seems unnecessary"). Do not read the question aloud and then say a plan
+  first — the question is in the card above the clip. Start with the picture and what it says.
+- **Motion is ANIMATED, and the graph draws out with it — that is the understanding** (26 Oct 2026,
+  same clip: "you should have animation that shows how the dot moves from O to A to O to B to O and
+  how the graph draws out > that's the most important understanding part. then how to find the
+  values of unknowns from the graph"). For a moving object (an oscillation, a particle on a line):
+  show the object moving while its graph (x against t) is drawn at the same moment, then read the
+  unknowns OFF THE GRAPH (the highest point = the amplitude a; one full wave = the period, 2π/n).
+  Use the board's `swing` figure (a line `swing` + the `swing` action).
 - **Start from what the question gives, and say why the first move is the move** (18 Oct 2026, Log
   scales: "62-50=10 lg ... needs to be further explained. it is unclear why this step works and why
   start from this step"): write each given reading as its own equation first (`50 = 10lg(I_p/k)`,

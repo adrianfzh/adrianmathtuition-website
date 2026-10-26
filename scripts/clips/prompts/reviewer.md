@@ -100,7 +100,13 @@ You get:
    "does not intersect"); dividing a polynomial any way but long division on the board, built row by
    row as it is said ("do long division instead"); a graph with no equation written beside its curve
    ("label the graph").
-20. Anything else in the house rules this clip breaks.
+20. **Adrian, 26 Oct 2026 (the oscillating-dot question clip)** — each a must: a question with a diagram
+   whose diagram is not the first thing on the board ("include the diagram on the board straight away");
+   an opening (the question read aloud, a plan) before "what the question says" ("seems unnecessary"); a
+   moving object (an oscillation, a particle) shown only as algebra — the object must be ANIMATED while
+   its x–t graph draws out (the `swing` figure), and the unknowns read off that graph (highest point =
+   amplitude, one full wave = period) — "that's the most important understanding part".
+21. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

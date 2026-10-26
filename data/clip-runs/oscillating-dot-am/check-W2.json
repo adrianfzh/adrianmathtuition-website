@@ -1,0 +1,407 @@
+{
+  "slug": "oscillating-dot-am",
+  "title": "A dot swinging on a screen: x = a sin nt",
+  "level": "AM",
+  "topic": "Kinematics",
+  "minutes": 3,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "A dot oscillates in a straight line between $A$ and $B$, the edges of a screen $120$ cm wide. Its displacement from $O$, the centre of $AB$, is $x = a\\sin nt$ cm, $t$ s after passing $O$. One oscillation takes $6$ s. (a) Why is $a = 60$? Show that $n = \\frac{1}{3}\\pi$. (b) Find the velocity; deduce the maximum speed. (c) Find the magnitude of the acceleration at $A$.",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "scroll": true,
+      "steps": [
+        {
+          "heading": "What it says",
+          "tokens": [
+            {
+              "id": "pic",
+              "tex": "\\overbrace{\\htmlClass{lsn-pc-pa}{\\underset{A}{\\bullet}}\\;\\underset{\\htmlClass{lsn-pc-l}{60}}{\\rule[0.22em]{2.6em}{1.4pt}}\\;\\htmlClass{lsn-pc-po}{\\underset{O}{\\bullet}}\\;\\underset{\\htmlClass{lsn-pc-r}{60}}{\\rule[0.22em]{2.6em}{1.4pt}}\\;\\htmlClass{lsn-pc-pb}{\\underset{B}{\\bullet}}}^{\\htmlClass{lsn-pc-w}{120\\text{ cm}}}"
+            }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "id": "f1",
+              "tex": "\\htmlClass{lsn-pc-x}{x}=\\htmlClass{lsn-pc-a}{a}\\sin \\htmlClass{lsn-pc-n}{n}\\htmlClass{lsn-pc-t}{t}"
+            }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mx", "tex": "x:\\text{ displacement from }O\\text{ (cm)}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mt", "tex": "t:\\text{ time (s)}," },
+            { "id": "man", "tex": "\\;\\;a,\\,n:\\text{ constants}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "sw", "tex": "\\text{One oscillation: }O\\to A\\to O\\to B\\to O" }
+          ],
+          "swing": {
+            "id": "sw",
+            "amp": 60,
+            "period": 6,
+            "ends": ["A", "O", "B"],
+            "axes": ["x", "t"],
+            "seconds": 6,
+            "unit": "s",
+            "label": "x = a sin nt"
+          }
+        },
+        {
+          "heading": "(a)",
+          "tokens": [
+            { "id": "sb", "tex": "-1\\le\\sin nt\\le 1" },
+            { "id": "xb", "tex": "\\;\\Rightarrow\\;-\\htmlClass{lsn-pc-a}{a}\\le x\\le \\htmlClass{lsn-pc-a}{a}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "a1", "tex": "a=\\dfrac{120}{2}" },
+            { "id": "a2", "tex": "=60", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "per", "tex": "\\text{Period}=\\dfrac{2\\pi}{n}" },
+            { "id": "six", "tex": "=6" },
+            { "id": "n2", "tex": "\\;\\Rightarrow\\;n=\\dfrac{\\pi}{3}", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "xm", "tex": "x=60\\sin\\dfrac{\\pi t}{3}" }
+          ]
+        },
+        {
+          "heading": "(b)",
+          "tokens": [
+            { "id": "v0", "tex": "v=\\dfrac{dx}{dt}" },
+            { "id": "v1", "tex": "=60\\cos\\dfrac{\\pi t}{3}\\times\\htmlClass{lsn-pc-k}{\\dfrac{\\pi}{3}}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "v2", "tex": "=20\\pi\\cos\\dfrac{\\pi t}{3}", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "ms1", "tex": "\\text{Max speed}=20\\pi(1)" },
+            { "id": "ms2", "tex": "=20\\pi\\text{ cm/s}", "hl": "emerald" }
+          ]
+        },
+        {
+          "heading": "(c)",
+          "tokens": [
+            { "id": "c0", "tex": "\\dfrac{d^2x}{dt^2}" },
+            { "id": "c1", "tex": "=-20\\pi\\sin\\dfrac{\\pi t}{3}\\times\\dfrac{\\pi}{3}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "c2", "tex": "=-\\dfrac{20\\pi^2}{3}\\htmlClass{lsn-pc-s}{\\sin\\dfrac{\\pi t}{3}}" }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "id": "pic2",
+              "tex": "\\htmlClass{lsn-pc-pa}{\\underset{\\substack{A\\\\x=60}}{\\bullet}}\\;\\rule[0.22em]{2.6em}{1.4pt}\\;\\underset{\\substack{O\\\\x=0}}{\\bullet}\\;\\rule[0.22em]{2.6em}{1.4pt}\\;\\htmlClass{lsn-pc-pb}{\\underset{\\substack{B\\\\x=-60}}{\\bullet}}"
+            }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "e1", "tex": "60\\sin\\dfrac{\\pi t}{3}=60" },
+            { "id": "e2", "tex": "\\;\\Rightarrow\\;\\sin\\dfrac{\\pi t}{3}=1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "g1", "tex": "\\dfrac{d^2x}{dt^2}=-\\dfrac{20\\pi^2}{3}\\htmlClass{lsn-pc-s}{(1)}" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "mag", "tex": "\\text{Magnitude}=\\dfrac{20\\pi^2}{3}" },
+            { "id": "ans", "tex": "=65.8\\text{ cm/s}^2\\ (3\\text{ s.f.})", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "First, what the question says. A B is the screen's width, one hundred and twenty centimetres.",
+          "asks": ["Why is A B the width of the screen?"],
+          "do": [
+            { "do": "write", "step": 0 },
+            { "do": "highlight", "token": "pic", "on": "screen's width, one", "inside": "w", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "O is the centre, so A is sixty from O, and B is sixty from O.",
+          "asks": ["Why sixty on each side?"],
+          "do": [
+            { "do": "highlight", "token": "pic", "inside": "po", "tone": "sky" },
+            { "do": "highlight", "token": "pic", "on": "A is sixty", "inside": "l", "tone": "orange" },
+            { "do": "highlight", "token": "pic", "on": "B is sixty", "inside": "r", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "Its position is X equals A sine N T.",
+          "asks": ["What does X equals A sine N T mean?"],
+          "do": [
+            { "do": "write", "step": 1, "on": "X equals A" }
+          ]
+        },
+        {
+          "say": "X is the displacement: how far the dot is from O, in centimetres.",
+          "asks": ["What is displacement?", "Can X be negative?"],
+          "do": [
+            { "do": "highlight", "token": "f1", "inside": "x", "tone": "orange" },
+            { "do": "write", "step": 2, "on": "how far the" }
+          ]
+        },
+        {
+          "say": "T is the time in seconds since the dot passed through O.",
+          "asks": ["Where is the dot when T is zero?"],
+          "do": [
+            { "do": "highlight", "token": "f1", "inside": "t", "tone": "orange" },
+            { "do": "write", "token": "mt", "on": "since the dot" }
+          ]
+        },
+        {
+          "say": "Both A and N are constants: fixed numbers we will find.",
+          "asks": ["What is a constant?"],
+          "do": [
+            { "do": "highlight", "token": "f1", "inside": "a", "tone": "orange" },
+            { "do": "highlight", "token": "f1", "inside": "n", "tone": "orange", "on": "N are constants" },
+            { "do": "write", "token": "man", "on": "fixed numbers we" }
+          ]
+        },
+        {
+          "say": "Watch one oscillation, taking A's side as positive.",
+          "asks": ["What is one oscillation?", "Why is A's side positive?"],
+          "do": [
+            { "do": "write", "step": 4 }
+          ]
+        },
+        {
+          "say": "The dot passes O, goes up to A, back to O, down to B, and back to O.",
+          "asks": ["Why does the dot slow down at A?"],
+          "do": [
+            { "do": "swing", "step": 4 }
+          ]
+        },
+        {
+          "say": "The graph is drawn as high as the dot. So point A is the top of the graph, and point B the bottom.",
+          "asks": ["Why does the graph go up and down?", "Where is O on the graph?"],
+          "do": [
+            { "do": "highlight", "token": "sw-top", "on": "point A is", "tone": "orange" },
+            { "do": "highlight", "token": "sw-bot", "on": "point B the", "tone": "sky" }
+          ]
+        },
+        {
+          "say": "In the first part, the graph's highest point is the furthest from O, sixty.",
+          "asks": ["Why is the highest point sixty?"],
+          "do": [
+            { "do": "highlight", "token": "sw-amp", "on": "graph's highest point", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "In the formula, sine N T always lies between negative one and one.",
+          "asks": ["Why does sine stay between negative one and one?"],
+          "do": [
+            { "do": "write", "token": "sb", "on": "sine N T" }
+          ]
+        },
+        {
+          "say": "Multiply by A: X lies between negative A and A. So the highest point is the constant A.",
+          "asks": ["Why multiply by A?"],
+          "do": [
+            { "do": "write", "token": "xb", "on": "X lies between" },
+            { "do": "highlight", "token": "xb", "on": "the highest point", "inside": "a", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "So the constant A is sixty, half of one hundred and twenty.",
+          "asks": ["Why half of one hundred and twenty?"],
+          "do": [
+            { "do": "write", "token": "a1" },
+            { "do": "write", "token": "a2", "on": "A is sixty" }
+          ]
+        },
+        {
+          "say": "Next, N. One full wave of the graph is one oscillation, which takes six seconds.",
+          "asks": ["Why is one wave one oscillation?"],
+          "do": [
+            { "do": "highlight", "token": "sw-per", "on": "One full wave", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "For sine N T, one wave takes two pi over N. So two pi over N equals six.",
+          "asks": ["Why is the period two pi over N?"],
+          "aside": {
+            "text": "Why is the period 2π/n?",
+            "slug": "kinematics-period-of-sin-nt",
+            "read": [
+              "$\\sin\\theta$ repeats every $2\\pi$.",
+              "$\\sin nt$ repeats when $nt$ grows by $2\\pi$.",
+              "$nt$ grows by $2\\pi$ when $t$ grows by $\\dfrac{2\\pi}{n}$.",
+              "**Period of $\\sin nt$ $= \\dfrac{2\\pi}{n}$.**"
+            ]
+          },
+          "do": [
+            { "do": "write", "token": "per", "on": "one wave takes" },
+            { "do": "write", "token": "six", "on": "equals six" }
+          ]
+        },
+        {
+          "say": "Solve it: N equals pi over three.",
+          "asks": ["How do I make N the subject?"],
+          "do": [
+            { "do": "write", "token": "n2", "on": "N equals pi" }
+          ]
+        },
+        {
+          "say": "So X equals sixty sine pi T over three.",
+          "asks": ["Where did sixty and pi over three come from?"],
+          "do": [
+            { "do": "write", "step": 8 }
+          ]
+        },
+        {
+          "say": "Second part. Velocity is the rate of change of displacement, so V equals D X D T.",
+          "asks": ["What is the difference between velocity and speed?"],
+          "do": [
+            { "do": "write", "token": "v0", "on": "V equals D" }
+          ]
+        },
+        {
+          "say": "Differentiate sine: it becomes cosine, times the derivative of pi T over three, which is pi over three.",
+          "asks": ["Why times pi over three?", "What is the chain rule?"],
+          "do": [
+            { "do": "write", "token": "v1", "on": "it becomes cosine" },
+            { "do": "note", "text": "Chain rule", "near": "v1", "on": "times the derivative" },
+            { "do": "highlight", "token": "v1", "inside": "k", "tone": "orange", "on": "which is pi" }
+          ]
+        },
+        {
+          "say": "Sixty times pi over three is twenty pi. So V equals twenty pi cosine pi T over three.",
+          "asks": ["How is sixty times pi over three twenty pi?"],
+          "do": [
+            { "do": "write", "step": 10, "on": "is twenty pi" },
+            { "do": "mark", "kind": "box", "token": "v2", "on": "So V equals" }
+          ]
+        },
+        {
+          "say": "Speed is the size of the velocity. Cosine is at most one in size, so the biggest speed is twenty pi times one.",
+          "asks": ["Why is speed the size of the velocity?", "Where is the dot when the speed is biggest?"],
+          "do": [
+            { "do": "note", "text": "size of cos is at most 1", "near": "v2", "on": "in size" },
+            { "do": "write", "token": "ms1", "on": "twenty pi times" }
+          ]
+        },
+        {
+          "say": "That is twenty pi centimetres per second.",
+          "asks": ["Why centimetres per second?"],
+          "do": [
+            { "do": "write", "token": "ms2" },
+            { "do": "mark", "kind": "box", "token": "ms2", "on": "centimetres per second" }
+          ]
+        },
+        {
+          "say": "The last part wants the magnitude of the acceleration at A. Acceleration, D two X D T squared, is how fast velocity changes.",
+          "asks": ["Why differentiate the velocity?", "What does magnitude mean?"],
+          "do": [
+            { "do": "write", "token": "c0", "on": "D two X" }
+          ]
+        },
+        {
+          "say": "Differentiate again: cosine becomes negative sine, times pi over three again.",
+          "asks": ["Why does cosine become negative sine?"],
+          "do": [
+            { "do": "write", "token": "c1", "on": "cosine becomes negative" }
+          ]
+        },
+        {
+          "say": "So the acceleration is negative twenty pi squared over three, times sine pi T over three.",
+          "asks": ["How did pi become pi squared?"],
+          "do": [
+            { "do": "write", "step": 13, "on": "negative twenty pi" }
+          ]
+        },
+        {
+          "say": "For the acceleration at A, we need sine pi T over three there.",
+          "asks": ["Why do we not need T?", "Can I find T instead?"],
+          "aside": {
+            "text": "Why not find t?",
+            "slug": "kinematics-no-t-needed",
+            "read": [
+              "You can find a time: $t = 1.5$ s.",
+              "That is a quarter of the $6$ s oscillation, when the dot first reaches $A$.",
+              "Then $\\sin\\dfrac{\\pi(1.5)}{3} = \\sin\\dfrac{\\pi}{2} = 1$: the same answer.",
+              "But \"at $A$\" already tells you $x = 60$, the top of the graph.",
+              "**At the top of the swing, $\\sin = 1$: no $t$ needed.**"
+            ]
+          },
+          "do": [
+            { "do": "highlight", "token": "c2", "on": "sine pi T", "inside": "s", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "At A, the top of the graph, the dot is sixty from O on the positive side, so X is sixty.",
+          "asks": ["Why is X positive at A?"],
+          "do": [
+            { "do": "write", "step": 14 },
+            { "do": "highlight", "token": "pic2", "on": "so X is", "inside": "pa", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "So sixty sine pi T over three equals sixty.",
+          "asks": ["Where does sixty sine pi T over three come from?"],
+          "do": [
+            { "do": "write", "token": "e1", "on": "sixty sine pi" }
+          ]
+        },
+        {
+          "say": "So sine pi T over three is one, the top of its range.",
+          "asks": ["Why is sine one at A?"],
+          "do": [
+            { "do": "write", "token": "e2", "on": "sine pi T" }
+          ]
+        },
+        {
+          "say": "Put one into the acceleration, in place of sine pi T over three.",
+          "asks": ["Where does the one go?"],
+          "do": [
+            { "do": "write", "step": 16 },
+            { "do": "highlight", "token": "g1", "on": "in place of", "inside": "s", "tone": "orange" }
+          ]
+        },
+        {
+          "say": "The magnitude is its size: twenty pi squared over three.",
+          "asks": ["What does magnitude mean?", "Why is the acceleration negative?"],
+          "do": [
+            { "do": "write", "token": "mag" }
+          ]
+        },
+        {
+          "say": "That is sixty-five point eight centimetres per second squared, correct to three significant figures.",
+          "asks": ["Would it be the same at B?"],
+          "do": [
+            { "do": "write", "token": "ans" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "correct to three" }
+          ]
+        }
+      ]
+    }
+  ]
+}

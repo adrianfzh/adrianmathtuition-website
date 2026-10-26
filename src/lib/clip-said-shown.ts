@@ -110,6 +110,9 @@ export function boardTextAfter(scene: Scene | PlayScene, k: number): string {
       if (lineOn) {
         if (st.heading) bits.push(st.heading);
         if (st.graph) bits.push(...(st.graph.points ?? []).map(p => p.label), st.graph.asymptote?.label ?? '', st.graph.label ?? '', ...(st.graph.curves ?? []).map(c => c.label ?? ''));
+        // A swing shows its path's ends at once; its values to read off once it has played.
+        if (st.swing) bits.push(...st.swing.ends, ...(st.swing.axes ?? ['x', 't']), st.swing.label ?? '');
+        if (st.swing && b.swung.includes(n)) bits.push(String(st.swing.amp), `-${st.swing.amp}`, `one oscillation: ${st.swing.period} ${st.swing.unit ?? ''}`);
       }
     });
     if (scene.pinned) bits.push(...scene.pinned.slice(0, b.pinShown));
