@@ -1,0 +1,538 @@
+{
+ "key": "GCE-JC-P2",
+ "set": 1,
+ "paperNo": 2,
+ "total": 100,
+ "title": "H2 Mathematics (9758) · Mock Set 1 · Paper 2",
+ "shape": {
+  "subject": "Mathematics",
+  "code": "9758",
+  "level": "JC2",
+  "exam": "A-Level",
+  "duration": "3 hours"
+ },
+ "sections": {
+  "boundary": 5,
+  "a": "Section A: Pure Mathematics [40 marks]",
+  "b": "Section B: Probability and Statistics [60 marks]"
+ },
+ "layout": {
+  "front_page": false,
+  "page_per_question": true,
+  "keep_part_with_space": true
+ },
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Complex Numbers",
+   "target": 8,
+   "accepted": true,
+   "idea": "2021–2025 P2 Q1–2: conjugate root with a parameter, then a 'hence' by substitution",
+   "question": {
+    "stem": "Do not use a calculator in answering this question.\nThe equation $z^{3} + pz^{2} + qz + r = 0$, where $p$, $q$ and $r$ are real, has roots $2 - \\mathrm{i}$ and $k$, where $k$ is real.",
+    "total_marks": 8,
+    "topics": [
+     "Complex Numbers"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Write down the third root of the equation, and express $p$, $q$ and $r$ in terms of $k$.",
+      "answer": "$2 + \\mathrm{i}$; $p = -(k + 4)$, $q = 4k + 5$, $r = -5k$",
+      "solution": "The coefficients are real, so $2 + \\mathrm{i}$ is also a root.\n$(z - 2 + \\mathrm{i})(z - 2 - \\mathrm{i}) = z^{2} - 4z + 5$\n$(z^{2} - 4z + 5)(z - k) = z^{3} - (k + 4)z^{2} + (4k + 5)z - 5k$\nAnswer: third root $2 + \\mathrm{i}$; $p = -(k + 4)$, $q = 4k + 5$, $r = -5k$"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "The points representing the three roots on an Argand diagram are the vertices of a right-angled triangle. Find the possible values of $k$.",
+      "answer": "$k = 1$ or $k = 3$",
+      "solution": "Let $A$, $B$, $K$ be the points $(2, 1)$, $(2, -1)$, $(k, 0)$.\nRight angle at $A$: $\\overrightarrow{AB} = (0, -2)$, $\\overrightarrow{AK} = (k - 2, -1)$.\nDot product $= 0 + 2 = 2 \\neq 0$, so the angle at $A$ is never $90^{\\circ}$; the same holds at $B$.\nRight angle at $K$: $\\overrightarrow{KA} = (2 - k, 1)$, $\\overrightarrow{KB} = (2 - k, -1)$.\n$(2 - k)^{2} - 1 = 0$\n$2 - k = \\pm 1$\nAnswer: $k = 1$ or $k = 3$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Taking $k = 3$, use your answers to solve the equation $15w^{3} - 17w^{2} + 7w - 1 = 0$.",
+      "answer": "$w = \\tfrac{1}{3}$, $w = \\tfrac{2}{5} + \\tfrac{1}{5}\\mathrm{i}$, $w = \\tfrac{2}{5} - \\tfrac{1}{5}\\mathrm{i}$",
+      "solution": "With $k = 3$: $z^{3} - 7z^{2} + 17z - 15 = 0$, roots $3$, $2 \\pm \\mathrm{i}$.\nPut $z = \\dfrac{1}{w}$: $\\dfrac{1}{w^{3}} - \\dfrac{7}{w^{2}} + \\dfrac{17}{w} - 15 = 0$\nMultiply by $-w^{3}$: $15w^{3} - 17w^{2} + 7w - 1 = 0$\nSo $w = \\dfrac{1}{z}$.\n$\\dfrac{1}{2 + \\mathrm{i}} = \\dfrac{2 - \\mathrm{i}}{5}$ and $\\dfrac{1}{2 - \\mathrm{i}} = \\dfrac{2 + \\mathrm{i}}{5}$\nAnswer: $w = \\tfrac{1}{3}$ or $w = \\tfrac{2}{5} \\pm \\tfrac{1}{5}\\mathrm{i}$"
+     }
+    ],
+    "solution": "(a) The coefficients are real, so $2 + \\mathrm{i}$ is also a root.\n$(z - 2 + \\mathrm{i})(z - 2 - \\mathrm{i}) = z^{2} - 4z + 5$\n$(z^{2} - 4z + 5)(z - k) = z^{3} - (k + 4)z^{2} + (4k + 5)z - 5k$\nAnswer: third root $2 + \\mathrm{i}$; $p = -(k + 4)$, $q = 4k + 5$, $r = -5k$\n\n(b) Let $A$, $B$, $K$ be the points $(2, 1)$, $(2, -1)$, $(k, 0)$.\nRight angle at $A$: $\\overrightarrow{AB} = (0, -2)$, $\\overrightarrow{AK} = (k - 2, -1)$.\nDot product $= 0 + 2 = 2 \\neq 0$, so the angle at $A$ is never $90^{\\circ}$; the same holds at $B$.\nRight angle at $K$: $\\overrightarrow{KA} = (2 - k, 1)$, $\\overrightarrow{KB} = (2 - k, -1)$.\n$(2 - k)^{2} - 1 = 0$\n$2 - k = \\pm 1$\nAnswer: $k = 1$ or $k = 3$\n\n(c) With $k = 3$: $z^{3} - 7z^{2} + 17z - 15 = 0$, roots $3$, $2 \\pm \\mathrm{i}$.\nPut $z = \\dfrac{1}{w}$: $\\dfrac{1}{w^{3}} - \\dfrac{7}{w^{2}} + \\dfrac{17}{w} - 15 = 0$\nMultiply by $-w^{3}$: $15w^{3} - 17w^{2} + 7w - 1 = 0$\nSo $w = \\dfrac{1}{z}$.\n$\\dfrac{1}{2 + \\mathrm{i}} = \\dfrac{2 - \\mathrm{i}}{5}$ and $\\dfrac{1}{2 - \\mathrm{i}} = \\dfrac{2 + \\mathrm{i}}{5}$\nAnswer: $w = \\tfrac{1}{3}$ or $w = \\tfrac{2}{5} \\pm \\tfrac{1}{5}\\mathrm{i}$",
+    "answer": "(a) $2 + \\mathrm{i}$; $p = -(k + 4)$, $q = 4k + 5$, $r = -5k$;  (b) $k = 1$ or $k = 3$;  (c) $w = \\tfrac{1}{3}$, $w = \\tfrac{2}{5} + \\tfrac{1}{5}\\mathrm{i}$, $w = \\tfrac{2}{5} - \\tfrac{1}{5}\\mathrm{i}$",
+    "needs_figure": false,
+    "originality_note": "2021–2025 P2 Q1–2: conjugate root with a parameter, then a 'hence' by substitution",
+    "skills": []
+   }
+  },
+  {
+   "pos": 2,
+   "topic": "Graphing Techniques",
+   "target": 10,
+   "accepted": true,
+   "idea": "2022/2024 P2: graph given by a diagram; f(|x|), 1/f(x), a described sequence of steps, then counting roots",
+   "question": {
+    "stem": "The diagram shows the curve with equation $y = \\mathrm{f}(x)$. The curve has asymptotes $x = 2$ and $y = 0$. It crosses the axes at $(-1, 0)$ and $(0, 1)$, and has a minimum point at $\\left(-4, -\\tfrac{1}{3}\\right)$. As $x \\to 2$, $\\mathrm{f}(x) \\to \\infty$, and $\\mathrm{f}(x) > 0$ for all $x > -1$, $x \\neq 2$.",
+    "total_marks": 10,
+    "topics": [
+     "Graphing Techniques"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Sketch the curve with equation $y = \\mathrm{f}(|x|)$, stating the equations of any asymptotes and the coordinates of any points where the curve crosses the axes.",
+      "answer": "Symmetric about the $y$-axis; asymptotes $x = 2$, $x = -2$, $y = 0$; crosses the axes only at $(0, 1)$",
+      "solution": "For $x \\geq 0$ the curve is the same as $y = \\mathrm{f}(x)$.\nFor $x < 0$ it is the reflection of that part in the $y$-axis.\nThe part of $y = \\mathrm{f}(x)$ with $x < 0$, including $(-1, 0)$ and the minimum, is not used.\nEvery point has $y > 0$, so the curve never meets the $x$-axis.\nAnswer: asymptotes $x = \\pm 2$ and $y = 0$; the only axis crossing is $(0, 1)$, a minimum point"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Sketch the curve with equation $y = \\dfrac{1}{\\mathrm{f}(x)}$, stating the equations of any asymptotes and the coordinates of any turning points and of any points where the curve meets the axes.",
+      "answer": "Asymptote $x = -1$; maximum $(-4, -3)$; minimum $(2, 0)$, touching the $x$-axis; crosses the $y$-axis at $(0, 1)$",
+      "solution": "$\\mathrm{f}(x) = 0$ at $x = -1$, so $x = -1$ is an asymptote.\n$\\mathrm{f}(x) \\to \\infty$ as $x \\to 2$, so $\\dfrac{1}{\\mathrm{f}(x)} \\to 0$: the curve touches the $x$-axis at $(2, 0)$, a minimum.\nThe minimum $\\left(-4, -\\tfrac{1}{3}\\right)$ becomes a maximum $(-4, -3)$.\n$(0, 1)$ stays at $(0, 1)$.\n$\\mathrm{f}(x) \\to 0^{-}$ as $x \\to -\\infty$, so $\\dfrac{1}{\\mathrm{f}(x)} \\to -\\infty$; $\\mathrm{f}(x) \\to 0^{+}$ as $x \\to \\infty$, so $\\dfrac{1}{\\mathrm{f}(x)} \\to \\infty$.\nAnswer: asymptote $x = -1$; maximum $(-4, -3)$; minimum $(2, 0)$; $y$-intercept $(0, 1)$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "The curve $y = \\mathrm{f}(x)$ is stretched, reflected and translated, in that order, to give the curve $y = 3 - \\mathrm{f}(2x)$. Describe each of these three steps fully. Hence state the equations of the asymptotes of $y = 3 - \\mathrm{f}(2x)$, and the coordinates of its turning point.",
+      "answer": "Stretch parallel to the $x$-axis, factor $\\tfrac{1}{2}$; reflection in the $x$-axis; translation $3$ units in the positive $y$-direction. Asymptotes $x = 1$, $y = 3$; maximum point $\\left(-2, \\tfrac{10}{3}\\right)$",
+      "solution": "$y = \\mathrm{f}(2x)$: stretch parallel to the $x$-axis, scale factor $\\tfrac{1}{2}$.\n$y = -\\mathrm{f}(2x)$: reflection in the $x$-axis.\n$y = 3 - \\mathrm{f}(2x)$: translation of $3$ units in the positive $y$-direction.\n$x = 2 \\to x = 1$; $y = 0 \\to y = 3$.\n$\\left(-4, -\\tfrac{1}{3}\\right) \\to \\left(-2, -\\tfrac{1}{3}\\right) \\to \\left(-2, \\tfrac{1}{3}\\right) \\to \\left(-2, \\tfrac{10}{3}\\right)$, and the minimum becomes a maximum.\nAnswer: asymptotes $x = 1$ and $y = 3$; maximum point $\\left(-2, \\tfrac{10}{3}\\right)$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Find the set of values of $k$ for which the equation $\\mathrm{f}(|x|) = k$ has exactly $2$ real roots.",
+      "answer": "$0 < k < 1$",
+      "solution": "Use the sketch in part (a). For $x \\geq 0$:\non $0 \\leq x < 2$, $\\mathrm{f}$ rises from $1$ to $\\infty$; on $x > 2$, $\\mathrm{f}$ falls from $\\infty$ to $0$.\n$k > 1$: two roots with $x > 0$, and two more by symmetry: $4$ roots.\n$k = 1$: $x = 0$ and one root with $x > 2$, and its mirror image: $3$ roots.\n$0 < k < 1$: one root with $x > 2$ and its mirror image: $2$ roots.\n$k \\leq 0$: no roots.\nAnswer: $\\{k : 0 < k < 1\\}$"
+     }
+    ],
+    "solution": "(a) For $x \\geq 0$ the curve is the same as $y = \\mathrm{f}(x)$.\nFor $x < 0$ it is the reflection of that part in the $y$-axis.\nThe part of $y = \\mathrm{f}(x)$ with $x < 0$, including $(-1, 0)$ and the minimum, is not used.\nEvery point has $y > 0$, so the curve never meets the $x$-axis.\nAnswer: asymptotes $x = \\pm 2$ and $y = 0$; the only axis crossing is $(0, 1)$, a minimum point\n\n(b) $\\mathrm{f}(x) = 0$ at $x = -1$, so $x = -1$ is an asymptote.\n$\\mathrm{f}(x) \\to \\infty$ as $x \\to 2$, so $\\dfrac{1}{\\mathrm{f}(x)} \\to 0$: the curve touches the $x$-axis at $(2, 0)$, a minimum.\nThe minimum $\\left(-4, -\\tfrac{1}{3}\\right)$ becomes a maximum $(-4, -3)$.\n$(0, 1)$ stays at $(0, 1)$.\n$\\mathrm{f}(x) \\to 0^{-}$ as $x \\to -\\infty$, so $\\dfrac{1}{\\mathrm{f}(x)} \\to -\\infty$; $\\mathrm{f}(x) \\to 0^{+}$ as $x \\to \\infty$, so $\\dfrac{1}{\\mathrm{f}(x)} \\to \\infty$.\nAnswer: asymptote $x = -1$; maximum $(-4, -3)$; minimum $(2, 0)$; $y$-intercept $(0, 1)$\n\n(c) $y = \\mathrm{f}(2x)$: stretch parallel to the $x$-axis, scale factor $\\tfrac{1}{2}$.\n$y = -\\mathrm{f}(2x)$: reflection in the $x$-axis.\n$y = 3 - \\mathrm{f}(2x)$: translation of $3$ units in the positive $y$-direction.\n$x = 2 \\to x = 1$; $y = 0 \\to y = 3$.\n$\\left(-4, -\\tfrac{1}{3}\\right) \\to \\left(-2, -\\tfrac{1}{3}\\right) \\to \\left(-2, \\tfrac{1}{3}\\right) \\to \\left(-2, \\tfrac{10}{3}\\right)$, and the minimum becomes a maximum.\nAnswer: asymptotes $x = 1$ and $y = 3$; maximum point $\\left(-2, \\tfrac{10}{3}\\right)$\n\n(d) Use the sketch in part (a). For $x \\geq 0$:\non $0 \\leq x < 2$, $\\mathrm{f}$ rises from $1$ to $\\infty$; on $x > 2$, $\\mathrm{f}$ falls from $\\infty$ to $0$.\n$k > 1$: two roots with $x > 0$, and two more by symmetry: $4$ roots.\n$k = 1$: $x = 0$ and one root with $x > 2$, and its mirror image: $3$ roots.\n$0 < k < 1$: one root with $x > 2$ and its mirror image: $2$ roots.\n$k \\leq 0$: no roots.\nAnswer: $\\{k : 0 < k < 1\\}$",
+    "answer": "(a) Symmetric about the $y$-axis; asymptotes $x = 2$, $x = -2$, $y = 0$; crosses the axes only at $(0, 1)$;  (b) Asymptote $x = -1$; maximum $(-4, -3)$; minimum $(2, 0)$, touching the $x$-axis; crosses the $y$-axis at $(0, 1)$;  (c) Stretch parallel to the $x$-axis, factor $\\tfrac{1}{2}$; reflection in the $x$-axis; translation $3$ units in the positive $y$-direction. Asymptotes $x = 1$, $y = 3$; maximum point $\\left(-2, \\tfrac{10}{3}\\right)$;  (d) $0 < k < 1$",
+    "needs_figure": true,
+    "originality_note": "2022/2024 P2: graph given by a diagram; f(|x|), 1/f(x), a described sequence of steps, then counting roots",
+    "skills": []
+   }
+  },
+  {
+   "pos": 3,
+   "topic": "Integration (Area and Volume)",
+   "target": 10,
+   "accepted": true,
+   "idea": "2022/2024 P2: by-parts integral feeds an area, then a volume about the y-axis in context",
+   "question": {
+    "stem": "The diagram shows the curve $C$ with equation $y = \\ln(1 + x^{2})$. The region $R$ is bounded by $C$, the $y$-axis and the line $y = \\ln 5$.",
+    "total_marks": 10,
+    "topics": [
+     "Integration (Area and Volume)",
+     "Integration (Techniques)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Find $\\int \\ln(1 + x^{2}) \\, dx$.",
+      "answer": "$x\\ln(1 + x^{2}) - 2x + 2\\tan^{-1}x + c$",
+      "solution": "By parts: $u = \\ln(1 + x^{2})$, $\\dfrac{dv}{dx} = 1$.\n$\\int \\ln(1 + x^{2}) \\, dx = x\\ln(1 + x^{2}) - \\int \\dfrac{2x^{2}}{1 + x^{2}} \\, dx$\n$\\dfrac{2x^{2}}{1 + x^{2}} = 2 - \\dfrac{2}{1 + x^{2}}$\nAnswer: $x\\ln(1 + x^{2}) - 2x + 2\\tan^{-1}x + c$"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Hence find the exact area of $R$.",
+      "answer": "$4 - 2\\tan^{-1}2$",
+      "solution": "$C$ meets $y = \\ln 5$ where $x = 2$ (with $x \\geq 0$).\nArea under $C$ from $0$ to $2$ $= [x\\ln(1 + x^{2}) - 2x + 2\\tan^{-1}x]_{0}^{2} = 2\\ln 5 - 4 + 2\\tan^{-1}2$\nArea of $R$ = rectangle $2 \\times \\ln 5$ minus area under $C$\n$= 2\\ln 5 - (2\\ln 5 - 4 + 2\\tan^{-1}2)$\nAnswer: $4 - 2\\tan^{-1}2$"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "The inside of a bowl has the shape of the solid formed when $R$ is rotated through $2\\pi$ radians about the $y$-axis. Find the exact volume the bowl can hold.",
+      "answer": "$\\pi(4 - \\ln 5)$",
+      "solution": "$x^{2} = e^{y} - 1$\nVolume $= \\pi\\int_{0}^{\\ln 5} (e^{y} - 1) \\, dy = \\pi[e^{y} - y]_{0}^{\\ln 5}$\n$= \\pi(5 - \\ln 5 - 1)$\nAnswer: $\\pi(4 - \\ln 5)$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Water is poured into the empty bowl. Show that when the depth of the water is $h$, the volume of water is $\\pi(e^{h} - 1 - h)$. Hence find the depth of the water when the bowl is half full.",
+      "answer": "$h = 1.23$ (3 s.f.)",
+      "solution": "Volume to depth $h$ $= \\pi\\int_{0}^{h} (e^{y} - 1) \\, dy = \\pi(e^{h} - 1 - h)$\nHalf full: $e^{h} - 1 - h = \\tfrac{1}{2}(4 - \\ln 5)$\nSolve on a calculator: $h = 1.2317$\nAnswer: $h = 1.23$ (3 s.f.)"
+     }
+    ],
+    "solution": "(a) By parts: $u = \\ln(1 + x^{2})$, $\\dfrac{dv}{dx} = 1$.\n$\\int \\ln(1 + x^{2}) \\, dx = x\\ln(1 + x^{2}) - \\int \\dfrac{2x^{2}}{1 + x^{2}} \\, dx$\n$\\dfrac{2x^{2}}{1 + x^{2}} = 2 - \\dfrac{2}{1 + x^{2}}$\nAnswer: $x\\ln(1 + x^{2}) - 2x + 2\\tan^{-1}x + c$\n\n(b) $C$ meets $y = \\ln 5$ where $x = 2$ (with $x \\geq 0$).\nArea under $C$ from $0$ to $2$ $= [x\\ln(1 + x^{2}) - 2x + 2\\tan^{-1}x]_{0}^{2} = 2\\ln 5 - 4 + 2\\tan^{-1}2$\nArea of $R$ = rectangle $2 \\times \\ln 5$ minus area under $C$\n$= 2\\ln 5 - (2\\ln 5 - 4 + 2\\tan^{-1}2)$\nAnswer: $4 - 2\\tan^{-1}2$\n\n(c) $x^{2} = e^{y} - 1$\nVolume $= \\pi\\int_{0}^{\\ln 5} (e^{y} - 1) \\, dy = \\pi[e^{y} - y]_{0}^{\\ln 5}$\n$= \\pi(5 - \\ln 5 - 1)$\nAnswer: $\\pi(4 - \\ln 5)$\n\n(d) Volume to depth $h$ $= \\pi\\int_{0}^{h} (e^{y} - 1) \\, dy = \\pi(e^{h} - 1 - h)$\nHalf full: $e^{h} - 1 - h = \\tfrac{1}{2}(4 - \\ln 5)$\nSolve on a calculator: $h = 1.2317$\nAnswer: $h = 1.23$ (3 s.f.)",
+    "answer": "(a) $x\\ln(1 + x^{2}) - 2x + 2\\tan^{-1}x + c$;  (b) $4 - 2\\tan^{-1}2$;  (c) $\\pi(4 - \\ln 5)$;  (d) $h = 1.23$ (3 s.f.)",
+    "needs_figure": true,
+    "originality_note": "2022/2024 P2: by-parts integral feeds an area, then a volume about the y-axis in context",
+    "skills": []
+   }
+  },
+  {
+   "pos": 4,
+   "topic": "Differentiation (Techniques)",
+   "target": 12,
+   "accepted": true,
+   "idea": "2021/2025 P2: implicit curve; new angle = tangent perpendicular to OP gives extreme distance",
+   "question": {
+    "stem": "The curve $C$ has equation $x^{2} + xy + y^{2} = 12$.",
+    "total_marks": 12,
+    "topics": [
+     "Differentiation (Techniques)",
+     "Differentiation (Tangents and Normals)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Show that $\\dfrac{dy}{dx} = -\\dfrac{2x + y}{x + 2y}$.",
+      "answer": "Shown",
+      "solution": "Differentiate with respect to $x$:\n$2x + y + x\\dfrac{dy}{dx} + 2y\\dfrac{dy}{dx} = 0$\n$(x + 2y)\\dfrac{dy}{dx} = -(2x + y)$\nAnswer: $\\dfrac{dy}{dx} = -\\dfrac{2x + y}{x + 2y}$, as required"
+     },
+     {
+      "label": "(b)",
+      "marks": 4,
+      "text": "Find the coordinates of the points on $C$ where the tangent is parallel to the $x$-axis, and of the points where the tangent is parallel to the $y$-axis.",
+      "answer": "Parallel to the $x$-axis: $(2, -4)$, $(-2, 4)$; parallel to the $y$-axis: $(4, -2)$, $(-4, 2)$",
+      "solution": "Parallel to the $x$-axis: $2x + y = 0$, so $y = -2x$.\n$x^{2} - 2x^{2} + 4x^{2} = 12 \\Rightarrow x = \\pm 2$\nPoints $(2, -4)$ and $(-2, 4)$.\nParallel to the $y$-axis: $x + 2y = 0$, so $x = -2y$.\n$4y^{2} - 2y^{2} + y^{2} = 12 \\Rightarrow y = \\pm 2$\nPoints $(-4, 2)$ and $(4, -2)$.\nAnswer: $(2, -4)$, $(-2, 4)$; $(4, -2)$, $(-4, 2)$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "The point $P(x, y)$ lies on $C$, and $O$ is the origin. Show that the tangent to $C$ at $P$ is perpendicular to $OP$ exactly when $y^{2} = x^{2}$.",
+      "answer": "Shown",
+      "solution": "Gradient of $OP$ $= \\dfrac{y}{x}$.\nPerpendicular when $\\dfrac{y}{x} \\times \\left(-\\dfrac{2x + y}{x + 2y}\\right) = -1$\n$y(2x + y) = x(x + 2y)$\n$2xy + y^{2} = x^{2} + 2xy$\n(Where $x = 0$ or $x + 2y = 0$ the tangent and $OP$ are not perpendicular, so no case is lost.)\nAnswer: $y^{2} = x^{2}$, as required"
+     },
+     {
+      "label": "(d)",
+      "marks": 3,
+      "text": "Hence find the greatest and least distances from $O$ of points on $C$, giving the coordinates of the points where they occur.",
+      "answer": "Greatest $2\\sqrt{6}$ at $(2\\sqrt{3}, -2\\sqrt{3})$ and $(-2\\sqrt{3}, 2\\sqrt{3})$; least $2\\sqrt{2}$ at $(2, 2)$ and $(-2, -2)$",
+      "solution": "At a point of greatest or least distance, $x^{2} + y^{2}$ is stationary.\n$2x + 2y\\dfrac{dy}{dx} = 0$, so the tangent is perpendicular to $OP$: $y = x$ or $y = -x$.\n$y = x$: $3x^{2} = 12$, $x = \\pm 2$; distance $\\sqrt{8} = 2\\sqrt{2}$.\n$y = -x$: $x^{2} = 12$, $x = \\pm 2\\sqrt{3}$; distance $\\sqrt{24} = 2\\sqrt{6}$.\n$C$ is a closed curve, so these are the greatest and least.\nAnswer: greatest $2\\sqrt{6}$ at $(2\\sqrt{3}, -2\\sqrt{3})$, $(-2\\sqrt{3}, 2\\sqrt{3})$; least $2\\sqrt{2}$ at $(2, 2)$, $(-2, -2)$"
+     }
+    ],
+    "solution": "(a) Differentiate with respect to $x$:\n$2x + y + x\\dfrac{dy}{dx} + 2y\\dfrac{dy}{dx} = 0$\n$(x + 2y)\\dfrac{dy}{dx} = -(2x + y)$\nAnswer: $\\dfrac{dy}{dx} = -\\dfrac{2x + y}{x + 2y}$, as required\n\n(b) Parallel to the $x$-axis: $2x + y = 0$, so $y = -2x$.\n$x^{2} - 2x^{2} + 4x^{2} = 12 \\Rightarrow x = \\pm 2$\nPoints $(2, -4)$ and $(-2, 4)$.\nParallel to the $y$-axis: $x + 2y = 0$, so $x = -2y$.\n$4y^{2} - 2y^{2} + y^{2} = 12 \\Rightarrow y = \\pm 2$\nPoints $(-4, 2)$ and $(4, -2)$.\nAnswer: $(2, -4)$, $(-2, 4)$; $(4, -2)$, $(-4, 2)$\n\n(c) Gradient of $OP$ $= \\dfrac{y}{x}$.\nPerpendicular when $\\dfrac{y}{x} \\times \\left(-\\dfrac{2x + y}{x + 2y}\\right) = -1$\n$y(2x + y) = x(x + 2y)$\n$2xy + y^{2} = x^{2} + 2xy$\n(Where $x = 0$ or $x + 2y = 0$ the tangent and $OP$ are not perpendicular, so no case is lost.)\nAnswer: $y^{2} = x^{2}$, as required\n\n(d) At a point of greatest or least distance, $x^{2} + y^{2}$ is stationary.\n$2x + 2y\\dfrac{dy}{dx} = 0$, so the tangent is perpendicular to $OP$: $y = x$ or $y = -x$.\n$y = x$: $3x^{2} = 12$, $x = \\pm 2$; distance $\\sqrt{8} = 2\\sqrt{2}$.\n$y = -x$: $x^{2} = 12$, $x = \\pm 2\\sqrt{3}$; distance $\\sqrt{24} = 2\\sqrt{6}$.\n$C$ is a closed curve, so these are the greatest and least.\nAnswer: greatest $2\\sqrt{6}$ at $(2\\sqrt{3}, -2\\sqrt{3})$, $(-2\\sqrt{3}, 2\\sqrt{3})$; least $2\\sqrt{2}$ at $(2, 2)$, $(-2, -2)$",
+    "answer": "(a) Shown;  (b) Parallel to the $x$-axis: $(2, -4)$, $(-2, 4)$; parallel to the $y$-axis: $(4, -2)$, $(-4, 2)$;  (c) Shown;  (d) Greatest $2\\sqrt{6}$ at $(2\\sqrt{3}, -2\\sqrt{3})$ and $(-2\\sqrt{3}, 2\\sqrt{3})$; least $2\\sqrt{2}$ at $(2, 2)$ and $(-2, -2)$",
+    "needs_figure": false,
+    "originality_note": "2021/2025 P2: implicit curve; new angle = tangent perpendicular to OP gives extreme distance",
+    "skills": []
+   }
+  },
+  {
+   "pos": 5,
+   "topic": "Permutations and Combinations",
+   "target": 8,
+   "accepted": true,
+   "idea": "2022/2024 P2: counting pairings, then a conditional probability by counting",
+   "question": {
+    "stem": "A badminton club has $7$ men and $5$ women.",
+    "total_marks": 8,
+    "topics": [
+     "Permutations and Combinations",
+     "Probability"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Mr Tan and Ms Lim are members of the club. A team of $6$ is chosen from the club. Find the number of different teams that contain at least $2$ men and at least $2$ women, and do not contain both Mr Tan and Ms Lim.",
+      "answer": "$611$",
+      "solution": "Teams with at least $2$ men and at least $2$ women:\n$\\binom{12}{6} - \\binom{7}{6} - \\binom{7}{5}\\binom{5}{1} - \\binom{7}{1}\\binom{5}{5} = 924 - 7 - 105 - 7 = 805$\nOf these, teams with both Mr Tan and Ms Lim: choose $4$ more from $6$ men and $4$ women, with at least $1$ more man and at least $1$ more woman.\n$\\binom{10}{4} - \\binom{6}{4} - \\binom{4}{4} = 210 - 15 - 1 = 194$\n$805 - 194 = 611$\nAnswer: $611$"
+     },
+     {
+      "label": "(b)",
+      "marks": 1,
+      "text": "For a practice session, all $12$ members are split into $6$ pairs. Show that there are $10\\,395$ ways of doing this.",
+      "answer": "Shown",
+      "solution": "Line up the $12$ people and pair them off in order: $12!$ ways.\nEach pair can be written in $2$ orders, and the $6$ pairs in $6!$ orders.\n$\\dfrac{12!}{2^{6} \\times 6!} = 10\\,395$\nAnswer: $10\\,395$, as required"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "The pairs are formed at random. Find the probability that every woman is paired with a man.",
+      "answer": "$\\dfrac{8}{33}$",
+      "solution": "Give each woman a different man: $7 \\times 6 \\times 5 \\times 4 \\times 3 = 2520$ ways.\nThe $2$ men left over form the last pair.\n$\\dfrac{2520}{10\\,395}$\nAnswer: $\\dfrac{8}{33}$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Given that every woman is paired with a man, find the probability that Mr Tan and Ms Lim are partners.",
+      "answer": "$\\dfrac{1}{7}$",
+      "solution": "Ms Lim is paired with one of the $7$ men, each equally likely.\nCheck by counting: $\\dfrac{6 \\times 5 \\times 4 \\times 3}{7 \\times 6 \\times 5 \\times 4 \\times 3} = \\dfrac{1}{7}$\nAnswer: $\\dfrac{1}{7}$"
+     }
+    ],
+    "solution": "(a) Teams with at least $2$ men and at least $2$ women:\n$\\binom{12}{6} - \\binom{7}{6} - \\binom{7}{5}\\binom{5}{1} - \\binom{7}{1}\\binom{5}{5} = 924 - 7 - 105 - 7 = 805$\nOf these, teams with both Mr Tan and Ms Lim: choose $4$ more from $6$ men and $4$ women, with at least $1$ more man and at least $1$ more woman.\n$\\binom{10}{4} - \\binom{6}{4} - \\binom{4}{4} = 210 - 15 - 1 = 194$\n$805 - 194 = 611$\nAnswer: $611$\n\n(b) Line up the $12$ people and pair them off in order: $12!$ ways.\nEach pair can be written in $2$ orders, and the $6$ pairs in $6!$ orders.\n$\\dfrac{12!}{2^{6} \\times 6!} = 10\\,395$\nAnswer: $10\\,395$, as required\n\n(c) Give each woman a different man: $7 \\times 6 \\times 5 \\times 4 \\times 3 = 2520$ ways.\nThe $2$ men left over form the last pair.\n$\\dfrac{2520}{10\\,395}$\nAnswer: $\\dfrac{8}{33}$\n\n(d) Ms Lim is paired with one of the $7$ men, each equally likely.\nCheck by counting: $\\dfrac{6 \\times 5 \\times 4 \\times 3}{7 \\times 6 \\times 5 \\times 4 \\times 3} = \\dfrac{1}{7}$\nAnswer: $\\dfrac{1}{7}$",
+    "answer": "(a) $611$;  (b) Shown;  (c) $\\dfrac{8}{33}$;  (d) $\\dfrac{1}{7}$",
+    "needs_figure": false,
+    "originality_note": "2022/2024 P2: counting pairings, then a conditional probability by counting",
+    "skills": []
+   }
+  },
+  {
+   "pos": 6,
+   "topic": "Probability",
+   "target": 7,
+   "accepted": true,
+   "idea": "2021/2023 P2: alternate-turn game, geometric series, conditional, least N",
+   "question": {
+    "stem": "Ann and Ben take turns to throw a fair six-sided die, with Ann throwing first. Ann wins if she throws a $6$. Ben wins if he throws a $5$ or a $6$. The game ends as soon as one of them wins.",
+    "total_marks": 7,
+    "topics": [
+     "Probability"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Show that the probability that Ann wins is $\\tfrac{3}{8}$.",
+      "answer": "Shown",
+      "solution": "Probability that a round of two throws has no winner $= \\tfrac{5}{6} \\times \\tfrac{2}{3} = \\tfrac{5}{9}$\nP(Ann wins) $= \\tfrac{1}{6} + \\tfrac{5}{9} \\times \\tfrac{1}{6} + \\left(\\tfrac{5}{9}\\right)^{2} \\times \\tfrac{1}{6} + \\ldots$\n$= \\dfrac{1/6}{1 - 5/9} = \\dfrac{1}{6} \\times \\dfrac{9}{4}$\nAnswer: $\\tfrac{3}{8}$, as required"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Find the probability that Ann wins, given that the game lasts for more than $3$ throws.",
+      "answer": "$\\dfrac{1}{4}$",
+      "solution": "More than $3$ throws: the game reaches throw $4$, which is Ben's.\nFrom there, Ann wins only if Ben fails and then Ann wins the new game that starts.\n$\\dfrac{2}{3} \\times \\dfrac{3}{8}$\nAnswer: $\\dfrac{1}{4}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Find the least value of $N$ for which the probability that the game has ended within $N$ throws is greater than $0.99$.",
+      "answer": "$N = 16$",
+      "solution": "After $2m$ throws, P(not ended) $= \\left(\\tfrac{5}{9}\\right)^{m}$.\nAfter $2m + 1$ throws, P(not ended) $= \\left(\\tfrac{5}{9}\\right)^{m} \\times \\tfrac{5}{6}$.\n$N = 15$: $\\left(\\tfrac{5}{9}\\right)^{7} \\times \\tfrac{5}{6} = 0.0136$, so P(ended) $= 0.9864$\n$N = 16$: $\\left(\\tfrac{5}{9}\\right)^{8} = 0.00907$, so P(ended) $= 0.9909$\nAnswer: $N = 16$"
+     }
+    ],
+    "solution": "(a) Probability that a round of two throws has no winner $= \\tfrac{5}{6} \\times \\tfrac{2}{3} = \\tfrac{5}{9}$\nP(Ann wins) $= \\tfrac{1}{6} + \\tfrac{5}{9} \\times \\tfrac{1}{6} + \\left(\\tfrac{5}{9}\\right)^{2} \\times \\tfrac{1}{6} + \\ldots$\n$= \\dfrac{1/6}{1 - 5/9} = \\dfrac{1}{6} \\times \\dfrac{9}{4}$\nAnswer: $\\tfrac{3}{8}$, as required\n\n(b) More than $3$ throws: the game reaches throw $4$, which is Ben's.\nFrom there, Ann wins only if Ben fails and then Ann wins the new game that starts.\n$\\dfrac{2}{3} \\times \\dfrac{3}{8}$\nAnswer: $\\dfrac{1}{4}$\n\n(c) After $2m$ throws, P(not ended) $= \\left(\\tfrac{5}{9}\\right)^{m}$.\nAfter $2m + 1$ throws, P(not ended) $= \\left(\\tfrac{5}{9}\\right)^{m} \\times \\tfrac{5}{6}$.\n$N = 15$: $\\left(\\tfrac{5}{9}\\right)^{7} \\times \\tfrac{5}{6} = 0.0136$, so P(ended) $= 0.9864$\n$N = 16$: $\\left(\\tfrac{5}{9}\\right)^{8} = 0.00907$, so P(ended) $= 0.9909$\nAnswer: $N = 16$",
+    "answer": "(a) Shown;  (b) $\\dfrac{1}{4}$;  (c) $N = 16$",
+    "needs_figure": false,
+    "originality_note": "2021/2023 P2: alternate-turn game, geometric series, conditional, least N",
+    "skills": []
+   }
+  },
+  {
+   "pos": 7,
+   "topic": "Distributions (Binomial)",
+   "target": 12,
+   "accepted": true,
+   "idea": "2022/2025 P2: binomial in context; overbooking with a least-risk n and a second binomial",
+   "question": {
+    "stem": "A ferry has $200$ seats. The ferry company sells $n$ tickets for each trip, where $n \\geq 200$. The number of ticket-holders who turn up for a trip is $X$. A model for $X$ is $\\mathrm{B}(n, 0.95)$.",
+    "total_marks": 12,
+    "topics": [
+     "Distributions (Binomial)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "State, in context, two assumptions needed for this model to be valid, and explain why one of them may not hold.",
+      "answer": "Each ticket-holder turns up independently of the others, and with the same probability $0.95$; independence fails for families or tour groups who travel together",
+      "solution": "Ticket-holders turn up independently of one another.\nEvery ticket-holder has the same probability, $0.95$, of turning up.\nFamilies or tour groups travel together, so if one of them does not turn up the others are likely not to either; independence may fail.\nAnswer: independence and a constant probability $0.95$; groups travelling together break independence"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Given that $n = 205$, find the probability that more ticket-holders turn up than there are seats.",
+      "answer": "$0.0224$ (3 s.f.)",
+      "solution": "$X \\sim \\mathrm{B}(205, 0.95)$\n$\\mathrm{P}(X > 200) = 1 - \\mathrm{P}(X \\leq 200)$\nAnswer: $0.0224$ (3 s.f.)"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "The company wants the probability that more ticket-holders turn up than there are seats to be less than $0.01$. Find the greatest value of $n$ it can use.",
+      "answer": "$n = 204$",
+      "solution": "$n = 204$: $\\mathrm{P}(X > 200) = 0.00778 < 0.01$\n$n = 205$: $\\mathrm{P}(X > 200) = 0.0224 > 0.01$\nAnswer: $n = 204$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "For $n = 205$, find the most likely number of ticket-holders to turn up.",
+      "answer": "$195$",
+      "solution": "From the table of $\\mathrm{P}(X = x)$:\n$\\mathrm{P}(X = 194) = 0.1193$, $\\mathrm{P}(X = 195) = 0.1279$, $\\mathrm{P}(X = 196) = 0.1239$\nAnswer: $195$"
+     },
+     {
+      "label": "(e)",
+      "marks": 3,
+      "text": "The company sells $205$ tickets for each of $30$ trips. Find the probability that more ticket-holders turn up than there are seats on at least $2$ of these trips.",
+      "answer": "$0.144$ (3 s.f.)",
+      "solution": "Let $Y$ be the number of the $30$ trips with too many ticket-holders.\n$Y \\sim \\mathrm{B}(30, 0.022357)$\n$\\mathrm{P}(Y \\geq 2) = 1 - \\mathrm{P}(Y \\leq 1)$\nAnswer: $0.144$ (3 s.f.)"
+     }
+    ],
+    "solution": "(a) Ticket-holders turn up independently of one another.\nEvery ticket-holder has the same probability, $0.95$, of turning up.\nFamilies or tour groups travel together, so if one of them does not turn up the others are likely not to either; independence may fail.\nAnswer: independence and a constant probability $0.95$; groups travelling together break independence\n\n(b) $X \\sim \\mathrm{B}(205, 0.95)$\n$\\mathrm{P}(X > 200) = 1 - \\mathrm{P}(X \\leq 200)$\nAnswer: $0.0224$ (3 s.f.)\n\n(c) $n = 204$: $\\mathrm{P}(X > 200) = 0.00778 < 0.01$\n$n = 205$: $\\mathrm{P}(X > 200) = 0.0224 > 0.01$\nAnswer: $n = 204$\n\n(d) From the table of $\\mathrm{P}(X = x)$:\n$\\mathrm{P}(X = 194) = 0.1193$, $\\mathrm{P}(X = 195) = 0.1279$, $\\mathrm{P}(X = 196) = 0.1239$\nAnswer: $195$\n\n(e) Let $Y$ be the number of the $30$ trips with too many ticket-holders.\n$Y \\sim \\mathrm{B}(30, 0.022357)$\n$\\mathrm{P}(Y \\geq 2) = 1 - \\mathrm{P}(Y \\leq 1)$\nAnswer: $0.144$ (3 s.f.)",
+    "answer": "(a) Each ticket-holder turns up independently of the others, and with the same probability $0.95$; independence fails for families or tour groups who travel together;  (b) $0.0224$ (3 s.f.);  (c) $n = 204$;  (d) $195$;  (e) $0.144$ (3 s.f.)",
+    "needs_figure": false,
+    "originality_note": "2022/2025 P2: binomial in context; overbooking with a least-risk n and a second binomial",
+    "skills": []
+   }
+  },
+  {
+   "pos": 8,
+   "topic": "Distributions (Normal)",
+   "target": 12,
+   "accepted": true,
+   "idea": "2023/2025 P2: linear combinations in one scenario; unknown mean, a 0.9C coefficient, an unknown sigma, |T1 - T2|",
+   "question": {
+    "stem": "At a bubble tea shop, each drink is made by putting pearls into a cup and then pouring in tea from a machine. The volume of pearls, $P$ ml, is normally distributed with mean $60$ and standard deviation $5$. The volume of tea, $T$ ml, is normally distributed with mean $\\mu$ and standard deviation $10$. The capacity of a cup, $C$ ml, is normally distributed with mean $500$ and standard deviation $6$. A drink overflows if $P + T > C$. All volumes are independent.",
+    "total_marks": 12,
+    "topics": [
+     "Distributions (Normal)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "The shop wants exactly $1\\%$ of drinks to overflow. Show that $\\mu = 410$, correct to $3$ significant figures.",
+      "answer": "Shown",
+      "solution": "Let $D = P + T - C$.\n$\\mathrm{E}(D) = 60 + \\mu - 500 = \\mu - 440$\n$\\mathrm{Var}(D) = 5^{2} + 10^{2} + 6^{2} = 161$\n$\\mathrm{P}(D > 0) = 0.01$\n$\\dfrac{440 - \\mu}{\\sqrt{161}} = 2.3263$\n$\\mu = 440 - 29.518 = 410.48$\nAnswer: $\\mu = 410$ (3 s.f.), as required"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Use $\\mu = 410$ in this part.\nA drink is 'under-filled' if the pearls and tea together fill less than $90\\%$ of the capacity of its cup. Find the probability that a randomly chosen drink is under-filled.",
+      "answer": "$0.0536$ (3 s.f.)",
+      "solution": "Let $U = P + T - 0.9C$.\n$\\mathrm{E}(U) = 60 + 410 - 0.9 \\times 500 = 20$\n$\\mathrm{Var}(U) = 25 + 100 + 0.9^{2} \\times 36 = 154.16$\n$U \\sim \\mathrm{N}(20, 154.16)$\n$\\mathrm{P}(U < 0)$\nAnswer: $0.0536$ (3 s.f.)"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "The machine is replaced. The new machine pours a volume of tea that is normally distributed with mean $415$ ml and standard deviation $\\sigma$ ml. Find the greatest value of $\\sigma$ for which at most $1\\%$ of drinks overflow.",
+      "answer": "$\\sigma = 7.38$ (3 s.f.)",
+      "solution": "$D = P + T - C \\sim \\mathrm{N}(415 + 60 - 500, \\; 25 + \\sigma^{2} + 36) = \\mathrm{N}(-25, \\; 61 + \\sigma^{2})$\n$\\mathrm{P}(D > 0) \\leq 0.01$\n$\\dfrac{25}{\\sqrt{61 + \\sigma^{2}}} \\geq 2.3263$\n$61 + \\sigma^{2} \\leq 115.49$\n$\\sigma^{2} \\leq 54.486$\nAnswer: $\\sigma = 7.38$ (3 s.f.)"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "For the new machine, take $\\sigma = 7$. Two drinks are made. Find the probability that the volumes of tea in the two drinks differ by more than $15$ ml.",
+      "answer": "$0.130$ (3 s.f.)",
+      "solution": "$T_{1} - T_{2} \\sim \\mathrm{N}(0, 7^{2} + 7^{2}) = \\mathrm{N}(0, 98)$\n$\\mathrm{P}(|T_{1} - T_{2}| > 15) = 2\\,\\mathrm{P}(T_{1} - T_{2} > 15)$\nAnswer: $0.130$ (3 s.f.)"
+     },
+     {
+      "label": "(e)",
+      "marks": 1,
+      "text": "Explain, in context, why the assumption that $P$ and $T$ are independent may not be valid.",
+      "answer": "A staff member may pour less tea into a cup that already holds more pearls",
+      "solution": "The tea is poured after the pearls are in the cup.\nAnswer: a staff member who sees more pearls in a cup may pour less tea, so $T$ would depend on $P$"
+     }
+    ],
+    "solution": "(a) Let $D = P + T - C$.\n$\\mathrm{E}(D) = 60 + \\mu - 500 = \\mu - 440$\n$\\mathrm{Var}(D) = 5^{2} + 10^{2} + 6^{2} = 161$\n$\\mathrm{P}(D > 0) = 0.01$\n$\\dfrac{440 - \\mu}{\\sqrt{161}} = 2.3263$\n$\\mu = 440 - 29.518 = 410.48$\nAnswer: $\\mu = 410$ (3 s.f.), as required\n\n(b) Let $U = P + T - 0.9C$.\n$\\mathrm{E}(U) = 60 + 410 - 0.9 \\times 500 = 20$\n$\\mathrm{Var}(U) = 25 + 100 + 0.9^{2} \\times 36 = 154.16$\n$U \\sim \\mathrm{N}(20, 154.16)$\n$\\mathrm{P}(U < 0)$\nAnswer: $0.0536$ (3 s.f.)\n\n(c) $D = P + T - C \\sim \\mathrm{N}(415 + 60 - 500, \\; 25 + \\sigma^{2} + 36) = \\mathrm{N}(-25, \\; 61 + \\sigma^{2})$\n$\\mathrm{P}(D > 0) \\leq 0.01$\n$\\dfrac{25}{\\sqrt{61 + \\sigma^{2}}} \\geq 2.3263$\n$61 + \\sigma^{2} \\leq 115.49$\n$\\sigma^{2} \\leq 54.486$\nAnswer: $\\sigma = 7.38$ (3 s.f.)\n\n(d) $T_{1} - T_{2} \\sim \\mathrm{N}(0, 7^{2} + 7^{2}) = \\mathrm{N}(0, 98)$\n$\\mathrm{P}(|T_{1} - T_{2}| > 15) = 2\\,\\mathrm{P}(T_{1} - T_{2} > 15)$\nAnswer: $0.130$ (3 s.f.)\n\n(e) The tea is poured after the pearls are in the cup.\nAnswer: a staff member who sees more pearls in a cup may pour less tea, so $T$ would depend on $P$",
+    "answer": "(a) Shown;  (b) $0.0536$ (3 s.f.);  (c) $\\sigma = 7.38$ (3 s.f.);  (d) $0.130$ (3 s.f.);  (e) A staff member may pour less tea into a cup that already holds more pearls",
+    "needs_figure": false,
+    "originality_note": "2023/2025 P2: linear combinations in one scenario; unknown mean, a 0.9C coefficient, an unknown sigma, |T1 - T2|",
+    "skills": []
+   }
+  },
+  {
+   "pos": 9,
+   "topic": "Hypothesis Testing",
+   "target": 10,
+   "accepted": true,
+   "idea": "2021/2024 P2: test from coded sums; p-value just above 5% so the conclusion is 'not enough evidence'",
+   "question": {
+    "stem": "Last year, the mean daily water use of households in a town was $410$ litres. After a campaign to save water, a random sample of $60$ households is taken. The daily water use, $x$ litres, of each household is recorded, and the results are summarised by\n$\\sum(x - 400) = 270$ and $\\sum(x - 400)^{2} = 41\\,820$.",
+    "total_marks": 10,
+    "topics": [
+     "Hypothesis Testing"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Find unbiased estimates of the population mean and variance.",
+      "answer": "$\\bar{x} = 404.5$; $s^{2} = 688$ (3 s.f.)",
+      "solution": "$\\bar{x} = 400 + \\dfrac{270}{60} = 404.5$\n$s^{2} = \\dfrac{1}{59}\\left(41\\,820 - \\dfrac{270^{2}}{60}\\right) = \\dfrac{40\\,605}{59} = 688.22$\nAnswer: $\\bar{x} = 404.5$; $s^{2} = 688$ (3 s.f.)"
+     },
+     {
+      "label": "(b)",
+      "marks": 4,
+      "text": "Test, at the $5\\%$ level of significance, whether the mean daily water use has decreased.",
+      "answer": "$p$-value $= 0.0522 > 0.05$; do not reject $\\mathrm{H}_{0}$: not enough evidence at the $5\\%$ level that the mean has decreased",
+      "solution": "$\\mathrm{H}_{0}$: $\\mu = 410$; $\\mathrm{H}_{1}$: $\\mu < 410$\nUnder $\\mathrm{H}_{0}$, $\\bar{X} \\sim \\mathrm{N}\\left(410, \\dfrac{688.22}{60}\\right)$ approximately.\n$z = \\dfrac{404.5 - 410}{\\sqrt{688.22/60}} = -1.624$\n$p$-value $= 0.0522$\n$0.0522 > 0.05$, so do not reject $\\mathrm{H}_{0}$.\nAnswer: there is not enough evidence, at the $5\\%$ level, that the mean daily water use has decreased"
+     },
+     {
+      "label": "(c)",
+      "marks": 1,
+      "text": "Explain why the test in part (b) is valid even though nothing is known about the distribution of daily water use.",
+      "answer": "The sample is large, so by the Central Limit Theorem the sample mean is approximately normal",
+      "solution": "$n = 60$ is large.\nAnswer: by the Central Limit Theorem, $\\bar{X}$ is approximately normally distributed"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "After a second campaign, a new random sample of $40$ households is taken. The unbiased estimate of the population variance from this sample is also $688.22$. Find the set of values of the sample mean, $\\overline{y}$, for which a test at the $5\\%$ level of significance would show that the mean daily water use is less than $410$ litres.",
+      "answer": "$\\overline{y} < 403$ (3 s.f.)",
+      "solution": "Under $\\mathrm{H}_{0}$: $\\mu = 410$, $\\overline{Y} \\sim \\mathrm{N}\\left(410, \\dfrac{688.22}{40}\\right)$ approximately.\nReject $\\mathrm{H}_{0}$ when $\\dfrac{\\overline{y} - 410}{\\sqrt{688.22/40}} < -1.6449$\n$\\overline{y} < 410 - 1.6449 \\times 4.1480 = 403.18$\nAnswer: $\\{\\overline{y} : \\overline{y} < 403\\}$ (3 s.f.; more exactly $\\overline{y} < 403.18$)"
+     },
+     {
+      "label": "(e)",
+      "marks": 1,
+      "text": "A councillor says, 'The sample mean is less than $410$ litres, so the campaign has reduced water use.' Comment on this statement.",
+      "answer": "Not justified: a sample mean below 410 can happen by chance; the test at the 5% level does not support it, and even a real fall need not be caused by the campaign",
+      "solution": "A sample mean below $410$ can happen by chance even if $\\mu = 410$.\nAnswer: not justified: the test in part (b) does not show a decrease at the $5\\%$ level, and a decrease would not on its own prove the campaign caused it"
+     }
+    ],
+    "solution": "(a) $\\bar{x} = 400 + \\dfrac{270}{60} = 404.5$\n$s^{2} = \\dfrac{1}{59}\\left(41\\,820 - \\dfrac{270^{2}}{60}\\right) = \\dfrac{40\\,605}{59} = 688.22$\nAnswer: $\\bar{x} = 404.5$; $s^{2} = 688$ (3 s.f.)\n\n(b) $\\mathrm{H}_{0}$: $\\mu = 410$; $\\mathrm{H}_{1}$: $\\mu < 410$\nUnder $\\mathrm{H}_{0}$, $\\bar{X} \\sim \\mathrm{N}\\left(410, \\dfrac{688.22}{60}\\right)$ approximately.\n$z = \\dfrac{404.5 - 410}{\\sqrt{688.22/60}} = -1.624$\n$p$-value $= 0.0522$\n$0.0522 > 0.05$, so do not reject $\\mathrm{H}_{0}$.\nAnswer: there is not enough evidence, at the $5\\%$ level, that the mean daily water use has decreased\n\n(c) $n = 60$ is large.\nAnswer: by the Central Limit Theorem, $\\bar{X}$ is approximately normally distributed\n\n(d) Under $\\mathrm{H}_{0}$: $\\mu = 410$, $\\overline{Y} \\sim \\mathrm{N}\\left(410, \\dfrac{688.22}{40}\\right)$ approximately.\nReject $\\mathrm{H}_{0}$ when $\\dfrac{\\overline{y} - 410}{\\sqrt{688.22/40}} < -1.6449$\n$\\overline{y} < 410 - 1.6449 \\times 4.1480 = 403.18$\nAnswer: $\\{\\overline{y} : \\overline{y} < 403\\}$ (3 s.f.; more exactly $\\overline{y} < 403.18$)\n\n(e) A sample mean below $410$ can happen by chance even if $\\mu = 410$.\nAnswer: not justified: the test in part (b) does not show a decrease at the $5\\%$ level, and a decrease would not on its own prove the campaign caused it",
+    "answer": "(a) $\\bar{x} = 404.5$; $s^{2} = 688$ (3 s.f.);  (b) $p$-value $= 0.0522 > 0.05$; do not reject $\\mathrm{H}_{0}$: not enough evidence at the $5\\%$ level that the mean has decreased;  (c) The sample is large, so by the Central Limit Theorem the sample mean is approximately normal;  (d) $\\overline{y} < 403$ (3 s.f.);  (e) Not justified: a sample mean below 410 can happen by chance; the test at the 5% level does not support it, and even a real fall need not be caused by the campaign",
+    "needs_figure": false,
+    "originality_note": "2021/2024 P2: test from coded sums; p-value just above 5% so the conclusion is 'not enough evidence'",
+    "skills": []
+   }
+  },
+  {
+   "pos": 10,
+   "topic": "Linear Regression",
+   "target": 11,
+   "accepted": true,
+   "idea": "2024/2025 P2: residuals: why they sum to 0, the missing residual, an outlier removed, least squares in words",
+   "question": {
+    "stem": "A café records the maximum temperature, $x$ °C, and the number of iced drinks sold, $y$, on each of $10$ days. The results are shown in the table.\n| $x$ | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |\n|---|---|---|---|---|---|---|---|---|---|---|\n| $y$ | 62 | 71 | 85 | 93 | 106 | 118 | 125 | 98 | 151 | 160 |",
+    "total_marks": 11,
+    "topics": [
+     "Linear Regression"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Find the product moment correlation coefficient, and the equation of the regression line of $y$ on $x$.",
+      "answer": "$r = 0.923$; $y = 9.79x - 192$ (3 s.f.)",
+      "solution": "From a calculator:\n$r = 0.92323$\n$y = 9.7879x - 191.63$\nAnswer: $r = 0.923$; $y = 9.79x - 192$ (3 s.f.)"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "The residual for a day is $y - \\hat{y}$, where $\\hat{y}$ is the value given by the line in part (a). The residuals for all the days except $x = 33$ are shown, correct to $1$ decimal place.\n| $x$ | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |\n|---|---|---|---|---|---|---|---|---|---|---|\n| residual | −0.9 | −1.6 | 2.6 | 0.8 | 4.0 | 6.2 | 3.4 | | 9.8 | 9.1 |\nExplain why the residuals add up to $0$, and hence find the residual for $x = 33$. Explain what this residual shows about that day, in context.",
+      "answer": "The line passes through $(\\bar{x}, \\overline{y})$, so $\\sum(y - \\hat{y}) = n\\overline{y} - n\\overline{y} = 0$; residual $-33.4$; about $33$ fewer drinks were sold than the line predicts for that temperature",
+      "solution": "The line is $\\hat{y} = a + bx$ and it passes through $(\\bar{x}, \\overline{y})$, so $\\overline{y} = a + b\\bar{x}$.\n$\\sum(y - a - bx) = n\\overline{y} - na - nb\\bar{x} = n(\\overline{y} - a - b\\bar{x}) = 0$\nSum of the nine residuals shown $= 33.4$\nResidual for $x = 33$: $0 - 33.4 = -33.4$\nAnswer: $-33.4$: on that day about $33$ fewer iced drinks were sold than the line predicts, far more than on any other day, so the day is unusual"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "On the day with $x = 33$ it rained heavily all afternoon, and this day is removed from the data. Find the equation of the regression line of $y$ on $x$ for the remaining $9$ days. Use it to estimate the number of iced drinks sold on a day with maximum temperature $30.5$ °C, and comment on the reliability of your estimate.",
+      "answer": "$y = 11.0x - 225$ (3 s.f.); about $111$ drinks; reliable: interpolation, and $r = 0.999$ is very close to $1$",
+      "solution": "For the $9$ days: $y = 11.015x - 225.00$, with $r = 0.99901$.\n$x = 30.5$: $y = 11.015 \\times 30.5 - 225.00 = 110.95$\n$30.5$ lies within the data ($26$ to $35$), and $r$ is very close to $1$.\nAnswer: $y = 11.0x - 225$; about $111$ iced drinks; reliable (interpolation, strong linear correlation)"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Without calculating them, explain why, for the $9$ remaining days, the sum of the squares of the residuals from the line in part (c) is less than the sum of the squares of their residuals from the line in part (a).",
+      "answer": "The line in (c) is the least-squares line for those 9 days, so no other line, including the line in (a), gives a smaller sum of squared residuals for them; the lines differ, so it is strictly less",
+      "solution": "The regression line in part (c) is found by least squares from the $9$ days.\nSo it gives the smallest possible sum of squared residuals for those $9$ days, over all straight lines.\nThe line in part (a) is a different line, pulled down by the rainy day.\nAnswer: the line in (c) minimises the sum of squared residuals for the $9$ days, so the line in (a) must give a larger sum"
+     },
+     {
+      "label": "(e)",
+      "marks": 1,
+      "text": "The manager wants to use the line in part (c) to estimate sales on a day with maximum temperature $38$ °C. Comment on this.",
+      "answer": "Unreliable: $38$ is outside the data range, so this is extrapolation (the café may also run out of stock or seats)",
+      "solution": "$38$ is outside the range $26$ to $35$.\nAnswer: unreliable, as it is extrapolation; the linear trend may not continue"
+     }
+    ],
+    "solution": "(a) From a calculator:\n$r = 0.92323$\n$y = 9.7879x - 191.63$\nAnswer: $r = 0.923$; $y = 9.79x - 192$ (3 s.f.)\n\n(b) The line is $\\hat{y} = a + bx$ and it passes through $(\\bar{x}, \\overline{y})$, so $\\overline{y} = a + b\\bar{x}$.\n$\\sum(y - a - bx) = n\\overline{y} - na - nb\\bar{x} = n(\\overline{y} - a - b\\bar{x}) = 0$\nSum of the nine residuals shown $= 33.4$\nResidual for $x = 33$: $0 - 33.4 = -33.4$\nAnswer: $-33.4$: on that day about $33$ fewer iced drinks were sold than the line predicts, far more than on any other day, so the day is unusual\n\n(c) For the $9$ days: $y = 11.015x - 225.00$, with $r = 0.99901$.\n$x = 30.5$: $y = 11.015 \\times 30.5 - 225.00 = 110.95$\n$30.5$ lies within the data ($26$ to $35$), and $r$ is very close to $1$.\nAnswer: $y = 11.0x - 225$; about $111$ iced drinks; reliable (interpolation, strong linear correlation)\n\n(d) The regression line in part (c) is found by least squares from the $9$ days.\nSo it gives the smallest possible sum of squared residuals for those $9$ days, over all straight lines.\nThe line in part (a) is a different line, pulled down by the rainy day.\nAnswer: the line in (c) minimises the sum of squared residuals for the $9$ days, so the line in (a) must give a larger sum\n\n(e) $38$ is outside the range $26$ to $35$.\nAnswer: unreliable, as it is extrapolation; the linear trend may not continue",
+    "answer": "(a) $r = 0.923$; $y = 9.79x - 192$ (3 s.f.);  (b) The line passes through $(\\bar{x}, \\overline{y})$, so $\\sum(y - \\hat{y}) = n\\overline{y} - n\\overline{y} = 0$; residual $-33.4$; about $33$ fewer drinks were sold than the line predicts for that temperature;  (c) $y = 11.0x - 225$ (3 s.f.); about $111$ drinks; reliable: interpolation, and $r = 0.999$ is very close to $1$;  (d) The line in (c) is the least-squares line for those 9 days, so no other line, including the line in (a), gives a smaller sum of squared residuals for them; the lines differ, so it is strictly less;  (e) Unreliable: $38$ is outside the data range, so this is extrapolation (the café may also run out of stock or seats)",
+    "needs_figure": false,
+    "originality_note": "2024/2025 P2: residuals: why they sum to 0, the missing residual, an outlier removed, least squares in words",
+    "skills": []
+   }
+  }
+ ],
+ "source_key": "H2-MOCK-SET1-P2",
+ "generated_at": "2026-10-22T12:00:00+08:00",
+ "models": {
+  "author": "Claude Code session, 22 Oct 2026 (H2 Math Mock Set 1)"
+ }
+}

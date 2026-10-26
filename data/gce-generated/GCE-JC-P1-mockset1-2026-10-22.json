@@ -1,0 +1,547 @@
+{
+ "key": "GCE-JC-P1",
+ "set": 1,
+ "paperNo": 1,
+ "total": 100,
+ "title": "H2 Mathematics (9758) · Mock Set 1 · Paper 1",
+ "shape": {
+  "subject": "Mathematics",
+  "code": "9758",
+  "level": "JC2",
+  "exam": "A-Level",
+  "duration": "3 hours"
+ },
+ "layout": {
+  "front_page": false,
+  "page_per_question": true,
+  "keep_part_with_space": true
+ },
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Graphing Techniques",
+   "target": 8,
+   "accepted": true,
+   "idea": "2023/2025: a parameter decides the shape of a rational curve",
+   "question": {
+    "stem": "The curve $C$ has equation $y = \\dfrac{x^{2} + kx + k}{x - 1}$, where $k$ is a constant.",
+    "total_marks": 8,
+    "topics": [
+     "Graphing Techniques"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Find the set of values of $k$ for which $C$ has two stationary points. Describe $C$ when $k = -\\tfrac{1}{2}$.",
+      "answer": "$k > -\\tfrac{1}{2}$; when $k = -\\tfrac{1}{2}$, $C$ is the line $y = x + \\tfrac{1}{2}$ with the point at $x = 1$ missing",
+      "solution": "$y = x + (k + 1) + \\dfrac{2k + 1}{x - 1}$\n$\\dfrac{dy}{dx} = 1 - \\dfrac{2k + 1}{(x - 1)^{2}}$\n$\\dfrac{dy}{dx} = 0 \\Rightarrow (x - 1)^{2} = 2k + 1$\nTwo solutions exactly when $2k + 1 > 0$, that is $k > -\\tfrac{1}{2}$.\nWhen $k = -\\tfrac{1}{2}$: $y = \\dfrac{(x - 1)(x + \\frac{1}{2})}{x - 1} = x + \\tfrac{1}{2}$ for $x \\neq 1$.\nAnswer: $k > -\\tfrac{1}{2}$; when $k = -\\tfrac{1}{2}$, $C$ is the line $y = x + \\tfrac{1}{2}$ with the point $(1, \\tfrac{3}{2})$ missing"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Given that the $y$-coordinates of the stationary points of $C$ differ by $8$, find the value of $k$.",
+      "answer": "$k = \\tfrac{3}{2}$",
+      "solution": "Stationary points at $x = 1 \\pm \\sqrt{2k + 1}$.\nThere $y = k + 2 \\pm 2\\sqrt{2k + 1}$.\nDifference: $4\\sqrt{2k + 1} = 8$\n$2k + 1 = 4$\nAnswer: $k = \\tfrac{3}{2}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Using the value of $k$ found in part (b), sketch $C$, stating the equations of the asymptotes and the coordinates of the stationary points and of any points where $C$ meets the axes.",
+      "answer": "Asymptotes $x = 1$, $y = x + \\tfrac{5}{2}$; minimum $(3, \\tfrac{15}{2})$, maximum $(-1, -\\tfrac{1}{2})$; meets the $y$-axis at $(0, -\\tfrac{3}{2})$; does not meet the $x$-axis",
+      "solution": "$y = x + \\tfrac{5}{2} + \\dfrac{4}{x - 1}$\nAsymptotes: $x = 1$ and $y = x + \\tfrac{5}{2}$.\n$(x - 1)^{2} = 4 \\Rightarrow x = 3$ or $x = -1$.\nMinimum $(3, \\tfrac{15}{2})$; maximum $(-1, -\\tfrac{1}{2})$.\n$x = 0$: $y = -\\tfrac{3}{2}$.\n$y = 0$: $2x^{2} + 3x + 3 = 0$, discriminant $9 - 24 < 0$, so no $x$-intercepts.\nRight branch: above $y = x + \\tfrac{5}{2}$, minimum $(3, \\tfrac{15}{2})$.\nLeft branch: below $y = x + \\tfrac{5}{2}$, maximum $(-1, -\\tfrac{1}{2})$, through $(0, -\\tfrac{3}{2})$.\nAnswer: asymptotes $x = 1$ and $y = x + \\tfrac{5}{2}$; minimum $(3, \\tfrac{15}{2})$, maximum $(-1, -\\tfrac{1}{2})$; $y$-intercept $(0, -\\tfrac{3}{2})$; no $x$-intercepts"
+     }
+    ],
+    "solution": "(a) $y = x + (k + 1) + \\dfrac{2k + 1}{x - 1}$\n$\\dfrac{dy}{dx} = 1 - \\dfrac{2k + 1}{(x - 1)^{2}}$\n$\\dfrac{dy}{dx} = 0 \\Rightarrow (x - 1)^{2} = 2k + 1$\nTwo solutions exactly when $2k + 1 > 0$, that is $k > -\\tfrac{1}{2}$.\nWhen $k = -\\tfrac{1}{2}$: $y = \\dfrac{(x - 1)(x + \\frac{1}{2})}{x - 1} = x + \\tfrac{1}{2}$ for $x \\neq 1$.\nAnswer: $k > -\\tfrac{1}{2}$; when $k = -\\tfrac{1}{2}$, $C$ is the line $y = x + \\tfrac{1}{2}$ with the point $(1, \\tfrac{3}{2})$ missing\n\n(b) Stationary points at $x = 1 \\pm \\sqrt{2k + 1}$.\nThere $y = k + 2 \\pm 2\\sqrt{2k + 1}$.\nDifference: $4\\sqrt{2k + 1} = 8$\n$2k + 1 = 4$\nAnswer: $k = \\tfrac{3}{2}$\n\n(c) $y = x + \\tfrac{5}{2} + \\dfrac{4}{x - 1}$\nAsymptotes: $x = 1$ and $y = x + \\tfrac{5}{2}$.\n$(x - 1)^{2} = 4 \\Rightarrow x = 3$ or $x = -1$.\nMinimum $(3, \\tfrac{15}{2})$; maximum $(-1, -\\tfrac{1}{2})$.\n$x = 0$: $y = -\\tfrac{3}{2}$.\n$y = 0$: $2x^{2} + 3x + 3 = 0$, discriminant $9 - 24 < 0$, so no $x$-intercepts.\nRight branch: above $y = x + \\tfrac{5}{2}$, minimum $(3, \\tfrac{15}{2})$.\nLeft branch: below $y = x + \\tfrac{5}{2}$, maximum $(-1, -\\tfrac{1}{2})$, through $(0, -\\tfrac{3}{2})$.\nAnswer: asymptotes $x = 1$ and $y = x + \\tfrac{5}{2}$; minimum $(3, \\tfrac{15}{2})$, maximum $(-1, -\\tfrac{1}{2})$; $y$-intercept $(0, -\\tfrac{3}{2})$; no $x$-intercepts",
+    "answer": "(a) $k > -\\tfrac{1}{2}$; when $k = -\\tfrac{1}{2}$, $C$ is the line $y = x + \\tfrac{1}{2}$ with the point at $x = 1$ missing;  (b) $k = \\tfrac{3}{2}$;  (c) Asymptotes $x = 1$, $y = x + \\tfrac{5}{2}$; minimum $(3, \\tfrac{15}{2})$, maximum $(-1, -\\tfrac{1}{2})$; meets the $y$-axis at $(0, -\\tfrac{3}{2})$; does not meet the $x$-axis",
+    "needs_figure": false,
+    "originality_note": "2023/2025: a parameter decides the shape of a rational curve",
+    "skills": []
+   }
+  },
+  {
+   "pos": 2,
+   "topic": "Vectors",
+   "target": 6,
+   "accepted": true,
+   "idea": "2024 P1: vector relations with no components given",
+   "question": {
+    "stem": "The vectors $\\mathbf{a}$, $\\mathbf{b}$ and $\\mathbf{c}$ satisfy $\\mathbf{a}$ + $\\mathbf{b}$ + $\\mathbf{c}$ = $\\mathbf{0}$, where |$\\mathbf{a}$| = 3, |$\\mathbf{b}$| = 5 and |$\\mathbf{c}$| = 7.",
+    "total_marks": 6,
+    "topics": [
+     "Vectors"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Find the angle between $\\mathbf{a}$ and $\\mathbf{b}$.",
+      "answer": "$60^{\\circ}$",
+      "solution": "$\\mathbf{c}$ = − ($\\mathbf{a}$ + $\\mathbf{b}$)\n$\\mathbf{c}$ · $\\mathbf{c}$ = $\\mathbf{a}$ · $\\mathbf{a}$ + 2$\\mathbf{a}$ · $\\mathbf{b}$ + $\\mathbf{b}$ · $\\mathbf{b}$\n49 = 9 + 25 + 2$\\mathbf{a}$ · $\\mathbf{b}$\n$\\mathbf{a}$ · $\\mathbf{b}$ $= \\tfrac{15}{2}$\n$\\cos\\theta = \\dfrac{15/2}{3 \\times 5} = \\dfrac{1}{2}$\nAnswer: $60^{\\circ}$"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "The point $C$ has position vector $\\mathbf{c}$ relative to the origin $O$. Find the exact shortest distance from $C$ to the line through $O$ parallel to $\\mathbf{a}$.",
+      "answer": "$\\dfrac{5\\sqrt{3}}{2}$",
+      "solution": "Distance = |$\\mathbf{c}$ × $\\mathbf{a}$| divided by |$\\mathbf{a}$|\n$\\mathbf{c}$ × $\\mathbf{a}$ = − ($\\mathbf{a}$ + $\\mathbf{b}$) × $\\mathbf{a}$ = −$\\mathbf{b}$ × $\\mathbf{a}$ = $\\mathbf{a}$ × $\\mathbf{b}$\n|$\\mathbf{a}$ × $\\mathbf{b}$| $= 3 \\times 5 \\times \\sin 60^{\\circ} = \\dfrac{15\\sqrt{3}}{2}$\nDistance $= \\dfrac{15\\sqrt{3}}{2} \\div 3$\nAnswer: $\\dfrac{5\\sqrt{3}}{2}$"
+     }
+    ],
+    "solution": "(a) $\\mathbf{c}$ = − ($\\mathbf{a}$ + $\\mathbf{b}$)\n$\\mathbf{c}$ · $\\mathbf{c}$ = $\\mathbf{a}$ · $\\mathbf{a}$ + 2$\\mathbf{a}$ · $\\mathbf{b}$ + $\\mathbf{b}$ · $\\mathbf{b}$\n49 = 9 + 25 + 2$\\mathbf{a}$ · $\\mathbf{b}$\n$\\mathbf{a}$ · $\\mathbf{b}$ $= \\tfrac{15}{2}$\n$\\cos\\theta = \\dfrac{15/2}{3 \\times 5} = \\dfrac{1}{2}$\nAnswer: $60^{\\circ}$\n\n(b) Distance = |$\\mathbf{c}$ × $\\mathbf{a}$| divided by |$\\mathbf{a}$|\n$\\mathbf{c}$ × $\\mathbf{a}$ = − ($\\mathbf{a}$ + $\\mathbf{b}$) × $\\mathbf{a}$ = −$\\mathbf{b}$ × $\\mathbf{a}$ = $\\mathbf{a}$ × $\\mathbf{b}$\n|$\\mathbf{a}$ × $\\mathbf{b}$| $= 3 \\times 5 \\times \\sin 60^{\\circ} = \\dfrac{15\\sqrt{3}}{2}$\nDistance $= \\dfrac{15\\sqrt{3}}{2} \\div 3$\nAnswer: $\\dfrac{5\\sqrt{3}}{2}$",
+    "answer": "(a) $60^{\\circ}$;  (b) $\\dfrac{5\\sqrt{3}}{2}$",
+    "needs_figure": false,
+    "originality_note": "2024 P1: vector relations with no components given",
+    "skills": []
+   }
+  },
+  {
+   "pos": 3,
+   "topic": "Inequalities",
+   "target": 6,
+   "accepted": true,
+   "idea": "2022/2025: inequality, then a 'hence' by a substitution",
+   "question": {
+    "stem": "**Do not use a calculator in answering this question.**",
+    "total_marks": 6,
+    "topics": [
+     "Inequalities"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 4,
+      "text": "Solve the inequality $\\dfrac{x + 6}{x + 2} \\geqslant \\dfrac{x}{x - 1}$.",
+      "answer": "$-2 < x < 1$ or $x \\geqslant 2$",
+      "solution": "$\\dfrac{x + 6}{x + 2} - \\dfrac{x}{x - 1} \\geqslant 0$\n$\\dfrac{(x + 6)(x - 1) - x(x + 2)}{(x + 2)(x - 1)} \\geqslant 0$\n$\\dfrac{3x - 6}{(x + 2)(x - 1)} \\geqslant 0$\n$\\dfrac{3(x - 2)}{(x + 2)(x - 1)} \\geqslant 0$\nCritical values $-2$, $1$, $2$; signs $-$, $+$, $-$, $+$ from left to right.\nAnswer: $-2 < x < 1$ or $x \\geqslant 2$"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Hence solve $\\dfrac{6 - x}{2 - x} \\geqslant \\dfrac{x}{x + 1}$.",
+      "answer": "$x \\leqslant -2$ or $-1 < x < 2$",
+      "solution": "Replace $x$ by $-x$ in part (a): $\\dfrac{-x + 6}{-x + 2} \\geqslant \\dfrac{-x}{-x - 1} = \\dfrac{x}{x + 1}$\nSo $-2 < -x < 1$ or $-x \\geqslant 2$.\n$-1 < x < 2$ or $x \\leqslant -2$\nAnswer: $x \\leqslant -2$ or $-1 < x < 2$"
+     }
+    ],
+    "solution": "(a) $\\dfrac{x + 6}{x + 2} - \\dfrac{x}{x - 1} \\geqslant 0$\n$\\dfrac{(x + 6)(x - 1) - x(x + 2)}{(x + 2)(x - 1)} \\geqslant 0$\n$\\dfrac{3x - 6}{(x + 2)(x - 1)} \\geqslant 0$\n$\\dfrac{3(x - 2)}{(x + 2)(x - 1)} \\geqslant 0$\nCritical values $-2$, $1$, $2$; signs $-$, $+$, $-$, $+$ from left to right.\nAnswer: $-2 < x < 1$ or $x \\geqslant 2$\n\n(b) Replace $x$ by $-x$ in part (a): $\\dfrac{-x + 6}{-x + 2} \\geqslant \\dfrac{-x}{-x - 1} = \\dfrac{x}{x + 1}$\nSo $-2 < -x < 1$ or $-x \\geqslant 2$.\n$-1 < x < 2$ or $x \\leqslant -2$\nAnswer: $x \\leqslant -2$ or $-1 < x < 2$",
+    "answer": "(a) $-2 < x < 1$ or $x \\geqslant 2$;  (b) $x \\leqslant -2$ or $-1 < x < 2$",
+    "needs_figure": false,
+    "originality_note": "2022/2025: inequality, then a 'hence' by a substitution",
+    "skills": []
+   }
+  },
+  {
+   "pos": 4,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 8,
+   "accepted": true,
+   "idea": "Original: an area from a tangent, its greatest value, then when it shrinks fastest (the maximum of a rate)",
+   "question": {
+    "stem": "The point $P(p, \\mathrm{e}^{-p})$, where $p > 0$, lies on the curve $y = \\mathrm{e}^{-x}$. The tangent to the curve at $P$ meets the $x$-axis at $Q$ and the $y$-axis at $R$. The area of triangle $OQR$, where $O$ is the origin, is $A$.",
+    "total_marks": 8,
+    "topics": [
+     "Differentiation (Maximum and Minimum)",
+     "Differentiation (Rates of Change)",
+     "Differentiation (Tangents and Normals)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Show that $A = \\tfrac{1}{2}(1 + p)^{2}\\mathrm{e}^{-p}$.",
+      "answer": "Shown",
+      "solution": "Gradient at $P$: $-\\mathrm{e}^{-p}$. Tangent: $y - \\mathrm{e}^{-p} = -\\mathrm{e}^{-p}(x - p)$\n$y = 0$: $x = p + 1$, so $Q$ is $(p + 1, 0)$.\n$x = 0$: $y = (1 + p)\\mathrm{e}^{-p}$, so $R$ is $(0, (1 + p)\\mathrm{e}^{-p})$.\n$A = \\tfrac{1}{2}(1 + p) \\times (1 + p)\\mathrm{e}^{-p}$\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Use differentiation to find the exact greatest value of $A$, showing that it is a maximum.",
+      "answer": "$\\dfrac{2}{\\mathrm{e}}$",
+      "solution": "$\\dfrac{dA}{dp} = (1 + p)\\mathrm{e}^{-p} - \\tfrac{1}{2}(1 + p)^{2}\\mathrm{e}^{-p} = \\tfrac{1}{2}(1 + p)(1 - p)\\mathrm{e}^{-p}$\n$= 0 \\Rightarrow p = 1$ (as $p > 0$). Positive for $p < 1$, negative for $p > 1$: a maximum.\n$A = \\tfrac{1}{2}(4)\\mathrm{e}^{-1}$\nAnswer: greatest area $\\dfrac{2}{\\mathrm{e}}$, when $p = 1$"
+     },
+     {
+      "label": "(c)",
+      "marks": 4,
+      "text": "The point $P$ moves along the curve so that $Q$ moves along the $x$-axis, away from $O$, at a constant speed of $0.5$ units per second. Find the exact value of $p$ at which $A$ is decreasing most rapidly, and find this rate of decrease in exact form.",
+      "answer": "$p = 1 + \\sqrt{2}$; $\\tfrac{1}{2}(1 + \\sqrt{2})\\mathrm{e}^{-(1 + \\sqrt{2})}$ units$^{2}$ per second",
+      "solution": "$Q$ is at $x = p + 1$, so $\\dfrac{dp}{dt} = 0.5$.\n$\\dfrac{dA}{dt} = \\dfrac{dA}{dp} \\times 0.5 = \\tfrac{1}{4}(1 - p^{2})\\mathrm{e}^{-p}$\nMost rapid decrease: $\\dfrac{dA}{dt}$ least, so $\\dfrac{d}{dp}\\left[(1 - p^{2})\\mathrm{e}^{-p}\\right] = (p^{2} - 2p - 1)\\mathrm{e}^{-p} = 0$\n$p = 1 + \\sqrt{2}$ (as $p > 0$). The derivative goes from negative to positive here, so $\\dfrac{dA}{dt}$ is least.\n$1 - p^{2} = 1 - (3 + 2\\sqrt{2}) = -2(1 + \\sqrt{2})$\n$\\dfrac{dA}{dt} = -\\tfrac{1}{2}(1 + \\sqrt{2})\\mathrm{e}^{-(1 + \\sqrt{2})}$\nAnswer: $p = 1 + \\sqrt{2}$; $A$ decreases at $\\tfrac{1}{2}(1 + \\sqrt{2})\\mathrm{e}^{-(1 + \\sqrt{2})}$ units$^{2}$ per second"
+     }
+    ],
+    "solution": "(a) Gradient at $P$: $-\\mathrm{e}^{-p}$. Tangent: $y - \\mathrm{e}^{-p} = -\\mathrm{e}^{-p}(x - p)$\n$y = 0$: $x = p + 1$, so $Q$ is $(p + 1, 0)$.\n$x = 0$: $y = (1 + p)\\mathrm{e}^{-p}$, so $R$ is $(0, (1 + p)\\mathrm{e}^{-p})$.\n$A = \\tfrac{1}{2}(1 + p) \\times (1 + p)\\mathrm{e}^{-p}$\nAnswer: Shown\n\n(b) $\\dfrac{dA}{dp} = (1 + p)\\mathrm{e}^{-p} - \\tfrac{1}{2}(1 + p)^{2}\\mathrm{e}^{-p} = \\tfrac{1}{2}(1 + p)(1 - p)\\mathrm{e}^{-p}$\n$= 0 \\Rightarrow p = 1$ (as $p > 0$). Positive for $p < 1$, negative for $p > 1$: a maximum.\n$A = \\tfrac{1}{2}(4)\\mathrm{e}^{-1}$\nAnswer: greatest area $\\dfrac{2}{\\mathrm{e}}$, when $p = 1$\n\n(c) $Q$ is at $x = p + 1$, so $\\dfrac{dp}{dt} = 0.5$.\n$\\dfrac{dA}{dt} = \\dfrac{dA}{dp} \\times 0.5 = \\tfrac{1}{4}(1 - p^{2})\\mathrm{e}^{-p}$\nMost rapid decrease: $\\dfrac{dA}{dt}$ least, so $\\dfrac{d}{dp}\\left[(1 - p^{2})\\mathrm{e}^{-p}\\right] = (p^{2} - 2p - 1)\\mathrm{e}^{-p} = 0$\n$p = 1 + \\sqrt{2}$ (as $p > 0$). The derivative goes from negative to positive here, so $\\dfrac{dA}{dt}$ is least.\n$1 - p^{2} = 1 - (3 + 2\\sqrt{2}) = -2(1 + \\sqrt{2})$\n$\\dfrac{dA}{dt} = -\\tfrac{1}{2}(1 + \\sqrt{2})\\mathrm{e}^{-(1 + \\sqrt{2})}$\nAnswer: $p = 1 + \\sqrt{2}$; $A$ decreases at $\\tfrac{1}{2}(1 + \\sqrt{2})\\mathrm{e}^{-(1 + \\sqrt{2})}$ units$^{2}$ per second",
+    "answer": "(a) Shown;  (b) $\\dfrac{2}{\\mathrm{e}}$;  (c) $p = 1 + \\sqrt{2}$; $\\tfrac{1}{2}(1 + \\sqrt{2})\\mathrm{e}^{-(1 + \\sqrt{2})}$ units$^{2}$ per second",
+    "needs_figure": false,
+    "originality_note": "Original: an area from a tangent, its greatest value, then when it shrinks fastest (the maximum of a rate)",
+    "skills": []
+   }
+  },
+  {
+   "pos": 5,
+   "topic": "Complex Numbers",
+   "target": 7,
+   "accepted": true,
+   "idea": "Revised 9758 scope: multiplying by i or -i turns through 90° about the origin; the conjugate reflects in the real axis",
+   "question": {
+    "stem": "**Do not use a calculator in answering this question.** In an Argand diagram, $O$ is the origin and $OABC$ is a square, labelled anticlockwise. The point $A$ represents the complex number $a = 3 + \\mathrm{i}$.",
+    "total_marks": 7,
+    "topics": [
+     "Complex Numbers"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "By considering the effect of multiplying a complex number by $\\mathrm{i}$, find the complex numbers represented by $C$ and $B$.",
+      "answer": "$C$: $-1 + 3\\mathrm{i}$; $B$: $2 + 4\\mathrm{i}$",
+      "solution": "Multiplying by $\\mathrm{i}$ turns $OA$ through $90^{\\circ}$ anticlockwise about $O$, giving $OC$.\n$C$: $\\mathrm{i}(3 + \\mathrm{i}) = -1 + 3\\mathrm{i}$\n$B = A + C$: $(3 + \\mathrm{i}) + (-1 + 3\\mathrm{i}) = 2 + 4\\mathrm{i}$\nAnswer: $C$: $-1 + 3\\mathrm{i}$; $B$: $2 + 4\\mathrm{i}$"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Every point of the square $OABC$ is turned through $90^{\\circ}$ clockwise about $O$. Find the complex number represented by the new position of $B$, and show that the new square and $OABC$ have a side in common.",
+      "answer": "$4 - 2\\mathrm{i}$; $C$ moves to $A$, so both squares have side $OA$",
+      "solution": "Turning $90^{\\circ}$ clockwise about $O$ is multiplying by $-\\mathrm{i}$.\n$B$: $-\\mathrm{i}(2 + 4\\mathrm{i}) = 4 - 2\\mathrm{i}$\n$C$: $-\\mathrm{i}(-1 + 3\\mathrm{i}) = 3 + \\mathrm{i}$, which is $A$.\n$O$ stays at $O$, so $OA$ is a side of both squares.\nAnswer: $4 - 2\\mathrm{i}$; both squares have the side $OA$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Instead, each point $z$ of the square $OABC$ is reflected in the real axis and the result is then multiplied by $-\\mathrm{i}$. Show that the combined effect is a reflection in a line, stating its equation, and find the complex number represented by the final position of $B$.",
+      "answer": "Reflection in $y = -x$; $B$ ends at $-4 - 2\\mathrm{i}$",
+      "solution": "$z = x + \\mathrm{i}y \\rightarrow z^{*} = x - \\mathrm{i}y \\rightarrow -\\mathrm{i}(x - \\mathrm{i}y) = -y - \\mathrm{i}x$\nThe point $(x, y)$ goes to $(-y, -x)$: a reflection in the line $y = -x$.\n$B$ $(2, 4)$ goes to $(-4, -2)$.\nAnswer: reflection in $y = -x$; $B$ ends at $-4 - 2\\mathrm{i}$"
+     }
+    ],
+    "solution": "(a) Multiplying by $\\mathrm{i}$ turns $OA$ through $90^{\\circ}$ anticlockwise about $O$, giving $OC$.\n$C$: $\\mathrm{i}(3 + \\mathrm{i}) = -1 + 3\\mathrm{i}$\n$B = A + C$: $(3 + \\mathrm{i}) + (-1 + 3\\mathrm{i}) = 2 + 4\\mathrm{i}$\nAnswer: $C$: $-1 + 3\\mathrm{i}$; $B$: $2 + 4\\mathrm{i}$\n\n(b) Turning $90^{\\circ}$ clockwise about $O$ is multiplying by $-\\mathrm{i}$.\n$B$: $-\\mathrm{i}(2 + 4\\mathrm{i}) = 4 - 2\\mathrm{i}$\n$C$: $-\\mathrm{i}(-1 + 3\\mathrm{i}) = 3 + \\mathrm{i}$, which is $A$.\n$O$ stays at $O$, so $OA$ is a side of both squares.\nAnswer: $4 - 2\\mathrm{i}$; both squares have the side $OA$\n\n(c) $z = x + \\mathrm{i}y \\rightarrow z^{*} = x - \\mathrm{i}y \\rightarrow -\\mathrm{i}(x - \\mathrm{i}y) = -y - \\mathrm{i}x$\nThe point $(x, y)$ goes to $(-y, -x)$: a reflection in the line $y = -x$.\n$B$ $(2, 4)$ goes to $(-4, -2)$.\nAnswer: reflection in $y = -x$; $B$ ends at $-4 - 2\\mathrm{i}$",
+    "answer": "(a) $C$: $-1 + 3\\mathrm{i}$; $B$: $2 + 4\\mathrm{i}$;  (b) $4 - 2\\mathrm{i}$; $C$ moves to $A$, so both squares have side $OA$;  (c) Reflection in $y = -x$; $B$ ends at $-4 - 2\\mathrm{i}$",
+    "needs_figure": false,
+    "originality_note": "Revised 9758 scope: multiplying by i or -i turns through 90° about the origin; the conjugate reflects in the real axis",
+    "skills": []
+   }
+  },
+  {
+   "pos": 6,
+   "topic": "Differentiation (Maclaurin Series)",
+   "target": 7,
+   "accepted": true,
+   "idea": "2023/2025: series from a differential equation, then a limit",
+   "question": {
+    "stem": "It is given that $y = \\sin(\\ln(1 + x))$.",
+    "total_marks": 7,
+    "topics": [
+     "Differentiation (Maclaurin Series)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Show that $(1 + x)^{2}\\dfrac{d^{2}y}{dx^{2}} + (1 + x)\\dfrac{dy}{dx} + y = 0$.",
+      "answer": "Shown",
+      "solution": "$\\dfrac{dy}{dx} = \\dfrac{\\cos(\\ln(1 + x))}{1 + x}$, so $(1 + x)\\dfrac{dy}{dx} = \\cos(\\ln(1 + x))$\nDifferentiate: $(1 + x)\\dfrac{d^{2}y}{dx^{2}} + \\dfrac{dy}{dx} = -\\dfrac{\\sin(\\ln(1 + x))}{1 + x} = -\\dfrac{y}{1 + x}$\nMultiply by $1 + x$: $(1 + x)^{2}\\dfrac{d^{2}y}{dx^{2}} + (1 + x)\\dfrac{dy}{dx} + y = 0$\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "By further differentiation, find the Maclaurin series for $y$ up to and including the term in $x^{3}$.",
+      "answer": "$x - \\tfrac{1}{2}x^{2} + \\tfrac{1}{6}x^{3}$",
+      "solution": "At $x = 0$: $y = 0$, $\\dfrac{dy}{dx} = 1$.\nFrom (a) at $x = 0$: $\\dfrac{d^{2}y}{dx^{2}} + 1 + 0 = 0$, so $\\dfrac{d^{2}y}{dx^{2}} = -1$.\nDifferentiate (a): $(1 + x)^{2}\\dfrac{d^{3}y}{dx^{3}} + 3(1 + x)\\dfrac{d^{2}y}{dx^{2}} + 2\\dfrac{dy}{dx} = 0$\nAt $x = 0$: $\\dfrac{d^{3}y}{dx^{3}} - 3 + 2 = 0$, so $\\dfrac{d^{3}y}{dx^{3}} = 1$.\n$y = x - \\dfrac{x^{2}}{2!} + \\dfrac{x^{3}}{3!}$\nAnswer: $x - \\tfrac{1}{2}x^{2} + \\tfrac{1}{6}x^{3}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 1,
+      "text": "Use your series to find $\\lim\\limits_{x \\to 0} \\left(\\dfrac{\\sin(\\ln(1 + x)) - x}{x^{2}}\\right)$.",
+      "answer": "$-\\tfrac{1}{2}$",
+      "solution": "$\\dfrac{-\\frac{1}{2}x^{2} + \\frac{1}{6}x^{3}}{x^{2}} = -\\tfrac{1}{2} + \\tfrac{1}{6}x \\to -\\tfrac{1}{2}$\nAnswer: $-\\tfrac{1}{2}$"
+     }
+    ],
+    "solution": "(a) $\\dfrac{dy}{dx} = \\dfrac{\\cos(\\ln(1 + x))}{1 + x}$, so $(1 + x)\\dfrac{dy}{dx} = \\cos(\\ln(1 + x))$\nDifferentiate: $(1 + x)\\dfrac{d^{2}y}{dx^{2}} + \\dfrac{dy}{dx} = -\\dfrac{\\sin(\\ln(1 + x))}{1 + x} = -\\dfrac{y}{1 + x}$\nMultiply by $1 + x$: $(1 + x)^{2}\\dfrac{d^{2}y}{dx^{2}} + (1 + x)\\dfrac{dy}{dx} + y = 0$\nAnswer: Shown\n\n(b) At $x = 0$: $y = 0$, $\\dfrac{dy}{dx} = 1$.\nFrom (a) at $x = 0$: $\\dfrac{d^{2}y}{dx^{2}} + 1 + 0 = 0$, so $\\dfrac{d^{2}y}{dx^{2}} = -1$.\nDifferentiate (a): $(1 + x)^{2}\\dfrac{d^{3}y}{dx^{3}} + 3(1 + x)\\dfrac{d^{2}y}{dx^{2}} + 2\\dfrac{dy}{dx} = 0$\nAt $x = 0$: $\\dfrac{d^{3}y}{dx^{3}} - 3 + 2 = 0$, so $\\dfrac{d^{3}y}{dx^{3}} = 1$.\n$y = x - \\dfrac{x^{2}}{2!} + \\dfrac{x^{3}}{3!}$\nAnswer: $x - \\tfrac{1}{2}x^{2} + \\tfrac{1}{6}x^{3}$\n\n(c) $\\dfrac{-\\frac{1}{2}x^{2} + \\frac{1}{6}x^{3}}{x^{2}} = -\\tfrac{1}{2} + \\tfrac{1}{6}x \\to -\\tfrac{1}{2}$\nAnswer: $-\\tfrac{1}{2}$",
+    "answer": "(a) Shown;  (b) $x - \\tfrac{1}{2}x^{2} + \\tfrac{1}{6}x^{3}$;  (c) $-\\tfrac{1}{2}$",
+    "needs_figure": false,
+    "originality_note": "2023/2025: series from a differential equation, then a limit",
+    "skills": []
+   }
+  },
+  {
+   "pos": 7,
+   "topic": "Integration (Techniques)",
+   "target": 9,
+   "accepted": true,
+   "idea": "2023: a periodic integral with a modulus, summed as a GP",
+   "question": {
+    "stem": "",
+    "total_marks": 9,
+    "topics": [
+     "Integration (Techniques)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Find $\\int e^{-x}\\sin x\\,dx$.",
+      "answer": "$-\\dfrac{1}{2}e^{-x}(\\sin x + \\cos x) + c$",
+      "solution": "Let $I = \\int e^{-x}\\sin x\\,dx$.\n$I = -e^{-x}\\sin x + \\int e^{-x}\\cos x\\,dx$\n$\\int e^{-x}\\cos x\\,dx = -e^{-x}\\cos x - \\int e^{-x}\\sin x\\,dx = -e^{-x}\\cos x - I$\n$2I = -e^{-x}(\\sin x + \\cos x)$\nAnswer: $-\\dfrac{1}{2}e^{-x}(\\sin x + \\cos x) + c$"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Show that, for any integer $k \\geqslant 0$, $\\int_{k\\pi}^{(k+1)\\pi} e^{-x}\\,|\\sin x|\\,dx = \\dfrac{1}{2}e^{-k\\pi}(1 + e^{-\\pi})$.",
+      "answer": "Shown",
+      "solution": "On $k\\pi \\leqslant x \\leqslant (k + 1)\\pi$, $|\\sin x| = (-1)^{k}\\sin x$.\nLet $F(x) = -\\dfrac{1}{2}e^{-x}(\\sin x + \\cos x)$. $\\sin(k\\pi) = 0$ and $\\cos(k\\pi) = (-1)^{k}$.\n$F((k + 1)\\pi) - F(k\\pi) = -\\dfrac{1}{2}[(-1)^{k+1}e^{-(k+1)\\pi} - (-1)^{k}e^{-k\\pi}] = \\dfrac{1}{2}(-1)^{k}e^{-k\\pi}(1 + e^{-\\pi})$\nMultiply by $(-1)^{k}$: $\\dfrac{1}{2}e^{-k\\pi}(1 + e^{-\\pi})$\nAnswer: Shown"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Hence find $\\int_{0}^{n\\pi} e^{-x}\\,|\\sin x|\\,dx$ in terms of $n$, and state the exact limit of this integral as $n \\to \\infty$.",
+      "answer": "$\\dfrac{(1 + e^{-\\pi})(1 - e^{-n\\pi})}{2(1 - e^{-\\pi})}$; limit $\\dfrac{1 + e^{-\\pi}}{2(1 - e^{-\\pi})}$",
+      "solution": "$\\int_{0}^{n\\pi} e^{-x}\\,|\\sin x|\\,dx = \\sum_{k=0}^{n-1} {\\dfrac{1}{2}(1 + e^{-\\pi})e^{-k\\pi}}$, a GP with ratio $e^{-\\pi}$\n$= \\dfrac{1}{2}(1 + e^{-\\pi}) \\times \\dfrac{1 - e^{-n\\pi}}{1 - e^{-\\pi}}$\nAs $n \\to \\infty$, $e^{-n\\pi} \\to 0$.\nAnswer: $\\dfrac{(1 + e^{-\\pi})(1 - e^{-n\\pi})}{2(1 - e^{-\\pi})}$; limit $\\dfrac{1 + e^{-\\pi}}{2(1 - e^{-\\pi})}$ $(\\approx 0.545)$"
+     }
+    ],
+    "solution": "(a) Let $I = \\int e^{-x}\\sin x\\,dx$.\n$I = -e^{-x}\\sin x + \\int e^{-x}\\cos x\\,dx$\n$\\int e^{-x}\\cos x\\,dx = -e^{-x}\\cos x - \\int e^{-x}\\sin x\\,dx = -e^{-x}\\cos x - I$\n$2I = -e^{-x}(\\sin x + \\cos x)$\nAnswer: $-\\dfrac{1}{2}e^{-x}(\\sin x + \\cos x) + c$\n\n(b) On $k\\pi \\leqslant x \\leqslant (k + 1)\\pi$, $|\\sin x| = (-1)^{k}\\sin x$.\nLet $F(x) = -\\dfrac{1}{2}e^{-x}(\\sin x + \\cos x)$. $\\sin(k\\pi) = 0$ and $\\cos(k\\pi) = (-1)^{k}$.\n$F((k + 1)\\pi) - F(k\\pi) = -\\dfrac{1}{2}[(-1)^{k+1}e^{-(k+1)\\pi} - (-1)^{k}e^{-k\\pi}] = \\dfrac{1}{2}(-1)^{k}e^{-k\\pi}(1 + e^{-\\pi})$\nMultiply by $(-1)^{k}$: $\\dfrac{1}{2}e^{-k\\pi}(1 + e^{-\\pi})$\nAnswer: Shown\n\n(c) $\\int_{0}^{n\\pi} e^{-x}\\,|\\sin x|\\,dx = \\sum_{k=0}^{n-1} {\\dfrac{1}{2}(1 + e^{-\\pi})e^{-k\\pi}}$, a GP with ratio $e^{-\\pi}$\n$= \\dfrac{1}{2}(1 + e^{-\\pi}) \\times \\dfrac{1 - e^{-n\\pi}}{1 - e^{-\\pi}}$\nAs $n \\to \\infty$, $e^{-n\\pi} \\to 0$.\nAnswer: $\\dfrac{(1 + e^{-\\pi})(1 - e^{-n\\pi})}{2(1 - e^{-\\pi})}$; limit $\\dfrac{1 + e^{-\\pi}}{2(1 - e^{-\\pi})}$ $(\\approx 0.545)$",
+    "answer": "(a) $-\\dfrac{1}{2}e^{-x}(\\sin x + \\cos x) + c$;  (b) Shown;  (c) $\\dfrac{(1 + e^{-\\pi})(1 - e^{-n\\pi})}{2(1 - e^{-\\pi})}$; limit $\\dfrac{1 + e^{-\\pi}}{2(1 - e^{-\\pi})}$",
+    "needs_figure": false,
+    "originality_note": "2023: a periodic integral with a modulus, summed as a GP",
+    "skills": []
+   }
+  },
+  {
+   "pos": 8,
+   "topic": "Functions",
+   "target": 8,
+   "accepted": true,
+   "idea": "2021/2022: a function that repeats after three steps; f inverse found by structure, not algebra",
+   "question": {
+    "stem": "The function $\\mathrm{f}$ is defined by $\\mathrm{f}(x) = \\dfrac{1}{1 - x}$, $x \\in \\mathbb{R}$, $x \\neq 0$, $x \\neq 1$.",
+    "total_marks": 8,
+    "topics": [
+     "Functions"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Show that the range of $\\mathrm{f}$ is the same as the domain of $\\mathrm{f}$.",
+      "answer": "Shown",
+      "solution": "$\\dfrac{1}{1 - x}$ is never $0$.\n$\\dfrac{1}{1 - x} = 1$ only when $x = 0$, which is not in the domain.\nEvery other $y$ is reached: $x = 1 - \\dfrac{1}{y}$, which is not $0$ or $1$ when $y \\neq 0, 1$.\nRange of $\\mathrm{f}$ $= \\{y \\in \\mathbb{R} : y \\neq 0, y \\neq 1\\}$\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Show that $\\mathrm{f}^{2}(x) = \\dfrac{x - 1}{x}$ and that $\\mathrm{f}^{3}(x) = x$.",
+      "answer": "Shown",
+      "solution": "$\\mathrm{f}^{2}(x) = \\dfrac{1}{1 - \\frac{1}{1 - x}} = \\dfrac{1 - x}{(1 - x) - 1} = \\dfrac{1 - x}{-x} = \\dfrac{x - 1}{x}$\n$\\mathrm{f}^{3}(x) = \\dfrac{1}{1 - \\frac{x - 1}{x}} = \\dfrac{x}{x - (x - 1)} = x$\nAnswer: Shown"
+     },
+     {
+      "label": "(c)",
+      "marks": 1,
+      "text": "Find the value of $\\mathrm{f}^{2027}(3)$.",
+      "answer": "$\\tfrac{2}{3}$",
+      "solution": "$2027 = 3 \\times 675 + 2$, so $\\mathrm{f}^{2027} = \\mathrm{f}^{2}$.\n$\\mathrm{f}^{2}(3) = \\dfrac{3 - 1}{3}$\nAnswer: $\\tfrac{2}{3}$"
+     },
+     {
+      "label": "(d)",
+      "marks": 3,
+      "text": "Explain why $\\mathrm{f}^{-1}(x) = \\mathrm{f}^{2}(x)$. Hence, or otherwise, show that the graphs of $y = \\mathrm{f}(x)$ and $y = \\mathrm{f}^{-1}(x)$ do not meet.",
+      "answer": "Shown",
+      "solution": "$\\mathrm{f}(\\mathrm{f}^{2}(x)) = \\mathrm{f}^{3}(x) = x$ for every $x$ in the domain, so $\\mathrm{f}^{2}$ undoes $\\mathrm{f}$: $\\mathrm{f}^{-1}(x) = \\mathrm{f}^{2}(x) = \\dfrac{x - 1}{x}$.\nThe graphs meet where $\\dfrac{1}{1 - x} = \\dfrac{x - 1}{x}$.\n$x = (x - 1)(1 - x) = -(x - 1)^{2}$\n$x^{2} - x + 1 = 0$\nDiscriminant $= 1 - 4 = -3 < 0$, so there is no real solution.\nAnswer: Shown, the graphs do not meet"
+     }
+    ],
+    "solution": "(a) $\\dfrac{1}{1 - x}$ is never $0$.\n$\\dfrac{1}{1 - x} = 1$ only when $x = 0$, which is not in the domain.\nEvery other $y$ is reached: $x = 1 - \\dfrac{1}{y}$, which is not $0$ or $1$ when $y \\neq 0, 1$.\nRange of $\\mathrm{f}$ $= \\{y \\in \\mathbb{R} : y \\neq 0, y \\neq 1\\}$\nAnswer: Shown\n\n(b) $\\mathrm{f}^{2}(x) = \\dfrac{1}{1 - \\frac{1}{1 - x}} = \\dfrac{1 - x}{(1 - x) - 1} = \\dfrac{1 - x}{-x} = \\dfrac{x - 1}{x}$\n$\\mathrm{f}^{3}(x) = \\dfrac{1}{1 - \\frac{x - 1}{x}} = \\dfrac{x}{x - (x - 1)} = x$\nAnswer: Shown\n\n(c) $2027 = 3 \\times 675 + 2$, so $\\mathrm{f}^{2027} = \\mathrm{f}^{2}$.\n$\\mathrm{f}^{2}(3) = \\dfrac{3 - 1}{3}$\nAnswer: $\\tfrac{2}{3}$\n\n(d) $\\mathrm{f}(\\mathrm{f}^{2}(x)) = \\mathrm{f}^{3}(x) = x$ for every $x$ in the domain, so $\\mathrm{f}^{2}$ undoes $\\mathrm{f}$: $\\mathrm{f}^{-1}(x) = \\mathrm{f}^{2}(x) = \\dfrac{x - 1}{x}$.\nThe graphs meet where $\\dfrac{1}{1 - x} = \\dfrac{x - 1}{x}$.\n$x = (x - 1)(1 - x) = -(x - 1)^{2}$\n$x^{2} - x + 1 = 0$\nDiscriminant $= 1 - 4 = -3 < 0$, so there is no real solution.\nAnswer: Shown, the graphs do not meet",
+    "answer": "(a) Shown;  (b) Shown;  (c) $\\tfrac{2}{3}$;  (d) Shown",
+    "needs_figure": false,
+    "originality_note": "2021/2022: a function that repeats after three steps; f inverse found by structure, not algebra",
+    "skills": []
+   }
+  },
+  {
+   "pos": 9,
+   "topic": "APGP",
+   "target": 7,
+   "accepted": true,
+   "idea": "2022/2024: recurrence with a removal, set up from scratch",
+   "question": {
+    "stem": "At the start of 2027 a lake holds $4000$ fish. During each year the number of fish grows by $5\\%$, and at the end of each year $R$ fish are removed. The number of fish just after the removal at the end of the $n$th year is $P_{n}$.",
+    "total_marks": 7,
+    "topics": [
+     "APGP"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Find $P_{n}$ in terms of $n$ and $R$.",
+      "answer": "$P_{n} = 20R + (4000 - 20R)(1.05)^{n}$",
+      "solution": "$P_{n} = 1.05P_{n-1} - R$\n$P_{n} = 4000(1.05)^{n} - R(1 + 1.05 + \\dots + 1.05^{n-1})$\n$1 + 1.05 + \\dots + 1.05^{n-1} = \\dfrac{1.05^{n} - 1}{0.05} = 20(1.05^{n} - 1)$\n$P_{n} = 4000(1.05)^{n} - 20R(1.05)^{n} + 20R$\nAnswer: $P_{n} = 20R + (4000 - 20R)(1.05)^{n}$"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Given that $R = 300$, find the year in which the fish run out.",
+      "answer": "in the 23rd year, 2049",
+      "solution": "$P_{n} = 6000 - 2000(1.05)^{n}$\n$P_{22} = 149.5 > 0$; $P_{23} = -143.0 < 0$\nThe removal at the end of the 23rd year cannot be made in full.\nAnswer: in the 23rd year, that is 2049"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "The lake can hold at most $5000$ fish. Find the least whole number $R$ for which $P_{10} \\leqslant 5000$.",
+      "answer": "$R = 121$",
+      "solution": "$20R + (4000 - 20R)(1.05)^{10} \\leqslant 5000$\n$20R(1 - 1.05^{10}) \\leqslant 5000 - 4000(1.05)^{10}$\n$R \\geqslant 120.50$\nAnswer: $R = 121$"
+     }
+    ],
+    "solution": "(a) $P_{n} = 1.05P_{n-1} - R$\n$P_{n} = 4000(1.05)^{n} - R(1 + 1.05 + \\dots + 1.05^{n-1})$\n$1 + 1.05 + \\dots + 1.05^{n-1} = \\dfrac{1.05^{n} - 1}{0.05} = 20(1.05^{n} - 1)$\n$P_{n} = 4000(1.05)^{n} - 20R(1.05)^{n} + 20R$\nAnswer: $P_{n} = 20R + (4000 - 20R)(1.05)^{n}$\n\n(b) $P_{n} = 6000 - 2000(1.05)^{n}$\n$P_{22} = 149.5 > 0$; $P_{23} = -143.0 < 0$\nThe removal at the end of the 23rd year cannot be made in full.\nAnswer: in the 23rd year, that is 2049\n\n(c) $20R + (4000 - 20R)(1.05)^{10} \\leqslant 5000$\n$20R(1 - 1.05^{10}) \\leqslant 5000 - 4000(1.05)^{10}$\n$R \\geqslant 120.50$\nAnswer: $R = 121$",
+    "answer": "(a) $P_{n} = 20R + (4000 - 20R)(1.05)^{n}$;  (b) in the 23rd year, 2049;  (c) $R = 121$",
+    "needs_figure": false,
+    "originality_note": "2022/2024: recurrence with a removal, set up from scratch",
+    "skills": []
+   }
+  },
+  {
+   "pos": 10,
+   "topic": "Parametric Equations",
+   "target": 11,
+   "accepted": true,
+   "idea": "2024/2025: a closed parametric curve; trig identities do the work",
+   "question": {
+    "stem": "A curve has parametric equations $x = 2\\cos t + \\cos 2t$, $y = 2\\sin t - \\sin 2t$, for $0 \\leqslant t < 2\\pi$.",
+    "total_marks": 11,
+    "topics": [
+     "Parametric Equations",
+     "Integration (Area and Volume)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Show that $\\dfrac{dy}{dx} = -\\tan\\left(\\tfrac{1}{2}t\\right)$, for values of $t$ where $\\dfrac{dy}{dx}$ is defined.",
+      "answer": "Shown",
+      "solution": "$\\dfrac{dx}{dt} = -2\\sin t - 2\\sin 2t = -4\\sin\\tfrac{3t}{2}\\cos\\tfrac{t}{2}$\n$\\dfrac{dy}{dt} = 2\\cos t - 2\\cos 2t = 4\\sin\\tfrac{3t}{2}\\sin\\tfrac{t}{2}$\n$\\dfrac{dy}{dx} = \\dfrac{4\\sin\\frac{3t}{2}\\sin\\frac{t}{2}}{-4\\sin\\frac{3t}{2}\\cos\\frac{t}{2}}$\nAnswer: $\\dfrac{dy}{dx} = -\\tan\\tfrac{t}{2}$, shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Show that the tangent to the curve at the point with parameter $t$ has equation $x\\sin\\left(\\tfrac{1}{2}t\\right) + y\\cos\\left(\\tfrac{1}{2}t\\right) = \\sin\\left(\\tfrac{3}{2}t\\right)$.",
+      "answer": "Shown",
+      "solution": "$y - (2\\sin t - \\sin 2t) = -\\dfrac{\\sin\\frac{t}{2}}{\\cos\\frac{t}{2}}(x - 2\\cos t - \\cos 2t)$\n$x\\sin\\tfrac{t}{2} + y\\cos\\tfrac{t}{2} = (2\\cos t + \\cos 2t)\\sin\\tfrac{t}{2} + (2\\sin t - \\sin 2t)\\cos\\tfrac{t}{2}$\n$2\\left(\\cos t\\sin\\tfrac{t}{2} + \\sin t\\cos\\tfrac{t}{2}\\right) = 2\\sin\\tfrac{3t}{2}$\n$\\cos 2t\\sin\\tfrac{t}{2} - \\sin 2t\\cos\\tfrac{t}{2} = \\sin\\left(\\tfrac{t}{2} - 2t\\right) = -\\sin\\tfrac{3t}{2}$\nRight side $= 2\\sin\\tfrac{3t}{2} - \\sin\\tfrac{3t}{2} = \\sin\\tfrac{3t}{2}$\nAnswer: Shown"
+     },
+     {
+      "label": "(c)",
+      "marks": 5,
+      "text": "Find the exact area of the region enclosed by the curve.",
+      "answer": "$2\\pi$",
+      "solution": "Area $= \\left|\\int_{0}^{2\\pi} y\\dfrac{dx}{dt} \\, dt\\right|$\n$y\\dfrac{dx}{dt} = (2\\sin t - \\sin 2t)(-2\\sin t - 2\\sin 2t)$\n$= -4\\sin^{2}t - 2\\sin t\\sin 2t + 2\\sin^{2}2t$\n$\\int_{0}^{2\\pi} 4\\sin^{2}t \\, dt = 4\\pi$\n$\\int_{0}^{2\\pi} {\\sin t\\sin 2t} \\, dt = \\tfrac{1}{2}\\int_{0}^{2\\pi} (\\cos t - \\cos 3t) \\, dt = 0$\n$\\int_{0}^{2\\pi} 2\\sin^{2}2t \\, dt = 2\\pi$\nIntegral $= -4\\pi - 0 + 2\\pi = -2\\pi$\nAnswer: $2\\pi$"
+     }
+    ],
+    "solution": "(a) $\\dfrac{dx}{dt} = -2\\sin t - 2\\sin 2t = -4\\sin\\tfrac{3t}{2}\\cos\\tfrac{t}{2}$\n$\\dfrac{dy}{dt} = 2\\cos t - 2\\cos 2t = 4\\sin\\tfrac{3t}{2}\\sin\\tfrac{t}{2}$\n$\\dfrac{dy}{dx} = \\dfrac{4\\sin\\frac{3t}{2}\\sin\\frac{t}{2}}{-4\\sin\\frac{3t}{2}\\cos\\frac{t}{2}}$\nAnswer: $\\dfrac{dy}{dx} = -\\tan\\tfrac{t}{2}$, shown\n\n(b) $y - (2\\sin t - \\sin 2t) = -\\dfrac{\\sin\\frac{t}{2}}{\\cos\\frac{t}{2}}(x - 2\\cos t - \\cos 2t)$\n$x\\sin\\tfrac{t}{2} + y\\cos\\tfrac{t}{2} = (2\\cos t + \\cos 2t)\\sin\\tfrac{t}{2} + (2\\sin t - \\sin 2t)\\cos\\tfrac{t}{2}$\n$2\\left(\\cos t\\sin\\tfrac{t}{2} + \\sin t\\cos\\tfrac{t}{2}\\right) = 2\\sin\\tfrac{3t}{2}$\n$\\cos 2t\\sin\\tfrac{t}{2} - \\sin 2t\\cos\\tfrac{t}{2} = \\sin\\left(\\tfrac{t}{2} - 2t\\right) = -\\sin\\tfrac{3t}{2}$\nRight side $= 2\\sin\\tfrac{3t}{2} - \\sin\\tfrac{3t}{2} = \\sin\\tfrac{3t}{2}$\nAnswer: Shown\n\n(c) Area $= \\left|\\int_{0}^{2\\pi} y\\dfrac{dx}{dt} \\, dt\\right|$\n$y\\dfrac{dx}{dt} = (2\\sin t - \\sin 2t)(-2\\sin t - 2\\sin 2t)$\n$= -4\\sin^{2}t - 2\\sin t\\sin 2t + 2\\sin^{2}2t$\n$\\int_{0}^{2\\pi} 4\\sin^{2}t \\, dt = 4\\pi$\n$\\int_{0}^{2\\pi} {\\sin t\\sin 2t} \\, dt = \\tfrac{1}{2}\\int_{0}^{2\\pi} (\\cos t - \\cos 3t) \\, dt = 0$\n$\\int_{0}^{2\\pi} 2\\sin^{2}2t \\, dt = 2\\pi$\nIntegral $= -4\\pi - 0 + 2\\pi = -2\\pi$\nAnswer: $2\\pi$",
+    "answer": "(a) Shown;  (b) Shown;  (c) $2\\pi$",
+    "needs_figure": false,
+    "originality_note": "2024/2025: a closed parametric curve; trig identities do the work",
+    "skills": []
+   }
+  },
+  {
+   "pos": 11,
+   "topic": "Integration (Differential Equations)",
+   "target": 13,
+   "accepted": true,
+   "idea": "2024/2025: a model from words; a general stopping point gives a clean formula",
+   "question": {
+    "stem": "A patient is given a drug through a drip at a constant rate of $6$ mg per hour. The body removes the drug at a rate proportional to the amount of drug in the body. The amount of drug in the body at time $t$ hours after the drip starts is $X$ mg, and $X = 0$ when $t = 0$.",
+    "total_marks": 13,
+    "topics": [
+     "Integration (Differential Equations)"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 1,
+      "text": "Write down a differential equation relating $X$ and $t$.",
+      "answer": "$\\dfrac{dX}{dt} = 6 - kX$, $k > 0$",
+      "solution": "Rate in $= 6$; rate out $= kX$ for a positive constant $k$.\nAnswer: $\\dfrac{dX}{dt} = 6 - kX$, where $k > 0$"
+     },
+     {
+      "label": "(b)",
+      "marks": 4,
+      "text": "Solve your differential equation to find $X$ in terms of $t$ and $k$.",
+      "answer": "$X = \\dfrac{6}{k}(1 - e^{-kt})$",
+      "solution": "$\\int \\dfrac{1}{6 - kX} \\, dX = \\int 1 \\, dt$\n$-\\dfrac{1}{k}\\ln|6 - kX| = t + c$\n$6 - kX = Ae^{-kt}$\n$t = 0$, $X = 0$: $A = 6$\n$kX = 6 - 6e^{-kt}$\nAnswer: $X = \\dfrac{6}{k}(1 - e^{-kt})$"
+     },
+     {
+      "label": "(c)",
+      "marks": 1,
+      "text": "It is observed that, in the long run, the amount of drug in the body approaches $30$ mg. Find the value of $k$.",
+      "answer": "$k = \\tfrac{1}{5}$",
+      "solution": "As $t \\to \\infty$, $X \\to \\dfrac{6}{k}$.\n$\\dfrac{6}{k} = 30$\nAnswer: $k = \\tfrac{1}{5}$"
+     },
+     {
+      "label": "(d)",
+      "marks": 5,
+      "text": "The drug works only while there is at least $15$ mg in the body. The drip is stopped at the moment when $X = a$, where $15 < a < 30$; after that the body continues to remove the drug as before. Show that the drug works for a total time of $5\\ln\\left(\\dfrac{a}{30 - a}\\right)$ hours.",
+      "answer": "Shown",
+      "solution": "While the drip runs, $X = 30(1 - e^{-t/5})$.\n$X = 15$: $e^{-t/5} = \\tfrac{1}{2}$, so the drug starts to work at $t = 5\\ln 2$.\n$X = a$: $e^{-t/5} = \\dfrac{30 - a}{30}$, so the drip stops at $T = 5\\ln\\left(\\dfrac{30}{30 - a}\\right)$.\nAfter the drip stops: $\\dfrac{dX}{dt} = -\\dfrac{X}{5}$, so $X = ae^{-(t - T)/5}$.\n$X = 15$: $t - T = 5\\ln\\left(\\dfrac{a}{15}\\right)$\nTotal time $= T + 5\\ln\\left(\\dfrac{a}{15}\\right) - 5\\ln 2$\n$= 5\\ln\\left(\\dfrac{30}{30 - a} \\times \\dfrac{a}{15} \\times \\dfrac{1}{2}\\right)$\nAnswer: $5\\ln\\left(\\dfrac{a}{30 - a}\\right)$ hours, shown"
+     },
+     {
+      "label": "(e)",
+      "marks": 2,
+      "text": "Find the value of $a$ for which the drug works for $12$ hours in total.",
+      "answer": "$a = 27.5$ mg",
+      "solution": "$\\dfrac{a}{30 - a} = e^{2.4}$\n$a = \\dfrac{30e^{2.4}}{1 + e^{2.4}}$\nAnswer: $a = 27.5$ mg (3 s.f.)"
+     }
+    ],
+    "solution": "(a) Rate in $= 6$; rate out $= kX$ for a positive constant $k$.\nAnswer: $\\dfrac{dX}{dt} = 6 - kX$, where $k > 0$\n\n(b) $\\int \\dfrac{1}{6 - kX} \\, dX = \\int 1 \\, dt$\n$-\\dfrac{1}{k}\\ln|6 - kX| = t + c$\n$6 - kX = Ae^{-kt}$\n$t = 0$, $X = 0$: $A = 6$\n$kX = 6 - 6e^{-kt}$\nAnswer: $X = \\dfrac{6}{k}(1 - e^{-kt})$\n\n(c) As $t \\to \\infty$, $X \\to \\dfrac{6}{k}$.\n$\\dfrac{6}{k} = 30$\nAnswer: $k = \\tfrac{1}{5}$\n\n(d) While the drip runs, $X = 30(1 - e^{-t/5})$.\n$X = 15$: $e^{-t/5} = \\tfrac{1}{2}$, so the drug starts to work at $t = 5\\ln 2$.\n$X = a$: $e^{-t/5} = \\dfrac{30 - a}{30}$, so the drip stops at $T = 5\\ln\\left(\\dfrac{30}{30 - a}\\right)$.\nAfter the drip stops: $\\dfrac{dX}{dt} = -\\dfrac{X}{5}$, so $X = ae^{-(t - T)/5}$.\n$X = 15$: $t - T = 5\\ln\\left(\\dfrac{a}{15}\\right)$\nTotal time $= T + 5\\ln\\left(\\dfrac{a}{15}\\right) - 5\\ln 2$\n$= 5\\ln\\left(\\dfrac{30}{30 - a} \\times \\dfrac{a}{15} \\times \\dfrac{1}{2}\\right)$\nAnswer: $5\\ln\\left(\\dfrac{a}{30 - a}\\right)$ hours, shown\n\n(e) $\\dfrac{a}{30 - a} = e^{2.4}$\n$a = \\dfrac{30e^{2.4}}{1 + e^{2.4}}$\nAnswer: $a = 27.5$ mg (3 s.f.)",
+    "answer": "(a) $\\dfrac{dX}{dt} = 6 - kX$, $k > 0$;  (b) $X = \\dfrac{6}{k}(1 - e^{-kt})$;  (c) $k = \\tfrac{1}{5}$;  (d) Shown;  (e) $a = 27.5$ mg",
+    "needs_figure": false,
+    "originality_note": "2024/2025: a model from words; a general stopping point gives a clean formula",
+    "skills": []
+   }
+  },
+  {
+   "pos": 12,
+   "topic": "Vectors",
+   "target": 10,
+   "accepted": true,
+   "idea": "Unusual applied vectors (shadow of a pole on a sloping plane): angle between planes, line meets plane, distance, a parameter",
+   "question": {
+    "stem": "In this question the unit vector $\\mathbf{k}$ points vertically upwards, the horizontal ground is the plane $z = 0$, and units are metres. A hillside is modelled by the plane $\\Pi$ with equation $x + 2y + 2z = 15$. A vertical pole of height $6$ m stands on the hillside with its foot at $A(1, 2, 5)$ and its top at $T$. At a certain time, the sun's rays are parallel to $\\begin{pmatrix} 2 \\\\ -1 \\\\ -2 \\end{pmatrix}$.",
+    "total_marks": 10,
+    "topics": [
+     "Vectors"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Find the acute angle between the hillside and the horizontal ground.",
+      "answer": "$48.2^{\\circ}$",
+      "solution": "Normal of $\\Pi$: $(1, 2, 2)$; normal of the ground: $(0, 0, 1)$.\n$\\cos\\phi = \\dfrac{2}{3 \\times 1} = \\dfrac{2}{3}$\nAnswer: $48.2^{\\circ}$ (1 d.p.)"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "The end of the shadow of the pole on the hillside is $S$. Find the coordinates of $S$ and the length of the shadow $AS$.",
+      "answer": "$S(7, -1, 5)$; $3\\sqrt{5}$ m",
+      "solution": "$T$ is $(1, 2, 11)$. Ray through $T$: $\\mathbf{r}$ = (1, 2, 11) + μ(2, − 1, − 2)\nOn $\\Pi$: $(1 + 2\\mu) + 2(2 - \\mu) + 2(11 - 2\\mu) = 15 \\Rightarrow 27 - 4\\mu = 15 \\Rightarrow \\mu = 3$\n$S = (7, -1, 5)$\n$\\overrightarrow{AS} = (6, -3, 0)$, length $\\sqrt{45} = 3\\sqrt{5}$\nAnswer: $S(7, -1, 5)$; shadow $3\\sqrt{5}$ m"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "Find the shortest distance from $T$ to the hillside, and explain why it is less than the height of the pole.",
+      "answer": "$4$ m",
+      "solution": "Distance $= \\dfrac{|1 + 4 + 22 - 15|}{\\sqrt{1 + 4 + 4}} = \\dfrac{12}{3} = 4$\nThe pole is vertical, not perpendicular to the sloping hillside; the perpendicular from $T$ is the shortest way to the plane.\nAnswer: $4$ m"
+     },
+     {
+      "label": "(d)",
+      "marks": 3,
+      "text": "Later in the day the sun's rays are parallel to $\\begin{pmatrix} 2 \\\\ -1 \\\\ -m \\end{pmatrix}$, where $m > 0$. Show that the end of the shadow is always at the same height as $A$, and find the exact value of $m$ for which the shadow is as long as the pole.",
+      "answer": "$m = \\sqrt{5}$",
+      "solution": "Ray: $(1 + 2\\mu,\\ 2 - \\mu,\\ 11 - m\\mu)$\nOn $\\Pi$: $1 + 2\\mu + 4 - 2\\mu + 22 - 2m\\mu = 15 \\Rightarrow \\mu = \\dfrac{6}{m}$\nHeight of the end: $11 - m \\times \\dfrac{6}{m} = 5$, the height of $A$, for every $m$.\n$\\overrightarrow{AS} = \\left(\\dfrac{12}{m}, -\\dfrac{6}{m}, 0\\right)$, length $\\dfrac{6\\sqrt{5}}{m}$\n$\\dfrac{6\\sqrt{5}}{m} = 6 \\Rightarrow m = \\sqrt{5}$\nAnswer: $m = \\sqrt{5}$"
+     }
+    ],
+    "solution": "(a) Normal of $\\Pi$: $(1, 2, 2)$; normal of the ground: $(0, 0, 1)$.\n$\\cos\\phi = \\dfrac{2}{3 \\times 1} = \\dfrac{2}{3}$\nAnswer: $48.2^{\\circ}$ (1 d.p.)\n\n(b) $T$ is $(1, 2, 11)$. Ray through $T$: $\\mathbf{r}$ = (1, 2, 11) + μ(2, − 1, − 2)\nOn $\\Pi$: $(1 + 2\\mu) + 2(2 - \\mu) + 2(11 - 2\\mu) = 15 \\Rightarrow 27 - 4\\mu = 15 \\Rightarrow \\mu = 3$\n$S = (7, -1, 5)$\n$\\overrightarrow{AS} = (6, -3, 0)$, length $\\sqrt{45} = 3\\sqrt{5}$\nAnswer: $S(7, -1, 5)$; shadow $3\\sqrt{5}$ m\n\n(c) Distance $= \\dfrac{|1 + 4 + 22 - 15|}{\\sqrt{1 + 4 + 4}} = \\dfrac{12}{3} = 4$\nThe pole is vertical, not perpendicular to the sloping hillside; the perpendicular from $T$ is the shortest way to the plane.\nAnswer: $4$ m\n\n(d) Ray: $(1 + 2\\mu,\\ 2 - \\mu,\\ 11 - m\\mu)$\nOn $\\Pi$: $1 + 2\\mu + 4 - 2\\mu + 22 - 2m\\mu = 15 \\Rightarrow \\mu = \\dfrac{6}{m}$\nHeight of the end: $11 - m \\times \\dfrac{6}{m} = 5$, the height of $A$, for every $m$.\n$\\overrightarrow{AS} = \\left(\\dfrac{12}{m}, -\\dfrac{6}{m}, 0\\right)$, length $\\dfrac{6\\sqrt{5}}{m}$\n$\\dfrac{6\\sqrt{5}}{m} = 6 \\Rightarrow m = \\sqrt{5}$\nAnswer: $m = \\sqrt{5}$",
+    "answer": "(a) $48.2^{\\circ}$;  (b) $S(7, -1, 5)$; $3\\sqrt{5}$ m;  (c) $4$ m;  (d) $m = \\sqrt{5}$",
+    "needs_figure": true,
+    "originality_note": "Unusual applied vectors (shadow of a pole on a sloping plane): angle between planes, line meets plane, distance, a parameter",
+    "skills": []
+   }
+  }
+ ],
+ "source_key": "H2-MOCK-SET1-P1",
+ "generated_at": "2026-10-22T12:00:00+08:00",
+ "models": {
+  "author": "Claude Code session, 22 Oct 2026 (H2 Math Mock Set 1)"
+ }
+}
