@@ -99,6 +99,10 @@ practice), ALSO build a practice worksheet: 2–3 questions per topic likely in 
 general practice (short, core skills) with exam-style questions worded like the real O-Level
 papers; suitable bank questions first, our own (through the gates) only where the bank has none;
 orange `[Ans: …]` per question, plus a solutions table when time allows. Detail: `prelim-paper` SKILL.md §7.
+Adrian, 27 Oct 2026, after a predicted *paper* was built instead: *"what i mean is a practice set : 2~3 practice
+questions per topic/kind of question"* — when he asks for practice "based on what you think will come out", the
+deliverable is a PER-TOPIC SET of new questions (2–3 per kind, SEAB 2024/25 style, each answer blind-solved), not a
+mock paper; leave out topics the paper just sat already tested (e.g. area after the 2026 A Math P1).
 
 ## The four area skills are different in kind
 
