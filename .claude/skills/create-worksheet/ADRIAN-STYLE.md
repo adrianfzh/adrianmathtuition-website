@@ -426,6 +426,19 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   spinner that was perfectly fine. Grep the dumped stem for the words the page prints
   before touching a figure.
 
+### A curve never touches its asymptote; graphs label a, b and c (26 Oct 2026)
+
+Adrian, 26 Oct 2026, on the A Math recap sheet: *"graphs should not be touching the
+asymptotes … amplitude is not labelled in the 6 trigo graphs, for tangent say y=2tan3x,
+include the 2 in the diagram (between 0 and the first asymptote go up from the x-axis,
+hit the graph, and go left)"*.
+- Stop every branch short of its asymptote, with a visible gap. This covers tan, ln,
+  e^(−kt) and 1/x curves, and the curve is drawn only over the domain asked (start at t = 0).
+- On a sin/cos graph, draw the amplitude as a labelled double arrow from the centre line
+  to a maximum.
+- On y = a tan bx, show a: at the x where bx = 45°, draw a dashed line up from the x-axis
+  to the curve, then left to the y-axis, and mark a there.
+
 ## 5 · Numbering, sections, spacing
 
 - **Questions and every part are real Word numbering** — the bank's own label decides
