@@ -33,7 +33,7 @@ script so any model can run it".
    pages, page 1, and every page it lists under "stray bits". A dash or mark left over
    from covered working → add a `--white` box and build again.
 6. **Exit code 2 = the school name is still in the file.** Do not send it.
-7. Save to `~/Dropbox/AdrianMath Work/worksheets/<name> (with answers).pdf` and hand it over.
+7. Save to the kiosk shelf `~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/<Practice|Prelim>/<LEVEL>/<name> (with answers).pdf` and hand it over (one shelf, Adrian 26 Oct 2026).
 
 ## What it does
 

@@ -29,6 +29,41 @@ Generates math practice worksheets as `.docx` files with one Python script per w
 
 Requires `pandoc` and `python-docx` (both present in the Cowork sandbox and on Adrian's Mac — Homebrew pandoc + pip python-docx).
 
+## ⚡ Fast path — `make_sheet` (26 Oct 2026, use this by default)
+
+Adrian, 26 Oct 2026: *"are we able to make it so that you can come up with the docx/pdfs
+faster next time?"* — a 3-question sheet took several rounds (wrong python, a stem line at
+the left margin, [Ans] lines that wrapped, a question starting at the foot of a page, the PDF
+done by hand, then a second build without working space). `make_sheet.py` does all of it in
+one run (~10 s for a 3-question sheet):
+
+```python
+import sys; sys.path.insert(0, '<repo>/.claude/skills/create-worksheet')
+from make_sheet import make_sheet
+
+def build(ws):                       # the content, written once
+    ws.title('…'); ws.subtitle('JC2 H2 Mathematics')
+    ws.Q([...]); ws.stem([...])      # stem() = a 2nd stem paragraph, lined up with the question
+    ws.SQ([...], marks=2); ws.ans([...])
+
+make_sheet(build, name='JC2 H2 Normal Distribution - Sum vs Multiple', level='JC')
+# kind='revision' for a sheet WITH worked examples; both=False for one copy; file=False to keep it local
+```
+
+It **checks first** (every [Ans] fits one line, no `para()` inside a numbered question, no
+glued run taller than a page, no maths typed as text) and stops with the list; then builds
+**both** copies (write-on + "(no working space)"), makes **both PDFs through Word**, starts any
+question whose number lands in the bottom 30 % of a page on a new page, and **files all four
+files on the kiosk shelf** `Dropbox/Apps/AdrianMathNotes/<Practice|Revision>/<level>/`
+(never over an existing file). Run the script with plain `python3`: `worksheet_lib`
+re-runs itself under `/usr/bin/python3` when python-docx is missing (the Homebrew python has
+none). Still LOOK at one page of each PDF before handing it over.
+
+**One shelf (Adrian, 26 Oct 2026):** every practice sheet a session makes goes to
+`Apps/AdrianMathNotes/Practice/<level>` — sheets with worked examples to `Revision/<level>`,
+full papers to `Prelim/<level>`. `AdrianMath Work/` is only the workshop (scripts, drafts);
+a finished sheet never stays only there.
+
 ## Workflow
 
 This skill runs in two environments; the only difference is the paths.
@@ -109,7 +144,8 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.Q(parts, marks=None)` | Main question. Auto-numbered `1.`, `2.`, `3.`, ... Each call also opens a fresh sub-question pool, so any `SQ()` calls that follow restart at `(a)`. |
 | `ws.SQ(parts, marks=None)` | Sub-question under the most recent `Q()`. Auto-numbered `(a)`, `(b)`, `(c)`, ... Restarts when a new `Q()` is called. |
 | `ws.parts()` | Start a fresh `(a)`, `(b)`, `(c)` list under an UNNUMBERED stem (an Example written with `para()`): labels flush with the stem's left edge, text one tab in. Call after the stem and its figure, then `SQ()` per part (7 Sep 2026). |
-| `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
+| `ws.para(parts, marks=None)` | Plain paragraph with no numbering (an Example's stem). |
+| `ws.stem(parts, marks=None)` | A further paragraph of a numbered question's stem, lined up with its text at 1 cm. Use this, not `para()`, inside a `Q()` (26 Oct 2026). |
 | `ws.section(text)` | Bold section header, glued to the question that follows so it cannot be stranded at the foot of a page. |
 | `ws.block_heights()` | Estimated cm height of each question block. Informative — shows which questions span pages. |
 | `ws.glued_heights()` | Estimated cm height of each atomic run (a keep-with-next chain). **Check this before `save()`:** anything over `ws.PAGE_CM` is a run Word must break inside. |

@@ -191,6 +191,8 @@ link is never stale. Auth: refresh-token OAuth (`DROPBOX_APP_KEY` / `DROPBOX_APP
 / `DROPBOX_REFRESH_TOKEN`), app-folder scoped to `Dropbox/Apps/AdrianMathNotes/` — the
 site can see nothing else in his Dropbox. Health-checked every 6h (see the probes below).
 
+**One shelf for every sheet a session makes (Adrian, 26 Oct 2026: "would be good to put all in /app/adrianmathnotes/practices in their respective levels").** Questions-only sheets → `Practice/<LEVEL>`, sheets with worked examples → `Revision/<LEVEL>`, full papers → `Prelim/<LEVEL>`. `AdrianMath Work/` is a workshop only. The fast way: `create-worksheet/make_sheet.py`.
+
 **Four kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
 unit-tested). Never re-derive a folder path in a route:**
 

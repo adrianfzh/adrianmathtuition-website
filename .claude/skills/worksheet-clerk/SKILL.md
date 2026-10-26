@@ -119,7 +119,7 @@ Assemble one document and produce it with the `anthropic-skills:create-worksheet
 
 Formatting conventions (annotated worked examples inline, right-aligned orange `[Ans: ...]` under each practice question, diagram rules, docx→pdf via `docx2pdf`) are defined in the `create-worksheet` skill — follow its "Worked-Example Sections" and "Output Modes" sections.
 
-**Where the output goes:** save finished files to `~/Dropbox/AdrianMath Work/worksheets/<YYYY-MM-DD>-<level>-<topic-slug>/` (create the folder). In Cowork also copy to `/mnt/user-data/outputs/` so Adrian gets a download card.
+**Where the output goes (Adrian, 26 Oct 2026 — one shelf):** file the finished DOCX + PDF on the kiosk shelf `~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/Revision/<LEVEL>/` when the sheet has worked examples, `…/Practice/<LEVEL>/` when it is questions only (`create-worksheet` `make_sheet(…, kind=…)` does this and makes both copies). Keep scripts and drafts in a scratch folder, never only in `AdrianMath Work/worksheets/`. In Cowork also copy to `/mnt/user-data/outputs/` so Adrian gets a download card.
 
 Then log the export:
 

@@ -21,6 +21,18 @@ Usage:
 Everything (reference style setup, numbering definitions, OMML conversion,
 inline numPr patching) is handled internally. Only one script to run.
 """
+# On Adrian's Mac python-docx is installed for /usr/bin/python3 only; a Homebrew
+# `python3` cannot import it. Re-run the author script under the system Python
+# instead of failing (26 Oct 2026: a session lost a round finding the right one).
+try:
+    import docx as _docx_probe  # noqa: F401
+except ImportError:
+    import os as _os
+    import sys as _sys
+    if _os.path.exists('/usr/bin/python3') and _os.path.realpath(_sys.executable) != _os.path.realpath('/usr/bin/python3') and _sys.argv and _sys.argv[0]:
+        print('worksheet_lib: python-docx missing here, re-running under /usr/bin/python3', file=_sys.stderr)
+        _os.execv('/usr/bin/python3', ['/usr/bin/python3'] + _sys.argv)
+    raise
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
@@ -1237,9 +1249,22 @@ class Worksheet:
     def para(self, parts, marks=None):
         """Plain paragraph (no numbering). An Example's stem is written this
         way, so a para() closes the numbered question above it and lets parts()
-        open its flush-left list again."""
+        open its flush-left list again. For a second paragraph of a NUMBERED
+        question's stem use stem() — a para() there prints at the left margin,
+        out of line with the question text (26 Oct 2026)."""
         self._numbered_q_open = False
         return self._add(parts, marks=marks)
+
+    def stem(self, parts, marks=None):
+        """A further paragraph of the current numbered question's stem (a data
+        line, "In this question you should …"), lined up with the question's
+        text at 1 cm and kept in the question's block."""
+        if self._current_subq_id is None:
+            raise RuntimeError('stem() called before any Q().')
+        p = self._add(parts, marks=marks)
+        p.paragraph_format.left_indent = Cm(1.0)
+        p.paragraph_format.first_line_indent = Cm(0)
+        return p
 
     def keep_with_next(self):
         """Glue the paragraph just written to the one below it.
