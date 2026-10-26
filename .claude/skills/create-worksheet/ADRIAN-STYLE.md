@@ -434,8 +434,10 @@ include the 2 in the diagram (between 0 and the first asymptote go up from the x
 hit the graph, and go left)"*.
 - Stop every branch short of its asymptote, with a visible gap. This covers tan, ln,
   e^(−kt) and 1/x curves, and the curve is drawn only over the domain asked (start at t = 0).
-- On a sin/cos graph, draw the amplitude as a labelled double arrow from the centre line
-  to a maximum.
+- On a sin/cos graph, number the vertical axis at the max, the min and the centre line
+  (Adrian, 26 Oct 2026: *"put the numbers at the vertical axis (label the vertical
+  axes)"*). An amplitude arrow from the centre line to a maximum is extra, never a
+  replacement for the numbers.
 - On y = a tan bx, show a: at the x where bx = 45°, draw a dashed line up from the x-axis
   to the curve, then left to the y-axis, and mark a there.
 
