@@ -1164,3 +1164,12 @@ All fourteen A Math papers (Rainie TYS 1.0 + O-Level 2021 P1; Isabelle Specimen 
 - **A part's half-fix: only one of two swapped graphs explained** — strip covers y₂'s period only; the read's "you swapped them — y₁ needs one cycle" not printed (Gavin A Math 2017 P2 p11 Q10(iii)). Words (which field is printed).
 - **"method marks" in student prose** — "…; method marks given on your m = 18." (Gavin A Math 2017 P2 p8 Q6(ii)). Words (error_summary printed as written).
 - **An ASTC figure caption in the wrong letter** — "sin θ < 0" for questions in A and x (Gavin A Math 2020 P1 p8 Q7; 2017 P2 p11 Q10(ii)). Figure caption.
+
+# 27 Oct 2026 — the page reader: new defect classes (findings of 27 Oct: 2 papers, 20 pages; the fixer works them at 06:45)
+
+Both papers (Rainie Chemistry O-Level 2022 P2; Khoo A Math O-Level 2024 P2) were submitted after every 26 Oct fixer push (last 348b9d95, 09:32). One line per NEW class — returns (pages released with ink-audit failures, 2 pages; a lost science part with no words; an awarded mark shown nowhere, after 348b9d95; ✗ on every line of a 0-mark part; the point said 2–3×; marks at nothing; arrows across her writing) are in the reader's findings file.
+
+- **A science hint cut at its ";" drops the second point** — "Both have side chains." for "both have side chains; LDPE's are long and branched" (the difference, the second mark) (Rainie Chemistry 2022 P2 p16 Q7(a)); "Butyl side chain ← hex-1-ene." without "ethyl side chain ← but-1-ene" — the question asks for two molecules (p17 Q7(d)(ii)). Pen (science why note, first clause).
+- **"Contradicts" followed by the right fact reads as nonsense, and the fix is not printed** — "Cooling a saturated solution makes crystals. Contradicts concentrated solution is the product." (Rainie Chemistry 2022 P2 p12 Q6(a)); "The ozone layer absorbs harmful UV radiation. Contradicts ozone absorbs UV, not heat." (p9 Q4(d)(ii)). Words (pen rule: the examiner word frame).
+- **A red "calculation error" note under a green full-marks chip** — ring round his "+" and "calculation error: should be eˣ − 1/eˣ" beside Q5(a) 2/2 (Khoo A Math 2024 P2 p1); "calculation error: tan x > 0: the 2nd value is π + tan⁻¹(½)" beside Q11(b) 5/5 (p2). A slip the score forgave is labelled an error. Words (pen rule).
+- **The superscript ˣ is a tofu box in the red note font** — "should be e⧆ − 1/e⧆" (Khoo A Math 2024 P2 p1 Q5(a)); the 26 Oct fix (d4c95a3d) mapped the prime only. The page check (pen-font-safe) caught it and the page was released. Pen (note font glyph).
