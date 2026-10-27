@@ -1,51 +1,49 @@
 {
  "slug": "sketching-log-graphs-am",
- "worst": 0.983,
+ "worst": 0.85,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.8,
-   "score": 0.983,
-   "heard": "Sketch y = ln of 2 - x. Four steps, asymptote, shape, draw, intercept.",
-   "said": "Sketch Y equals L N of two minus X. Four steps: asymptote, shape, draw, intercepts."
-  },
-  {
-   "beat": 2,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
+   "beat": 2,
+   "bag": 0.83,
+   "score": 0.918,
+   "heard": "y = lnx the basic shape. It rises slowly to the right of the Y-axis.",
+   "said": "Y equals L N X: the basic shape. It rises slowly, to the right of the Y axis."
+  },
+  {
    "beat": 3,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.88,
+   "score": 0.88,
    "heard": null
   },
   {
    "beat": 4,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
    "beat": 5,
-   "bag": 0.83,
-   "score": 1,
-   "heard": "So the curve has the shape of ln of -x.",
-   "said": "So the curve has the shape of L N of minus X."
-  },
-  {
-   "beat": 6,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
+   "beat": 6,
+   "bag": 0.88,
+   "score": 0.88,
+   "heard": null
+  },
+  {
    "beat": 7,
-   "bag": 0.79,
+   "bag": 1,
    "score": 1,
-   "heard": "Step four, the intercepts. When x is 0, y is ln2, about 0.693.",
-   "said": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three."
+   "heard": null
   },
   {
    "beat": 8,
@@ -61,6 +59,43 @@
   },
   {
    "beat": 10,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 11,
+   "bag": 0.85,
+   "score": 0.85,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 13,
+   "bag": 0.79,
+   "score": 1,
+   "heard": "Step four, the intercepts. When X is zero, Y is ln2, about 0.693.",
+   "said": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three."
+  },
+  {
+   "beat": 14,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 15,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 16,
    "bag": 1,
    "score": 1,
    "heard": null

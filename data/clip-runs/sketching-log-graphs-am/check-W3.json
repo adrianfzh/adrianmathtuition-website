@@ -1,0 +1,222 @@
+{
+  "slug": "sketching-log-graphs-am",
+  "title": "Sketching a log graph",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "Sketch the graph of $y = \\ln(2 - x)$, labelling the asymptote and any intercepts.",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Sketching a log graph",
+      "pinned": ["asymptote", "shape", "draw", "intercepts"],
+      "sketch": {
+        "inset": {
+          "fn": "ln(x)",
+          "id": "c1",
+          "label": "ln x",
+          "labelAt": 3.6,
+          "xMin": -4,
+          "xMax": 4,
+          "yMin": -2.6,
+          "yMax": 2.6,
+          "curves": [
+            { "fn": "ln(-x)", "id": "c2", "label": "ln(−x)", "labelAt": -3.6 },
+            { "fn": "-ln(x)", "id": "c3", "label": "−ln x", "labelAt": 3.6 },
+            { "fn": "-ln(-x)", "id": "c4", "label": "−ln(−x)", "labelAt": -3.6 }
+          ]
+        },
+        "xMin": -3,
+        "xMax": 3.5,
+        "yMin": -2.6,
+        "yMax": 2.6,
+        "shape": "ln(-x)",
+        "from": "c2",
+        "shift": { "dx": 2 },
+        "asymptote": { "x": 2, "label": "x = 2" },
+        "points": [
+          { "x": 0, "y": 0.693, "label": "(0, ln 2)" },
+          { "x": 1, "y": 0, "label": "(1, 0)" }
+        ]
+      },
+      "steps": [
+        {
+          "tokens": [
+            { "id": "eqn", "tex": "y=\\ln(" },
+            { "id": "e2", "tex": "2", "tight": true },
+            { "id": "emx", "tex": "-x", "tight": true },
+            { "id": "erp", "tex": ")", "tight": true }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "2-x=0", "id": "in0" },
+            { "tex": "\\Rightarrow\\;x=2", "id": "asy", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\text{shape of }y=\\ln(-x)", "id": "shape", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "id": "drw", "tex": "\\text{slide it to hug }x=2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=0:", "id": "x0" },
+            { "tex": "y=\\ln 2\\approx 0.693", "id": "yint" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "y=0:", "id": "y0" },
+            { "tex": "2-x=e^0=1", "id": "xin" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=1", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "First, the four basic shapes of log graphs. Learn each shape, and which axis it is flipped in.",
+          "asks": ["Why learn the four shapes?"],
+          "do": [
+            { "do": "sketch", "show": "inset" }
+          ]
+        },
+        {
+          "say": "Y equals L N X: the basic shape. It rises slowly, to the right of the Y axis.",
+          "asks": ["Why is ln x only to the right?"],
+          "do": [
+            { "do": "highlight", "token": "c1", "on": "Y equals L N X" }
+          ]
+        },
+        {
+          "say": "Y equals L N of minus X: a minus inside flips it in the Y axis.",
+          "asks": ["Why does a minus inside flip it left?"],
+          "do": [
+            { "do": "highlight", "token": "c2", "on": "Y equals L N" }
+          ]
+        },
+        {
+          "say": "Y equals minus L N X: a minus in front flips it in the X axis.",
+          "asks": ["Why does a minus in front flip it down?"],
+          "do": [
+            { "do": "highlight", "token": "c3", "on": "Y equals minus" }
+          ]
+        },
+        {
+          "say": "Y equals minus L N of minus X: both minuses, so it is flipped in both axes.",
+          "asks": ["How do I know which shape to use?"],
+          "do": [
+            { "do": "highlight", "token": "c4", "on": "Y equals minus" }
+          ]
+        },
+        {
+          "say": "Now sketch Y equals L N of two minus X. Start with empty axes at the side.",
+          "asks": ["Why start with empty axes?"],
+          "do": [
+            { "do": "write", "step": 0, "on": "Now sketch Y" },
+            { "do": "sketch", "show": "axes", "on": "empty axes at" }
+          ]
+        },
+        {
+          "say": "Four steps: first the asymptote, then the shape, then draw it, and last the intercepts.",
+          "asks": ["Why these four steps?"],
+          "do": [
+            { "do": "pin", "show": 1, "on": "first the asymptote" },
+            { "do": "pin", "show": 2, "on": "then the shape" },
+            { "do": "pin", "show": 3, "on": "then draw it" },
+            { "do": "pin", "show": 4, "on": "last the intercepts" }
+          ]
+        },
+        {
+          "say": "Step one, the asymptote. Let the inside of the log equal zero.",
+          "asks": ["Why does the inside equal zero at the asymptote?"],
+          "do": [
+            { "do": "pin", "lit": 1 },
+            { "do": "write", "token": "in0", "on": "inside of the log" }
+          ]
+        },
+        {
+          "say": "Two minus X equals zero, so the asymptote is X equals two. Draw it as a dashed line.",
+          "asks": ["Why is the asymptote dashed?"],
+          "do": [
+            { "do": "note", "text": "Asymptote: inside equals zero", "near": "in0", "on": "Two minus X" },
+            { "do": "write", "token": "asy", "on": "X equals two" },
+            { "do": "sketch", "show": "asymptote", "on": "as a dashed line" }
+          ]
+        },
+        {
+          "say": "Step two, the shape. Minus in front of X flips the graph in the Y axis.",
+          "asks": ["Which of the four shapes is it?"],
+          "do": [
+            { "do": "pin", "lit": 2 },
+            { "do": "highlight", "token": "emx", "on": "Minus in front" }
+          ]
+        },
+        {
+          "say": "So the curve has the shape of L N of minus X, from the corner. Lift it onto the axes.",
+          "asks": ["Why ln(−x)?"],
+          "do": [
+            { "do": "write", "step": 2, "on": "the shape of" },
+            { "do": "highlight", "token": ["eqn", "emx", "erp"], "tone": "sky", "on": "L N of minus" },
+            { "do": "highlight", "token": "c2", "on": "from the corner" },
+            { "do": "sketch", "show": "shape", "on": "Lift it onto" }
+          ]
+        },
+        {
+          "say": "Step three, draw it. Slide that shape to hug X equals two. The inside must be positive, so the curve stays left of it.",
+          "asks": ["Why does the curve stay left of x = 2?"],
+          "do": [
+            { "do": "pin", "lit": 3 },
+            { "do": "write", "step": 3, "on": "Slide that shape" },
+            { "do": "sketch", "show": "shift", "on": "hug X equals" }
+          ]
+        },
+        {
+          "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
+          "asks": ["Why put x = 0?"],
+          "do": [
+            { "do": "pin", "lit": 4 },
+            { "do": "write", "token": "x0", "on": "When X is zero" },
+            { "do": "write", "token": "yint", "on": "Y is L N two" },
+            { "do": "sketch", "point": 0, "on": "about zero point" }
+          ]
+        },
+        {
+          "say": "When Y is zero, the inside equals E to the power zero, which is one.",
+          "asks": ["Why e to the power zero?"],
+          "do": [
+            { "do": "write", "token": "y0", "on": "When Y is zero" },
+            { "do": "write", "token": "xin", "on": "the inside equals" }
+          ]
+        },
+        {
+          "say": "The asymptote uses inside equals zero. The intercept uses inside equals one.",
+          "asks": ["How do I remember zero and one?"],
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "xin", "on": "inside equals one" }
+          ]
+        },
+        {
+          "say": "So two minus X is one, and the X intercept is X equals one.",
+          "asks": ["Is that the only intercept?"],
+          "do": [
+            { "do": "write", "token": "ans", "on": "two minus X" },
+            { "do": "sketch", "point": 1, "on": "the X intercept" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals one" }
+          ]
+        }
+      ]
+    }
+  ]
+}

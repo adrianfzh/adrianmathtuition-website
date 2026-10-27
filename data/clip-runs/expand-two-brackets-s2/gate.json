@@ -1,0 +1,27 @@
+{
+ "slug": "expand-two-brackets-s2",
+ "at": "2026-10-16T17:35:30.058Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": false,
+   "detail": ">\n    main()\n  File \"/Users/adrianfong/dev/adrianmathtuition-website/scripts/clips/chain-check.py\", line 422, in main\n    plan = json.load(open(path))\nFileNotFoundError: [Errno 2] No such file or directory: '/Users/adrianfong/dev/adrianmathtuition-website/data/clip-plans/expand-two-brackets-s2.json'"
+  },
+  "board": {
+   "ok": false,
+   "detail": "the lesson's lines differ from the checked plan — re-run assemble.mjs"
+  },
+  "read": {
+   "ok": false,
+   "detail": "no blind read yet"
+  },
+  "look": {
+   "ok": true,
+   "detail": "15/15 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+  }
+ },
+ "pass": false
+}
