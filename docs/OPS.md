@@ -361,7 +361,7 @@ on the Pro's keychain login; stamps `learn-from-adrian` every run (quiet ones in
 `ok=false` on a dead session or a failed Telegram send); rhythm 60 h because a laptop can
 be shut for a day → [`LEARN-FROM-ADRIAN.md`](LEARN-FROM-ADRIAN.md).
 
-**The second (5 Oct 2026): 🔍 `red-pen-second-opinion`** — the red pen's own line placer, run on
+**RETIRED 28 Oct 2026** (Adrian: "yes — switch off the leftover nightly red-pen check on this Mac"; launchd plist moved to `~/Library/LaunchAgents/disabled-2026-10-28/`, rhythm removed from `lib/job-health.ts`). **The second (5 Oct 2026): 🔍 `red-pen-second-opinion`** — the red pen's own line placer, run on
 the MacBook Pro because the model and the page images stay there (private, local). launchd
 `com.adrianmath.redpen-second-opinion`, 23:40 SGT + login catch-up, once a day; code and results
 in `~/paused-work-2026-10-05/linedet/second-opinion/` (README there). It takes the day's newly

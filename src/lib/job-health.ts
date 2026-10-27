@@ -144,7 +144,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 🔍 The red pen's second opinion (5 Oct 2026, Adrian agreed): launchd on the MacBook Pro at 23:40 SGT —
   // the day's marked maths pages through PaddleOCR + our own line matcher, recording only where it
   // confidently disagrees with Gemini's line placement. Record-only; stamps every run, quiet ones included.
-  'red-pen-second-opinion': { kind: 'interval', hours: 60, label: 'nightly 11:40pm (MacBook Pro)' },
+  // 'red-pen-second-opinion' retired 28 Oct 2026 (Adrian: "switch off the leftover nightly red-pen check") — it compared our pen with Gemini's, which no longer draws.
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
