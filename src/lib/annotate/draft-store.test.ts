@@ -39,7 +39,7 @@ describe('parseDraft rejects the unusable', () => {
     expect(parseDraft(undefined)).toBeNull();
   });
   it('wrong version → null', () => {
-    expect(parseDraft(JSON.stringify({ v: 2, runId: 'x', pages: {} }))).toBeNull();
+    expect(parseDraft(JSON.stringify({ v: 3, runId: 'x', pages: {} }))).toBeNull();
   });
   it('malformed strokes → null (never a half-restored draft)', () => {
     expect(parseDraft(JSON.stringify({ v: 1, runId: 'x', pages: { 0: [{ tool: 'crayon' }] } }))).toBeNull();

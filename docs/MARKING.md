@@ -4385,6 +4385,17 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 
 ## Mark-paper ✏️ Annotate (in-browser Apple Pencil ink) — 2026-08-01
 
+> **Reloads and offline saving (27 Oct 2026, SPEC-ANNOTATE §20 — Adrian: "sometimes page
+> refreshes, but the changes does not appear on screen … allow changes made and saved even when
+> offline").** Cause: Done saves each page as NEW files, but `/admin/mark-paper` kept the page
+> list from before Done, so its pictures and the next ✏️ open used the OLD marker layer; and the
+> marker-layer edits were never kept on the device, so a reload lost them. Now the page list is
+> re-read after Done and before every ✏️ open (`refreshRunPages`), the device copy holds layer
+> edits by object id plus which file they sit on (`lib/annotate/offline-sync.ts`, draft v2), each
+> page opens from the server / the device / both (`planRestore`), a Done that cannot reach the
+> server stays on the device and uploads by itself when back online, and compose refuses (409)
+> a page whose layer changed elsewhere (`expectLayerUrl`).
+
 > **The marker's ink is editable too (8 Sep 2026, SPEC-ANNOTATE §14).** A page whose run
 > carries `annotated_photos[].layer_url` (every paper marked from 8 Sep 2026; the bot
 > stores the tagged vector layer beside the JPEG) opens in the overlay on the CLEAN

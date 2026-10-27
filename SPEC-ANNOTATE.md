@@ -647,3 +647,53 @@ scribble with the pen as the eraser, like how one uses the eraser to erase".
 - **Not tried with a Pencil.** The thresholds are from drawn test shapes; if real handwriting
   trips it (a tight "www", fast cross-hatching over a line), raise `MIN_REVERSALS` or
   `MIN_LENGTH_TO_DIAGONAL` — the ink log records every `scribble-erase`.
+
+## 20. Changes gone after a reload, and saving offline (27 Oct 2026)
+
+Adrian: "For mark papers, when annotating, sometimes page refreshes, but the changes does not
+appear on screen, but if I save and open again, the changes are there (just that I can see when
+editing). And also allow changes made and saved even when offline."
+
+**The cause.** Done saves every edited page as NEW stamped files (picture, marker layer, ink —
+bot `ai/compose-page.js`, never overwritten). `/admin/mark-paper` kept the page list it loaded
+BEFORE Done: its pictures stayed the old ones, and the next ✏️ open built the pen from the OLD
+marker layer, so moved / retyped / flipped marks looked undone (pen strokes came back from the
+device draft, which made it look random); a second Done from there could have written that old
+layer back. Separately, the marker-layer edits were kept only in memory — the device draft
+held pen strokes alone — so a reload mid-annotation lost every mark change, and a device draft
+always beat the server's saved ink even when the server's was newer. `annotate_ink_log` on 27
+Oct showed the pen reloading twice within a minute on a 4-page layered paper with 0 strokes:
+mark edits only, exactly the case nothing kept.
+
+**The fix.**
+- `/admin/mark-paper` re-reads the run's pages after every Done and before every ✏️ open
+  (`refreshRunPages`; quiet — offline it keeps what it has), and on a back/forward-cache return.
+- The device draft is v2 (`lib/annotate/draft-store.ts`, key unchanged): per page the layer
+  edits BY OBJECT ID (`offline-sync layerEdits` / `applyLayerEdits`: moves, resizes,
+  deletions, retyped notes and chips, ✓⇄✗ flips, stamped marks, typed text), the layer file
+  they sit on (`base`), the file our own last compose wrote (`savedAs`), `pending` (a page
+  fingerprint differs from the server's), and `uploadQueued`. Typed notes keep their words.
+  Every recorded edit (`pushUndo`) schedules a save, not only pen strokes.
+- On open each page picks its copy (`planRestore`, tested): **server** when nothing on the
+  device is unsaved; **device** when it is and the server still holds its base (or our own
+  save of it) — the base file is fetched again and the edits applied exactly; **both** when
+  the server changed elsewhere — the server's page, its ink merged with the device's strokes
+  (`mergeStrokes`, duplicates dropped), deletions / retypes / flips / added objects applied,
+  moves NOT (the new file may carry them already), and a blue line names the page to check.
+  Saved ink that fails to load fails the page (flat copy), never opens it bare.
+- **Offline.** A Done that cannot reach the server (device offline, a thrown fetch, a gateway
+  status with no JSON) is not an error: the work stays on the device, `uploadQueued` is set,
+  an amber line says "Saved on this iPad — will upload when back online", and Done runs again
+  by itself on the `online` event (and each minute while waiting, and on the next open once
+  the pages load). Each page that composes before the drop is remembered (`savedAs`) so the
+  retry neither re-asks nor takes our own save for someone else's. The mark-paper send row
+  says when work is waiting on the device. Opening the page itself still needs a connection.
+- **Never over a newer page.** The overlay sends `expectLayerUrl`; the compose route refuses
+  (409 `conflict`) when the run's layer for that page is another file. The work stays on the
+  device; reopening shows both.
+- Done waits for every layered page to load (a loading page used to be flattened as flat).
+
+**Not done.** The AdrianMarker iOS shell needs no change (it wraps the same page). Not yet
+tried with a Pencil on the iPad in Airplane mode — that is the check. "Start fresh" still clears
+pen ink only, not restored mark edits.
+

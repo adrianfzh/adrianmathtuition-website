@@ -40,8 +40,12 @@ import {
 } from '@/lib/annotate/layer';
 import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import {
-  draftIsEmpty, draftKey, makeDraft, parseDraft, serializeDraft,
+  draftIsEmpty, draftKey, makeDraft, parseDraft, serializeDraft, type DraftPageMeta,
 } from '@/lib/annotate/draft-store';
+import {
+  layerEdits, applyLayerEdits, planRestore, mergeStrokes, pageFingerprint, sameStoredFile,
+  isNetworkFailure, isGatewayStatus, networkError, type RestorePlan,
+} from '@/lib/annotate/offline-sync';
 import { pagesSignature } from '@/lib/annotate/pages-key';
 
 export type AnnotatePageInput = {
@@ -481,6 +485,26 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const hasLayers = pages.some((p) => !!p.layerUrl && !!p.layer && !!p.originalUrl);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ── work kept on the device (27 Oct 2026 — reloads + offline; lib/annotate/offline-sync) ──
+  // Per page: how it opened (server copy / device copy / both), the layer file its edits
+  // are relative to, the layer file the server holds as far as we know, the file our own
+  // last compose wrote, the page's fingerprint as the server has it (null = unknown → the
+  // page counts as unsaved), and whether its layer is still loading.
+  const restoreRef = useRef<RestorePlan[]>(pages.map(() => ({ source: 'server', layerUrl: null, edits: 'none', strokes: 'server' })));
+  const restoredMetaRef = useRef<(DraftPageMeta | null)[]>(pages.map(() => null));
+  const layerBaseRef = useRef<(string | null)[]>(pages.map((p) => p.layerUrl ?? null));
+  const serverLayerRef = useRef<(string | null)[]>(pages.map((p) => p.layerUrl ?? null));
+  const savedAsRef = useRef<(string | null)[]>(pages.map(() => null));
+  const savedFpRef = useRef<(string | null)[]>(pages.map(() => null));
+  const layerLoadingRef = useRef<boolean[]>(pages.map((p) => !!(p.layerUrl && p.layer && p.originalUrl)));
+  const uploadQueuedRef = useRef(false);
+  const [uploadQueued, setUploadQueued] = useState(false);
+  const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine !== false));
+  const [hasUnsaved, setHasUnsaved] = useState(false);
+  const [mergedNote, setMergedNote] = useState<number[]>([]);   // pages opened as "both"
+  const [allLoaded, setAllLoaded] = useState(() => !pages.some((p) => !!(p.layerUrl && p.layer && p.originalUrl)));
+  // "this iPad" on an iPad (a desktop-class iPad reports Macintosh + touch), else "this device".
+  const deviceWord = useMemo(() => (typeof navigator !== 'undefined' && (/iPad/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) ? 'iPad' : 'device'), []);
   const mouseAllowed = useMemo(
     () => isStudent || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('mouse')),
     [isStudent],
@@ -1055,6 +1079,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     stack.push(op);
     if (stack.length > UNDO_CAP) stack.shift();
     redoRef.current[pageIdx] = [];
+    // Every recorded edit — the marker layer's too, not only pen strokes — reaches the
+    // device copy (27 Oct 2026: layer edits used to live in memory only, so a reload lost them).
+    dirtyRef.current = true;
+    setInkTick((t) => t + 1);
   }, []);
 
   const bumpInk = useCallback(() => {
@@ -1222,15 +1250,37 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, [bumpInk, clearSelection, layerRestore, scheduleBase]);
 
   // ── draft persistence ───────────────────────────────────────────────────────
+  /** The page as it stands, as a fingerprint — compared with the server's to tell "unsaved". */
+  const pageFp = useCallback((i: number) => pageFingerprint(layerEdits(layerRef.current[i]), strokesRef.current[i]), []);
+  const [draftFailed, setDraftFailed] = useState(false);
   const saveDraft = useCallback(() => {
     try {
       const rec: Record<number, Stroke[]> = {};
-      pages.forEach((p, i) => { rec[p.photoIndex] = strokesRef.current[i]; });
-      const draft = makeDraft(draftId, rec, Date.now(), doneAtRef.current);
+      const meta: Record<number, DraftPageMeta> = {};
+      let unsaved = false;
+      pages.forEach((p, i) => {
+        rec[p.photoIndex] = strokesRef.current[i];
+        if (isStudent) return;
+        const kept = restoredMetaRef.current[i];
+        // A page whose layer has not loaded (or could not): keep what the device had for it.
+        if (layerLoadingRef.current[i] || (!layerRef.current[i] && kept?.edits?.length)) {
+          if (kept) { meta[p.photoIndex] = kept; if (kept.pending) unsaved = true; }
+          return;
+        }
+        const pending = savedFpRef.current[i] !== pageFp(i);
+        if (pending) unsaved = true;
+        meta[p.photoIndex] = { base: layerBaseRef.current[i], savedAs: savedAsRef.current[i], edits: layerEdits(layerRef.current[i]), pending };
+      });
+      setHasUnsaved(unsaved);
+      const draft = makeDraft(draftId, rec, Date.now(), doneAtRef.current, meta, uploadQueuedRef.current);
       if (draftIsEmpty(draft)) localStorage.removeItem(draftKey(draftId));
       else localStorage.setItem(draftKey(draftId), serializeDraft(draft));
-    } catch { /* quota / private mode — drafts are best-effort insurance */ }
-  }, [pages, draftId]);
+      setDraftFailed(false);
+    } catch {
+      // quota / private mode — say so: the work is then only on screen until Done.
+      setDraftFailed(true);
+    }
+  }, [pages, draftId, isStudent, pageFp]);
 
   useEffect(() => {
     if (!inkTick) return;
@@ -2522,22 +2572,57 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         if (!blob) throw new Error('could not build the page base');
         imgsRef.current[i] = await loadImage(URL.createObjectURL(blob));
         dimsRef.current[i] = { w: meta.canvasW, h: meta.totalH };
-        const text = await (await fetch(p.layerUrl!, { credentials: 'include' })).text();
-        const body = text.replace(/^[\s\S]*?<svg\b[^>]*>/, '').replace(/<\/svg>\s*$/, '');
-        layerRef.current[i] = parseLayer(body);
-        layerBBoxRef.current[i] = measureLayer(body, meta, fontCssRef.current);
-        if (p.inkUrl && !strokesRef.current[i].length) {
-          try {
-            const arr = await (await fetch(p.inkUrl, { credentials: 'include' })).json();
-            if (Array.isArray(arr)) strokesRef.current[i] = arr as Stroke[];
-          } catch { /* no earlier ink */ }
+        // Which layer file, which edits, which ink: restoreRef (planRestore at open, 27 Oct 2026).
+        let plan = restoreRef.current[i];
+        const getText = async (u: string) => {
+          const r = await fetch(u, { credentials: 'include', cache: 'no-store' });
+          if (!r.ok) throw new Error(`layer ${r.status}`);
+          return r.text();
+        };
+        let text: string;
+        try { text = await getText(plan.layerUrl || p.layerUrl!); }
+        catch (e) {
+          // The device's base file is gone: fall back to the server's page with the work on top.
+          if (plan.source !== 'device' || !p.layerUrl) throw e;
+          plan = { source: 'both', layerUrl: p.layerUrl, edits: 'safe', strokes: 'merge' };
+          restoreRef.current[i] = plan;
+          setMergedNote((m) => [...m, p.photoIndex]);
+          text = await getText(p.layerUrl);
         }
+        const body = text.replace(/^[\s\S]*?<svg\b[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+        const parsed = parseLayer(body);
+        const boxes = measureLayer(body, meta, fontCssRef.current);
+        const kept = restoredMetaRef.current[i];
+        if (plan.edits !== 'none' && kept?.edits?.length) {
+          applyLayerEdits(parsed, kept.edits, plan.edits === 'safe');
+          const extra = parsed.objects.filter((o) => o.added && !boxes.has(o.id));
+          if (extra.length) for (const [k, v] of measureLayer(extra.map((o) => `${o.open}${o.inner}</g>`).join(''), meta, fontCssRef.current)) boxes.set(k, v);
+          for (const o of parsed.objects) if (o.swapped) { const t = markType(o); if (t) layerSwapsRef.current[i].set(o.id, t); }
+        }
+        // Adrian's saved pen ink for this page — fetched BEFORE the page goes live, and a
+        // failed fetch is a failed load: opening it bare and pressing Done would save the
+        // page without his ink.
+        let serverInk: Stroke[] = [];
+        if ((plan.strokes === 'server' || plan.strokes === 'merge') && p.inkUrl) {
+          const r = await fetch(p.inkUrl, { credentials: 'include', cache: 'no-store' });
+          if (!r.ok) throw new Error(`ink ${r.status}`);
+          const arr = await r.json();
+          if (Array.isArray(arr)) serverInk = arr as Stroke[];
+        }
+        layerRef.current[i] = parsed;
+        layerBBoxRef.current[i] = boxes;
+        layerBaseRef.current[i] = plan.source === 'device' ? plan.layerUrl : p.layerUrl ?? null;
+        if (plan.strokes === 'server') savedFpRef.current[i] = pageFingerprint([], serverInk);
+        if (plan.strokes !== 'device') strokesRef.current[i] = mergeStrokes(serverInk, strokesRef.current[i]);
+        layerLoadingRef.current[i] = false;
+        setInkTick((t) => t + 1);
         setDimsTick((t) => t + 1);
         rebuildLayerImage(i);
         scheduleBase();
       } catch (e) {
         console.warn('[annotate] layered page fell back to the flat copy:', (e as Error).message);
         layerRef.current[i] = null;
+        layerLoadingRef.current[i] = false;
         loadFlat(p, i);
       }
     };
@@ -2561,14 +2646,47 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         await loadLayered(pages[i], i);
       }
     };
-    void pump(); void pump();
+    void Promise.all([pump(), pump()]).then(() => { if (!stopLoading) setAllLoaded(true); });
     // A saved draft (crash recovery, a Safari reload mid-paper, or a post-Done
     // re-edit) comes back ON THE PAGES straight away — the inked copy is the
     // default, and the banner's "Start fresh" is the revert. Before 3 Sep 2026
     // the pages opened clean with a "Restore ink" offer, which read as the ink
     // being gone.
     const d = parseDraft(localStorage.getItem(draftKey(draftId)));
-    if (d && !draftIsEmpty(d)) {
+    if (!isStudent) {
+      // Admin (27 Oct 2026): each page picks its copy — the server's when everything on this
+      // device was saved (it may be newer: another device, the student-page door, a re-mark),
+      // the device's when it holds unsaved work the server has not moved past, BOTH when the
+      // server changed elsewhere meanwhile (lib/annotate/offline-sync planRestore). Before this
+      // the device's strokes always won, and its marker-layer edits were never kept at all.
+      const merged: number[] = [];
+      let shown = false, unsaved = false;
+      pages.forEach((p, i) => {
+        const m = d?.meta[p.photoIndex];
+        const dev = d?.pages[p.photoIndex] || [];
+        const layered = !!(p.layerUrl && p.layer && p.originalUrl);
+        const plan = planRestore({
+          layered, serverLayer: p.layerUrl ?? null, serverInk: p.inkUrl ?? null,
+          draft: d ? { pending: !!m?.pending, base: m?.base ?? null, savedAs: m?.savedAs ?? null, hasEdits: !!m?.edits?.length, hasStrokes: dev.length > 0 } : undefined,
+        });
+        restoreRef.current[i] = plan;
+        restoredMetaRef.current[i] = m ?? null;
+        if (plan.strokes !== 'server') strokesRef.current[i] = dev.slice();
+        if (plan.source === 'device') savedAsRef.current[i] = m?.savedAs ?? null;
+        if (plan.source === 'both') merged.push(p.photoIndex);
+        if (plan.source !== 'server' && (dev.length || m?.edits?.length)) shown = true;
+        if (m?.pending) unsaved = true;
+        // A flat page's server state is the last Done's: the device strokes when nothing is pending.
+        if (!layered) savedFpRef.current[i] = m?.pending ? null : pageFingerprint([], dev);
+      });
+      doneAtRef.current = d?.doneAt ?? null;
+      dirtyRef.current = false;
+      uploadQueuedRef.current = !!d?.uploadQueued;
+      setUploadQueued(!!d?.uploadQueued);
+      setHasUnsaved(unsaved);
+      setMergedNote(merged);
+      if (d && shown) setRestoreOffer({ savedAt: d.savedAt, wasDone: !unsaved });
+    } else if (d && !draftIsEmpty(d)) {
       pages.forEach((p, i) => { strokesRef.current[i] = (d.pages[p.photoIndex] || []).slice(); });
       doneAtRef.current = d.doneAt;
       dirtyRef.current = false;
@@ -2859,8 +2977,20 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       return;
     }
     if (!hasInk()) return;
+    // A layered page still loading would be treated as a flat one (its edits lost):
+    // Done waits for every page (27 Oct 2026).
+    if (layerLoadingRef.current.some(Boolean)) { setError('Pages are still loading — press Done again in a moment.'); return; }
     clearSelection();
     setError('');
+    // What happens when the server cannot be reached: nothing is lost — the work is already
+    // on this device; mark it to upload by itself when the connection is back.
+    const keepForLater = () => {
+      uploadQueuedRef.current = true;
+      setUploadQueued(true);
+      saveDraft();
+      setBusy('');
+    };
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) { keepForLater(); return; }
     try {
       const inkedPhotoIdx = pages.filter((_, i) => strokesRef.current[i].length > 0).map((p) => p.photoIndex);
       const plan = planFlatten(pages.map((p) => ({ photoIndex: p.photoIndex, url: p.url })), inkedPhotoIdx);
@@ -2879,6 +3009,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               runId, photoIndex: entry.photoIndex,
+              // Never silently over a newer page (27 Oct 2026): the route refuses (409) when the
+              // run's layer for this page is no longer the one this edit was opened on / saved as.
+              ...(serverLayerRef.current[i] ? { expectLayerUrl: serverLayerRef.current[i] } : {}),
               ...(allowReleased ? { allowReleased: true } : {}),
               layerSvg: serializeLayer(parsedL), inkSvg: strokesToSvg(strokesRef.current[i]), strokes: strokesRef.current[i],
               // The words are the record (§14 ⑤): retyped / deleted notes reach results[].
@@ -2892,8 +3025,17 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             }),
           });
           const cj = await cr.json().catch(() => ({}));
+          if (!cr.ok && isGatewayStatus(cr.status) && !cj.error) throw networkError(`page ${entry.photoIndex + 1}: the connection dropped`);
+          if (cr.status === 409 && cj.conflict) {
+            throw new Error(`Page ${entry.photoIndex + 1} was changed somewhere else since you opened it (another device, or a re-mark). Your work is kept on this ${deviceWord} — close the pen and open ✏️ Annotate again: you will see the newer page with your unsaved ink on top.`);
+          }
           if (!cr.ok || !cj.url) throw new Error(cj.error || `page ${entry.photoIndex + 1} could not be composed`);
           if (cj.marks && Number.isFinite(cj.marks.awarded)) marksChanged = { awarded: cj.marks.awarded, max: cj.marks.max };
+          // This page is on the server now: remember the file it wrote, so a Done cut short
+          // later (offline) neither re-asks nor mistakes our own save for someone else's.
+          if (cj.layerUrl) { serverLayerRef.current[i] = cj.layerUrl; savedAsRef.current[i] = cj.layerUrl; }
+          savedFpRef.current[i] = pageFp(i);
+          saveDraft();
           finalPages.push({ photo_index: entry.photoIndex, url: cj.url });
           continue;
         }
@@ -2931,6 +3073,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         }),
       });
       const dResp = await resp.json().catch(() => ({}));
+      if (!resp.ok && isGatewayStatus(resp.status) && !dResp.error) throw networkError('the connection dropped while assembling');
       if (!resp.ok) throw new Error(dResp.error || `assemble failed (${resp.status})`);
       let linked = !!dResp.linked;
       if (!linked) {
@@ -2944,14 +3087,39 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         } catch { /* stays unlinked; parent shows the warning */ }
       }
       doneAtRef.current = Date.now();
+      // Everything is on the server: every page's fingerprint is the saved one, nothing queued.
+      pages.forEach((_, i) => { savedFpRef.current[i] = pageFp(i); });
+      uploadQueuedRef.current = false;
+      setUploadQueued(false);
       saveDraft();   // keep the strokes — reopening offers "edit your previous ink"
       setBusy('');
       onDoneRef.current({ url: dResp.url, linked, marks: marksChanged });
     } catch (e) {
+      if (isNetworkFailure(e, typeof navigator === 'undefined' ? true : navigator.onLine !== false)) { keepForLater(); return; }
       setBusy('');
+      saveDraft();
       setError((e as Error).message);
     }
-  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals, isStudent, allowReleased]);
+  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals, isStudent, allowReleased, pageFp, deviceWord]);
+  const runDoneRef = useRef(runDone); runDoneRef.current = runDone;
+
+  // Offline → online (27 Oct 2026): a Done that could not reach the server goes again by
+  // itself once the connection is back, every pages loaded; and again each minute while
+  // it is still waiting (the iPad can say "online" before the server answers).
+  useEffect(() => {
+    const on = () => setOnline(true);
+    const off = () => setOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+  }, []);
+  useEffect(() => {
+    if (isStudent || !uploadQueued || !online || !allLoaded) return;
+    const go = () => { if (!busyRef.current && uploadQueuedRef.current) void runDoneRef.current(); };
+    const first = setTimeout(go, 1500);
+    const again = setInterval(go, 60_000);
+    return () => { clearTimeout(first); clearInterval(again); };
+  }, [isStudent, uploadQueued, online, allLoaded]);
 
   const discardAndClose = useCallback(() => {
     try { localStorage.removeItem(draftKey(draftId)); } catch { /* ignore */ }
@@ -3105,6 +3273,24 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       {error && (
         <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #fca5a5' }}>
           ✗ {error} <button style={{ marginLeft: 8, border: 'none', background: 'none', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }} onClick={() => setError('')}>dismiss</button>
+        </div>
+      )}
+      {/* Where the work stands (27 Oct 2026, Adrian: "allow changes made and saved even when
+          offline"): calm, one line, only when it matters. */}
+      {!isStudent && (uploadQueued || (!online && hasUnsaved) || draftFailed) && (
+        <div data-save-state={uploadQueued ? 'queued' : draftFailed ? 'not-kept' : 'offline'}
+          style={{ background: draftFailed ? '#fef2f2' : '#fffbeb', color: draftFailed ? '#b91c1c' : '#92400e', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #fde68a' }}>
+          {draftFailed
+            ? `⚠️ This ${deviceWord} could not keep a copy of your work — press Done before closing.`
+            : uploadQueued
+              ? (online ? `💾 Saved on this ${deviceWord} — uploading again now…` : `💾 Saved on this ${deviceWord} — will upload when back online. You can keep marking.`)
+              : `📴 Offline — your work is kept on this ${deviceWord}. Press Done as usual; it uploads when back online.`}
+        </div>
+      )}
+      {!isStudent && mergedNote.length > 0 && (
+        <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #bfdbfe', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span>🔀 Page {mergedNote.map((n) => n + 1).join(', ')} changed somewhere else since this {deviceWord} last saved. You see the newer page with your unsaved ink on top — check it, then Done.</span>
+          <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={() => setMergedNote([])}>OK</button>
         </div>
       )}
       {shellHint && (

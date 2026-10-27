@@ -25,6 +25,7 @@ import { RUNS_PAGE, refreshLimit, mergeRunsPage, withInMotion } from '@/lib/runs
 import { tickPlan, tickPlanLine } from '@/lib/desk-state';
 import { loginHealths, rowStallNote, type LoginHealth } from '@/lib/marking-stall';
 import { heicFilesToJpeg } from '@/lib/heic-browser';
+import { draftKey, parseDraft, draftHasPending } from '@/lib/annotate/draft-store';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -622,6 +623,60 @@ export default function MarkPaperPage() {
   // Which history run's name is being edited inline (run id, or null) + its draft.
   const [editNameId, setEditNameId] = useState<string | null>(null);
   const [editNameDraft, setEditNameDraft] = useState('');
+
+  // The pen's pages, fresh from the server (27 Oct 2026, Adrian: "sometimes page refreshes,
+  // but the changes does not appear on screen, but if I save and open again, the changes are
+  // there"). Done saves each page as NEW files (new picture, new marker layer, new ink), but
+  // this page kept the list it loaded before Done — so the pictures here stayed the old ones,
+  // and opening ✏️ Annotate again started from the OLD marker layer: the saved changes looked
+  // gone (and a second Done could have written the old layer back over them). Now the list is
+  // re-read after every Done and before every open. Quiet: offline or failing, the page keeps
+  // what it has (the pen then works from this device's copy).
+  async function refreshRunPages(id: string): Promise<boolean> {
+    try {
+      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id }), cache: 'no-store' });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.run) return false;
+      const rj = d.run.result_json || {};
+      const photos = rj.annotated_photos || [];
+      if (!photos.length) return false;
+      pageSrcRef.current = {
+        photos: Object.fromEntries(((rj.source?.photos || []) as Array<{ photo_index: number; original_url?: string }>).filter(x => x && x.original_url).map(x => [x.photo_index, x.original_url as string])),
+        rot: Object.fromEntries(((rj.annotation_debug || []) as Array<{ photo_index: number; rot?: number }>).map(x => [x.photo_index, Number(x.rot) || 0])),
+      };
+      setAnnotatedPhotos(photos);
+      if (rj.results) setResults(rj.results);
+      if (rj.totals) setTotals(rj.totals);
+      return true;
+    } catch { return false; }
+  }
+  // ✏️ Annotate from the send row: re-read the pages first (see refreshRunPages).
+  const [annotateOpening, setAnnotateOpening] = useState(false);
+  async function openAnnotate() {
+    if (!runId || annotateOpening) return;
+    setAnnotateOpening(true);
+    try { await refreshRunPages(runId); } finally { setAnnotateOpening(false); }
+    setAnnotateOpen(true);
+  }
+  // Work Done'd while offline waits on this device until the pen uploads it — say so here too.
+  const [queuedOnDevice, setQueuedOnDevice] = useState<null | 'queued' | 'unsaved'>(null);
+  useEffect(() => {
+    if (!runId || annotateOpen) return;
+    try {
+      const dr = parseDraft(localStorage.getItem(draftKey(runId)));
+      setQueuedOnDevice(dr?.uploadQueued ? 'queued' : draftHasPending(dr) ? 'unsaved' : null);
+    } catch { setQueuedOnDevice(null); }
+  }, [runId, annotateOpen]);
+  // Back to this page from Safari's back/forward memory (bfcache) or the app switcher: what
+  // is on screen may be minutes old — re-read the pages when it is not open in the pen.
+  const annotateOpenRef = useRef(false); annotateOpenRef.current = annotateOpen;
+  const runIdRef = useRef<string | null>(null); runIdRef.current = runId;
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => { if (e.persisted && runIdRef.current && !annotateOpenRef.current) void refreshRunPages(runIdRef.current); };
+    window.addEventListener('pageshow', onShow);
+    return () => window.removeEventListener('pageshow', onShow);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // History-row ✏️: load the run, then jump straight into the annotate overlay —
   // "allow annotation option in recently marked papers directly" (Adrian, 2 Aug 2026).
@@ -2554,10 +2609,16 @@ export default function MarkPaperPage() {
               {runId && annotatedPhotos.length > 0 && (
                 <button
                   style={{ ...btn, background: '#0d9488', fontSize: 14, padding: '8px 14px' }}
-                  onClick={() => setAnnotateOpen(true)}
+                  onClick={openAnnotate}
+                  disabled={annotateOpening}
                 >
-                  ✏️ Annotate
+                  {annotateOpening ? 'Opening…' : '✏️ Annotate'}
                 </button>
+              )}
+              {runId && queuedOnDevice && (
+                <span style={{ fontSize: 13, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px' }}>
+                  {queuedOnDevice === 'queued' ? '💾 Changes saved on this device are waiting to upload — open ✏️ Annotate; they send by themselves when online.' : '💾 Unfinished pen work is kept on this device — open ✏️ Annotate to carry on, then Done.'}
+                </span>
               )}
               {/* Notability return leg: pick the exported PDF, or drag it anywhere onto
                   this panel from Split View. Needs a run to attach to. */}
@@ -2623,6 +2684,9 @@ export default function MarkPaperPage() {
             // re-issued to the student; an unreleased one has its PDFs rebuilt
             // so pdf_stale clears and the release is not refused.
             const doneRun = runId;
+            // The pages Done just saved are NEW files — re-read them, or this page (and the
+            // next ✏️ open) keeps showing the copy from before Done.
+            if (doneRun) void refreshRunPages(doneRun);
             if (linked && doneRun) {
               const call = wasReleased
                 ? fetch('/api/admin/mark-triage', { method: 'POST', headers: authHeaders, body: JSON.stringify({ action: 'reissue', runId: doneRun }) })

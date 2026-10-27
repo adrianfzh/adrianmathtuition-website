@@ -1,4 +1,4 @@
-// POST /api/admin/mark-paper-compose-page { runId, photoIndex, layerSvg, inkSvg, strokes, recordEdits, markSwaps }
+// POST /api/admin/mark-paper-compose-page { runId, photoIndex, layerSvg, inkSvg, strokes, recordEdits, markSwaps, expectLayerUrl? }
 //
 // The ✏️ Annotate overlay's Done step for a page that has an editable marker
 // layer (SPEC-ANNOTATE §14). The client sends the marker's layer as Adrian left
@@ -12,6 +12,7 @@ import { composeForwardBody } from '@/lib/annotate/compose-forward';
 import { scoreEdits, scoreEditsToOverrides } from '@/lib/annotate/score-edits';
 import { applyOverride, recomputeTotals } from '@/lib/mark-triage';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { sameStoredFile } from '@/lib/annotate/offline-sync';
 import { recordCorrections, contextFromRun, RUN_COLUMNS_FOR_CORRECTIONS } from '@/lib/marking-corrections-store';
 
 export const runtime = 'nodejs';
@@ -19,7 +20,7 @@ export const maxDuration = 180;
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  let body: { runId?: string; photoIndex?: number; layerSvg?: string; inkSvg?: string; strokes?: unknown; recordEdits?: unknown; markSwaps?: unknown; allowReleased?: unknown };
+  let body: { runId?: string; photoIndex?: number; layerSvg?: string; inkSvg?: string; strokes?: unknown; recordEdits?: unknown; markSwaps?: unknown; allowReleased?: unknown; expectLayerUrl?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const { runId, layerSvg, inkSvg, strokes, recordEdits, markSwaps } = body;
   // Only a literal true re-inks a paper the student already holds (desk-redraw's rule).
@@ -45,6 +46,18 @@ export async function POST(req: NextRequest) {
   // record; plain ink changes nothing the marker could learn from.
   const editsRecord = Array.isArray(recordEdits) && recordEdits.length > 0;
   const supa = getSupabaseAdmin();
+  // Never silently over a newer page (27 Oct 2026, offline saving): the overlay says which
+  // layer file it opened (or last saved) this page as. If the run now holds another one —
+  // Done from another device, the student-page door, a re-mark — refuse, and the overlay
+  // keeps the work on the device and shows both copies on the next open.
+  if (typeof body.expectLayerUrl === 'string' && body.expectLayerUrl) {
+    const { data: cur } = await supa.from('paper_marking_runs').select('result_json').eq('id', runId).maybeSingle();
+    const photos = ((cur?.result_json as { annotated_photos?: Array<{ photo_index?: number; layer_url?: string | null }> } | null)?.annotated_photos) || [];
+    const page = photos.find((p) => Number(p.photo_index) === photoIndex);
+    if (page && page.layer_url && !sameStoredFile(page.layer_url, body.expectLayerUrl)) {
+      return NextResponse.json({ error: `page ${photoIndex + 1} was changed elsewhere since it was opened`, conflict: true }, { status: 409 });
+    }
+  }
   let before: { id: string; result_json: unknown; released_at: string | null; student_id?: string | null; paper_name?: string | null; paper_subject?: string | null; subject?: string | null } | null = null;
   if (editsRecord) {
     const { data } = await supa.from('paper_marking_runs').select(RUN_COLUMNS_FOR_CORRECTIONS).eq('id', runId).maybeSingle();
