@@ -139,7 +139,7 @@ async function uploadScheme(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; queue_failed_reason?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; handed_back_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null; paper_subject?: string | null; practice_again?: boolean };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; queue_failed_reason?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; handed_back_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null; paper_subject?: string | null; practice_again?: boolean; released_via?: string | null; reached_nobody?: boolean };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1519,7 +1519,7 @@ export default function MarkPaperPage() {
   const [queueNote, setQueueNote] = useState('');
   // The upload→save→enqueue core, shared by 🌙 Queue and the multi-PDF drop. Touches
   // no page state, so several papers can go through it back to back.
-  async function queueFilesAsPaper(pageFiles: File[], paperLabel: string, opts?: { paperPdfUrl?: string | null; totalMax?: number }): Promise<{ position: number; etaMinutes?: number[]; batchDiscount?: boolean }> {
+  async function queueFilesAsPaper(pageFiles: File[], paperLabel: string, opts?: { paperPdfUrl?: string | null; totalMax?: number }): Promise<{ position: number; etaMinutes?: number[]; batchDiscount?: boolean; taggedTo?: string | null }> {
     const imgs = await Promise.all(pageFiles.map((f) => fileToUpload(f)));
     setRasterizing('Uploading full-resolution pages…');
     // One retry per page: rainie's 2023 prelim lost every page to a transient
@@ -1547,7 +1547,9 @@ export default function MarkPaperPage() {
     });
     const end = await en.json();
     if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
-    return { position: end.position || 1, etaMinutes: end.etaMinutes, batchDiscount: end.batchDiscount };
+    // 🏷 Tagged from its name at upload (27 Oct 2026) — the proxy says to whom.
+    const taggedTo = spd.auto_tag && typeof spd.auto_tag.studentName === 'string' ? spd.auto_tag.studentName : null;
+    return { position: end.position || 1, etaMinutes: end.etaMinutes, batchDiscount: end.batchDiscount, taggedTo };
   }
   async function queuePaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
@@ -1559,14 +1561,15 @@ export default function MarkPaperPage() {
       // finishes, and this name is what the Telegram document and the Dropbox file
       // are called.
       const paperLabel = paperName.trim() || autoPaperLabel();
-      const { position, etaMinutes, batchDiscount } = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
+      const { position, etaMinutes, batchDiscount, taggedTo } = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
       setImages([]); setImgPreviews([]); setPdf(null); setSchemeFiles([]); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf(''); setSelectedOnly(false);
       // Say the price route and the wait out loud (Adrian, 26 Aug 2026: "put it
       // clearly as queue markings at 50% discount … and mention roughly when").
       const eta = Array.isArray(etaMinutes) && etaMinutes.length === 2 ? ` — expect it marked in ~${etaMinutes[0]}–${etaMinutes[1]} min` : '';
-      setQueueNote(`🌙 Queued as “${paperLabel}” (#${position}${batchDiscount ? ', ~50% batch discount' : ''})${eta}; the marked PDF lands on Telegram + Dropbox. Attach the next paper — or hit ⚡ Mark now on its row below if you need it back in minutes at full price.`);
+      const forWho = taggedTo ? ` For ${taggedTo} — it goes to them by itself once marked.` : ' No student name found in the paper name — tap “＋ who is this for?” on its row.';
+      setQueueNote(`🌙 Queued as “${paperLabel}” (#${position}${batchDiscount ? ', ~50% batch discount' : ''})${eta}; the marked PDF lands on Telegram + Dropbox.${forWho} Attach the next paper — or hit ⚡ Mark now on its row below if you need it back in minutes at full price.`);
       loadStats();
     } catch (e) { setError((e as Error).message); }
     finally { setQueueBusy(false); }
@@ -1694,8 +1697,8 @@ export default function MarkPaperPage() {
         try {
           const pages = await expandPdfToPages(file);
           if (!pages.length) throw new Error('no pages could be rendered');
-          await queueFilesAsPaper(pages, label);
-          done.push(label);
+          const { taggedTo } = await queueFilesAsPaper(pages, label);
+          done.push(taggedTo ? `${label} → ${taggedTo}` : `${label} → who is this for?`);
         } catch (e) { failed.push(`${label} (${(e as Error).message})`); }
       }
     } finally { setMultiBusy(''); setRasterizing(''); setQueueBusy(false); }
@@ -1893,7 +1896,7 @@ export default function MarkPaperPage() {
                       onClick={() => setEditTagId(run.id)}
                       style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#1d4ed8', fontWeight: 600, fontSize: 13 }}
                     >
-                      {run.student_name || '＋ tag'}
+                      {run.student_name || '＋ who is this for?'}
                     </button>
                   )}
                   {/* Tap the name to rename it. A paper's name is set before anyone
@@ -1925,6 +1928,14 @@ export default function MarkPaperPage() {
                 </span>
                 {run.total_max != null && !run.released_at && !run.archived_at && !run.checked_at && (
                   <span style={{ fontSize: 11, color: '#b45309' }} title="Not released to the student and not marked Seen">not released</span>
+                )}
+                {/* 📭 Released, but nothing reached the student (27 Oct 2026): no
+                    Telegram to send it to and no app account to find it in. */}
+                {run.released_at && run.reached_nobody && (
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#b91c1c', whiteSpace: 'normal' }}
+                    title="The release went through, but this student has no app account and no Telegram link, so nothing was sent">
+                    Released — but they have no app or Telegram: hand the PDF over yourself
+                  </span>
                 )}
                 {/* 📘 says where the sheet is. Before this the only feedback was
                     a confirmation line that vanished on refresh, so a paper with

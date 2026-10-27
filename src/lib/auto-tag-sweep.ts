@@ -26,6 +26,8 @@ import { sendTelegram } from './telegram';
 import { unlessQuiet } from './quiet-messages';   // 🏷 "tagged" lines switched off 8 Oct 2026; "couldn't tag" still goes
 import { refileUntaggedFolder } from './refile-untagged';
 import { loadRoster } from './roster';
+import { studentFromPaperName } from './paper-name-student';
+import { releaseOnTag } from './release-on-tag-run';
 import type { RosterStudent } from './scan-inbox';
 import {
   AUTO_TAG_WINDOW_DAYS, COVER_READS_PER_TICK, autoTagLine, coverAlreadyTried, decideByCover, decideByName,
@@ -74,7 +76,10 @@ async function tagRun(run: AutoTagRun, student: RosterStudent, how: AutoTagStamp
   // No sheet is queued here since 8 Sep 2026 — Practice Again is on request
   // (the student from the app, Adrian from the desk; lib/sheet-queue.ts).
   const moved = await refileUntaggedFolder(run.id);
-  return `tagged → ${student.name} (${how.by})${moved.moved ? ' · folder moved' : ''}`;
+  // A paper already marked when the tag lands goes to the student now — the
+  // marker released nothing while it was untagged (27 Oct 2026).
+  const rel = await releaseOnTag(run.id, 'auto-tag').catch((e: Error) => ({ released: false, why: e.message }));
+  return `tagged → ${student.name} (${how.by})${moved.moved ? ' · folder moved' : ''}${rel.released ? ' · released' : ''}`;
 }
 
 export async function sweepAutoTag(opts: { dry?: boolean; now?: Date; roster?: RosterStudent[] } = {}): Promise<AutoTagResult> {
@@ -98,14 +103,19 @@ export async function sweepAutoTag(opts: { dry?: boolean; now?: Date; roster?: R
     res.items.push(item);
     try {
       roster = roster ?? await loadRoster();
-      const byName = decideByName(run.paper_name, roster);
-      if (byName.kind === 'skip') { item.action = 'no name in the title — left for the desk'; res.left++; continue; }
-      if (byName.kind === 'tag') {
-        if (dry) { item.action = `would tag → ${byName.student.name} (name)`; res.tagged++; continue; }
-        item.action = await tagRun(run, byName.student, { at: now.toISOString(), by: 'name' });
-        if (item.action.startsWith('tagged')) { res.tagged++; await unlessQuiet('scan-line', () => sendTelegram(autoTagLine({ paperName: run.paper_name, student: byName.student, by: 'name' }), 'marking')).catch(() => {}); }
+      // The name in front of the subject code, else the name anywhere in the
+      // title as a whole word (lib/paper-name-student.ts, 27 Oct 2026 — the same
+      // rule the upload uses).
+      const quick = studentFromPaperName(run.paper_name, roster);
+      if (quick.kind === 'tag') {
+        if (dry) { item.action = `would tag → ${quick.student.name} (name)`; res.tagged++; continue; }
+        item.action = await tagRun(run, quick.student, { at: now.toISOString(), by: 'name' });
+        if (item.action.startsWith('tagged')) { res.tagged++; await unlessQuiet('scan-line', () => sendTelegram(autoTagLine({ paperName: run.paper_name, student: quick.student, by: 'name' }), 'marking')).catch(() => {}); }
         continue;
       }
+      const byName = decideByName(run.paper_name, roster);
+      if (byName.kind === 'skip') { item.action = 'no name in the title — left for the desk'; res.left++; continue; }
+      if (byName.kind === 'tag') { item.action = 'left for the desk'; res.left++; continue; } // unreachable: quick tags first
       // The cover decides — once per run, a few per tick.
       if (coverAlreadyTried(run)) { item.action = `left for the desk (${run.auto_tag?.reason || 'cover already read'})`; res.left++; continue; }
       const urls = firstPageUrls(run);

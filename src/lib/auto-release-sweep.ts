@@ -16,6 +16,8 @@ export type SweepRow = {
   student_id?: string | null;
   released_at: string | null;
   annotated_pdf_url: string | null;
+  /** The marked-images PDF — the only copy a plan-marked paper has (27 Oct 2026). */
+  photos_pdf_url?: string | null;
   queue_status?: string | null;
   result_json: unknown;
 };
@@ -53,7 +55,9 @@ export function sweepVerdict(row: SweepRow, now: Date): { retry: boolean; why: s
   if (row.released_at) return { retry: false, why: 'released' };
   if (!hasStudent(row)) return { retry: false, why: 'no student tagged' };
   if (!Array.isArray(rj.results) || rj.results.length === 0) return { retry: false, why: 'not marked yet' };
-  if (!row.annotated_pdf_url) return { retry: false, why: 'no marked PDF yet' };
+  // The plan-marker delivers the marked-images PDF only; requiring the full
+  // annotated PDF left Kiara's two 25 Oct papers out of the sweep for two days.
+  if (!row.annotated_pdf_url && !row.photos_pdf_url) return { retry: false, why: 'no marked PDF yet' };
   if (row.queue_status === 'queued' || row.queue_status === 'claimed') return { retry: false, why: 'still in the queue' };
   const ageMin = (now.getTime() - Date.parse(row.created_at)) / 60_000;
   if (!Number.isFinite(ageMin) || ageMin > SWEEP_WINDOW_DAYS * 24 * 60) return { retry: false, why: 'outside the window' };
@@ -70,6 +74,10 @@ export function sweepVerdict(row: SweepRow, now: Date): { retry: boolean; why: s
       : { retry: false, why: 'the bot is still retrying' };
   }
   if (ar.outcome === 'released') return { retry: false, why: 'stamped released' };
+  // Refused only because it had no student then — it has one now (27 Oct 2026).
+  if (ar.outcome === 'refused' && /tag the run to a student/i.test(String((ar as { note?: string }).note || ''))) {
+    return { retry: true, why: 'refused untagged, tagged since' };
+  }
   return { retry: false, why: `${ar.outcome} — the desk's call` };
 }
 

@@ -26,6 +26,9 @@ describe('auto-release sweep — retry until it succeeds (9 Sep 2026)', () => {
   it('never touches a rule refusal, a hold, a released run, or an untagged paper', () => {
     expect(sweepVerdict(row({ rj: { portal_submission: true, results: [{}], auto_release: { outcome: 'refused', at: ago(60) } } }), NOW).retry).toBe(false);
     expect(sweepVerdict(row({ rj: { portal_submission: true, results: [{}], auto_release: { outcome: 'held', at: ago(60) } } }), NOW).retry).toBe(false);
+    // a refusal for "no student" IS retried once the paper has one (27 Oct 2026)
+    expect(sweepVerdict(row({ rj: { results: [{}], auto_release: { outcome: 'refused', at: ago(60), note: 'tag the run to a student first' } } }), NOW))
+      .toEqual({ retry: true, why: 'refused untagged, tagged since' });
     expect(sweepVerdict(row({ released_at: ago(30) }), NOW).why).toBe('released');
     expect(sweepVerdict(row({ student_id: null, rj: { results: [{}] } }), NOW).why).toBe('no student tagged');
     // Adrian's own upload, tagged: released by the sweep like a hand-in (9 Sep 2026 evening).
@@ -34,6 +37,8 @@ describe('auto-release sweep — retry until it succeeds (9 Sep 2026)', () => {
   it('skips what is not finished: unmarked, no PDF, still queued, or outside the window', () => {
     expect(sweepVerdict(row({ rj: { portal_submission: true, results: [] } }), NOW).why).toBe('not marked yet');
     expect(sweepVerdict(row({ annotated_pdf_url: null }), NOW).why).toBe('no marked PDF yet');
+    // …but the marked-images PDF alone is a marked copy (Kiara, 25 Oct 2026)
+    expect(sweepVerdict(row({ annotated_pdf_url: null, photos_pdf_url: 'https://x/marked-photos.pdf' }), NOW).retry).toBe(true);
     expect(sweepVerdict(row({ queue_status: 'claimed' }), NOW).why).toBe('still in the queue');
     expect(sweepVerdict(row({ created_at: ago(8 * 24 * 60) }), NOW).why).toBe('outside the window');
   });

@@ -5,6 +5,37 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { requeueSheetAfterRemark } from '@/lib/sheet-queue';
 import { refileUntaggedFolder } from '@/lib/refile-untagged';
 import { sheetInMotionIds, type SheetJobLite } from '@/lib/runs-list';
+import { loadRoster } from '@/lib/roster';
+import type { RosterStudent } from '@/lib/scan-inbox';
+import { studentFromPaperName } from '@/lib/paper-name-student';
+import { releaseOnTag } from '@/lib/release-on-tag-run';
+
+// 🏷 Tag at upload (Adrian, 27 Oct 2026: "yes set it up" — his own uploads go to
+// the student by themselves whenever the paper name has their name in it).
+// A paper saved with no student is matched to ONE active student from its name
+// (lib/paper-name-student.ts) and tagged before it is queued, so the marker's
+// own release fires the moment marking ends. Two possible students, or none →
+// left untagged; the row asks "who is this for?". Roster cached 60 s per instance.
+let rosterCache: { at: number; roster: RosterStudent[] } | null = null;
+async function rosterNow(): Promise<RosterStudent[]> {
+  if (rosterCache && Date.now() - rosterCache.at < 60_000) return rosterCache.roster;
+  const roster = await loadRoster();
+  rosterCache = { at: Date.now(), roster };
+  return roster;
+}
+async function tagAtUpload(botBase: string, botSecret: string, runId: string, paperName: string): Promise<{ studentId: string; studentName: string } | { ask: string }> {
+  const match = studentFromPaperName(paperName, await rosterNow());
+  if (match.kind !== 'tag') return { ask: match.reason };
+  const r = await fetch(`${botBase}/api/mark-paper`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phase: 'set-student', id: runId, studentId: match.student.id, studentName: match.student.name }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || !d?.ok) return { ask: 'tag-failed' };
+  return { studentId: match.student.id, studentName: match.student.name };
+}
 
 // Paper marking can take minutes (solve + mark per question). 300s is the Vercel ceiling.
 export const maxDuration = 300;
@@ -70,6 +101,19 @@ export async function POST(req: NextRequest) {
         // A paper tagged after marking takes its Dropbox folder with it, out of
         // /Students/_Untagged (Gavin Woon, 7 Sep 2026).
         if (runId && phase === 'set-student') after(() => refileUntaggedFolder(runId));
+        // A paper already marked when it is tagged goes to the student now
+        // (27 Oct 2026) — the marker found it untagged and released nothing.
+        // A paper still being marked is left alone: it releases itself.
+        if (runId && phase === 'set-student') after(() => releaseOnTag(runId, 'desk').then(() => undefined, () => undefined));
+        // 🏷 Tag at upload: the paper's name names one student → tagged now,
+        // before it is queued (27 Oct 2026). Never fails the save.
+        if (phase === 'save-paper' && typeof data.run_id === 'string' && typeof sent.paperName === 'string' && !sent.studentId) {
+          try {
+            const tag = await tagAtUpload(botBase, botSecret, data.run_id, sent.paperName);
+            (data as Record<string, unknown>).auto_tag = tag;
+            if ('studentId' in tag) after(() => refileUntaggedFolder(data.run_id as string));
+          } catch { /* untagged, as before — the row asks who it is for */ }
+        }
       } catch { /* an unparseable body is the bot's problem, not the queue's */ }
     }
     // The bot's stats payload predates checked_at, and re-deploying the bot is
@@ -79,15 +123,29 @@ export async function POST(req: NextRequest) {
       try {
         const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
         const { data: rows } = await getSupabaseAdmin()
-          .from('paper_marking_runs').select('id, checked_at, paper_subject, queue_status, queue_failed_reason, paper_kind:result_json->source->>paper_kind').in('id', ids);
-        type R = { id: string; checked_at: string | null; paper_subject: string | null; paper_kind: string | null; queue_status: string | null; queue_failed_reason: string | null };
+          .from('paper_marking_runs').select('id, checked_at, paper_subject, queue_status, queue_failed_reason, released_via, student_id, paper_kind:result_json->source->>paper_kind').in('id', ids);
+        type R = { id: string; checked_at: string | null; paper_subject: string | null; paper_kind: string | null; queue_status: string | null; queue_failed_reason: string | null; released_via: string | null; student_id: string | null };
         const byId = new Map(((rows ?? []) as R[]).map((row) => [row.id, row]));
+        // 📭 Released to nobody (27 Oct 2026): released with no Telegram to ring
+        // AND no app account to find it in — the paper reached no one, so the
+        // row says to hand it over by hand. A student with an app account but
+        // no Telegram still sees it in the app: that is not "nobody".
+        const noneIds = [...new Set(((rows ?? []) as R[])
+          .filter((row) => row.student_id && !row.student_id.startsWith('acct:') && /(^|:)none$/.test(row.released_via || ''))
+          .map((row) => row.student_id as string))];
+        let withApp = new Set<string>();
+        if (noneIds.length) {
+          const { data: accts } = await getSupabaseAdmin().from('portal_accounts').select('airtable_student_id').in('airtable_student_id', noneIds);
+          withApp = new Set(((accts ?? []) as { airtable_student_id: string | null }[]).map((a) => a.airtable_student_id || '').filter(Boolean));
+        }
         // paper_subject + practice_again feed the list's ticks for a merged
         // Practice Again sheet (30 Sep 2026, the desk retired into this page).
         for (const run of data.runs) {
           const row = byId.get(run.id);
           run.checked_at = row?.checked_at ?? null;
           run.paper_subject = row?.paper_subject ?? null;
+          run.released_via = row?.released_via ?? null;
+          run.reached_nobody = !!(row?.student_id && !row.student_id.startsWith('acct:') && /(^|:)none$/.test(row.released_via || '') && !withApp.has(row.student_id));
           // A paper taken off the queue by hand has queue_status 'failed' and a reason, but
           // no failed_at inside result_json — the list kept saying "queued — waiting for a
           // free slot" for five cancelled bench scripts (Adrian, 9 Oct 2026: "why are there

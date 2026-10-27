@@ -1447,6 +1447,35 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   watch-outs. Only an UNTAGGED paper waits (for a student), and the desk's
   Approve & release keeps its own flag check for the papers Adrian chooses to
   vet first. The old manual gate on uploads is gone.
+- **Tagged from the paper's name at upload; tagged later = released then (27 Oct
+  2026 — Adrian, asked whether his own uploads should go to the student
+  automatically whenever the paper name has their name in it: "yes set it up").**
+  Why: four of his uploads ("kiara am tys 2023 p1/p2", "lakshanya h2 math tys 2023
+  p1", "… specimen paper p1") were tagged by the 5-minute auto-tag sweep a minute
+  BEFORE marking ended, but the marker reads `student_id` when it claims the
+  paper, so it released nothing; and the catch-up sweep skipped them because a
+  plan-marked paper has only the marked-images PDF (`photos_pdf_url`), never
+  `annotated_pdf_url`. Now:
+  1. **At upload** (`/api/admin/mark-paper` `save-paper`, so both the page and the
+     share-sheet inbox door): `lib/paper-name-student.ts studentFromPaperName`
+     (tested) — the existing title rule (`decideByName`) first, else a roster
+     name word ANYWHERE in the title as a whole word ("ian" never matches in
+     "kian"; maths/exam words like "tan", "set", "paper" never count). Exactly one
+     active/trial student → tagged through the bot's `set-student` before the
+     paper is queued. Two possible students or none → untagged; the queue note
+     and the row say **"＋ who is this for?"**. The auto-tag sweep uses the same rule.
+  2. **Tagged after marking** (the row's "＋ who is this for?", the send row's
+     student pick, the auto-tag sweep): `lib/release-on-tag-run.ts releaseOnTag`
+     calls the same automatic door (`mark-triage {release, auto:true, sweep:true}`)
+     when the run is marked, has a marked PDF, is not released, archived, still
+     in the queue or held (`lib/release-on-tag.ts`, tested); outcome stamped on
+     `result_json.auto_release` (`on_tag`). Silent, like every desk action.
+  3. **The sweep** (`lib/auto-release-sweep.ts`) now counts `photos_pdf_url` as a
+     marked copy, and retries a refusal "tag the run to a student first" once the
+     run has a student.
+  4. **Released to nobody**: a row released with no Telegram (`released_via`
+     `none`/`auto:none`) for a student with NO app account says in red
+     "Released — but they have no app or Telegram: hand the PDF over yourself".
 - **Try until it succeeds (9 Sep 2026).** Every automatic-release answer is
   classified (bot `lib/auto-release-outcome.js`: released / refused / held /
   failed) and stamped on the run as `result_json.auto_release`; the bot retries
