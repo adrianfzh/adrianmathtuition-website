@@ -173,7 +173,7 @@ Reply with JSON only: {"need": true|false, "family": "<name or null>", "why": "<
     const docText = JSON.stringify((doc.body as { doc?: unknown })?.doc ?? doc.body).slice(0, 12000);
     let reason = '';
     for (let attempt = 0; attempt < 2; attempt++) {
-      const spec = firstJson(await ask(`Write the typed spec for ONE "${family}" figure that goes beside this worked solution. Every number, label and point must match the solution exactly — the library re-checks the maths and refuses anything inconsistent. Keep it to what the solution uses; no extra annotations.
+      const spec = firstJson(await ask(`Write the typed spec for ONE "${family}" figure that goes beside this worked solution. Every number, label and point must match the solution exactly — the library re-checks the maths and refuses anything inconsistent. Keep it to what the solution uses; no extra annotations. Labels must be SHORT (a letter, a number, or two or three words at most) — the library does not move labels apart, and two long labels near each other print on top of one another. Leave out a title or caption unless it is a few words.
 
 QUESTION:
 ${src.question || '(not available)'}

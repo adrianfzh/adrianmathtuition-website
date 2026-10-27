@@ -731,6 +731,13 @@ solutions or helpful to have, it should be generated".
   refuses (one repair try) — **no diagram beats a wrong one**. The PNG or "none + why" is kept at
   `runs/<id>/side-diagrams/q-<n>.{png,json}`, so each question is decided once; a model or network
   failure is not kept (tried again next open). Caption: "Diagram drawn for this solution".
+- **First test run (27 Oct 2026, a 10-question A Math paper, 4 pages).** 10 questions decided:
+  8 "no picture needed" (pure algebra), Q10's triangle refused twice by the library's verify (fails
+  closed — no picture), 2 drawn: Q21 (the ski-slope triangles, checked against the solution: right)
+  and Q22 (a number line whose two long labels printed on top of each other — withdrawn by hand to
+  "none", and the spec writer now told to keep labels to a few characters). **So 1 of 10 shows a
+  diagram today.** The verify checks the maths, not the look: a model look at the drawn picture
+  before it is kept is the next step if overlaps recur.
 - **Not done.** Science papers use the same panel unchanged (marker solutions); the figure library's
   science families are offered too. Not yet looked at on a real iPad.
 
