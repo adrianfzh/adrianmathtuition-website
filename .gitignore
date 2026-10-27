@@ -77,3 +77,13 @@ scripts/watch-it/work/
 /data/clip-plans/qc-*.json
 /data/clip-runs/qc-*/
 /public/lessons/qc-*/
+
+# One-off task scratch (28 Oct 2026) — never committed. .scratch_shot alone was
+# 511 MB of character-art rounds; _invoices holds a real parent invoice PDF and
+# must stay out of git entirely.
+.scratch_*/
+scratchpad-task1/
+_invoices/
+voice-samples-*/
+ios-shell/AdrianMarker/AdrianMarker.xcodeproj/project.xcworkspace/
+.claude/settings.local.json.bak-*
