@@ -1,0 +1,20 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both give S$3952.34. Verified: 2450 x 1.48 = 3626; 3626 x 1.09 = 3952.34 exactly, no rounding needed."},
+    {"label": "(b)", "agree": true, "note": "Both give $5.50. Verified: 5.94 / 1.08 = 5.50 exactly."},
+    {"label": "(c)", "agree": true, "note": "Both give 98%. Verified: one part = 1.25/5 = 0.25, cost of a cup = 12 x 0.25 = 3.00, profit 2.94, 2.94/3.00 = 98%."},
+    {"label": "(d)(i)", "agree": true, "note": "Both form 180/x - 180/(x+5) = 3 and reach x^2 + 5x - 300 = 0. Verified: 180(x+5) - 180x = 3x(x+5) gives 900 = 3x^2 + 15x."},
+    {"label": "(d)(ii)", "agree": true, "note": "Both give x = 15 or x = -20. Verified: (x - 15)(x + 20) = x^2 + 5x - 300."},
+    {"label": "(d)(iii)", "agree": true, "note": "Both give $20 per kg. Verified: 180/15 = 12 kg of A, 180/20 = 9 kg of B, difference 3 kg."}
+  ],
+  "all_agree": true,
+  "key_verdict": "The setter's key is correct in every part and the blind examiner matches it exactly; nothing is in dispute.",
+  "score": 4,
+  "fixes": [
+    "(d)(ii) 'Solve the equation x^2 + 5x - 300 = 0' cannot carry [1]: SEAB awards a factorised quadratic [2] (M1 factorisation, A1 both roots), never a single mark. Give it [2] and let the paper absorb the extra mark at this slot (12), or keep 11 by dropping (b) and re-weighting (c) to [3] as 'Mei sells a cup of latte for $5.94. Calculate the percentage profit ...' (cost of cup [1], profit [1], percentage [1]).",
+    "(d)(i) 'show that it simplifies to' -> SEAB's wording is 'show that it reduces to x^2 + 5x - 300 = 0'.",
+    "Print the sub-part marks only; the stem line '(d) ... [5]' should carry no mark on the paper."
+  ],
+  "too_close_to": null,
+  "why": "A clean 4052 money-and-ratio question with exam-friendly numbers (3952.34 exact, 5.50, 98%, roots 15 and -20) and the standard 'form an equation and show it reduces to' quadratic, all in register; the one residual weighting fault is the 1-mark solve in (d)(ii), which no GCE paper prints. Not a re-skin of any exemplar (those are pure algebra medleys)."
+}

@@ -1,0 +1,41 @@
+{
+ "stem": "The box-and-whisker plot shows the distribution of the times, in minutes, taken by 80 runners to complete a race.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "",
+   "marks": 2,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "Find the interquartile range of the times.",
+     "marks": 1,
+     "answer": "$15$ minutes"
+    },
+    {
+     "label": "(ii)",
+     "text": "Find how many of the runners took more than 62 minutes to complete the race.",
+     "marks": 1,
+     "answer": "$20$"
+    }
+   ]
+  },
+  {
+   "label": "(b)",
+   "text": "The times taken by 80 runners in a second race had a median of 58 minutes and an interquartile range of 9 minutes.\nMake two comments comparing the times taken in the two races.",
+   "marks": 2,
+   "answer": "The median time in the first race (53 minutes) is less than in the second race (58 minutes), so on average the runners in the first race were faster. The interquartile range in the first race (15 minutes) is greater than in the second race (9 minutes), so the times in the first race were more spread out (less consistent)."
+  }
+ ],
+ "answer": "",
+ "total_marks": 4,
+ "topics": [
+  "Statistics"
+ ],
+ "needs_figure": true,
+ "figure_description": "A single horizontal box-and-whisker plot. Horizontal axis labelled 'Time (minutes)', running from 30 to 90, with a tick and a printed number every 10 (30, 40, 50, 60, 70, 80, 90) and light vertical gridlines every 2 minutes so the values can be read exactly. The plot: left whisker from 38 to 47; box from 47 (lower quartile) to 62 (upper quartile); a vertical line inside the box at 53 (median); right whisker from 62 to 84. No values are printed on the plot itself — the candidate reads 47, 53, 62 off the gridlines. The number 80 (runners) is stated only in the question text. Nothing about the interquartile range, the number 20, or the second race appears on the figure.",
+ "solution": "(a)(i) From the plot, the lower quartile is 47 minutes and the upper quartile is 62 minutes.\nInterquartile range $= 62 - 47 = 15$ minutes.\n\n(a)(ii) 62 minutes is the upper quartile, so $25\\%$ of the runners took more than 62 minutes.\nNumber of runners $= \\frac{25}{100} \\times 80 = 20$.\n\n(b) From the plot, the median of the first race is 53 minutes.\nComment on the averages: the median of the first race (53 minutes) is less than the median of the second race (58 minutes), so on average the runners in the first race completed the race more quickly.\nComment on the spread: the interquartile range of the first race (15 minutes) is greater than that of the second race (9 minutes), so the times in the first race were more spread out; the times in the second race were more consistent.",
+ "syllabus_check": "4052 Data handling and analysis: reading quartiles and the median from a box-and-whisker plot, interquartile range, using a quartile to find a number of data values (25% of 80), and comparing two distributions in context by median (average) and interquartile range (spread). No content outside 4052.",
+ "originality_note": "New situation (race times of 80 runners, two races) and new numbers (whiskers 38 and 84, quartiles 47 and 62, median 53; second race median 58, IQR 9). The exemplars use a grouped-frequency table of kiwi masses with mean/standard deviation, a cumulative frequency curve of potato estimates, male/female mean weights, and quiz times; none is a box plot read for IQR then a count above the upper quartile then a median/IQR comparison. Distinct from every context in paper-so-far.md."
+}

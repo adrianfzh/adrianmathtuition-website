@@ -1,0 +1,17 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both measure AB = 6.0 cm and scale to 30 m; the drawing spec (AB drawn at exactly 6.0 cm, scale 1 cm to 5 m) supports it. Tolerance 29.5-30.5 m is the usual +/-0.1 cm."},
+    {"label": "(b)", "agree": true, "note": "Both construct the perpendicular bisector of AB with arcs from A and B; both note it runs parallel to BC at 3.0 cm because angle B is 90 degrees."},
+    {"label": "(c)", "agree": true, "note": "Both construct the bisector of angle ABC with the standard arc-then-equal-arcs method; both note it is the 45-degree line from B."},
+    {"label": "(d)", "agree": true, "note": "Both place T at the intersection, 3.0 cm from AB and 3.0 cm from BC, measure TC = 5.0 cm and scale to 25 m. Checked independently: T is (15, 15) m inside the triangle (15/35 + 15/30 < 1) and TC = sqrt(20^2 + 15^2) = 25 m exactly, so the measurement lands on a clean 5.0 cm."}
+  ],
+  "all_agree": true,
+  "key_verdict": "No disagreements; the setter's key is correct in every part and the 3-4-5 geometry makes the measured answer exact.",
+  "score": 4,
+  "fixes": [
+    "Use a non-right-angled triangle. With angle ABC = 90 degrees and AB drawn vertical, the perpendicular bisector of AB is a horizontal line 3.0 cm up and the angle bisector is a 45-degree line, so both 'constructions' can be ruled off the page edges with a set square and T can be found by Pythagoras without measuring. Every real exemplar uses a scalene triangle or an irregular quadrilateral precisely so the compasses are needed. E.g. draw AB = 6.0 cm, BC = 7.0 cm with angle ABC = 70 degrees (or a 60-70-80 mm sort of scalene triangle), keep the scale, and give (d) as a measured value with the usual +/-0.1 cm tolerance rather than a Pythagoras-clean 25 m.",
+    "Stem wording: 'The diagram is an accurate scale drawing of a triangular garden ABC' -> 'The diagram shows a scale drawing of a triangular garden ABC.' followed by 'The scale is 1 cm to 5 m.' on its own line. SEAB does not say 'accurate'; the accuracy is a printing requirement, not a statement in the stem. With the right angle removed, also drop 'Angle ABC = 90 degrees and' so the stem reads 'BC = 35 m.' only (the length is printed on the figure anyway; one of the two is enough)."
+  ],
+  "too_close_to": null,
+  "why": "The four-part shape (measure and scale, perpendicular bisector, angle bisector, mark the point equidistant from both and measure a distance) is the genuine GCE constructions genre with a scale-drawing wrapper, the register and [1]-per-part mark discipline are right, and the key is sound; what gives it away as school-made is the axis-aligned right angle, which turns both constructions into lines a candidate can rule without compasses and lets T be computed instead of measured."
+}

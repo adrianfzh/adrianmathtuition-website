@@ -1,0 +1,3512 @@
+{
+ "key": "GCE-EM-P1",
+ "seed": 1,
+ "shape": {
+  "subject": "Mathematics",
+  "code": "4052",
+  "level": "EM",
+  "cut": 2023,
+  "duration": "2 hours 15 minutes",
+  "scope": "Numbers and their operations (primes, HCF/LCM, squares/cubes/roots, standard form, estimation, significant figures); ratio and proportion (incl. map scales, direct and inverse proportion); percentage (incl. reverse percentage); rate and speed (incl. average speed, conversion of units); financial mathematics (simple and compound interest, hire purchase, money exchange, taxation, utilities bills); algebraic expressions and formulae (expansion, factorisation incl. grouping and quadratic trinomials, algebraic fractions, changing the subject, algebraic identities); functions and graphs (linear, quadratic incl. completed-square and factorised forms, cubic, reciprocal y=a/x and a/x^2, exponential y=ka^x, drawing on a grid from a table of values, gradient of a curve by a tangent, solving equations by drawing a suitable line); equations and inequalities (linear, simultaneous linear, quadratic by factorisation / completing the square / the formula, fractional equations reducing to quadratics, linear inequalities incl. double inequalities, word problems leading to these); set language and notation (union, intersection, complement, subsets, Venn diagrams with numbers of elements); matrices (display of information, addition, scalar multiplication, multiplication of two matrices, interpretation of the product; no inverses); problems in real-world contexts (reading tables and information sheets, making and justifying a decision, estimating a cost or a quantity); angles, triangles and polygons (angle properties of parallel lines, triangles, quadrilaterals and regular polygons; construction with ruler, compasses and protractor: perpendicular bisectors and angle bisectors; scale drawings); congruence and similarity (tests, ratios of lengths, areas and volumes of similar figures and solids); properties of circles (symmetry properties: equal chords, perpendicular from centre, tangents from a point; angle properties: angle at centre, angle in a semicircle, angles in the same segment, opposite angles of a cyclic quadrilateral, tangent-radius; reasons stated); Pythagoras' theorem and trigonometry (sine, cosine and tangent for acute and obtuse angles, sine and cosine rules, area of a triangle as ½ab sin C, bearings, angles of elevation and depression, simple 3-D problems); mensuration (area of a triangle, parallelogram, trapezium, circle; arc length and sector area with the angle in RADIANS or degrees; surface area and volume of a prism, cylinder, pyramid, cone and sphere; composite solids); coordinate geometry (gradient, length, midpoint is NOT required, equation of a straight line y=mx+c, parallel lines, area of a rectilinear figure by shoelace is NOT required — use base×height or split into triangles); vectors in two dimensions (column vectors, magnitude, position vectors, addition, scalar multiples, collinearity, expressing one vector in terms of others, ratios of areas of triangles with a common height or on the same base); data handling and analysis (tables, bar charts, pie charts, pictograms, line graphs, histograms with equal class widths, dot diagrams, stem-and-leaf, box-and-whisker plots, cumulative frequency curves, median, quartiles, percentiles, range, interquartile range, mean and standard deviation for grouped and ungrouped data, comparing two distributions in context); probability (single events, combined events by possibility diagrams and tree diagrams, with and without replacement, mutually exclusive and independent events). NOT in 4052: calculus, logarithms, surds, the binomial theorem, trigonometric identities, the R-formula, quadratic inequalities, matrices inverses and determinants, vectors in three dimensions, the shoelace formula, the midpoint formula.",
+  "register": "REGISTER — how SEAB asks (4052)\n- Plain, exact, economical English. Instructions are imperatives: Find, Calculate, Work out, Write down, Simplify, Factorise, Expand, Solve, Show that, Explain why, Give a reason, Complete the table, Draw, Describe, Estimate, Express, State.\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A 1–3 mark question is often a single unlabelled part.\n- A scientific calculator is allowed on BOTH papers. Never write \"a calculator must not be used\". The paper's rubric already says: non-exact answers to 3 significant figures, angles to 1 decimal place, π = calculator value or 3.142 — so a question states a precision only when it wants something else (\"correct to 2 decimal places\", \"in its simplest form\", \"in terms of π\", \"as a fraction in its lowest terms\", \"in standard form\", \"to the nearest cent\").\n- Angles are in DEGREES with the degree sign ($58^\\circ$); a sector angle in radians is stated as \"1.8 radians\". Bearings are three-figure ($048^\\circ$). Money is dollars and cents ($\\$92.75$).\n- Contexts are short, concrete and Singaporean-neutral (a garden fountain, a box of apples, a map of Singapore, a candle business): the situation in one or two sentences, units given, then the parts. Never chatty, never a story.\n- \"Show that\" states its target exactly (\"Show that $x^2 - 102x + 1440 = 0$\", \"Show that $p = 2.5$\") and a later part uses it. \"Explain why …\" / \"Give a reason for your answer\" / \"Is he correct?\" parts are worth 1 mark and expect one sentence with a number in it. A circle-properties question says \"Give a reason for each step of your working.\"\n- Statistics and probability parts ask for interpretation in context (\"By commenting on the means and the standard deviations, compare …\", \"Explain what this tells you about …\").\n- Paper 1 (27 short questions, 90 marks): each question tests ONE idea in 1–7 marks, answered in the space provided; the paper walks the syllabus (number, algebra, geometry, statistics interleaved), with the vector and mensuration questions near the end.\n- Paper 2 (9 long questions, 90 marks): each question is 8–12 marks in 3–5 parts. Early questions are ALGEBRA MEDLEYS whose parts (a), (b), (c), (d) are separate short problems on different algebra skills. Later ones are one context developed through parts: a graph question (a table of values with two blanks, \"On the grid, draw the graph of …\", a gradient by a tangent, \"By drawing a suitable straight line, solve …\"), a trigonometry-on-the-ground question with bearings and a mast, a statistics + probability question over a table or histogram, a circle-properties + circular-measure question, a speed/quadratic question (\"Show that … = 0\", solve to 2 decimal places, reject a root, interpret), and the last question is a PROBLEM IN A REAL-WORLD CONTEXT: an information sheet (a table of prices, rates or measurements) followed by parts that end in a 5–7 mark \"Suggest a suitable … Justify your answer\" or \"Is it worth …? Show your working\" decision.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1 mark: read/state/one-line. 2 marks: one routine. 3–4 marks: a short chain. 5–7 marks: a multi-step argument or a decision with working."
+ },
+ "paperNo": 1,
+ "total": 90,
+ "prompt_version": "gce-author-v1",
+ "blueprint_derived_at": "2026-09-08",
+ "generated_at": "2026-09-11T06:23:49.861Z",
+ "topicList": [
+  "Algebra (Expansion)",
+  "Algebra (Expressions)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Identities)",
+  "Algebra (Inequalities)",
+  "Algebra (Linear Equations)",
+  "Algebra (Quadratic Equations)",
+  "Algebra (Quadratic Graphs)",
+  "Algebra (Simultaneous Equations)",
+  "Algebra (Subject of Formula)",
+  "Indices",
+  "Indices (Standard Form)",
+  "Numbers (Estimation)",
+  "Numbers (HCF and LCM)",
+  "Numbers (Percentages)",
+  "Numbers (Prime Factorization)",
+  "Numbers (Rate)",
+  "Numbers (Ratio)",
+  "Numbers (Speed)",
+  "Proportion",
+  "Angles",
+  "Circle Properties",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Coordinate Geometry",
+  "Distance and Speed Time Graphs",
+  "Geometrical Constructions",
+  "Graphs of Functions",
+  "Map Scales",
+  "Mensuration",
+  "Polygons",
+  "Trigonometry",
+  "Vectors",
+  "Financial Math (Hire Purchase)",
+  "Financial Math (Interest)",
+  "Financial Math (Taxation)",
+  "Math In Real World Context",
+  "Matrices",
+  "Number Patterns",
+  "Sets",
+  "Probability",
+  "Statistics",
+  "Coordinate Geometry (Lines)",
+  "Pythagoras' Theorem",
+  "Symmetry",
+  "Financial Math (Exchange Rate)"
+ ],
+ "must_appear": [
+  "Algebra (Expansion)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Mensuration",
+  "Number Patterns",
+  "Numbers (HCF and LCM)",
+  "Sets",
+  "Statistics",
+  "Trigonometry"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Linear Equations)",
+   "target": 2,
+   "marks": [
+    1,
+    2
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Expressions)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Circular Measure",
+   "target": 2,
+   "marks": [
+    1,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (HCF and LCM)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Financial Math (Hire Purchase)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Financial Math (Hire Purchase)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.25
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Numbers (Prime Factorization)",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (HCF and LCM)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (Prime Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Financial Math (Interest)",
+   "target": 3,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Financial Math (Interest)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Algebra (Quadratic Graphs)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Graphs)",
+     "weight": 0.5
+    },
+    {
+     "topic": "Algebra (Expressions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Geometrical Constructions",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Geometrical Constructions",
+     "weight": 0.333
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Algebra (Identities)",
+   "target": 3,
+   "marks": [
+    2,
+    6
+   ],
+   "parts": [
+    3,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Identities)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.333
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Circle Properties",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Circle Properties",
+     "weight": 0.334
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.333
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Numbers (Ratio)",
+   "target": 4,
+   "marks": [
+    2,
+    5
+   ],
+   "parts": [
+    3,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.334
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Algebra (Fractions)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Statistics",
+     "weight": 0.5
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 12,
+   "topic": "Algebra (Subject of Formula)",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Numbers (Estimation)",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 13,
+   "topic": "Probability",
+   "target": 3,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.25
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 14,
+   "topic": "Algebra (Simultaneous Equations)",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.5
+    },
+    {
+     "topic": "Angles",
+     "weight": 0.5
+    }
+   ]
+  },
+  {
+   "pos": 15,
+   "topic": "Angles",
+   "target": 3,
+   "marks": [
+    3,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Angles",
+     "weight": 0.25
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 16,
+   "topic": "Congruency and Similarity",
+   "target": 3,
+   "marks": [
+    1,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.334
+    },
+    {
+     "topic": "Financial Math (Interest)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 17,
+   "topic": "Sets",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Sets",
+     "weight": 0.667
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 18,
+   "topic": "Indices (Standard Form)",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.25
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 19,
+   "topic": "Numbers (HCF and LCM)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    3,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Graphs)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (HCF and LCM)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (Prime Factorization)",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 20,
+   "topic": "Algebra (Factorization)",
+   "target": 3,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Polygons",
+     "weight": 0.25
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 21,
+   "topic": "Matrices",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.25
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.25
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 22,
+   "topic": "Algebra (Expansion)",
+   "target": 4,
+   "marks": [
+    2,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.25
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 23,
+   "topic": "Trigonometry",
+   "target": 6,
+   "marks": [
+    5,
+    7
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Trigonometry",
+     "weight": 0.5
+    },
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Sets",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 24,
+   "topic": "Proportion",
+   "target": 3,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Proportion",
+     "weight": 0.25
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 25,
+   "topic": "Statistics",
+   "target": 4,
+   "marks": [
+    3,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.333
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 26,
+   "topic": "Mensuration",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Mensuration",
+     "weight": 0.6
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.2
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 27,
+   "topic": "Number Patterns",
+   "target": 6,
+   "marks": [
+    5,
+    7
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Vectors",
+     "weight": 0.667
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.333
+    }
+   ]
+  }
+ ],
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)"
+ },
+ "assembled_at": "2026-09-11T06:51:51.437Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Linear Equations)",
+   "target": 2,
+   "accepted": true,
+   "question": {
+    "stem": "Solve the equation $\\frac{5k - 2}{4} = 2k - 5$.",
+    "parts": [],
+    "answer": "$k = 6$",
+    "total_marks": 2,
+    "topics": [
+     "Algebra (Linear Equations)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Multiply both sides by 4:\n$5k - 2 = 4(2k - 5)$\n$5k - 2 = 8k - 20$\nCollect terms: $20 - 2 = 8k - 5k$, so $3k = 18$.\nHence $k = 6$.\nCheck: LHS $= \\frac{5(6) - 2}{4} = \\frac{28}{4} = 7$; RHS $= 2(6) - 5 = 7$.",
+    "syllabus_check": "4052 Equations and inequalities: solving a linear equation in one variable, here with a fractional left-hand side and a bracket to clear. One idea, two routine steps (clear the denominator, collect terms) for 2 marks. No content outside the syllabus.",
+    "originality_note": "A new single-fraction linear equation, coefficients chosen so that clearing the denominator gives 3k = 18 and an integer root. It does not copy any exemplar: those use two summed fractions equal to a constant, a bracket expansion on one side, a bare two-sided linear equation, or a probability context."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2020 P1 Q9",
+     "jaccard": 0.067
+    },
+    "marks": 2,
+    "checked_at": "2026-09-11T06:51:43.747Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "single": "k = 6"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give k = 6. Moderator check: 5k - 2 = 8k - 20 gives 3k = 18, k = 6; LHS = 28/4 = 7 = RHS."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key k = 6 is correct.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A clean one-fraction linear equation with an integer root, correctly weighted at 2 marks (clear the denominator, collect terms) in SEAB register; it is not a re-skin of the two-summed-fractions form (2012 P1 Q8) or the bare two-sided equation (2025 P1 Q5a)."
+   },
+   "exemplars": [
+    {
+     "id": "e259ecb8-a4fe-4733-bb2c-bb793555bba1",
+     "ref": "GCE 2023 P1 Q13"
+    },
+    {
+     "id": "ca0074d5-0e5a-4598-837b-1c75e956d9e4",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "773b55aa-3865-4bab-8393-1b59d5030864",
+     "ref": "GCE 2012 P1 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Circular Measure",
+   "target": 2,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a sector $OAB$ of a circle, centre $O$ and radius 12 cm.\nAngle $AOB = 150^\\circ$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Convert $150^\\circ$ to radians. Give your answer in terms of $\\pi$.",
+      "marks": 1,
+      "answer": "$\\frac{5\\pi}{6}$ radians"
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate the area of the sector $OAB$. Give your answer in terms of $\\pi$.",
+      "marks": 1,
+      "answer": "$60\\pi$ cm$^2$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 2,
+    "topics": [
+     "Circular Measure"
+    ],
+    "needs_figure": true,
+    "figure_description": "A single sector of a circle, not to scale, drawn with plain black lines on white. Centre O at the bottom-left of the figure. Two straight radii OA and OB of equal length meet at O with the reflex side open: OA runs horizontally to the right from O, and OB runs from O up and to the left so that the angle AOB at O is obtuse (150 degrees, drawn as roughly 150 degrees). A circular arc from A to B, centred at O, closes the sector on the side away from O (the minor arc, sweeping through the 150-degree angle). Labels: 'O' just below-left of the centre point; 'A' just beyond the end of the horizontal radius; 'B' just beyond the end of the other radius. A small angle arc drawn inside the sector at O between OA and OB with the label '150°' beside it. The radius OA is labelled '12 cm' along its length, written just below the line. Nothing else is marked: no radian measure, no area, no arc length, no shading, no grid, no axes, no other numbers.",
+    "solution": "(a) $180^\\circ = \\pi$ radians, so $150^\\circ = \\frac{150}{180} \\times \\pi = \\frac{5\\pi}{6}$ radians.\n(b) Area of sector $= \\frac{1}{2} r^2 \\theta = \\frac{1}{2} \\times 12^2 \\times \\frac{5\\pi}{6} = 72 \\times \\frac{5\\pi}{6} = 60\\pi$ cm$^2$.\n(Equivalently, area $= \\frac{150}{360} \\times \\pi \\times 12^2 = \\frac{5}{12} \\times 144\\pi = 60\\pi$ cm$^2$.)",
+    "syllabus_check": "4052 Mensuration: arc and sector of a circle with the angle in degrees or radians. Part (a) is the degree-to-radian conversion (exact, in terms of pi); part (b) is the area of a sector, which the candidate may do by (1/2) r^2 theta using (a) or directly by the fraction-of-circle form. The two parts test two different skills (conversion; sector area) and each is a one-mark, one-line step. Set from a diagram, as SEAB sector questions are. Nothing outside the syllabus.",
+    "originality_note": "The exemplars convert radians to degrees, find a shaded wiper area from a composite diagram, find a perimeter in the form a + b pi from a quadrant-and-semicircle figure, or find a major arc length inside a circle-properties question. This question is a plain single sector with a fresh radius/angle pair (12 cm, 150 degrees) chosen so that the radian measure and the sector area are both clean multiples of pi; it converts degrees to radians (the opposite direction to the 2023 exemplar) and then asks for an area, not an arc, so the second mark is a different skill from the first. It resembles none of the exemplars in situation, numbers or sequence of parts."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2015 P1 Q19",
+     "jaccard": 0.14
+    },
+    "marks": 2,
+    "checked_at": "2026-09-11T06:51:43.751Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "5π/6 rad",
+     "(b)": "60π cm^2"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 5π/6 rad; 150/180 × π = 5π/6, verified."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 60π cm^2; (1/2)(12^2)(5π/6) = 60π and (150/360)π(144) = 60π, verified."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A plain sector from a diagram with one exact conversion mark and one sector-area mark in terms of π is exactly how SEAB has set circular measure at the front of Paper 1 (2011 P1 Q15 awards 1 mark for a sector area and asks for expressions in terms of π; 2012 P1 Q21(c) and 2023 P1 Q2(b) award 1 mark for a unit conversion); the imperatives, precision demands and mark discipline match, 12 cm with 150° gives clean multiples of π in both parts, and it re-skins none of the exemplars (they convert the other way, or find a composite shaded area, a perimeter in the form a + bπ, or a major arc inside a circle-properties question)."
+   },
+   "exemplars": [
+    {
+     "id": "2885c79b-8287-489f-892a-56e05dbefe36",
+     "ref": "GCE 2024 P1 Q9"
+    },
+    {
+     "id": "b4f2580b-d8cb-4d30-8674-5da73971681b",
+     "ref": "GCE 2023 P1 Q2"
+    },
+    {
+     "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+     "ref": "GCE 2023 P2 Q5"
+    },
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "6efa44c2-ed48-47f4-b575-230d73cc5c61",
+     "ref": "GCE 2008 P1 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Financial Math (Hire Purchase)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "The cash price of an electric bicycle is $\\$1840$.\nUnder a hire-purchase scheme, a customer pays a deposit of $\\$400$ followed by 18 equal monthly payments.\nThe hire-purchase price is $22.5\\%$ more than the cash price.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate the hire-purchase price.",
+      "marks": 1,
+      "answer": "$\\$2254$"
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate the amount of each monthly payment.",
+      "marks": 2,
+      "answer": "$\\$103$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Financial Math (Hire Purchase)",
+     "Numbers (Percentages)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Hire-purchase price $= 1840 \\times \\frac{122.5}{100} = 1840 \\times 1.225 = \\$2254$.\n(b) Total of the monthly payments $= 2254 - 400 = \\$1854$.\nEach monthly payment $= \\frac{1854}{18} = \\$103$.",
+    "syllabus_check": "4052 Financial mathematics (hire purchase) with a percentage increase: find the hire-purchase price from a percentage above the cash price, then subtract the deposit and divide by the number of instalments. 1 mark for the percentage step, 2 for the two-step instalment calculation. Nothing outside the syllabus.",
+    "originality_note": "New context (an electric bicycle) and a new structure: the hire-purchase price is given as a percentage ABOVE the cash price and the deposit is a fixed dollar amount, so the candidate works forwards to the price and then to one instalment. The exemplars instead give the instalment and ask for the total or the extra cost as a percentage, give the hire-purchase price directly and ask for the deposit as a percentage, or give a percentage deposit and the hire-purchase price and ask for the instalment. Numbers chosen so 1840 x 1.225 = 2254 and (2254 - 400) / 18 = 103 exactly."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2014 P1 Q11",
+     "jaccard": 0.078
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.753Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "$2254",
+     "(b)": "$103"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give $2254. Moderator check: 1840 × 1.225 = 1840 + 414 = 2254."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give $103. Moderator check: (2254 − 400)/18 = 1854/18 = 103."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A hire-purchase item in SEAB register with a percentage-above-cash-price step, a fixed deposit and exact instalments, weighted 1 + 2 as a real P1 would; the unknown chain (derive the HP price, then one instalment) differs from every exemplar, which give the HP price or instalment and ask for a total or a percentage."
+   },
+   "exemplars": [
+    {
+     "id": "20c9c8ad-0d34-4855-8299-fe80975656db",
+     "ref": "GCE 2024 P1 Q3"
+    },
+    {
+     "id": "814bf16e-be96-497a-9d4b-8a951a189447",
+     "ref": "GCE 2023 specimen P2 Q2"
+    },
+    {
+     "id": "d35218f7-6d60-4d59-af0f-fc38043a4ad7",
+     "ref": "GCE 2018 P1 Q8"
+    },
+    {
+     "id": "8a06850d-33ea-4ed4-af69-a7d5871240ac",
+     "ref": "GCE 2014 P1 Q11"
+    },
+    {
+     "id": "788fefbd-62f3-4a8b-bb8a-a8b4c2b2406f",
+     "ref": "GCE 2013 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Numbers (Prime Factorization)",
+   "target": 2,
+   "accepted": true,
+   "question": {
+    "stem": "Written as a product of its prime factors, $1176 = 2^3 \\times 3 \\times 7^2$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Explain why $6 \\times 1176$ is a perfect square.",
+      "marks": 1,
+      "answer": "$6 \\times 1176 = 2^4 \\times 3^2 \\times 7^2 = (2^2 \\times 3 \\times 7)^2 = 84^2$; every prime has an even index, so it is a perfect square."
+     },
+     {
+      "label": "(b)",
+      "text": "Find the smallest positive integer $n$ such that $\\frac{1176}{n}$ is a cube number.",
+      "marks": 1,
+      "answer": "$n = 147$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 2,
+    "topics": [
+     "Numbers (Prime Factorization)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $6 \\times 1176 = 2 \\times 3 \\times 2^3 \\times 3 \\times 7^2 = 2^4 \\times 3^2 \\times 7^2$.\nEvery prime factor now has an even index, so $6 \\times 1176 = (2^2 \\times 3 \\times 7)^2 = 84^2$, which is a perfect square.\n\n(b) For $\\frac{1176}{n}$ to be a cube number, every prime in its factorisation must have an index that is a multiple of 3.\n$1176 = 2^3 \\times 3 \\times 7^2$: the index of 2 is already 3, so the factors $3$ and $7^2$ must be divided out.\nSmallest $n = 3 \\times 7^2 = 147$, giving $\\frac{1176}{147} = 2^3 = 8$, a cube number.",
+    "syllabus_check": "4052 Numbers and their operations: prime factorisation, perfect squares and cubes. Two one-mark parts, one idea each (an explain-why with a number in it, then a smallest-n). Calculator allowed; the factorisation is printed so the skill tested is reasoning on indices, not division.",
+    "originality_note": "Not a re-skin of any exemplar: the exemplars find x and y, multiply by the smallest k to make a cube, recover N from an HCF/LCM pair, or divide by a prime q. Here the candidate justifies that a given multiple is a square (new number 1176, new multiplier 6) and then finds the smallest DIVISOR that leaves a cube — the division direction with a composite answer, which none of the exemplars ask."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P1 Q10",
+     "jaccard": 0.184
+    },
+    "marks": 2,
+    "checked_at": "2026-09-11T06:51:43.754Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "6 x 1176 = (2 x 3) x (2^3 x 3 x 7^2) = 2^4 x 3^2 x 7^2, and every index (4, 2, 2) is even, so 6 x 1176 = (2^2 x 3 x 7)^2 = 84^2, a perfect square.",
+     "(b)": "n = 147"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both show 6 x 1176 = 2^4 x 3^2 x 7^2 = 84^2 with every index even; moderator confirms 7056 = 84^2."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give n = 147; moderator confirms 1176/147 = 8 = 2^3 and no smaller n divides 1176 to a cube (the only cube divisors are 1 and 8)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct on both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Exact SEAB phrasing ('Written as a product of its prime factors', 'cube number', 'Explain why'), 1+1 mark discipline at the Q4 slot, and the two twists (multiply by 6 before the perfect-square check; divide rather than multiply to reach a cube) keep it off 2023 Q4(a) and 2025 Q10(b) while staying inside the annual prime-factor genre."
+   },
+   "exemplars": [
+    {
+     "id": "870c994e-e660-437f-8b4f-aba42ecfeed8",
+     "ref": "GCE 2025 P1 Q10"
+    },
+    {
+     "id": "b55dbf3b-6874-4f1e-9366-f553431545b5",
+     "ref": "GCE 2024 P1 Q19"
+    },
+    {
+     "id": "e97a42ba-4147-469e-9fdd-89d53aff45cb",
+     "ref": "GCE 2023 P1 Q4"
+    },
+    {
+     "id": "ada70426-2b36-49db-b877-402d274bdb13",
+     "ref": "GCE 2019 P1 Q4"
+    },
+    {
+     "id": "d1ca87f3-aecf-4e8f-8cbf-b65a83fd9b74",
+     "ref": "GCE 2016 P1 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Financial Math (Interest)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "Priya invests $\\$5600$ at a rate of $2.5\\%$ per year compound interest.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate the interest earned during the second year.",
+      "marks": 2,
+      "answer": "$\\$143.50$"
+     },
+     {
+      "label": "(b)",
+      "text": "Priya says that the total interest earned in the first 8 years will be $\\$1120$. Explain why the total interest will be more than $\\$1120$.",
+      "marks": 1,
+      "answer": "$\\$1120 = 5600 \\times \\frac{2.5}{100} \\times 8$ is SIMPLE interest, calculated on $\\$5600$ every year. With compound interest each year's interest is calculated on the growing amount, so from the second year onwards the yearly interest is more than $\\$140$ (the second year alone earns $\\$143.50$), and the total is more than $\\$1120$."
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Financial Math (Interest)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Amount at the end of the first year $= 5600 \\times 1.025 = \\$5740$.\nInterest earned during the second year $= 5740 \\times \\frac{2.5}{100} = \\$143.50$.\n(Alternatively: $5600 \\times 1.025^2 - 5600 \\times 1.025 = 5883.50 - 5740 = \\$143.50$.)\n\n(b) $5600 \\times \\frac{2.5}{100} \\times 8 = \\$1120$ is the interest if it were SIMPLE interest, calculated on the original $\\$5600$ in every one of the 8 years.\nWith compound interest each year's interest is calculated on the growing amount, so the interest in every year after the first is more than $\\$140$ (the second year earns $\\$143.50$ from part (a)). Hence the total interest is more than $\\$1120$.\n(For reference, the actual total is $5600 \\times 1.025^8 - 5600 \\approx \\$1223.06$.)",
+    "syllabus_check": "4052 Financial mathematics: compound interest, the interest of a given year, and the distinction between simple and compound interest. 2 marks for a two-step routine (grow one year to $\\$5740$, then take $2.5\\%$ of it); 1 mark for one sentence that names the error (\\$1120 is the simple-interest figure) with a number in it. Every money value is exact to the cent: $5600 \\times 1.025 = 5740$ and $5740 \\times 0.025 = 143.50$, so no rounding is needed.",
+    "originality_note": "The exemplars recover a principal from total interest, find r, find a total after simple interest, or explain a monthly-versus-yearly rate. This question asks for the interest of ONE later year (the second) — a skill none of the exemplars test — and its explain-why targets the simple-versus-compound confusion over 8 years, with fresh figures ($\\$5600$, $2.5\\%$) chosen so that every answer lands on exact cents. Distinct from Q3's hire-purchase context."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2020 P1 Q15",
+     "jaccard": 0.07
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.756Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "$143.50",
+     "(b)": "$1120 is 8 × $140, i.e. simple interest on the original $5600 only. With compound interest each year's interest is worked out on the previous year's amount, which is larger every year (e.g. year 2 earns $143.50, not $140), so the yearly interest keeps increasing and the 8-year total (about $1223.05) is more than $1120."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give $143.50; 5600 × 1.025 = 5740, 5740 × 0.025 = 143.50 exactly, verified."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both explanations make the same point: $1120 = 8 × $140 is simple interest on the original $5600, whereas compound interest is calculated on a growing amount so every year after the first earns more than $140 (year 2 earns $143.50). Actual total 5600(1.025^8 − 1) ≈ $1223.06, confirming the claim."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts and the explanation in (b) is the one a marker would credit.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A 3-mark compound-interest question with a two-step calculation and a one-mark explain-why on a common misconception is exactly the weight and shape SEAB used at Q5 in 2023, but the skills are different: the interest of ONE later year is not asked in any exemplar, the misconception targeted is simple-versus-compound over 8 years rather than monthly-versus-yearly, and the parts run calculate-then-explain; every money value lands on exact cents and the register (Calculate ..., Explain why ...) is the paper's own."
+   },
+   "exemplars": [
+    {
+     "id": "1302eff8-8a83-47e5-ac1d-49d734bcc00a",
+     "ref": "GCE 2024 P1 Q16"
+    },
+    {
+     "id": "1b08c48c-baf7-440f-b6d3-ade1b023dfc0",
+     "ref": "GCE 2023 P1 Q5"
+    },
+    {
+     "id": "51354413-f7bc-44d8-8257-f1cb49776819",
+     "ref": "GCE 2025 P1 Q3"
+    },
+    {
+     "id": "6a28ba60-1ffb-4577-a79c-28d556048ed8",
+     "ref": "GCE 2020 P1 Q15"
+    },
+    {
+     "id": "930dadb3-87ff-481b-932a-8c360180d4e8",
+     "ref": "GCE 2017 P1 Q13"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Algebra (Quadratic Graphs)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "The curve $y = x^2 + bx + c$ has line of symmetry $x = 1.5$.\nOne of the points where the curve crosses the $x$-axis is $(-2, 0)$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Write down the coordinates of the other point where the curve crosses the $x$-axis.",
+      "marks": 1,
+      "answer": "$(5, 0)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the value of $b$ and the value of $c$.",
+      "marks": 2,
+      "answer": "$b = -3$, $c = -10$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Algebra (Quadratic Graphs)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The two $x$-intercepts are symmetrical about the line $x = 1.5$.\n$-2$ is $3.5$ units to the left of $1.5$, so the other intercept is $3.5$ units to the right: $1.5 + 3.5 = 5$.\nThe other point is $(5, 0)$.\n\n(b) The roots of $x^2 + bx + c = 0$ are $x = -2$ and $x = 5$, so\n$y = (x + 2)(x - 5) = x^2 - 5x + 2x - 10 = x^2 - 3x - 10$.\nHence $b = -3$ and $c = -10$.\n(Check: line of symmetry $x = -\\frac{b}{2} = \\frac{3}{2} = 1.5$.)",
+    "syllabus_check": "4052 Functions and graphs: quadratic graphs in factorised form, the line of symmetry as the midpoint of the roots, writing an equation from its roots. 1 mark for reading the second intercept by symmetry, 2 marks for forming the equation and expanding. No figure needed; the symmetry line and one intercept are given in words.",
+    "originality_note": "The exemplars start from a sketch showing both roots, from a completed-square identity, or ask for a sketch. Here neither root pair nor sketch is given: the candidate must first USE the line of symmetry to find the missing intercept, then build the equation — the reverse of the 2023 question's direction (equation to symmetry line) and a different starting point from the 2025 question (both roots printed on a diagram). Fresh numbers throughout."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2006 P1 Q16",
+     "jaccard": 0.133
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.757Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "(5, 0)",
+     "(b)": "b = -3, c = -10"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give (5, 0); moderator confirms -2 and 5 are equidistant (3.5) from x = 1.5."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give b = -3, c = -10; moderator confirms (x + 2)(x - 5) = x^2 - 3x - 10 and -b/2 = 1.5."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct on both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Symmetry-then-roots-then-coefficients is a different structure from 2025 Q15 (sketch gives both roots) and 2023 Q6 (completed square gives the symmetry line), the 1+2 split matches SEAB mark discipline, the imperatives ('Write down', 'Find the value of b and the value of c') are exact, and the numbers are clean; it would pass unnoticed at Q6."
+   },
+   "exemplars": [
+    {
+     "id": "3d19ee56-4add-4d43-8a57-89bef4484362",
+     "ref": "GCE 2025 P1 Q15"
+    },
+    {
+     "id": "75d3a2ef-6354-4fdd-89e6-e0523d155163",
+     "ref": "GCE 2023 P1 Q6"
+    },
+    {
+     "id": "d62fa8d5-1d95-4dfe-8f01-a77e2db462c7",
+     "ref": "GCE 2020 P1 Q10"
+    },
+    {
+     "id": "b4ccc18e-16e0-41bb-ac14-6ea1e2fbf80f",
+     "ref": "GCE 2019 P1 Q15"
+    },
+    {
+     "id": "1edbe630-2f11-43e4-a179-2493e325ca97",
+     "ref": "GCE 2016 P1 Q11"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Geometrical Constructions",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram is an accurate scale drawing of a triangular garden $ABC$.\nThe scale is 1 cm to 5 m.\nAngle $ABC = 90^\\circ$ and $BC = 35$ m.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Measure the length of $AB$ on the drawing. Hence find the actual length of $AB$, in metres.",
+      "marks": 1,
+      "answer": "$AB = 6.0$ cm on the drawing; actual length $= 30$ m (accept 29.5 m to 30.5 m)"
+     },
+     {
+      "label": "(b)",
+      "text": "Construct the perpendicular bisector of $AB$.",
+      "marks": 1,
+      "answer": "Perpendicular bisector of $AB$ drawn with construction arcs (a line parallel to $BC$, 3.0 cm from $BC$ on the drawing)"
+     },
+     {
+      "label": "(c)",
+      "text": "Construct the bisector of angle $ABC$.",
+      "marks": 1,
+      "answer": "Bisector of angle $ABC$ drawn with construction arcs (the line through $B$ at $45^\\circ$ to $BC$)"
+     },
+     {
+      "label": "(d)",
+      "text": "A tap, $T$, is to be placed in the garden so that it is equidistant from $A$ and $B$ and equidistant from $AB$ and $BC$.\nMark the point $T$ on the diagram and measure the length of $TC$. Hence find the actual distance $TC$, in metres.",
+      "marks": 1,
+      "answer": "$T$ marked at the intersection of the two bisectors; $TC = 5.0$ cm on the drawing, so actual distance $TC = 25$ m (accept 24.5 m to 25.5 m)"
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Geometrical Constructions"
+    ],
+    "needs_figure": true,
+    "figure_description": "An accurate scale drawing of a right-angled triangle $ABC$ at the scale 1 cm to 5 m. $B$ is at the bottom left, $C$ is at the bottom right and $A$ is directly above $B$, so $AB$ is vertical and $BC$ is horizontal with the right angle at $B$. Draw $AB = 6.0$ cm and $BC = 7.0$ cm EXACTLY (the hypotenuse $AC$ then comes out at about 9.2 cm; its length is NOT printed). Mark the right angle at $B$ with a small square. Print \"35 m\" beneath $BC$. Do NOT print any length beside $AB$ — the candidate measures it. Label the vertices $A$, $B$, $C$ in plain capitals outside the triangle. Print \"Scale: 1 cm to 5 m\" beneath the drawing. Nothing else is drawn: no point $T$, no bisectors, no arcs, no dashed lines, no shading — nothing the candidate is asked to construct or find appears on the figure. The drawing must be reproduced at true size so that measurements taken from it are correct.",
+    "solution": "(a) On the drawing $AB$ measures $6.0$ cm.\nActual length of $AB = 6.0 \\times 5 = 30$ m.\n\n(b) With compasses, arcs of equal radius (more than half of $AB$) centred at $A$ and at $B$ cross on either side of $AB$; the line through the two crossings is the perpendicular bisector of $AB$. Because angle $ABC = 90^\\circ$, it is parallel to $BC$ and 3.0 cm above $BC$ on the drawing.\n\n(c) With compasses, an arc centred at $B$ cuts $BA$ and $BC$; equal arcs centred at these two points cross inside the angle; the line from $B$ through the crossing is the bisector of angle $ABC$. It makes $45^\\circ$ with $BC$.\n\n(d) $T$ is equidistant from $A$ and $B$, so $T$ lies on the perpendicular bisector of $AB$. $T$ is equidistant from $AB$ and $BC$, so $T$ lies on the bisector of angle $ABC$. $T$ is the point where the two constructed lines meet: on the drawing it is 3.0 cm from $AB$ and 3.0 cm from $BC$.\nMeasuring, $TC = 5.0$ cm.\nActual distance $TC = 5.0 \\times 5 = 25$ m.\n(Check: in metres $T$ is 15 m from $AB$ and 15 m from $BC$, so with $N$ the foot of the perpendicular from $T$ to $BC$, $BN = 15$ m, $TN = 15$ m, $NC = 35 - 15 = 20$ m and $TC = \\sqrt{20^2 + 15^2} = \\sqrt{625} = 25$ m, which agrees with the measurement.)",
+    "syllabus_check": "4052 Geometry: scale drawings (measure and convert with the stated scale), construction of a perpendicular bisector and an angle bisector with ruler and compasses, the perpendicular bisector as the set of points equidistant from two points and the angle bisector as the set of points equidistant from two lines, and a measurement taken from the accurate drawing. The 15-20-25 triple means the measured answer and a Pythagoras check coincide exactly. Nothing beyond 4052; 'locus' is not used.",
+    "originality_note": "The exemplars construct two bisectors on a given quadrilateral or triangle and then shade a region or mark a point. Here the constructions sit on an accurate SCALE drawing of a right-angled garden: the candidate first measures $AB$ and converts with the scale, then constructs the perpendicular bisector of $AB$ and the bisector of angle $ABC$, and finally marks the tap $T$ where they meet and measures $TC$ to give an actual distance in metres. A garden with a tap, the 30 m by 35 m right-angled triangle, the scale conversion and the measured actual distance appear in none of the exemplars."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 specimen P1 Q7",
+     "jaccard": 0.126
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.759Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "AB = 6.0 cm on the drawing, so actual AB = 6.0 x 5 = 30 m",
+     "(b)": "Perpendicular bisector of AB constructed: arcs of equal radius (more than half AB) drawn from A and from B on both sides of AB, the two intersections joined with a straight line. It is the line perpendicular to AB through its midpoint, i.e. the horizontal line 3.0 cm above B, and it must cut AB at the midpoint. Construction arcs left showing.",
+     "(c)": "Bisector of angle ABC constructed: an arc centred at B cutting BA at P and BC at Q, then equal arcs centred at P and at Q meeting at a point R, with BR drawn. Since angle ABC = 90 degrees the bisector is the straight line from B at 45 degrees to BC (through points with equal distance from AB and BC). Construction arcs left showing.",
+     "(d)": "T is the intersection of the perpendicular bisector of AB with the bisector of angle ABC, i.e. the point 3.0 cm above B and 3.0 cm along from B. Measured TC = 5.0 cm, so actual TC = 5.0 x 5 = 25 m"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both measure AB = 6.0 cm and scale to 30 m; the drawing spec (AB drawn at exactly 6.0 cm, scale 1 cm to 5 m) supports it. Tolerance 29.5-30.5 m is the usual +/-0.1 cm."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both construct the perpendicular bisector of AB with arcs from A and B; both note it runs parallel to BC at 3.0 cm because angle B is 90 degrees."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both construct the bisector of angle ABC with the standard arc-then-equal-arcs method; both note it is the 45-degree line from B."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both place T at the intersection, 3.0 cm from AB and 3.0 cm from BC, measure TC = 5.0 cm and scale to 25 m. Checked independently: T is (15, 15) m inside the triangle (15/35 + 15/30 < 1) and TC = sqrt(20^2 + 15^2) = 25 m exactly, so the measurement lands on a clean 5.0 cm."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreements; the setter's key is correct in every part and the 3-4-5 geometry makes the measured answer exact.",
+    "score": 4,
+    "fixes": [
+     "Use a non-right-angled triangle. With angle ABC = 90 degrees and AB drawn vertical, the perpendicular bisector of AB is a horizontal line 3.0 cm up and the angle bisector is a 45-degree line, so both 'constructions' can be ruled off the page edges with a set square and T can be found by Pythagoras without measuring. Every real exemplar uses a scalene triangle or an irregular quadrilateral precisely so the compasses are needed. E.g. draw AB = 6.0 cm, BC = 7.0 cm with angle ABC = 70 degrees (or a 60-70-80 mm sort of scalene triangle), keep the scale, and give (d) as a measured value with the usual +/-0.1 cm tolerance rather than a Pythagoras-clean 25 m.",
+     "Stem wording: 'The diagram is an accurate scale drawing of a triangular garden ABC' -> 'The diagram shows a scale drawing of a triangular garden ABC.' followed by 'The scale is 1 cm to 5 m.' on its own line. SEAB does not say 'accurate'; the accuracy is a printing requirement, not a statement in the stem. With the right angle removed, also drop 'Angle ABC = 90 degrees and' so the stem reads 'BC = 35 m.' only (the length is printed on the figure anyway; one of the two is enough)."
+    ],
+    "too_close_to": null,
+    "why": "The four-part shape (measure and scale, perpendicular bisector, angle bisector, mark the point equidistant from both and measure a distance) is the genuine GCE constructions genre with a scale-drawing wrapper, the register and [1]-per-part mark discipline are right, and the key is sound; what gives it away as school-made is the axis-aligned right angle, which turns both constructions into lines a candidate can rule without compasses and lets T be computed instead of measured."
+   },
+   "exemplars": [
+    {
+     "id": "7316ef3f-26c9-44e7-9dda-6fb89fa1ba83",
+     "ref": "GCE 2025 P1 Q7"
+    },
+    {
+     "id": "76a7706b-1b5b-429e-8b41-50e185a36614",
+     "ref": "GCE 2023 specimen P1 Q7"
+    },
+    {
+     "id": "597ad0e7-603d-4cb3-b0d2-c975ccdad00e",
+     "ref": "GCE 2011 P1 Q20"
+    },
+    {
+     "id": "84329054-90b4-4bdd-9677-d29ffc9ef3e0",
+     "ref": "GCE 2019 P1 Q12"
+    },
+    {
+     "id": "9b6dbb5e-7b9d-4271-815c-76def2f8935d",
+     "ref": "GCE 2017 P1 Q10"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Algebra (Identities)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $(x + 2)(x^2 + hx + k) = x^3 - x^2 - 10x - 8$ for all values of $x$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $h$ and the value of $k$.",
+      "marks": 2,
+      "answer": "$h = -3$, $k = -4$"
+     },
+     {
+      "label": "(b)",
+      "text": "Hence factorise $x^3 - x^2 - 10x - 8$ completely.",
+      "marks": 1,
+      "answer": "$(x + 2)(x + 1)(x - 4)$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Algebra (Identities)",
+     "Algebra (Factorization)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Expand the left-hand side:\n$(x + 2)(x^2 + hx + k) = x^3 + hx^2 + kx + 2x^2 + 2hx + 2k = x^3 + (h + 2)x^2 + (k + 2h)x + 2k$.\n\n(a) Comparing the coefficients of $x^2$: $h + 2 = -1$, so $h = -3$.\nComparing the constant terms: $2k = -8$, so $k = -4$.\n(Check with the coefficient of $x$: $k + 2h = -4 - 6 = -10$, which agrees.)\n\n(b) From (a), $x^3 - x^2 - 10x - 8 = (x + 2)(x^2 - 3x - 4)$.\n$x^2 - 3x - 4 = (x + 1)(x - 4)$, so\n$x^3 - x^2 - 10x - 8 = (x + 2)(x + 1)(x - 4)$.",
+    "syllabus_check": "4052 Algebra: expansion of a linear by a quadratic, equating coefficients in an identity (two unknowns found from the $x^2$ and constant terms, the $x$ term as a check), and factorisation of a quadratic trinomial. No factor theorem or polynomial division is needed — (b) follows from (a) by factorising $x^2 - 3x - 4$. Nothing beyond 4052.",
+    "originality_note": "Not a rearranged fractional equation ([1]), a squared binomial ([2]), a product of two linears with a curve-intercept part ([3]) or a difference-of-squares multiple proof ([4]). The identity here is a linear factor times a quadratic with two unknown coefficients $h$ and $k$ found together in one 2-mark part, in the current specimen style, followed by a complete factorisation of the given cubic — a structure and numbers ($x^3 - x^2 - 10x - 8$, $h = -3$, $k = -4$) that appear in none of the exemplars, and letters that echo neither the 2006 item's $p$, $q$ nor the specimen's $a$, $b$."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2002 P1 Q3",
+     "jaccard": 0.069
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.761Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "h = -3, k = -4",
+     "(b)": "(x + 2)(x + 1)(x - 4)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give h = -3, k = -4. Checked: (x + 2)(x^2 + hx + k) = x^3 + (h + 2)x^2 + (2h + k)x + 2k; x^2 coefficient gives h = -3, constant gives k = -4, and the x coefficient 2(-3) + (-4) = -10 confirms."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give (x + 2)(x + 1)(x - 4); x^2 - 3x - 4 = (x + 1)(x - 4) and the product re-expands to x^3 - x^2 - 10x - 8."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement — the key is right in both parts and the identity is consistent in all three comparable coefficients.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Exact SEAB register ('It is given that … for all values of x', 'Find the value of h and the value of k', 'Hence factorise … completely'), clean integers, a 2 + 1 split that matches the work, and comparing coefficients then factorising the quadratic factor is squarely 4052. It shares only the method with 2006 P1 Q16(a) and 2021 P1 Q15(b) (linear × linear identities); the cubic with a 'hence factorise' step is its own question."
+   },
+   "exemplars": [
+    {
+     "id": "06de8d75-60a4-4a6d-8dd1-0dc7ae109669",
+     "ref": "GCE 2023 specimen P1 Q8"
+    },
+    {
+     "id": "cf63bc03-31b1-4ca6-851e-65dbfa3fae5a",
+     "ref": "GCE 2021 P1 Q15"
+    },
+    {
+     "id": "be5cc2f5-a208-4341-8195-b7dbd4559c86",
+     "ref": "GCE 2006 P1 Q16"
+    },
+    {
+     "id": "210c68e9-3d51-4a76-9812-fd967c9d740c",
+     "ref": "GCE 2016 P1 Q4"
+    },
+    {
+     "id": "400832b2-1b8b-4896-895b-6ccdfe6314d6",
+     "ref": "GCE 2007 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Circle Properties",
+   "target": 2,
+   "accepted": true,
+   "question": {
+    "stem": "$P$, $Q$ and $R$ are points on a circle, centre $O$.\nAngle $POR = 116^\\circ$.\n\nFind angle $PQR$.\nGive a reason for each step of your working.",
+    "parts": [],
+    "answer": "Angle $PQR = 122^\\circ$",
+    "total_marks": 2,
+    "topics": [
+     "Circle Properties"
+    ],
+    "needs_figure": true,
+    "figure_description": "A circle with its centre marked by a small dot labelled $O$. Three points on the circumference, labelled outside the circle in plain capitals: $P$ on the left of the circle a little above the horizontal through $O$, $R$ on the right of the circle a little above the horizontal through $O$, placed so that the angle $POR$ measured through the top of the circle is $116^\\circ$ (i.e. $P$ at about $148^\\circ$ and $R$ at about $32^\\circ$ measured anticlockwise from the rightward horizontal at $O$); and $Q$ at the very top of the circle, on the MINOR arc $PR$, between $P$ and $R$. Draw the two radii $OP$ and $OR$ as solid lines and the two chords $PQ$ and $QR$ as solid lines. Mark the angle $POR$ at $O$ (the angle between the radii, opening upwards towards $Q$) with a small arc and print \"$116^\\circ$\" inside it. Print nothing else: angle $PQR$ is NOT marked, no other angle values, no fourth point, no dashed lines, no shading. The drawing need not be to scale but the $116^\\circ$ angle should look obtuse and $Q$ must clearly sit on the shorter arc between $P$ and $R$.",
+    "solution": "Reflex angle $POR = 360^\\circ - 116^\\circ = 244^\\circ$ (angles at a point).\n\nAngle $PQR = \\frac{1}{2} \\times 244^\\circ = 122^\\circ$ (the angle at the centre is twice the angle at the circumference standing on the same arc; $Q$ is on the minor arc $PR$, so angle $PQR$ stands on the major arc $PR$, which subtends the reflex angle at $O$).\n\nAlternatively: take any point $S$ on the major arc $PR$. Angle $PSR = \\frac{1}{2} \\times 116^\\circ = 58^\\circ$ (angle at the centre is twice the angle at the circumference), and angle $PQR = 180^\\circ - 58^\\circ = 122^\\circ$ (opposite angles of the cyclic quadrilateral $PQRS$ are supplementary).\n\nAngle $PQR = 122^\\circ$.",
+    "syllabus_check": "4052 Geometry, properties of circles: angles at a point (the reflex angle at the centre) and the angle at the centre equals twice the angle at the circumference standing on the same arc; the cyclic-quadrilateral route is an accepted alternative. A two-step chain with a reason at each step, 2 marks. No tangent, alternate-segment or other out-of-syllabus result is used.",
+    "originality_note": "No tangent, no diameter and no external point — every exemplar builds on a tangent or a straight line through the centre. This question uses only the reflex angle at the centre with the angle-at-the-centre property, the diagram (not the stem) placing $Q$ on the minor arc so that the wanted angle is the obtuse one, $122^\\circ$. The letters, the $116^\\circ$ value and the chain are new."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 specimen P1 Q20",
+     "jaccard": 0.378
+    },
+    "marks": 2,
+    "checked_at": "2026-09-11T06:51:43.761Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "single": "Reflex angle POR = 360 - 116 = 244 (angles at a point). Angle PQR = 1/2 x 244 = 122 degrees (angle at centre = 2 x angle at circumference, on the same arc PR). Angle PQR = 122 degrees"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give angle PQR = 122 degrees by the same route: reflex POR = 360 - 116 = 244 (angles at a point), then PQR = 244/2 = 122 (angle at centre = 2 x angle at circumference on the same arc). Checked: Q is on the minor arc PR, so PQR stands on the major arc, which subtends the reflex angle at O; the cyclic-quadrilateral route 180 - 58 = 122 confirms."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement — 122 degrees is right, and the setter's key correctly uses the reflex angle rather than the 58 degrees a careless candidate would give.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A real 2-mark P1 circle question: one given angle, one two-step chain with a reason at each step, the reflex-angle discrimination that SEAB likes, and the diagram brief keeps Q unmistakably on the minor arc. Looked hard at 2023 specimen P1 Q20 — it shares the opening sentence and the P, Q, R, O letters, but that question is a tangent-chord (alternate segment) problem answered in terms of x; this one is angle-at-centre with a reflex step and a numeric answer, so it is a different theorem and a different structure, not a re-skin."
+   },
+   "exemplars": [
+    {
+     "id": "b7eb639e-49a4-4868-9de3-6ab2cb96f68d",
+     "ref": "GCE 2024 P1 Q13"
+    },
+    {
+     "id": "2e22e4f7-084e-4617-8a86-1e5d40e25537",
+     "ref": "GCE 2023 specimen P1 Q20"
+    },
+    {
+     "id": "9754f1ff-ccbc-4001-9208-38b9b5e75b86",
+     "ref": "GCE 2025 P1 Q16"
+    },
+    {
+     "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+     "ref": "GCE 2023 P2 Q5"
+    },
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Numbers (Ratio)",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "A paint shop makes a shade of paint called Sea Mist by mixing blue paint, white paint and grey paint in the ratio $2 : 9 : 4$ by volume.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the volume of white paint in 7.5 litres of Sea Mist.",
+      "marks": 1,
+      "answer": "4.5 litres"
+     },
+     {
+      "label": "(b)",
+      "text": "Express the ratio   volume of grey paint : volume of Sea Mist   in the form $1 : n$.",
+      "marks": 1,
+      "answer": "$1 : 3.75$"
+     },
+     {
+      "label": "(c)",
+      "text": "A decorator has 1.5 litres of blue paint, 8 litres of white paint and 2.6 litres of grey paint.\nFind the greatest volume of Sea Mist she can make.",
+      "marks": 2,
+      "answer": "9.75 litres"
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Numbers (Ratio)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Total number of parts $= 2 + 9 + 4 = 15$.\nVolume of white paint $= \\frac{9}{15} \\times 7.5 = 4.5$ litres.\n\n(b) Grey : Sea Mist $= 4 : 15 = 1 : \\frac{15}{4} = 1 : 3.75$.\n\n(c) Each batch of 15 parts needs 2 parts blue, 9 parts white and 4 parts grey.\nVolume of one part allowed by each colour:\nblue: $1.5 \\div 2 = 0.75$ litres,\nwhite: $8 \\div 9 = 0.888\\ldots$ litres,\ngrey: $2.6 \\div 4 = 0.65$ litres.\nThe grey paint runs out first, so one part is at most $0.65$ litres.\nGreatest volume of Sea Mist $= 15 \\times 0.65 = 9.75$ litres.\n(Check: this uses $2 \\times 0.65 = 1.3$ litres of blue and $9 \\times 0.65 = 5.85$ litres of white, both available.)",
+    "syllabus_check": "4052 Ratio and proportion: dividing a quantity in a given three-part ratio (a), expressing a ratio in the form 1 : n (b), and a limiting-ingredient ratio problem requiring comparison of the three available amounts (c). The two 1-mark parts use only the stem and come first; the 2-mark chain is the closer. No topic outside 4052; calculator use is routine. Marks 1 + 1 + 2 = 4 match the slot.",
+    "originality_note": "Not a two-person money transfer that changes a ratio (exemplars 1 and 4), not a chained A:B, B:C ratio with a fraction moving between groups (exemplar 3), not a population table (exemplar 5; only the 'Express … in the form 1 : n' verb is borrowed, as the moderator asked). The context (a three-colour paint mixture) and the limiting-ingredient reasoning in (c) are new to this paper; nothing in paper-so-far.md uses ratio, paint or mixtures."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2002 P1 Q10",
+     "jaccard": 0.038
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.763Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "4.5 litres",
+     "(b)": "1 : 3.75",
+     "(c)": "9.75 litres"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "9/15 x 7.5 = 4.5 litres; both give 4.5 litres."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "4 : 15 = 1 : 3.75; both give 1 : 3.75."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Grey is the limiting colour (2.6/4 = 0.65 per part < 0.75 blue, 0.889 white); 15 x 0.65 = 9.75 litres; both give 9.75 litres. Checked: uses 1.3 l blue and 5.85 l white, within stock."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in every part.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Three-part ratio question with SEAB's own imperatives (Find / Express in the form 1 : n), clean numbers, and a genuine 2-mark limiting-quantity reasoning step in (c); the only shared feature with an exemplar is the standard '1 : n' phrasing of 2009 P1 Q21(c), which is syllabus rubric, not a re-skin, and no exemplar uses a three-ingredient mixture with stock limits."
+   },
+   "exemplars": [
+    {
+     "id": "f6b91b07-9216-4756-9c9d-96c27ab9cf3f",
+     "ref": "GCE 2023 specimen P1 Q10"
+    },
+    {
+     "id": "833b4449-22bf-441c-b917-79e31ac26878",
+     "ref": "GCE 2024 P2 Q2"
+    },
+    {
+     "id": "82d62f89-1a79-45e3-8888-6520ab2f99a4",
+     "ref": "GCE 2025 P2 Q3"
+    },
+    {
+     "id": "2621df8a-9b6e-442c-82d3-53a65c2c95b6",
+     "ref": "GCE 2019 P1 Q19"
+    },
+    {
+     "id": "e3ac2010-fd63-4e88-b618-49db597d3013",
+     "ref": "GCE 2009 P1 Q21"
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Algebra (Fractions)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Simplify $\\frac{2x^2 - 8}{x^2 - 5x + 6}$.",
+      "marks": 2,
+      "answer": "$\\frac{2(x + 2)}{x - 3}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Hence solve $\\frac{2x^2 - 8}{x^2 - 5x + 6} = 4$.",
+      "marks": 1,
+      "answer": "$x = 8$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Algebra (Fractions)",
+     "Algebra (Factorization)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Factorise the numerator: $2x^2 - 8 = 2(x^2 - 4) = 2(x - 2)(x + 2)$.\nFactorise the denominator: $x^2 - 5x + 6 = (x - 2)(x - 3)$.\nSo $\\frac{2x^2 - 8}{x^2 - 5x + 6} = \\frac{2(x - 2)(x + 2)}{(x - 2)(x - 3)} = \\frac{2(x + 2)}{x - 3}$.\n\n(b) Using (a), $\\frac{2(x + 2)}{x - 3} = 4$\n$2x + 4 = 4x - 12$\n$16 = 2x$\n$x = 8$.\nCheck: $\\frac{2(64) - 8}{64 - 40 + 6} = \\frac{120}{30} = 4$.",
+    "syllabus_check": "4052 Algebraic expressions and formulae: factorisation of a difference of two squares (with a common factor) and a quadratic trinomial, then cancelling a common factor to simplify an algebraic fraction (a); a fractional equation that reduces to a linear equation once the simplified form is used (b). No topic outside 4052. Marks 2 + 1 = 3 match the slot.",
+    "originality_note": "The exemplars combine several fractions into one (2024 P1 Q5, 2025 P2 Q1(d), 2024 P2 Q1(d)) or solve fractional equations that lead to quadratics (2023 specimen Q13, 2025 P1 Q23). This question instead simplifies a single fraction by factorising both numerator and denominator, then uses that form so the follow-up equation collapses to a linear one — a different skill, new expression and new numbers. No algebraic fraction appears elsewhere in the paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 11,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2010 P1 Q7",
+     "jaccard": 0.172
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.764Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "2(x + 2)/(x - 3)",
+     "(b)": "x = 8"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "2(x−2)(x+2) over (x−2)(x−3) cancels to 2(x+2)/(x−3); both give this."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "2(x+2) = 4(x−3) → x = 8; check 120/30 = 4. Both give x = 8. Note for the mark scheme: a candidate who ignores 'Hence' and cross-multiplies the original gets x² − 10x + 16 = 0, x = 2 or 8, and must reject x = 2 (denominator zero) — x = 8 is the only answer, so the key is right."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement — the key is correct; x = 2 is extraneous and correctly absent.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Simplify-by-factorising-both then 'Hence solve' collapsing to a linear equation is exactly the P1 short-question shape SEAB sets; the factorisations are standard (difference of two squares with a common factor, a monic trinomial), the answer is an integer, and none of the exemplars simplify a single fraction."
+   },
+   "exemplars": [
+    {
+     "id": "aa860c94-c851-4e49-b146-6916435524b9",
+     "ref": "GCE 2024 P1 Q5"
+    },
+    {
+     "id": "533e23e2-581c-4c72-b540-bc8f6c1fb64f",
+     "ref": "GCE 2023 specimen P1 Q13"
+    },
+    {
+     "id": "4f282fde-e945-4503-8a58-2189374690ed",
+     "ref": "GCE 2025 P1 Q23"
+    },
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "21cf0b77-06e3-4b21-82b6-bde467aa7d8a",
+     "ref": "GCE 2024 P2 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 12,
+   "topic": "Algebra (Subject of Formula)",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "$q = \\sqrt{\\frac{p + 2r}{p - r}}$",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Rearrange the formula to make $p$ the subject.",
+      "marks": 3,
+      "answer": "$p = \\frac{r(q^2 + 2)}{q^2 - 1}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Hence find $p$ when $q = 3$ and $r = 8$.",
+      "marks": 1,
+      "answer": "$p = 11$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Algebra (Subject of Formula)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Square both sides: $q^2 = \\frac{p + 2r}{p - r}$.\nMultiply by $(p - r)$: $q^2(p - r) = p + 2r$\n$q^2 p - q^2 r = p + 2r$\nCollect the terms in $p$ on one side: $q^2 p - p = 2r + q^2 r$\n$p(q^2 - 1) = r(q^2 + 2)$\n$p = \\frac{r(q^2 + 2)}{q^2 - 1}$.\n\n(b) $p = \\frac{8(3^2 + 2)}{3^2 - 1} = \\frac{8 \\times 11}{8} = 11$.\nCheck: $\\sqrt{\\frac{11 + 16}{11 - 8}} = \\sqrt{9} = 3$.",
+    "syllabus_check": "4052 Algebraic expressions and formulae: changing the subject of a formula in which the new subject appears twice inside a square root — square, clear the fraction, collect like terms, factorise, divide (a); substitution into the rearranged formula (b). No topic outside 4052. Marks 3 + 1 = 4 match the slot.",
+    "originality_note": "The exemplars rearrange fractional formulae with the subject on both sides (2025 P1 Q18, 2022 P1 Q20), an x^2 fraction (2018 P1 Q17), or evaluate first and rearrange second (2024 P1 Q12, 2023 P2 Q2(c)). This formula has the subject twice under a square root, so the first step is squaring rather than cross-multiplying, and the part order is reversed: the rearrangement comes first and the numerical part uses it. New letters, new structure, new numbers; no other question in the paper changes the subject of a formula."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 12,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P1 Q20",
+     "jaccard": 0.086
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.765Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "p = r(q^2 + 2)/(q^2 - 1)",
+     "(b)": "p = 11"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "q² = (p+2r)/(p−r) → q²p − q²r = p + 2r → p(q² − 1) = r(q² + 2) → p = r(q²+2)/(q²−1); both give this."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "8 × 11 / 8 = 11; check √(27/3) = 3. Both give p = 11 (direct substitution 9(p−8) = p+16 also gives 11)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement — the key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Formula on its own line, the exact SEAB imperative, subject twice inside a square root so the route is square → clear the fraction → collect → factorise (3 marks, the same weight as 2025 P1 Q18), and a 1-mark substitution with numbers that cancel to an integer; it mirrors the 2018 x² exemplar's skill without re-skinning it."
+   },
+   "exemplars": [
+    {
+     "id": "d5ba15da-b5d4-43b4-b8f6-0c95a394b33a",
+     "ref": "GCE 2025 P1 Q18"
+    },
+    {
+     "id": "dbe4686f-d911-4923-8dc3-e3f4950af27c",
+     "ref": "GCE 2024 P1 Q12"
+    },
+    {
+     "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "d6855c6d-d84b-4ac6-a505-cde5a11780ac",
+     "ref": "GCE 2018 P1 Q17"
+    },
+    {
+     "id": "97346021-0475-41ae-9137-ef2acdda1553",
+     "ref": "GCE 2022 P1 Q20"
+    }
+   ]
+  },
+  {
+   "pos": 13,
+   "topic": "Probability",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "A bakery sells muffins in three flavours: chocolate, banana and lemon.\nEach customer buys exactly one muffin.\nThe probability that a customer buys a chocolate muffin is $0.35$.\nThe probability that a customer buys a lemon muffin is $0.2$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the probability that a customer buys a banana muffin.",
+      "marks": 1,
+      "answer": "$0.45$"
+     },
+     {
+      "label": "(b)",
+      "text": "Two customers each buy a muffin. The flavour each customer buys is independent of the other.\nFind the probability that the two customers buy muffins of different flavours.",
+      "marks": 2,
+      "answer": "$0.635$ (or $\\frac{127}{200}$)"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Probability"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The three probabilities sum to 1.\nP(banana) $= 1 - 0.35 - 0.2 = 0.45$\n\n(b) The two customers are independent, so multiply along each pair of choices.\nP(both chocolate) $= 0.35 \\times 0.35 = 0.1225$\nP(both banana) $= 0.45 \\times 0.45 = 0.2025$\nP(both lemon) $= 0.2 \\times 0.2 = 0.04$\nP(same flavour) $= 0.1225 + 0.2025 + 0.04 = 0.365$\nP(different flavours) $= 1 - 0.365 = 0.635$\n\nAlternative for (b): add the six ordered pairs of different flavours, $2(0.35 \\times 0.45) + 2(0.35 \\times 0.2) + 2(0.45 \\times 0.2) = 0.315 + 0.14 + 0.18 = 0.635$.",
+    "syllabus_check": "4052 Probability: probability of a single event from a complete set of outcomes (complement), combined events with independent events by multiplication, mutually exclusive outcomes added, P(not A) = 1 - P(A). No tree diagram needed; the numbers are decimals so the working is exact.",
+    "originality_note": "New situation (a bakery's three muffin flavours given as probabilities that sum to 1) and a new structure: part (a) is the missing probability, part (b) is 'different flavours' for two independent customers, solved most cleanly by the complement of 'same flavour'. It shares no numbers, objects or part-sequence with the spinner, marble-bag or cumulative-frequency exemplars, and no context with the rest of this paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 13,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P1 Q21",
+     "jaccard": 0.033
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.767Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "0.45",
+     "(b)": "0.635"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "1 - 0.35 - 0.2 = 0.45; both give 0.45."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "P(same) = 0.35^2 + 0.45^2 + 0.2^2 = 0.1225 + 0.2025 + 0.04 = 0.365, so P(different) = 0.635; both give 0.635. Checked also via the six ordered mixed pairs: 2(0.1575 + 0.07 + 0.09) = 0.635."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A clean 1 + 2 probability item with the independence stated, plain imperatives and exam-clean decimals; (b) rewards the complement route without being a trick. It shares no situation or structure with the spinner, marble or cumulative-frequency exemplars."
+   },
+   "exemplars": [
+    {
+     "id": "d4d607c6-160e-49a0-89a4-970a411a3da5",
+     "ref": "GCE 2025 P1 Q27"
+    },
+    {
+     "id": "8ca3599f-87dc-4fb1-98f5-b491a8928960",
+     "ref": "GCE 2024 P1 Q11"
+    },
+    {
+     "id": "e259ecb8-a4fe-4733-bb2c-bb793555bba1",
+     "ref": "GCE 2023 P1 Q13"
+    },
+    {
+     "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+     "ref": "GCE 2024 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 14,
+   "topic": "Algebra (Simultaneous Equations)",
+   "target": 2,
+   "accepted": true,
+   "question": {
+    "stem": "Solve these simultaneous equations.\n$3x + 2y = 17$\n$5x - 4y = -1$\nYou must show your working.",
+    "parts": [],
+    "answer": "$x = 3$, $y = 4$",
+    "total_marks": 2,
+    "topics": [
+     "Algebra (Simultaneous Equations)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Multiply the first equation by 2 so that the $y$ terms cancel:\n$6x + 4y = 34$\nAdd this to the second equation:\n$(6x + 4y) + (5x - 4y) = 34 + (-1)$\n$11x = 33$\n$x = 3$\nSubstitute into the first equation: $3(3) + 2y = 17$, so $2y = 8$ and $y = 4$.\nCheck in the second equation: $5(3) - 4(4) = 15 - 16 = -1$. Correct.\nSo $x = 3$, $y = 4$.",
+    "syllabus_check": "4052 Equations and inequalities: solving a pair of simultaneous linear equations in two variables, both in the form $ax + by = c$, by elimination (one multiplication then one addition) or by substitution. 'You must show your working.' method-gates the marks: one for a correct elimination step or substitution leading to one variable, one for both values. Two marks: the elimination needs only one equation scaled and the solution is integer.",
+    "originality_note": "Not a paraphrase of any exemplar: the coefficients ($3, 2, 17$; $5, -4, -1$) and the solution ($3, 4$) are the setter's own, the second equation carries a negative constant which no exemplar does, and the pair is not a word problem (exemplar 5). Both equations are in $ax + by = c$ form with the standard SEAB wording, as the moderator asked, so it is not a one-line substitution. No context, so nothing to clash with elsewhere in the paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 14,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P1 Q14",
+     "jaccard": 0.214
+    },
+    "marks": 2,
+    "checked_at": "2026-09-11T06:51:43.767Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "single": "x = 3, y = 4"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "x = 3, y = 4 checks in both equations (9 + 8 = 17; 15 - 16 = -1); both give the same pair."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct.",
+    "score": 4,
+    "fixes": [
+     "Weight it at [3], not [2]: SEAB's 'Solve these simultaneous equations. You must show your working.' item carries 3 marks in every exemplar shown (2023 specimen P2 Q1(b), 2025 P2 Q1(c)) and in 2024 P1 Q14 — M1 for a correct elimination/substitution step, A1 x, A1 y; rebalance one mark elsewhere in the paper, or if this slot must stay at 2 marks replace the item with a different 2-mark algebra question.",
+     "Make the elimination cost a step: as set, doubling one equation kills the y terms at once and the answers are small integers, which is below the standard of 2024 P1 Q14 (6x + 5y = 2, 10x - 4y = 65, x = 4.5, y = -5) and 2025 P2 Q1(c). Choose coefficients where both equations must be scaled (e.g. 3x + 2y = 17 and 5x - 3y = -16 type) or where one value is a half or negative, so that 'show your working' has something to reward."
+    ],
+    "too_close_to": null,
+    "why": "The wording is SEAB's own fixed rubric for this staple item and no context is copied, so it is not a re-skin; but at 2 marks with a one-multiplication elimination and integer answers it reads as an early-Sec-3 drill rather than the 3-mark GCE version, so a light edit (mark weight and coefficients) is needed."
+   },
+   "exemplars": [
+    {
+     "id": "46a62516-c556-4dbf-ae78-5b76a835ab3a",
+     "ref": "GCE 2024 P1 Q14"
+    },
+    {
+     "id": "d9e1d2ad-e61c-4013-a2ac-6cfe4546c643",
+     "ref": "GCE 2023 P1 Q22"
+    },
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "5b5106ab-669f-4d36-85ee-9fd35e7a0481",
+     "ref": "GCE 2023 specimen P2 Q1"
+    },
+    {
+     "id": "92a6ea12-50c3-4edf-a350-7b4eba3ecd77",
+     "ref": "GCE 2022 P1 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 15,
+   "topic": "Angles",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a parallelogram $ABCD$.\n$E$ is the point on $DC$ such that $AE$ bisects angle $DAB$.\nAngle $ABC = 116^\\circ$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find angle $DAE$.",
+      "marks": 1,
+      "answer": "$32^\\circ$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find angle $AEC$.",
+      "marks": 2,
+      "answer": "$148^\\circ$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Angles"
+    ],
+    "needs_figure": true,
+    "figure_description": "A plane-geometry figure, no axes, no grid. Parallelogram ABCD drawn with AB as the horizontal base and the figure leaning to the right, so that the angle at A is acute and the angle at B is obtuse. Use these coordinates (units arbitrary, keep the proportions): A = (0, 0), B = (9, 0), D = (2.19, 4.49), C = (11.19, 4.49). So AB = DC = 9 units and AD = BC = 5 units — DC is clearly longer than AD. E lies on side DC, between D and C, at E = (7.19, 4.49) (that is DE = 5 units, EC = 4 units, so E sits about five-ninths of the way from D to C). Draw the four sides AB, BC, CD, DA and the single segment AE. Label the vertices in capital italics: A at the bottom-left outside the figure, B at the bottom-right outside, C at the top-right outside, D at the top-left outside, E just above the top side DC. Mark the given angle only: a small arc inside the parallelogram at B between BA and BC, labelled 116° (with the degree sign). Draw NOTHING else: no arc or label at A, D, C or E, no equal-length tick marks on AD and DE, no bisector arcs on angle DAB, no 32°, 64°, 148° or any other angle value, no lengths, no right-angle marks, no 'not to scale' note.",
+    "solution": "(a) In a parallelogram, adjacent angles are supplementary (co-interior angles, $AD \\parallel BC$).\nAngle $DAB = 180^\\circ - 116^\\circ = 64^\\circ$\n$AE$ bisects angle $DAB$, so angle $DAE = \\frac{1}{2} \\times 64^\\circ = 32^\\circ$.\n\n(b) Angle $EAB = 32^\\circ$ (the other half of the bisected angle).\nSince $DC \\parallel AB$, angle $DEA = $ angle $EAB = 32^\\circ$ (alternate angles).\nAngle $AEC = 180^\\circ - 32^\\circ = 148^\\circ$ (angles on a straight line, $DEC$).\n\nAlternative for (b): angle $ADE = $ angle $ABC = 116^\\circ$ (opposite angles of a parallelogram), so in triangle $ADE$ angle $AED = 180^\\circ - 116^\\circ - 32^\\circ = 32^\\circ$, giving angle $AEC = 148^\\circ$.\n\n(Setter's check of the figure: triangle $ADE$ has angle $DAE = $ angle $DEA = 32^\\circ$, so $DE = DA = 5$ units; with $DC = 9$ units, $E$ lies strictly between $D$ and $C$, as drawn.)",
+    "syllabus_check": "4052 Angles, triangles and polygons: angle properties of parallel lines (co-interior and alternate angles) and of a parallelogram (adjacent angles supplementary, opposite angles equal), angles on a straight line, an angle bisector. Set from a diagram as SEAB sets this type: the parallelogram, the point $E$ on $DC$, the segment $AE$ and the given $116^\\circ$ are shown; nothing to be found is printed. Marks 1 + 2 = 3 match the slot.",
+    "originality_note": "A new configuration: a parallelogram with one angle bisected and the bisector meeting the opposite side, ending at the obtuse angle on that side. It is not an isosceles triangle with a point on a side, not a trapezium with angles in a ratio, not a circumcentre argument and not a circle; the given angle ($116^\\circ$) and the chain $64 \\to 32 \\to 148$ are the setter's own. No context, so it clashes with nothing else in the paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 15,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2013 P1 Q2",
+     "jaccard": 0.067
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.768Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "32°",
+     "(b)": "148°"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Angle DAB = 180 - 116 = 64 (co-interior, AD parallel to BC); bisected gives 32; both give 32 degrees."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Angle DEA = angle EAB = 32 (alternate, DC parallel to AB), so angle AEC = 180 - 32 = 148 (straight line DEC); both give 148 degrees. Figure checked: with A(0,0), B(9,0), D(2.19,4.49), E(7.19,4.49) the angle at A is 64.0, at B 116, AD = DE = 5 so AE really is the bisector and E is strictly between D and C."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts and the described figure is consistent with the data.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A plane-geometry angle chase in the exact 4052 P1 register (short givens, 'Find angle ...', 1 + 2 marks matching one step then two steps), with a clean 116-degree datum and a figure that shows only the given angle; the point-on-a-side device is shared with 2025 P1 Q13 but the shape (parallelogram), the mechanism (bisector plus parallel lines) and the target angles are different, so it is not a re-skin."
+   },
+   "exemplars": [
+    {
+     "id": "19c83c57-560b-4e09-8f21-1f0efcea7dbd",
+     "ref": "GCE 2025 P1 Q13"
+    },
+    {
+     "id": "788b0ed1-3dbd-429a-b9aa-920d13b4732c",
+     "ref": "GCE 2024 P1 Q15"
+    },
+    {
+     "id": "1459816f-4cc5-49f1-95b9-39c03f2abf2e",
+     "ref": "GCE 2023 P1 Q14"
+    },
+    {
+     "id": "c6e95650-9c7b-4c1f-b73e-073f05c8bc14",
+     "ref": "GCE 2018 P1 Q9"
+    },
+    {
+     "id": "e960998f-6d8e-4c9d-bd5d-58affb7b023a",
+     "ref": "GCE 2016 P1 Q10"
+    }
+   ]
+  },
+  {
+   "pos": 16,
+   "topic": "Congruency and Similarity",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "Two solid trophies are geometrically similar and are made of the same metal.\nThe smaller trophy has height $6$ cm and the larger trophy has height $15$ cm.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "The surface area of the smaller trophy is $72$ cm$^2$.\nCalculate the surface area of the larger trophy.",
+      "marks": 1,
+      "answer": "$450$ cm$^2$"
+     },
+     {
+      "label": "(b)",
+      "text": "The mass of the larger trophy is $875$ g.\nCalculate the mass of the smaller trophy.",
+      "marks": 2,
+      "answer": "$56$ g"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Congruency and Similarity"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Scale factor of lengths, smaller to larger: $k = \\frac{15}{6} = \\frac{5}{2} = 2.5$.\n\n(a) Ratio of surface areas $= k^2 = \\left(\\frac{5}{2}\\right)^2 = \\frac{25}{4}$.\nSurface area of larger trophy $= 72 \\times \\frac{25}{4} = 450$ cm$^2$.\n\n(b) Ratio of volumes $= k^3 = \\left(\\frac{5}{2}\\right)^3 = \\frac{125}{8}$.\nThe trophies are made of the same metal, so mass is proportional to volume.\nMass of smaller trophy $= 875 \\div \\frac{125}{8} = 875 \\times \\frac{8}{125} = 7 \\times 8 = 56$ g.",
+    "syllabus_check": "4052 Congruence and similarity: ratios of the areas and of the volumes (hence masses, same material) of similar solids, using $(\\text{length ratio})^2$ and $(\\text{length ratio})^3$. No figure needed; scale factor $2.5$ gives exact answers $450$ and $56$.",
+    "originality_note": "New context (two similar metal trophies, heights 6 cm and 15 cm) and a new pair of skills for this slot: area scaling up, then mass (volume) scaling down. Not a congruence proof, not a cylinder or cone depth problem, not a circle configuration; shares no numbers or structure with the exemplars or with Q1-Q6 of this paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 16,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2008 P1 Q19",
+     "jaccard": 0.051
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.770Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "450 cm^2",
+     "(b)": "56 g"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "k = 15/6 = 5/2; area scales by 25/4, 72 x 25/4 = 450; both give 450 cm^2."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Volume, hence mass for the same metal, scales by 125/8; 875 x 8/125 = 56; both give 56 g."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "The standard similar-solids item in SEAB register ('geometrically similar', 'made of the same metal', 'Calculate'), 1 + 2 marks correctly weighted, with numbers that cancel exactly (72/4, 875/125). None of the exemplars shown is a similar-solids scaling question, so there is nothing to re-skin."
+   },
+   "exemplars": [
+    {
+     "id": "781c0361-3e87-4203-bb74-d31f84c43266",
+     "ref": "GCE 2023 specimen P1 Q16"
+    },
+    {
+     "id": "7010b84e-06c9-42e0-a0d7-86a89ec52ce6",
+     "ref": "GCE 2025 P1 Q21"
+    },
+    {
+     "id": "0aa31d1b-a2da-4272-adae-1c2559209b6b",
+     "ref": "GCE 2024 P1 Q26"
+    },
+    {
+     "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+     "ref": "GCE 2023 specimen P2 Q5"
+    },
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 17,
+   "topic": "Sets",
+   "target": 2,
+   "accepted": true,
+   "question": {
+    "stem": "$\\mathcal{E} = \\{x : x \\text{ is an integer and } 1 \\le x \\le 15\\}$\n$A = \\{x : x \\text{ is a multiple of } 3\\}$\n$B = \\{x : x \\text{ is a factor of } 30\\}$",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "List the elements of $A \\cap B$.",
+      "marks": 1,
+      "answer": "$\\{3, 6, 15\\}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find $n(A' \\cap B')$.",
+      "marks": 1,
+      "answer": "$6$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 2,
+    "topics": [
+     "Sets"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "$A = \\{3, 6, 9, 12, 15\\}$ and $B = \\{1, 2, 3, 5, 6, 10, 15\\}$.\n\n(a) $A \\cap B = \\{3, 6, 15\\}$.\n\n(b) $A' \\cap B' = (A \\cup B)'$.\n$A \\cup B = \\{1, 2, 3, 5, 6, 9, 10, 12, 15\\}$, so $n(A \\cup B) = 9$.\n$n(\\mathcal{E}) = 15$, so $n(A' \\cap B') = 15 - 9 = 6$.\n(The elements are $\\{4, 7, 8, 11, 13, 14\\}$.)",
+    "syllabus_check": "4052 Set language and notation: listing the elements of a set defined by a rule, intersection, complement, and the number of elements in a set, with $A' \\cap B'$ recognised as the complement of the union. Two 1-mark parts; no Venn diagram is required, so needs_figure is false.",
+    "originality_note": "Sets are defined by rules (multiples of 3, factors of 30 within 1 to 15) rather than by a Venn diagram of region counts or a shading task, so it shares no structure with the exemplars; part (b) tests De Morgan's law through counting. Shares no context with Q1-Q6."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 17,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2008 P1 Q11",
+     "jaccard": 0.113
+    },
+    "marks": 2,
+    "checked_at": "2026-09-11T06:51:43.771Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "3, 6, 15",
+     "(b)": "6"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "A = {3, 6, 9, 12, 15}, B = {1, 2, 3, 5, 6, 10, 15} (30 itself is outside the universal set); A intersect B = {3, 6, 15}. Both agree."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "A' intersect B' = (A union B)'; A union B has 9 elements, so 15 - 9 = 6, namely {4, 7, 8, 11, 13, 14}. Both give 6."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Exactly the shape of a real 2-mark P1 sets item: set-builder universal set, 'List the elements', 'Find n(...)', and (b) quietly tests De Morgan. The 2025 P2 Q7(a) exemplar shares only the generic factors/multiples setup; its task (agree/disagree with statements) is different, so this is not a re-skin."
+   },
+   "exemplars": [
+    {
+     "id": "5411da48-6cfa-4353-9bd3-26b1c455627c",
+     "ref": "GCE 2024 P1 Q17"
+    },
+    {
+     "id": "0a876142-869d-4ebd-bda5-3a5c91bd1de1",
+     "ref": "GCE 2023 P1 Q17"
+    },
+    {
+     "id": "d8b9c432-3f2a-4e54-a5fb-ca6ff6cb18c6",
+     "ref": "GCE 2025 P2 Q7"
+    },
+    {
+     "id": "01bd64cb-368b-45c1-a305-e25ef1586a83",
+     "ref": "GCE 2018 P1 Q7"
+    },
+    {
+     "id": "8a17da68-8d64-4ff7-ab31-94eb9611a93c",
+     "ref": "GCE 2016 P1 Q3"
+    }
+   ]
+  },
+  {
+   "pos": 18,
+   "topic": "Indices (Standard Form)",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "The mass of one helium atom is $6.64 \\times 10^{-27}$ kg.\nA balloon contains $2.5 \\times 10^{23}$ helium atoms.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate the mass of the helium in the balloon.\nGive your answer in kilograms in standard form.",
+      "marks": 2,
+      "answer": "$1.66 \\times 10^{-3}$ kg"
+     },
+     {
+      "label": "(b)",
+      "text": "A second balloon contains $4.15 \\times 10^{-3}$ kg of helium.\nCalculate the total number of helium atoms in the two balloons.\nGive your answer in standard form.",
+      "marks": 2,
+      "answer": "$8.75 \\times 10^{23}$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Indices (Standard Form)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Mass $= (6.64 \\times 10^{-27}) \\times (2.5 \\times 10^{23})$\n$= (6.64 \\times 2.5) \\times 10^{-27 + 23}$\n$= 16.6 \\times 10^{-4}$\n$= 1.66 \\times 10^{-3}$ kg.\n\n(b) Number of atoms in the second balloon $= \\frac{4.15 \\times 10^{-3}}{6.64 \\times 10^{-27}}$\n$= \\frac{4.15}{6.64} \\times 10^{-3 - (-27)}$\n$= 0.625 \\times 10^{24}$\n$= 6.25 \\times 10^{23}$.\nTotal number of atoms $= 2.5 \\times 10^{23} + 6.25 \\times 10^{23}$\n$= 8.75 \\times 10^{23}$.",
+    "syllabus_check": "4052 Numbers: standard form with negative and positive indices, multiplying and dividing numbers in standard form, adding numbers in standard form with the same power, and rewriting a result in standard form ($16.6 \\times 10^{-4} \\to 1.66 \\times 10^{-3}$; $0.625 \\times 10^{24} \\to 6.25 \\times 10^{23}$). All values exact: $6.64 \\times 2.5 = 16.6$ and $4.15 \\div 6.64 = 0.625$.",
+    "originality_note": "A single physical context (helium atoms in two balloons) drives a multiply-then-normalise part and a divide-then-add part, with a negative index throughout; not a population table, not a plain 'write in standard form', not a calculator-then-convert pair. Shares no context or numbers with the exemplars or with Q1-Q6 of this paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 18,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2004 P1 Q12",
+     "jaccard": 0.056
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.772Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "1.66 × 10^-3 kg",
+     "(b)": "8.75 × 10^23"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "6.64 x 2.5 = 16.6, so 16.6 x 10^-4 = 1.66 x 10^-3 kg; both agree."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "4.15 / 6.64 = 0.625 exactly (6.64 x 0.625 = 4.15), so 6.25 x 10^23 atoms; adding 2.5 x 10^23 gives 8.75 x 10^23. Both agree."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A real-context standard-form item (the helium atom mass is genuine) whose two parts each need a product or quotient followed by a renormalisation, so 2 + 2 is fair; the division comes out exactly and the answers are three-figure clean. It is not a re-skin of the population-table or 'write in standard form' exemplars."
+   },
+   "exemplars": [
+    {
+     "id": "3a05f52f-db24-4666-9bac-34c946cad925",
+     "ref": "GCE 2024 P1 Q18"
+    },
+    {
+     "id": "e0a243da-913b-49f8-9001-d5a4b457152a",
+     "ref": "GCE 2023 specimen P1 Q3"
+    },
+    {
+     "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "26af6f78-edef-48f9-a281-1982a3ad9f24",
+     "ref": "GCE 2023 P2 Q1"
+    },
+    {
+     "id": "e3ac2010-fd63-4e88-b618-49db597d3013",
+     "ref": "GCE 2009 P1 Q21"
+    }
+   ]
+  },
+  {
+   "pos": 19,
+   "topic": "Numbers (HCF and LCM)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "A teacher has 216 pens and 288 erasers. She puts them into gift bags so that each bag has the same number of pens and the same number of erasers, with none left over.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the greatest number of gift bags she can make.",
+      "marks": 2,
+      "answer": "72"
+     },
+     {
+      "label": "(b)",
+      "text": "She also puts stickers into each of the gift bags, with the same number in each bag and none left over. Stickers are sold in packets of 10.\nFind the smallest number of packets of stickers she must buy.",
+      "marks": 1,
+      "answer": "36 packets (360 stickers)"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Numbers (HCF and LCM)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The number of bags must divide both 216 and 288 exactly, so the greatest number of bags is the HCF of 216 and 288.\n$216 = 2^3 \\times 3^3$\n$288 = 2^5 \\times 3^2$\nHCF $= 2^3 \\times 3^2 = 72$\nGreatest number of gift bags $= 72$.\n(Each bag then has $216 \\div 72 = 3$ pens and $288 \\div 72 = 4$ erasers.)\n\n(b) The stickers come in packets of 10, so the number bought is a multiple of 10. They are shared equally among 72 bags with none left over, so the number is also a multiple of 72.\nSmallest number $=$ LCM of 10 and 72 $= 2^3 \\times 3^2 \\times 5 = 360$.\n(That is 36 packets, giving $360 \\div 72 = 5$ stickers in each bag.)\n\n(b) The number of stickers must be a multiple of 72 and of 10. LCM(72, 10) = 360, so she buys 360 stickers = 36 packets.",
+    "syllabus_check": "4052 Numbers and their operations: (a) the highest common factor of two numbers from their prime factorisations, recognised from an equal-sharing context ('with none left over'); (b) the lowest common multiple of two numbers, recognised from a context where a quantity must be a multiple of two different numbers (packet size and number of bags). Both skills sit in the HCF/LCM strand; Q4 of this paper tests perfect squares and cubes from an index form, a different skill. All answers are exact integers.",
+    "originality_note": "The exemplars are index-form manipulations (perfect squares and cubes, recovering N from a stated HCF and LCM, listing factors, cube roots). This is a packing context in which the candidate must decide for themselves that the greatest number of bags is an HCF and that the smallest sticker purchase is an LCM, with the LCM part hanging off the answer to (a) (multiple of 10 and of 72). New situation, new numbers (216, 288, packets of 10), and a part sequence (HCF then a dependent LCM) that none of the exemplars use."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 19,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P1 Q18",
+     "jaccard": 0.022
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.774Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "72",
+     "(b)": "360"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 72. Checked: 216 = 2^3 x 3^3, 288 = 2^5 x 3^2, HCF = 2^3 x 3^2 = 72 (3 pens, 4 erasers per bag)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 360. Checked: LCM(10, 72) = 2^3 x 3^2 x 5 = 360, i.e. 36 packets, 5 stickers per bag."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 4,
+    "fixes": [
+     "(b) is not in SEAB register: 'For this number of gift bags, find the smallest number of stickers she must buy so that each bag has the same number of stickers, with none left over' is a clause chain a SEAB setter would not write. Reword as: 'She also puts stickers into each of the gift bags, with the same number of stickers in each bag and none left over. Stickers are sold in packets of 10. Find the smallest number of packets she must buy.' (answer 36 packets; keep 360 stickers as an acceptable alternative in the scheme, or ask for stickers explicitly if 360 is wanted).",
+     "Consider stating 'Write 216 and 288 as products of their prime factors' inside (a) or as a lead-in for [1] of the 2 marks, which is how SEAB usually earns the method mark on an HCF question at this weight; as set, a candidate who writes 72 with no working gets 2 marks for a one-line answer."
+    ],
+    "too_close_to": null,
+    "why": "A clean HCF-then-dependent-LCM packing question with exact numbers, correctly weighted at 3 marks and not a re-skin of any index-form exemplar; only the wording of (b) marks it as school-made, and it sits a little light for the Q19 position (a 2024 P1 Q19 at this slot asked the harder recover-N task)."
+   },
+   "exemplars": [
+    {
+     "id": "e97a42ba-4147-469e-9fdd-89d53aff45cb",
+     "ref": "GCE 2023 P1 Q4"
+    },
+    {
+     "id": "b55dbf3b-6874-4f1e-9366-f553431545b5",
+     "ref": "GCE 2024 P1 Q19"
+    },
+    {
+     "id": "ee0ca1e6-d8f0-4f6b-936a-58787af5e43f",
+     "ref": "GCE 2015 P1 Q14"
+    },
+    {
+     "id": "9129e7c9-2f66-44cb-824b-3de24d14a472",
+     "ref": "GCE 2013 P1 Q7"
+    },
+    {
+     "id": "15800f97-09a5-4656-9b70-c134054133ef",
+     "ref": "GCE 2011 P1 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 20,
+   "topic": "Algebra (Factorization)",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "Simplify $\\frac{6x^2 - 7x - 20}{4x^2 - 25}$.",
+    "parts": [],
+    "answer": "$\\frac{3x + 4}{2x + 5}$",
+    "total_marks": 3,
+    "topics": [
+     "Algebra (Factorization)",
+     "Algebra (Fractions)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Factorise the numerator (a quadratic trinomial): we need two numbers with product $6 \\times (-20) = -120$ and sum $-7$; these are $-15$ and $8$.\n$6x^2 - 7x - 20 = 6x^2 - 15x + 8x - 20 = 3x(2x - 5) + 4(2x - 5) = (3x + 4)(2x - 5)$\n\nFactorise the denominator (difference of two squares):\n$4x^2 - 25 = (2x)^2 - 5^2 = (2x - 5)(2x + 5)$\n\nCancel the common factor $(2x - 5)$:\n$\\frac{6x^2 - 7x - 20}{4x^2 - 25} = \\frac{(3x + 4)(2x - 5)}{(2x - 5)(2x + 5)} = \\frac{3x + 4}{2x + 5}$\n\nCheck by expanding: $(3x + 4)(2x - 5) = 6x^2 - 15x + 8x - 20 = 6x^2 - 7x - 20$ and $(2x - 5)(2x + 5) = 4x^2 - 25$.",
+    "syllabus_check": "4052 Algebraic expressions and formulae: factorisation of a quadratic trinomial with a non-unit leading coefficient and of a difference of two squares, then simplification of an algebraic fraction by cancelling a common factor. 1 mark for each factorisation, 1 mark for the simplified fraction. No calculator restriction stated; the answer is exact.",
+    "originality_note": "The exemplars factorise linear common factors, four-term grouping expressions, a difference of two squares with a common factor, or expand a square; none asks for a trinomial with a leading coefficient, and none combines two factorisations inside one algebraic fraction. This question's skill is choosing the right factorisation for each of numerator and denominator and cancelling; new expressions, single-part."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 20,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2012 P1 Q18",
+     "jaccard": 0.037
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.775Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "single": "(3x + 4)/(2x + 5)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Numerator: product -120, sum -7 gives -15 and 8, so 6x^2 - 7x - 20 = (3x + 4)(2x - 5); expanding checks. Denominator 4x^2 - 25 = (2x - 5)(2x + 5). Cancelling (2x - 5) gives (3x + 4)/(2x + 5); both agree."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key (3x + 4)/(2x + 5) is correct.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "'Simplify <algebraic fraction>' for 3 marks (factorise numerator, factorise difference of two squares, cancel) is a standard 4052 Paper 1 item; the leading coefficient 6 makes the trinomial a fair step up for the position, the numbers are exam-clean, and none of the exemplars is an algebraic-fraction simplification."
+   },
+   "exemplars": [
+    {
+     "id": "67973dd4-a72b-4824-ac71-6f63f552b2e3",
+     "ref": "GCE 2024 P1 Q7"
+    },
+    {
+     "id": "9a90c4c2-15c9-45eb-a3e6-deef23c93ce5",
+     "ref": "GCE 2023 P1 Q15"
+    },
+    {
+     "id": "ca0074d5-0e5a-4598-837b-1c75e956d9e4",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "493b1bdb-62e0-4fea-a1f8-597f1324a45f",
+     "ref": "GCE 2022 P1 Q11"
+    }
+   ]
+  },
+  {
+   "pos": 21,
+   "topic": "Matrices",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "Two shops, Shop A and Shop B, sell bags of rice, trays of eggs and bottles of cooking oil. The matrix $\\mathbf{P}$ shows the price, in dollars, of each item at each shop. The rows represent Shop A and Shop B, and the columns represent rice, eggs and cooking oil, in that order.\n$\\mathbf{P} = \\begin{pmatrix} 12 & 4 & 7 \\\\ 13 & 3 & 6 \\end{pmatrix}$\nMrs Tan needs to buy 2 bags of rice, 5 trays of eggs and 3 bottles of cooking oil.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Represent the numbers of items Mrs Tan needs to buy in a $3 \\times 1$ matrix $\\mathbf{Q}$.",
+      "marks": 1,
+      "answer": "$\\mathbf{Q} = \\begin{pmatrix} 2 \\\\ 5 \\\\ 3 \\end{pmatrix}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the matrix $\\mathbf{C} = \\mathbf{PQ}$.",
+      "marks": 2,
+      "answer": "$\\mathbf{C} = \\begin{pmatrix} 65 \\\\ 59 \\end{pmatrix}$"
+     },
+     {
+      "label": "(c)",
+      "text": "Find the matrix $\\begin{pmatrix} 1 & -1 \\end{pmatrix}\\mathbf{C}$ and explain what the element of this matrix represents.",
+      "marks": 1,
+      "answer": "$\\begin{pmatrix} 6 \\end{pmatrix}$; buying all the items at Shop A costs $\\$6$ more than buying all of them at Shop B."
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Matrices"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The rows of $\\mathbf{Q}$ must match the columns of $\\mathbf{P}$ (rice, eggs, cooking oil).\n$\\mathbf{Q} = \\begin{pmatrix} 2 \\\\ 5 \\\\ 3 \\end{pmatrix}$\n\n(b) $\\mathbf{C} = \\mathbf{PQ} = \\begin{pmatrix} 12 & 4 & 7 \\\\ 13 & 3 & 6 \\end{pmatrix} \\begin{pmatrix} 2 \\\\ 5 \\\\ 3 \\end{pmatrix} = \\begin{pmatrix} 12 \\times 2 + 4 \\times 5 + 7 \\times 3 \\\\ 13 \\times 2 + 3 \\times 5 + 6 \\times 3 \\end{pmatrix} = \\begin{pmatrix} 24 + 20 + 21 \\\\ 26 + 15 + 18 \\end{pmatrix} = \\begin{pmatrix} 65 \\\\ 59 \\end{pmatrix}$\n(The elements are the total cost, in dollars, of all the items at Shop A and at Shop B respectively.)\n\n(c) $\\begin{pmatrix} 1 & -1 \\end{pmatrix} \\begin{pmatrix} 65 \\\\ 59 \\end{pmatrix} = \\begin{pmatrix} 65 - 59 \\end{pmatrix} = \\begin{pmatrix} 6 \\end{pmatrix}$\nThe element is the difference between the two totals: buying all the items at Shop A costs $\\$6$ more than buying all of them at Shop B.",
+    "syllabus_check": "4052 Matrices: display of information as a column matrix, multiplication of a $2 \\times 3$ matrix by a $3 \\times 1$ matrix, and interpretation of a product in context, including the effect of pre-multiplying by the row matrix $\\begin{pmatrix} 1 & -1 \\end{pmatrix}$ (a difference of two rows). No inverses or determinants. Prices are whole dollars throughout; every answer is an exact integer.",
+    "originality_note": "The exemplars all run 'quantities sold (with an unknown x) times a price column, then one stated total fixes x'. Here the GIVEN matrix is a table of prices at two shops, the column matrix the candidate writes is one shopping list, the product compares the cost of that list shop by shop, and the closing step is a $\\begin{pmatrix} 1 & -1 \\end{pmatrix}$ difference whose single element must be read in context. No unknown inside a matrix, no sales-by-week rows, a different purpose for the product. New context (groceries at two shops), new numbers."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 21,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2019 P1 Q21",
+     "jaccard": 0.037
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.777Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Q = (2 5 3)^T, i.e. the 3x1 matrix with entries 2 (rice), 5 (eggs), 3 (oil)",
+     "(b)": "C = PQ = (65 59)^T, i.e. the 2x1 matrix with entries 65 and 59",
+     "(c)": "(1 -1)C = (6); the element 6 means it costs $6 more to buy all the items at Shop A than at Shop B"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give the 3 x 1 column (2, 5, 3)^T in the order rice, eggs, oil, matching the columns of P."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both (65, 59)^T. Checked: 12(2)+4(5)+7(3) = 24+20+21 = 65; 13(2)+3(5)+6(3) = 26+15+18 = 59."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both (6) with the same reading: the whole shopping list costs $6 more at Shop A than at Shop B. Checked: 65 - 59 = 6."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in all three parts.",
+    "score": 4,
+    "fixes": [
+     "(c) makes two demands (compute (1 -1)C AND interpret its element) for one mark; SEAB pays a matrix operation and its interpretation separately. Either give (c) [2] and let the slot carry 5 marks (take one from elsewhere in the paper), or keep [1] and ask only 'Explain what the element of the matrix (1 -1)C represents' so the arithmetic is implicit.",
+     "The stem introduces the labels rice (R), eggs (E) and cooking oil (O) but never uses them. Either drop the bracketed letters or print them as column headings above P (and rows A, B beside it), which is how a real paper would use them.",
+     "Minor register: '(a) Represent the numbers of items Mrs Tan needs to buy' reads better as 'Represent the number of each item Mrs Tan needs to buy in a 3 x 1 matrix Q.'"
+    ],
+    "too_close_to": null,
+    "why": "The rewritten skeleton is no longer the 2017 P1 Q19 shape: the given matrix is now a price table rather than usage counts, there is no unknown x inside a matrix, the candidate writes a single shopping-list column, and the closing move is a (1 -1) pre-multiplication read in context rather than 'the two totals are equal, find x'; numbers are exam-clean and the 4-mark weight fits the Q21 slot. It stops short of 5 only on mark discipline in (c) and the unused R/E/O labels."
+   },
+   "exemplars": [
+    {
+     "id": "69740c3f-1c25-4391-9e8f-b01320d26c6b",
+     "ref": "GCE 2023 specimen P1 Q18"
+    },
+    {
+     "id": "833b4449-22bf-441c-b917-79e31ac26878",
+     "ref": "GCE 2024 P2 Q2"
+    },
+    {
+     "id": "82d62f89-1a79-45e3-8888-6520ab2f99a4",
+     "ref": "GCE 2025 P2 Q3"
+    },
+    {
+     "id": "967ea9ef-f65d-4267-a50a-a3f3ea707aab",
+     "ref": "GCE 2019 P1 Q21"
+    },
+    {
+     "id": "b9a7a643-181c-4292-ab08-21335aabcbed",
+     "ref": "GCE 2017 P1 Q19"
+    }
+   ]
+  },
+  {
+   "pos": 22,
+   "topic": "Algebra (Expansion)",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "A square tile has sides of length $(3x + 2)$ cm. A square hole with sides of length $(x - 1)$ cm is cut from the tile, where $x > 1$. The remaining part of the tile is called the frame.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that the area of the frame is $(8x^2 + 14x + 3)$ cm$^2$.",
+      "marks": 2,
+      "answer": "$(3x+2)^2 - (x-1)^2 = 9x^2 + 12x + 4 - (x^2 - 2x + 1) = 8x^2 + 14x + 3$ (shown)"
+     },
+     {
+      "label": "(b)",
+      "text": "The area of the frame is $63$ cm$^2$. Find the length of a side of the tile.",
+      "marks": 2,
+      "answer": "$8$ cm"
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Algebra (Expansion)",
+     "Algebra (Quadratic Equations)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Area of frame $=$ area of tile $-$ area of hole\n$= (3x + 2)^2 - (x - 1)^2$\n$= (9x^2 + 12x + 4) - (x^2 - 2x + 1)$\n$= 9x^2 + 12x + 4 - x^2 + 2x - 1$\n$= 8x^2 + 14x + 3$ (shown).\n[Alternative by difference of two squares: $(3x + 2 - x + 1)(3x + 2 + x - 1) = (2x + 3)(4x + 1) = 8x^2 + 14x + 3$.]\n\n(b) $8x^2 + 14x + 3 = 63$\n$8x^2 + 14x - 60 = 0$\n$4x^2 + 7x - 30 = 0$\n$(4x + 15)(x - 2) = 0$\n$x = 2$ or $x = -\\frac{15}{4}$ (rejected, since $x > 1$).\nLength of a side of the tile $= 3(2) + 2 = 8$ cm.\nCheck: tile $8 \\times 8 = 64$ cm$^2$, hole $1 \\times 1 = 1$ cm$^2$, frame $64 - 1 = 63$ cm$^2$.",
+    "syllabus_check": "4052 Algebraic expressions and formulae: expansion of the square of a binomial, subtraction of a bracketed expression, collecting like terms (a). Equations: forming a quadratic equation from a context and solving it by factorisation (or the formula, calculator allowed), rejecting the root that gives a negative length (b). Two parts with different demands: (a) an expansion whose target is stated and shown, (b) the shown expression used in a mensuration-flavoured quadratic. No three-factor products; nothing beyond 4052.",
+    "originality_note": "None of the exemplars sets an expansion inside a geometric context or follows it with an equation to solve: they pair an expansion with a bare factorisation, a linear equation, or a right-triangle parity argument. This question is the area of a square frame, (3x+2)^2 - (x-1)^2, shown as a stated target and then used with a given area to find a length. It does not repeat Q8's identity-then-factorise skeleton (no unknown constants, no cubic) nor Q20's algebraic fraction, and the paper has no other quadratic-equation solving. Numbers, context and the sequence of parts are new."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 22,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P1 Q16",
+     "jaccard": 0.055
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.778Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Area = (3x + 2)^2 - (x - 1)^2 = (9x^2 + 12x + 4) - (x^2 - 2x + 1) = 8x^2 + 14x + 3 cm^2 — shown",
+     "(b)": "8x^2 + 14x + 3 = 63 gives 8x^2 + 14x - 60 = 0, i.e. 4x^2 + 7x - 30 = 0, (x - 2)(4x + 15) = 0, so x = 2 or x = -15/4; since x > 1, x = 2. Side of tile = 3(2) + 2 = 8 cm"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both show (3x + 2)^2 - (x - 1)^2 = 9x^2 + 12x + 4 - x^2 + 2x - 1 = 8x^2 + 14x + 3; the difference-of-squares route (2x + 3)(4x + 1) confirms."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give a side of 8 cm: 8x^2 + 14x - 60 = 0, 4x^2 + 7x - 30 = (4x + 15)(x - 2) = 0, x = 2 (x = -15/4 rejected as x > 1), side = 3(2) + 2 = 8. Check: 64 - 1 = 63."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement — the key is right in both parts.",
+    "score": 4,
+    "fixes": [
+     "(b) is under-weighted at [2]: the candidate must form and reduce the equation (8x^2 + 14x - 60 = 0 to 4x^2 + 7x - 30 = 0), factorise a non-monic quadratic and reject the negative root, then return to the side length — three marked steps on a real paper (M1 equation, M1 factorise/solve, A1 8 cm). Either weight it [3] (question becomes [5]) or, to keep [4], ask 'Find the value of x' and leave the side length out.",
+     "Print a diagram: a square tile with a smaller square hole inside it, the outer side labelled (3x + 2) and the hole's side labelled (x - 1) — SEAB shows the figure for every 'area of the frame/shaded part' question, and 'cut from the tile' should read 'cut from the centre of the tile' so the picture is determined."
+    ],
+    "too_close_to": null,
+    "why": "Sound, exam-clean (x = 2, 8 cm, 63 = 64 - 1) and in the right register, and nothing among the exemplars resembles it; the light edit that makes it a real question is the mark weight of (b) and a figure for the tile."
+   },
+   "exemplars": [
+    {
+     "id": "9a90c4c2-15c9-45eb-a3e6-deef23c93ce5",
+     "ref": "GCE 2023 P1 Q15"
+    },
+    {
+     "id": "ca0074d5-0e5a-4598-837b-1c75e956d9e4",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "ebabb11d-6e22-4c39-90e9-e45d5f7322f4",
+     "ref": "GCE 2024 P1 Q23"
+    },
+    {
+     "id": "d4c31d1f-2288-4710-a0d1-a243b3258ae4",
+     "ref": "GCE 2020 P1 Q19"
+    },
+    {
+     "id": "e020a904-615c-48dc-b4c5-2a553b12bdef",
+     "ref": "GCE 2008 P1 Q15"
+    }
+   ]
+  },
+  {
+   "pos": 23,
+   "topic": "Trigonometry",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a triangular plot of land $LMN$ on horizontal ground.\nThe side $MN$ runs along a straight road.\n$LM = 120$ m, $LN = 85$ m and angle $MLN = 104^\\circ$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $MN = 163$ m, correct to 3 significant figures.",
+      "marks": 2,
+      "answer": "$MN^2 = 120^2 + 85^2 - 2(120)(85)\\cos 104^\\circ = 26560.2\\ldots$, so $MN = 162.97\\ldots = 163$ m (3 s.f.)"
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate angle $LMN$.",
+      "marks": 2,
+      "answer": "$30.4^\\circ$"
+     },
+     {
+      "label": "(c)",
+      "text": "A straight path is to be built from $L$ to the road so that the path is as short as possible.\nCalculate the length of this path.",
+      "marks": 2,
+      "answer": "$60.7$ m"
+     }
+    ],
+    "answer": "",
+    "total_marks": 6,
+    "topics": [
+     "Trigonometry"
+    ],
+    "needs_figure": true,
+    "figure_description": "A triangle $LMN$, NOT drawn to scale, with $L$ at the top and the base $MN$ horizontal along the bottom, $M$ at the bottom left and $N$ at the bottom right. The angle at $L$ is obtuse (about 104 degrees), so $L$ sits fairly low and roughly above the middle of $MN$; the angle at $M$ should look about 30 degrees and the angle at $N$ about 46 degrees. Draw the three sides as solid lines. Print \"120 m\" beside side $LM$ (on its outer, upper-left side) and \"85 m\" beside side $LN$ (on its outer, upper-right side). Mark the angle at $L$ inside the triangle with a small arc and print \"$104^\\circ$\" beside it. Draw a slightly thicker or double line along $MN$, extending a little beyond $M$ and beyond $N$, and print the word \"road\" just below it. Label the vertices $L$, $M$, $N$ in plain capitals outside the triangle. Print nothing else: the length of $MN$ is NOT shown, the angles at $M$ and $N$ are NOT shown, and no perpendicular, path, foot point or dashed line from $L$ to $MN$ is drawn.",
+    "solution": "(a) By the cosine rule in triangle $LMN$,\n$MN^2 = LM^2 + LN^2 - 2(LM)(LN)\\cos MLN$\n$= 120^2 + 85^2 - 2(120)(85)\\cos 104^\\circ$\n$= 14400 + 7225 - 20400(-0.24192\\ldots)$\n$= 21625 + 4935.2\\ldots = 26560.2\\ldots$\n$MN = \\sqrt{26560.2\\ldots} = 162.97\\ldots = 163$ m (correct to 3 significant figures).\n\n(b) By the sine rule,\n$\\frac{\\sin LMN}{LN} = \\frac{\\sin MLN}{MN}$\n$\\sin LMN = \\frac{85 \\sin 104^\\circ}{162.97\\ldots} = 0.50607\\ldots$\nAngle $LMN = 30.40\\ldots^\\circ = 30.4^\\circ$ (1 d.p.).\n(Using $MN = 163$ gives $\\sin LMN = 0.50598\\ldots$ and the same $30.4^\\circ$.)\n\n(c) The shortest path from $L$ to the road is the perpendicular from $L$ to $MN$. Let its foot be $P$; since the angles at $M$ and $N$ are both acute ($30.4^\\circ$ and $180^\\circ - 104^\\circ - 30.4^\\circ = 45.6^\\circ$), $P$ lies between $M$ and $N$.\nIn right-angled triangle $LPM$, $LP = LM \\sin LMN = 120 \\sin 30.40\\ldots^\\circ = 60.73\\ldots = 60.7$ m.\n\nAlternatively, using the area: area of triangle $LMN = \\frac{1}{2}(120)(85)\\sin 104^\\circ = 4948.5\\ldots$ m$^2$, and also $= \\frac{1}{2}(MN)(LP)$, so $LP = \\frac{2 \\times 4948.5\\ldots}{162.97\\ldots} = 60.7$ m.\n\nLength of the path $= 60.7$ m.",
+    "syllabus_check": "4052 Pythagoras' theorem and trigonometry: cosine rule (two sides and the included obtuse angle), sine rule for an angle, and either right-angled trigonometry or the area formula $\\frac{1}{2}ab\\sin C$ for the perpendicular distance from a point to a line. Angles in degrees to 1 d.p., lengths to 3 s.f. The 'show that' target 163 m is true (162.97). The ambiguous case does not arise because the angle sought in (b) is opposite the shorter given side, so it must be acute. Nothing beyond 4052 (no bearings needed, no identities, no calculus).",
+    "originality_note": "The exemplars are bearings problems on the ground with three or four points, or a congruent-squares / integer-sided right-triangle argument. This question has no bearings and no mast: it is one obtuse-angled triangle bordered by a road, with a cosine-rule 'show that', a sine-rule angle, and a 'shortest path to the road' part that makes the candidate recognise the perpendicular distance and choose between right-angled trigonometry and the area formula. The letters $L$, $M$, $N$, the values 120 m, 85 m, 104 degrees and the part sequence match no exemplar, and the road/path context is not used elsewhere in this paper (the playground in Q7 is a scale drawing with loci, not trigonometry)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 23,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2017 P2 Q8",
+     "jaccard": 0.051
+    },
+    "marks": 6,
+    "checked_at": "2026-09-11T06:51:43.780Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown (MN^2 = 120^2 + 85^2 - 2(120)(85)cos104 = 26560.2..., MN = 162.98 = 163 m to 3 s.f.)",
+     "(b)": "angle LMN = 30.4 degrees",
+     "(c)": "60.7 m"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both show MN^2 = 120^2 + 85^2 - 2(120)(85)cos 104 = 26560.2..., MN = 162.97... = 163 m (3 s.f.). Re-worked: 20400 x 0.24192 = 4935.2, 21625 + 4935.2 = 26560.2, sqrt = 162.97. Target true."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 30.4 degrees; re-worked sin LMN = 85 sin 104 / 162.97 = 0.5061, angle = 30.40. Opposite the shorter side so acute — no ambiguous case."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 60.7 m; re-worked as 120 sin 30.40 = 60.73 and by area 2(4948.5)/162.97 = 60.73. Both base angles acute so the foot lies on MN."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Key and blind examiner agree on all three parts; the key is correct.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "One obtuse triangle beside a road with a cosine-rule 'show that' (correct to 3 s.f., the 2024 P2 Q5 register), a sine-rule angle and the shortest-path-is-the-perpendicular step is exactly a late Paper 1 trigonometry slot; the numbers land cleanly (163 m, 30.4 degrees, 60.7 m), the figure brief withholds what it should, and no exemplar shares the situation — none of the bearings, mast or squares structures are used."
+   },
+   "exemplars": [
+    {
+     "id": "8031701c-dd03-407c-9d1d-6cb5bfc4158f",
+     "ref": "GCE 2025 P1 Q20"
+    },
+    {
+     "id": "ebabb11d-6e22-4c39-90e9-e45d5f7322f4",
+     "ref": "GCE 2024 P1 Q23"
+    },
+    {
+     "id": "337f8a90-e048-406d-bf36-f88770a9660c",
+     "ref": "GCE 2023 P1 Q23"
+    },
+    {
+     "id": "75dafe53-e059-4b92-bfec-a91415dcf017",
+     "ref": "GCE 2023 specimen P2 Q7"
+    },
+    {
+     "id": "f05ebc88-2a20-4bba-bce3-60d467a1a143",
+     "ref": "GCE 2024 P2 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 24,
+   "topic": "Proportion",
+   "target": 3,
+   "accepted": true,
+   "question": {
+    "stem": "The time, $T$ seconds, taken by a pendulum to complete one swing is directly proportional to the square root of its length, $L$ cm.\nA pendulum of length $64$ cm takes $1.6$ seconds to complete one swing.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find an expression for $T$ in terms of $L$.",
+      "marks": 2,
+      "answer": "$T = 0.2\\sqrt{L}$ (or $T = \\frac{\\sqrt{L}}{5}$)"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the length of a pendulum that takes $2.5$ seconds to complete one swing.",
+      "marks": 1,
+      "answer": "$156.25$ cm (accept $156$ cm)"
+     }
+    ],
+    "answer": "",
+    "total_marks": 3,
+    "topics": [
+     "Proportion"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Since $T$ is directly proportional to $\\sqrt{L}$, $T = k\\sqrt{L}$ for some constant $k$.\nWhen $L = 64$, $T = 1.6$: $1.6 = k\\sqrt{64} = 8k$, so $k = 0.2$.\nHence $T = 0.2\\sqrt{L}$, that is $T = \\frac{\\sqrt{L}}{5}$.\n\n(b) When $T = 2.5$: $2.5 = 0.2\\sqrt{L}$, so $\\sqrt{L} = 12.5$ and $L = 12.5^2 = 156.25$.\nThe pendulum is $156.25$ cm long (156 cm to 3 s.f.).",
+    "syllabus_check": "4052 Ratio and proportion: direct proportion to the square root of a variable — forming $T = k\\sqrt{L}$, finding $k$ from one pair of values (2 marks: the proportion statement with $k$, then $k = 0.2$ and the expression), and using the expression in reverse (1 mark: square 12.5). $\\sqrt{64} = 8$ keeps the constant exact. A calculator is allowed; nothing beyond 4052.",
+    "originality_note": "Every exemplar uses proportion to a square, a cube, an inverse or an inverse square, and asks for a value, a factor or a percentage change; none asks for the formula itself. This question uses direct proportion to a SQUARE ROOT (a pendulum's swing time), asks the candidate to build the expression $T = 0.2\\sqrt{L}$ and then to invert it to find a length. The context, the variables, the numbers 64 cm / 1.6 s / 2.5 s and the two-part shape are new, and the paper so far has no proportion or pendulum question."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 24,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2014 P1 Q19",
+     "jaccard": 0.05
+    },
+    "marks": 3,
+    "checked_at": "2026-09-11T06:51:43.782Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "T = 0.2 sqrt(L)",
+     "(b)": "L = 156.25 cm (156 cm to 3 s.f.)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give T = 0.2 sqrt(L); re-worked: T = k sqrt(L), 1.6 = 8k, k = 0.2."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 156.25 cm; re-worked: sqrt(L) = 2.5 / 0.2 = 12.5, L = 156.25. Exact, so 156.25 is the answer and 156 (3 s.f.) is acceptable."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Key and blind examiner agree on both parts; the key is correct.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A 3-mark proportion question at Q24 mirrors where SEAB puts one (2023 P1 Q24), but the shape is different — square-root proportion, build the formula, then invert it — and the numbers are exam-clean (sqrt 64 = 8 keeps k exact, 12.5^2 gives a terminating answer; 1.6 s for 64 cm is even physically right). Register ('directly proportional to the square root of', 'Find an expression for T in terms of L') is SEAB's own."
+   },
+   "exemplars": [
+    {
+     "id": "c938b3e2-6768-4a77-8672-093cff25a202",
+     "ref": "GCE 2023 P1 Q24"
+    },
+    {
+     "id": "852d1e3d-b276-4647-a97b-8a4a0e654dab",
+     "ref": "GCE 2025 P1 Q2"
+    },
+    {
+     "id": "37c3bea4-054a-48dc-90e6-86d057489842",
+     "ref": "GCE 2021 P1 Q16"
+    },
+    {
+     "id": "dee38c69-6480-4263-9457-e8659fa451c0",
+     "ref": "GCE 2019 P1 Q10"
+    },
+    {
+     "id": "42ce172e-d852-4728-9db5-67d55e40bc3a",
+     "ref": "GCE 2018 P1 Q12"
+    }
+   ]
+  },
+  {
+   "pos": 25,
+   "topic": "Statistics",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "The box-and-whisker plot shows the distribution of the times, in minutes, taken by 80 runners to complete a race.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "",
+      "marks": 2,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the interquartile range of the times.",
+        "marks": 1,
+        "answer": "$15$ minutes"
+       },
+       {
+        "label": "(ii)",
+        "text": "Find how many of the runners took more than 62 minutes to complete the race.",
+        "marks": 1,
+        "answer": "$20$"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "The times taken by 80 runners in a second race had a median of 58 minutes and an interquartile range of 9 minutes.\nMake two comments comparing the times taken in the two races.",
+      "marks": 2,
+      "answer": "The median time in the first race (53 minutes) is less than in the second race (58 minutes), so on average the runners in the first race were faster. The interquartile range in the first race (15 minutes) is greater than in the second race (9 minutes), so the times in the first race were more spread out (less consistent)."
+     }
+    ],
+    "answer": "",
+    "total_marks": 4,
+    "topics": [
+     "Statistics"
+    ],
+    "needs_figure": true,
+    "figure_description": "A single horizontal box-and-whisker plot. Horizontal axis labelled 'Time (minutes)', running from 30 to 90, with a tick and a printed number every 10 (30, 40, 50, 60, 70, 80, 90) and light vertical gridlines every 2 minutes so the values can be read exactly. The plot: left whisker from 38 to 47; box from 47 (lower quartile) to 62 (upper quartile); a vertical line inside the box at 53 (median); right whisker from 62 to 84. No values are printed on the plot itself — the candidate reads 47, 53, 62 off the gridlines. The number 80 (runners) is stated only in the question text. Nothing about the interquartile range, the number 20, or the second race appears on the figure.",
+    "solution": "(a)(i) From the plot, the lower quartile is 47 minutes and the upper quartile is 62 minutes.\nInterquartile range $= 62 - 47 = 15$ minutes.\n\n(a)(ii) 62 minutes is the upper quartile, so $25\\%$ of the runners took more than 62 minutes.\nNumber of runners $= \\frac{25}{100} \\times 80 = 20$.\n\n(b) From the plot, the median of the first race is 53 minutes.\nComment on the averages: the median of the first race (53 minutes) is less than the median of the second race (58 minutes), so on average the runners in the first race completed the race more quickly.\nComment on the spread: the interquartile range of the first race (15 minutes) is greater than that of the second race (9 minutes), so the times in the first race were more spread out; the times in the second race were more consistent.",
+    "syllabus_check": "4052 Data handling and analysis: reading quartiles and the median from a box-and-whisker plot, interquartile range, using a quartile to find a number of data values (25% of 80), and comparing two distributions in context by median (average) and interquartile range (spread). No content outside 4052.",
+    "originality_note": "New situation (race times of 80 runners, two races) and new numbers (whiskers 38 and 84, quartiles 47 and 62, median 53; second race median 58, IQR 9). The exemplars use a grouped-frequency table of kiwi masses with mean/standard deviation, a cumulative frequency curve of potato estimates, male/female mean weights, and quiz times; none is a box plot read for IQR then a count above the upper quartile then a median/IQR comparison. Distinct from every context in paper-so-far.md."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 25,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2019 P1 Q24",
+     "jaccard": 0.048
+    },
+    "marks": 4,
+    "checked_at": "2026-09-11T06:51:43.783Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "Interquartile range = 62 - 47 = 15 minutes",
+     "(a)(ii)": "62 minutes is the upper quartile, so 25% of the runners took more than 62 minutes: (1/4) x 80 = 20 runners",
+     "(b)": "1) The median time in the second race (58 min) is greater than the median in the first race (53 min), so on average the runners in the second race took longer to complete the race. 2) The interquartile range in the second race (9 min) is smaller than that in the first race (15 min), so the middle 50% of the times in the second race were less spread out, i.e. the times were more consistent."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both read Q1 = 47, Q3 = 62 off the 2-minute grid and give IQR = 15 minutes."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "62 is the upper quartile, so a quarter of 80 = 20 runners took longer. Both give 20."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both make the two expected comments in context: first-race median 53 < 58 so first-race runners were faster on average; first-race IQR 15 > 9 so first-race times were more spread out / second race more consistent. Same substance, opposite phrasing direction only."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement — the setter's key is correct in every part and the blind examiner matches it exactly.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Register, mark discipline and difficulty match a late-P1 4052 statistics item exactly (a 1-mark IQR read, a 1-mark quartile-to-count step at exactly Q3, two contextual comparison comments for 2), the plot as described reads cleanly on a 2-minute grid with all five values on gridlines, and although the shape (read two statistics, then compare with a second data set given in words) is the standard SEAB pattern seen in 2025 P1 Q25, this uses a box plot with median/IQR rather than a grouped table with mean/SD, so it is the genre, not a re-skin."
+   },
+   "exemplars": [
+    {
+     "id": "07f7d4e9-3413-4dc0-8a9e-71121a63da8e",
+     "ref": "GCE 2025 P1 Q25"
+    },
+    {
+     "id": "8ca3599f-87dc-4fb1-98f5-b491a8928960",
+     "ref": "GCE 2024 P1 Q11"
+    },
+    {
+     "id": "276888b3-7802-4e61-8fad-223ca249ca44",
+     "ref": "GCE 2023 specimen P1 Q11"
+    },
+    {
+     "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+     "ref": "GCE 2024 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 26,
+   "topic": "Mensuration",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a solid wooden ornament.\nIt is made from a cylinder of radius 6 cm and height 10 cm.\nA hemisphere of radius 4 cm is removed from the top face of the cylinder, as shown.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate the volume of the ornament.",
+      "marks": 2,
+      "answer": "$997$ cm$^3$ (exact value $\\frac{952\\pi}{3}$ cm$^3$)"
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate the total surface area of the ornament.\nGive your answer in terms of $\\pi$.",
+      "marks": 3,
+      "answer": "$208\\pi$ cm$^2$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 5,
+    "topics": [
+     "Mensuration"
+    ],
+    "needs_figure": true,
+    "figure_description": "A three-dimensional line drawing of an upright solid cylinder (circular faces drawn as ellipses, the hidden half of the bottom ellipse dashed). On the top face a smaller concentric ellipse marks the rim of a hemispherical hollow, with the lower curve of the hollow drawn dashed below the top face to show it is scooped out of the solid. Labels printed: a radius line from the centre of the top face to its rim labelled '6 cm'; a vertical line beside the cylinder labelled '10 cm' for its height; a radius line from the centre of the top face to the rim of the hollow labelled '4 cm'. Nothing else is printed — no volume, no surface area, no other lengths.",
+    "solution": "(a) Volume of cylinder $= \\pi \\times 6^2 \\times 10 = 360\\pi$ cm$^3$.\nVolume of hemisphere removed $= \\frac{2}{3}\\pi \\times 4^3 = \\frac{128\\pi}{3}$ cm$^3$.\nVolume of ornament $= 360\\pi - \\frac{128\\pi}{3} = \\frac{952\\pi}{3} = 996.9\\ldots \\approx 997$ cm$^3$.\n\n(b) The surface of the ornament has four pieces.\nCurved surface of cylinder $= 2\\pi \\times 6 \\times 10 = 120\\pi$ cm$^2$.\nBottom face $= \\pi \\times 6^2 = 36\\pi$ cm$^2$.\nTop face, which is a circle of radius 6 cm with a circle of radius 4 cm removed $= \\pi \\times 6^2 - \\pi \\times 4^2 = 20\\pi$ cm$^2$.\nCurved surface of the hollow hemisphere $= 2\\pi \\times 4^2 = 32\\pi$ cm$^2$.\nTotal surface area $= 120\\pi + 36\\pi + 20\\pi + 32\\pi = 208\\pi$ cm$^2$.",
+    "syllabus_check": "4052 Mensuration: volume of a cylinder and of a sphere/hemisphere, curved surface area of a cylinder and of a hemisphere, area of a circle and of an annulus, composite solid formed by removal; answer left in terms of pi as the question instructs. No content outside 4052.",
+    "originality_note": "A new configuration: a solid cylinder with a hemispherical hollow scooped from its top face, asking for the remaining volume and then the exact surface area (which must include the annulus left on the top face and the inside of the hollow). The exemplars are partly filled cylinder/cone containers, a frustum of a square pyramid, a cylinder joined to a cone half full of water, and a hemisphere and cylinder with equal surface areas; none removes a hemisphere from a cylinder or asks for a surface area in terms of pi with an annulus. Distinct from the sector in Q2 and from every context in paper-so-far.md."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 26,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q3",
+     "jaccard": 0.113
+    },
+    "marks": 5,
+    "checked_at": "2026-09-11T06:51:43.784Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "V = pi(6^2)(10) - (2/3)pi(4^3) = 360pi - 128pi/3 = 952pi/3 = 997 cm^3 (3 s.f.)",
+     "(b)": "208pi cm^2"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 360\\pi - 128\\pi/3 = 952\\pi/3 = 997 cm^3 (3 s.f.). Checked: (1080 - 128)\\pi/3 = 952\\pi/3 = 996.9..."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 208\\pi cm^2. Checked the four pieces: curved 2\\pi(6)(10) = 120\\pi, base 36\\pi, top annulus 36\\pi - 16\\pi = 20\\pi, inside of hollow 2\\pi(4^2) = 32\\pi; total 208\\pi."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in both parts.",
+    "score": 4,
+    "fixes": [
+     "Let the diagram carry the placement, as SEAB does: end the third sentence 'A hemisphere of radius 4 cm is removed from the top face of the cylinder, as shown.' and delete the fourth sentence 'The centre of the hemisphere is at the centre of the top face.' (cf. the 2023 specimen frustum: 'removing a small square-based pyramid ... as shown in the diagram').",
+     "Optional: (b) has four surface pieces (curved, base, annulus, hollow) for 3 marks; a real key would more often give it 4 marks (M1 curved + base, M1 annulus, M1 hollow, A1). Keep 3 only if the paper total is fixed."
+    ],
+    "too_close_to": null,
+    "why": "A cylinder with a hemisphere scooped from its top face, asked for volume then exact surface area including the annulus, is a genuine 4052 mensuration closer with clean numbers (952\\pi/3, 208\\pi) and is not a re-skin of any exemplar (the nearest, 2023 P2 Q3, is a separate hemisphere and cylinder with equal surface areas). Only the over-explained placement sentence marks it as generated rather than SEAB-set."
+   },
+   "exemplars": [
+    {
+     "id": "7010b84e-06c9-42e0-a0d7-86a89ec52ce6",
+     "ref": "GCE 2025 P1 Q21"
+    },
+    {
+     "id": "c44abbb6-afee-4bf2-a002-6c1e1fa3ed22",
+     "ref": "GCE 2023 specimen P1 Q25"
+    },
+    {
+     "id": "0aa31d1b-a2da-4272-adae-1c2559209b6b",
+     "ref": "GCE 2024 P1 Q26"
+    },
+    {
+     "id": "90ed63de-9265-49aa-b1af-dfa63998d311",
+     "ref": "GCE 2023 P2 Q3"
+    },
+    {
+     "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+     "ref": "GCE 2024 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 27,
+   "topic": "Number Patterns",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "The first five terms of a sequence are $5$, $12$, $21$, $32$, $45$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Write down the next term of the sequence.",
+      "marks": 1,
+      "answer": "$60$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find an expression, in terms of $n$, for the $n$th term of the sequence.",
+      "marks": 2,
+      "answer": "$n^2 + 4n$"
+     },
+     {
+      "label": "(c)",
+      "text": "",
+      "marks": 3,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Show that every term of the sequence is 4 less than a square number.",
+        "marks": 1,
+        "answer": "$n^2 + 4n = (n+2)^2 - 4$, and $(n+2)^2$ is a square number"
+       },
+       {
+        "label": "(ii)",
+        "text": "Hence explain why 500 is not a term of the sequence.",
+        "marks": 1,
+        "answer": "$500 + 4 = 504$ is not a square number ($22^2 = 484$, $23^2 = 529$)"
+       },
+       {
+        "label": "(iii)",
+        "text": "Hence find the value of $n$ for which the $n$th term of the sequence is 1152.",
+        "marks": 1,
+        "answer": "$n = 32$"
+       }
+      ]
+     }
+    ],
+    "answer": "",
+    "total_marks": 6,
+    "topics": [
+     "Number Patterns"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The differences between consecutive terms are $7, 9, 11, 13$, so the next difference is $15$.\nNext term $= 45 + 15 = 60$.\n\n(b) The second difference is constant, $2$, so the $n$th term is $n^2 + bn + c$.\n$n = 1$: $1 + b + c = 5$; $n = 2$: $4 + 2b + c = 12$.\nSubtracting, $3 + b = 7$, so $b = 4$ and $c = 0$.\n$n$th term $= n^2 + 4n$ (which is $n(n+4)$). Check: $n = 5$ gives $25 + 20 = 45$.\n\n(c)(i) $n^2 + 4n = (n+2)^2 - 4$.\n$(n+2)^2$ is a square number, so every term is 4 less than a square number.\n\n(c)(ii) If 500 were a term, then $500 + 4 = 504$ would be a square number.\n$22^2 = 484$ and $23^2 = 529$, so $504$ is not a square number. Hence 500 is not a term of the sequence.\n\n(c)(iii) $1152 + 4 = 1156 = 34^2$.\nSo $(n+2)^2 = 34^2$, giving $n + 2 = 34$ and $n = 32$.\nCheck: $32^2 + 4 \\times 32 = 1024 + 128 = 1152$.",
+    "syllabus_check": "4052 Number patterns: continuing a sequence from its differences, finding the nth term of a quadratic sequence, writing a quadratic in completed-square form (algebraic expressions), and a reasoning argument about whether a number is a term. No content outside 4052.",
+    "originality_note": "A new quadratic sequence ($n^2 + 4n$: 5, 12, 21, 32, 45) built to a completed-square 'show that' ($(n+2)^2 - 4$) which then drives both the reasoning part (500 is not a term because 504 is not a square) and the closing 'find n' (1156 = 34^2). The exemplars are a linear sequence with a sum formula $2n^2 + 8n$, an arithmetic sequence with five unknowns, a number-grid cross, sum formulas $pn^2 + qn$, and a Fibonacci parking-payment table; none is a quadratic sequence closed by a square-number argument. No number-pattern context appears in paper-so-far.md."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 27,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2012 P1 Q7",
+     "jaccard": 0.276
+    },
+    "marks": 6,
+    "checked_at": "2026-09-11T06:51:43.786Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "60",
+     "(b)": "n^2 + 4n  (equivalently n(n+4))",
+     "(c)(i)": "Shown: n^2 + 4n = (n^2 + 4n + 4) - 4 = (n + 2)^2 - 4, and (n + 2)^2 is a square number, so every term is 4 less than a square number.",
+     "(c)(ii)": "If 500 were a term then 500 + 4 = 504 would have to be a square number. But 22^2 = 484 and 23^2 = 529, so 504 is not a square number (sqrt 504 = 22.4... is not an integer). Hence 500 is not a term of the sequence.",
+     "(c)(iii)": "n = 32"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 60 (differences 7, 9, 11, 13, 15)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give n^2 + 4n = n(n+4). Checked: n = 1..5 gives 5, 12, 21, 32, 45."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Both show n^2 + 4n = (n+2)^2 - 4 with (n+2)^2 a square number."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both argue 504 lies strictly between 22^2 = 484 and 23^2 = 529, so is not a square, so 500 is not a term."
+     },
+     {
+      "label": "(c)(iii)",
+      "agree": true,
+      "note": "Both give n = 32 (1156 = 34^2, n + 2 = 34). Checked: 32^2 + 128 = 1152; the factorised route (n+36)(n-32) = 0 gives the same."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement; the setter's key is correct in every part.",
+    "score": 4,
+    "fixes": [
+     "Remove the empty group line '(c) [3]': SEAB prints the marks on (c)(i), (ii), (iii) only, never a bare part label with a mark total and no text. The setter's key also lists the (c) answers twice (once rolled up, once per sub-part); keep the per-sub-part lines only.",
+     "Optional: the closer of a 4052 Paper 1 is more often 6-8 marks with a 2-mark final step; if the blueprint allows, make (c)(iii) 'Hence find the value of n for which the nth term is 1152' [2] (M1 for 1156 = 34^2, A1 for n = 32) and the question 7 marks."
+    ],
+    "too_close_to": null,
+    "why": "The word overlap with GCE 2012 P1 Q7 is the stock SEAB scaffolding ('The first ... terms of a sequence are ...', 'Find an expression, in terms of n, for the nth term', 'find the value of n for this term'); that question is a linear sequence 5, 9, 13, 17 with three 1-mark parts, whereas this one is a quadratic sequence whose completed-square form drives a 'not a term' argument and the closing solve, which no exemplar does (the 2023 specimen Q26 shares only the linear 'explain why 264 is not a term' spine). Register, numbers (504 between 484 and 529; 1156 = 34^2) and scope are examination-clean; only the orphan '(c) [3]' line and the light 6-mark weight keep it off a 5."
+   },
+   "exemplars": [
+    {
+     "id": "5f1877a1-3013-4775-8eec-2517bbf5d7e6",
+     "ref": "GCE 2023 specimen P1 Q26"
+    },
+    {
+     "id": "27eed91b-0c33-4fbc-b756-480873a6e13b",
+     "ref": "GCE 2024 P1 Q8"
+    },
+    {
+     "id": "2b823629-921d-4f98-adde-49ea9b9a7b03",
+     "ref": "GCE 2023 P2 Q8"
+    },
+    {
+     "id": "864b77a4-556a-4c0a-9f24-a27906fa2acd",
+     "ref": "GCE 2019 P1 Q25"
+    },
+    {
+     "id": "be914023-ba43-4791-9775-36d2999f533b",
+     "ref": "GCE 2005 P2 Q5"
+    }
+   ]
+  }
+ ]
+}

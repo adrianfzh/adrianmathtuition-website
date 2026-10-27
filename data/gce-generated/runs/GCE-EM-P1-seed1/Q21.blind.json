@@ -1,0 +1,1 @@
+{"answers": {"(a)": "Q = (2 5 3)^T, i.e. the 3x1 matrix with entries 2 (rice), 5 (eggs), 3 (oil)", "(b)": "C = PQ = (65 59)^T, i.e. the 2x1 matrix with entries 65 and 59", "(c)": "(1 -1)C = (6); the element 6 means it costs $6 more to buy all the items at Shop A than at Shop B"}, "solvable": true, "issues": []}

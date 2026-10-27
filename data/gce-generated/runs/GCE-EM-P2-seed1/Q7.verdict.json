@@ -1,0 +1,14 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both give x = 17. Checked: sum f = 43 + x, sum fx = 2490 + 30x, (2490 + 30x)/(43 + x) = 50 gives 20x = 340."},
+    {"label": "(b)", "agree": true, "note": "Both give 22.8 km. Checked: n = 60, sum fx^2 = 181200, 181200/60 - 50^2 = 520, sqrt(520) = 22.80."},
+    {"label": "(c)(i)", "agree": true, "note": "Both give 1/3 (20 of 60 members cycled more than 60 km; the 'more than 60' cut falls exactly on a class boundary)."},
+    {"label": "(c)(ii)", "agree": true, "note": "Both give 80/177. Checked: 2 x (20/60)(40/59) = 1600/3540 = 80/177, and 80 and 177 = 3 x 59 are coprime so it is in lowest terms."}
+  ],
+  "all_agree": true,
+  "key_verdict": "No disagreements; the setter's key is correct in all four parts.",
+  "score": 5,
+  "fixes": [],
+  "too_close_to": null,
+  "why": "Finding an unknown frequency from a given estimated mean, then the standard deviation, then one-pick and two-pick-without-replacement probabilities read off the same table is an established P2 shape in SEAB's own register (imperatives, 'Calculate an estimate of', the [2]/[2]/[1]/[3] split), the numbers are exam-clean (n = 60, mean exactly 50, sqrt(520), a 20-out-of-60 tail) and the vehicle is no longer the 2024 P2 Q7(a) median-mean-SD-interpret sequence; the (c) pair shares the one-then-two selection structure of 2023 P2 Q7(b) but that is the genre, not a re-skin, since the context, the table and the 'exactly one' event are all different."
+}

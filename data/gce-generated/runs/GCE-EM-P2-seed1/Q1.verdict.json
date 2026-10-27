@@ -1,0 +1,14 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both give x < 2. Verified: 5 - 3x + 6 > 2x + 1 gives 10 > 5x, so x < 2."},
+    {"label": "(b)", "agree": true, "note": "Both give 6q^4/p. Verified: (9p^4 q^-2)^(1/2) = 3p^2 q^-1; times 2p^-3 q^5 = 6p^-1 q^4."},
+    {"label": "(c)", "agree": true, "note": "Both give t = k/(v^2 + 3). Verified: v^2 t = k - 3t, t(v^2 + 3) = k."},
+    {"label": "(d)", "agree": true, "note": "Both give x = 3.71 or x = -1.21. Verified: 7x + 5 = 2x^2 + 2x - 4 gives 2x^2 - 5x - 9 = 0, discriminant 97, x = (5 +/- 9.8489)/4 = 3.712 or -1.212; neither root is an excluded value (1 or -2)."}
+  ],
+  "all_agree": true,
+  "key_verdict": "The setter's key is correct in every part and the blind examiner matches it exactly; there is no dispute to resolve.",
+  "score": 5,
+  "fixes": [],
+  "too_close_to": null,
+  "why": "A textbook-clean Paper 2 opener in the exact SEAB register (\"giving your answer in positive index form\", \"Make t the subject of the formula\", \"Give your solutions correct to two decimal places\") with mark weights that match the syllabus norm (2/2/3/4) and an irrational-root quadratic that justifies the 2 d.p. demand. None of the exemplars is an algebra medley, so no re-skin."
+}

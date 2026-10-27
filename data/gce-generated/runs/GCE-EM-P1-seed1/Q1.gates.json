@@ -1,0 +1,12 @@
+{
+ "pos": 1,
+ "pass": true,
+ "problems": [],
+ "novelty": {
+  "nearest": "GCE 2020 P1 Q9",
+  "jaccard": 0.067
+ },
+ "marks": 2,
+ "checked_at": "2026-09-11T06:51:43.747Z",
+ "rounds": 3
+}

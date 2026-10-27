@@ -1,0 +1,1375 @@
+{
+  "marked": [
+    {
+      "id": "recLU9Mry5tQoT13U",
+      "createdTime": "2026-03-13T16:20:59.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Beryl Chen Guoer | 2026-01-05 | Monday 3-5pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recmsQkUgZkW9paeU"
+        ],
+        "Student": [
+          "reciJrRb24abJa4R4"
+        ],
+        "Date": "2026-01-05",
+        "Billing Month": "January 2026",
+        "Lesson ID": "recLU9Mry5tQoT13U",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recsemCNtdp5cm7D9",
+      "createdTime": "2026-07-09T02:22:58.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Notes": "Makeup lesson",
+        "Slot": [
+          "recdpgl6pY0CVngwH"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 2"
+        ],
+        "Dupe Key": "Ezekiel Toh | 2026-01-10 | Saturday 3-5pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "rec6VUoYTFRpAmkoY"
+        ],
+        "Student": [
+          "recy1z4cXoCESDk2A"
+        ],
+        "Date": "2026-01-10",
+        "Is Makeup": true,
+        "Billing Month": "March 2026",
+        "Lesson ID": "recsemCNtdp5cm7D9",
+        "Student Level": [
+          "Sec 2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec0dhYMwG211woDI",
+      "createdTime": "2026-03-24T13:41:33.000Z",
+      "fields": {
+        "Day of Week": 2,
+        "Notes": "auto-linked — switched timeslot via bot",
+        "Slot": [
+          "recePYfUlYnuB24y9"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Alexis Wong | 2026-03-24 | Tuesday 5-7pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recZ2ylGtzZtLml8U"
+        ],
+        "Student": [
+          "reczbZ0Jz1y2SKopm"
+        ],
+        "Date": "2026-03-24",
+        "Billing Month": "March 2026",
+        "Lesson ID": "rec0dhYMwG211woDI",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recgwJlJ22AOX9o8P",
+      "createdTime": "2026-03-19T10:29:09.000Z",
+      "fields": {
+        "Day of Week": 2,
+        "Slot": [
+          "recePYfUlYnuB24y9"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 2"
+        ],
+        "Dupe Key": "Jayden Guan Yu | 2026-03-24 | Tuesday 5-7pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recoxuFBlrvEP8VSN"
+        ],
+        "Student": [
+          "recgWBqJf269oTOIe"
+        ],
+        "Date": "2026-03-24",
+        "Billing Month": "March 2026",
+        "Lesson ID": "recgwJlJ22AOX9o8P",
+        "Student Level": [
+          "Sec 2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recY7UtBbvTMmN7sl",
+      "createdTime": "2026-04-30T14:42:11.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Chloe Gng | 2026-04-19 | Sunday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recHNrjceNMJ3x0sR"
+        ],
+        "Date": "2026-04-19",
+        "Billing Month": "April 2026",
+        "Lesson ID": "recY7UtBbvTMmN7sl",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec18n9YrvoDXqBU3",
+      "createdTime": "2026-04-30T14:42:11.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Chloe Gng | 2026-04-26 | Sunday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recHNrjceNMJ3x0sR"
+        ],
+        "Date": "2026-04-26",
+        "Billing Month": "April 2026",
+        "Lesson ID": "rec18n9YrvoDXqBU3",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recLfgkUJjzeH4sOr",
+      "createdTime": "2026-04-13T13:16:06.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Ryder Heng | 2026-05-16 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "rechzUsyrnxWBt2cS"
+        ],
+        "Date": "2026-05-16",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recLfgkUJjzeH4sOr",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recVJ8mz8QVpfQEIj",
+      "createdTime": "2026-04-13T13:17:12.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "recdpgl6pY0CVngwH"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Chloe Zhang | 2026-05-16 | Saturday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec44NkcFf7kiLtmv"
+        ],
+        "Date": "2026-05-16",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recVJ8mz8QVpfQEIj",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec3nB8f9UY3ey8p7",
+      "createdTime": "2026-04-13T13:16:34.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "recQWcbt3CAKTqatT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Goh Rui En Megan | 2026-05-17 | Sunday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recQqcGQJV8ndNpfP"
+        ],
+        "Date": "2026-05-17",
+        "Billing Month": "May 2026",
+        "Lesson ID": "rec3nB8f9UY3ey8p7",
+        "Student Level": [
+          "JC2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recKJuzaasdHUMEUG",
+      "createdTime": "2026-04-13T13:17:12.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "recdpgl6pY0CVngwH"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Chloe Zhang | 2026-05-23 | Saturday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec44NkcFf7kiLtmv"
+        ],
+        "Date": "2026-05-23",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recKJuzaasdHUMEUG",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recS7dfbq9y5nheow",
+      "createdTime": "2026-04-13T13:16:07.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Ryder Heng | 2026-05-23 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "rechzUsyrnxWBt2cS"
+        ],
+        "Date": "2026-05-23",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recS7dfbq9y5nheow",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recYawbFNhKGWhDdg",
+      "createdTime": "2026-04-13T13:16:35.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "recQWcbt3CAKTqatT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Goh Rui En Megan | 2026-05-24 | Sunday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recQqcGQJV8ndNpfP"
+        ],
+        "Date": "2026-05-24",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recYawbFNhKGWhDdg",
+        "Student Level": [
+          "JC2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec2Pb2BHtDLwE4kd",
+      "createdTime": "2026-04-13T13:16:20.000Z",
+      "fields": {
+        "Day of Week": 2,
+        "Slot": [
+          "recU4GFAJHZX3v6X2"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Alexis Wong | 2026-05-26 | Tuesday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "reczbZ0Jz1y2SKopm"
+        ],
+        "Date": "2026-05-26",
+        "Billing Month": "May 2026",
+        "Lesson ID": "rec2Pb2BHtDLwE4kd",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recGu6GdFR3E4jt4Z",
+      "createdTime": "2026-04-13T13:16:35.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "recQWcbt3CAKTqatT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Goh Rui En Megan | 2026-05-31 | Sunday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recQqcGQJV8ndNpfP"
+        ],
+        "Date": "2026-05-31",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recGu6GdFR3E4jt4Z",
+        "Student Level": [
+          "JC2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recVLlPbTjc62JqOk",
+      "createdTime": "2026-04-13T13:17:32.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "rect8pOft7NGfhcYT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 3"
+        ],
+        "Dupe Key": "Merseus Quek | 2026-05-31 | Sunday 1-3pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recIz25guf3LCrM2y"
+        ],
+        "Date": "2026-05-31",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recVLlPbTjc62JqOk",
+        "Student Level": [
+          "Sec 3"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recajiW8Rl4n3GPJV",
+      "createdTime": "2026-04-13T13:17:24.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Jamie Lim | 2026-05-31 | Sunday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recWXmNHp93pQGdIp"
+        ],
+        "Date": "2026-05-31",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recajiW8Rl4n3GPJV",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "receTEEw8hc1JWzcW",
+      "createdTime": "2026-05-19T06:00:57.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Notes": "Rescheduled from Tue, 26 May 2026",
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 3"
+        ],
+        "Dupe Key": "Xavier Neo | 2026-05-31 | Sunday 3-5pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recDpbr0rhyFRXSPj"
+        ],
+        "Student": [
+          "recdkxhJoa2n7bRvI"
+        ],
+        "Date": "2026-05-31",
+        "Billing Month": "May 2026",
+        "Lesson ID": "receTEEw8hc1JWzcW",
+        "Student Level": [
+          "Sec 3"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recGHYoR8HMeuot9x",
+      "createdTime": "2026-06-02T14:13:51.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Notes": "Makeup lesson",
+        "Slot": [
+          "recNd8AqCODByVXJ0"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Tan Jing Ru Jasmine | 2026-06-08 | Monday 7-9pm JC",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "rec0iWZoPFzo79Izq"
+        ],
+        "Student": [
+          "rec8JhNKv7iJSpCCo"
+        ],
+        "Date": "2026-06-08",
+        "Billing Month": "May 2026",
+        "Lesson ID": "recGHYoR8HMeuot9x",
+        "Student Level": [
+          "JC2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recEqkPEbyAB3TJcR",
+      "createdTime": "2026-04-20T12:27:17.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Sun Wanqing | 2026-06-21 | Sunday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recTS5R7oDfW8XTHh"
+        ],
+        "Date": "2026-06-21",
+        "Billing Month": "June 2026",
+        "Lesson ID": "recEqkPEbyAB3TJcR",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recSmjBoWlgM7YHjk",
+      "createdTime": "2026-04-20T12:27:39.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "rect8pOft7NGfhcYT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 3"
+        ],
+        "Dupe Key": "Merseus Quek | 2026-06-21 | Sunday 1-3pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recIz25guf3LCrM2y"
+        ],
+        "Date": "2026-06-21",
+        "Billing Month": "June 2026",
+        "Lesson ID": "recSmjBoWlgM7YHjk",
+        "Student Level": [
+          "Sec 3"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec6zG0eZdOeVUf11",
+      "createdTime": "2026-07-06T01:44:59.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "recdpgl6pY0CVngwH"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 5"
+        ],
+        "Dupe Key": "Kevin Seng | 2026-07-04 | Saturday 3-5pm Secondary",
+        "Type": "Ad-hoc",
+        "Student": [
+          "recyyKviqZUcYTRd3"
+        ],
+        "Date": "2026-07-04",
+        "Lesson ID": "rec6zG0eZdOeVUf11",
+        "Student Level": [
+          "Sec 5"
+        ],
+        "Charge Override": 80
+      },
+      "_mark": true
+    },
+    {
+      "id": "recVEHRGaGn6Cvo1Q",
+      "createdTime": "2026-08-10T04:27:19.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Notes": "Rescheduled from Sat, 8 Aug 2026",
+        "Slot": [
+          "recNd8AqCODByVXJ0"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Charlotte Teh | 2026-08-10 | Monday 7-9pm JC",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recRA0Hb7mFe12k6a"
+        ],
+        "Student": [
+          "recoQR976cpsIoGmu"
+        ],
+        "Date": "2026-08-10",
+        "Billing Month": "August 2026",
+        "Lesson ID": "recVEHRGaGn6Cvo1Q",
+        "Student Level": [
+          "JC1"
+        ],
+        "Booked Via": "Web admin"
+      },
+      "_mark": true
+    },
+    {
+      "id": "recYgYEVpecDyRH2W",
+      "createdTime": "2026-07-29T14:56:38.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recNd8AqCODByVXJ0"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Carisse Lew Zhi Qi | 2026-08-10 | Monday 7-9pm JC",
+        "Type": "Regular",
+        "Student": [
+          "reciEWbybXAq0TyGe"
+        ],
+        "Date": "2026-08-10",
+        "Billing Month": "August 2026",
+        "Lesson ID": "recYgYEVpecDyRH2W",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec7q3G35fDNMxrVp",
+      "createdTime": "2026-06-14T00:02:23.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "rect8pOft7NGfhcYT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 2"
+        ],
+        "Dupe Key": "Rickile kumar | 2026-08-16 | Sunday 1-3pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recp4Xr4p9K80bSDI"
+        ],
+        "Date": "2026-08-16",
+        "Lesson ID": "rec7q3G35fDNMxrVp",
+        "Student Level": [
+          "Sec 2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "rec7dx48rcYySrurO",
+      "createdTime": "2026-08-21T09:48:02.000Z",
+      "fields": {
+        "Day of Week": 4,
+        "Notes": "Rescheduled from Fri, 21 Aug 2026",
+        "Slot": [
+          "recenG2wXUf88gVpF"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Wong Lin Jie | 2026-08-20 | Thursday 7-9pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recKnmBHkOHsdEyHE"
+        ],
+        "Student": [
+          "recqCo8hommdBsl83"
+        ],
+        "Date": "2026-08-20",
+        "Billing Month": "August 2026",
+        "Lesson ID": "rec7dx48rcYySrurO",
+        "Student Level": [
+          "Sec 4"
+        ],
+        "Booked Via": "Web admin"
+      },
+      "_mark": true
+    },
+    {
+      "id": "recDC4EP5tueAFNU2",
+      "createdTime": "2026-08-21T23:58:30.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Notes": "Rescheduled from 22 Aug Sat 9-11am",
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Wong Shwen Ning Adele | 2026-08-22 | Saturday 5-7pm JC",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "rec5rpC7lo0835laa"
+        ],
+        "Student": [
+          "recU49szZa7ErKLtv"
+        ],
+        "Date": "2026-08-22",
+        "Lesson ID": "recDC4EP5tueAFNU2",
+        "Student Level": [
+          "JC1"
+        ],
+        "Booked Via": "Bot (student)"
+      },
+      "_mark": true
+    },
+    {
+      "id": "recURxoKjXmQBRlma",
+      "createdTime": "2026-06-21T23:00:10.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Ryder Heng | 2026-08-22 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "rechzUsyrnxWBt2cS"
+        ],
+        "Date": "2026-08-22",
+        "Lesson ID": "recURxoKjXmQBRlma",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "reck82vVm3g9A8Aac",
+      "createdTime": "2026-06-21T23:00:28.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Charlotte Teh | 2026-08-22 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recoQR976cpsIoGmu"
+        ],
+        "Date": "2026-08-22",
+        "Lesson ID": "reck82vVm3g9A8Aac",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recIGC0FYWLfd7qy1",
+      "createdTime": "2026-06-21T23:00:18.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "recQWcbt3CAKTqatT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Nicole Lim | 2026-08-23 | Sunday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recUwHUpvlDkieYlB"
+        ],
+        "Date": "2026-08-23",
+        "Lesson ID": "recIGC0FYWLfd7qy1",
+        "Student Level": [
+          "JC2"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recx5nPoK0LKYC2dq",
+      "createdTime": "2026-08-24T08:29:03.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "rect8pOft7NGfhcYT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 5"
+        ],
+        "Dupe Key": "Kevin Seng | 2026-08-23 | Sunday 1-3pm Secondary",
+        "Type": "Ad-hoc",
+        "Student": [
+          "recyyKviqZUcYTRd3"
+        ],
+        "Date": "2026-08-23",
+        "Lesson ID": "recx5nPoK0LKYC2dq",
+        "Student Level": [
+          "Sec 5"
+        ],
+        "Charge Override": 80,
+        "Booked Via": "Web admin"
+      },
+      "_mark": true
+    },
+    {
+      "id": "recyO6LROsxej7qDy",
+      "createdTime": "2026-06-21T23:00:15.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Beryl Chen Guoer | 2026-08-23 | Sunday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "reciJrRb24abJa4R4"
+        ],
+        "Date": "2026-08-23",
+        "Lesson ID": "recyO6LROsxej7qDy",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recIT452mKn0Wkty3",
+      "createdTime": "2026-06-26T23:32:40.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Tricia Leong En Ning | 2026-08-29 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "rechTjAf5xS5TkEOe"
+        ],
+        "Date": "2026-08-29",
+        "Lesson ID": "recIT452mKn0Wkty3",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recY4wBCNJsjnrvCI",
+      "createdTime": "2026-08-23T01:06:37.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Notes": "Makeup lesson",
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Fasiha | 2026-08-29 | Saturday 5-7pm JC",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recDK2chgAV37qHC9"
+        ],
+        "Student": [
+          "recwJ6t2WE5PjcTAu"
+        ],
+        "Date": "2026-08-29",
+        "Is Makeup": true,
+        "Billing Month": "May 2026",
+        "Lesson ID": "recY4wBCNJsjnrvCI",
+        "Student Level": [
+          "JC2"
+        ],
+        "Booked Via": "Web admin"
+      },
+      "_mark": true
+    },
+    {
+      "id": "receP1Ny0C4KsIKuT",
+      "createdTime": "2026-08-26T03:34:06.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Notes": "Makeup lesson",
+        "Slot": [
+          "recdpgl6pY0CVngwH"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 3"
+        ],
+        "Dupe Key": "Dharamveer Atodaria | 2026-08-29 | Saturday 3-5pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recmzWwfSOxBUsu3s"
+        ],
+        "Student": [
+          "recfAfLD8gN34bvrO"
+        ],
+        "Date": "2026-08-29",
+        "Is Makeup": true,
+        "Billing Month": "August 2026",
+        "Lesson ID": "receP1Ny0C4KsIKuT",
+        "Student Level": [
+          "Sec 3"
+        ],
+        "Booked Via": "Web admin"
+      },
+      "_mark": true
+    },
+    {
+      "id": "recftoOYiyDhzgVBW",
+      "createdTime": "2026-08-23T03:24:40.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Notes": "Rescheduled from Sun, 23 Aug 2026",
+        "Slot": [
+          "recdpgl6pY0CVngwH"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 3"
+        ],
+        "Dupe Key": "Yau Yi Jie lucas | 2026-08-29 | Saturday 3-5pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recxyzcM9ZMOW6uPW"
+        ],
+        "Student": [
+          "recMrOG7BH1fg5JGV"
+        ],
+        "Date": "2026-08-29",
+        "Billing Month": "June 2026",
+        "Lesson ID": "recftoOYiyDhzgVBW",
+        "Student Level": [
+          "Sec 3"
+        ],
+        "Booked Via": "Web admin"
+      },
+      "_mark": true
+    },
+    {
+      "id": "recjW9EKh8iczcnQM",
+      "createdTime": "2026-06-26T23:32:37.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Ryder Heng | 2026-08-29 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "rechzUsyrnxWBt2cS"
+        ],
+        "Date": "2026-08-29",
+        "Lesson ID": "recjW9EKh8iczcnQM",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recya6QODQwYTFJYv",
+      "createdTime": "2026-06-26T23:32:45.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Slot": [
+          "receuzBPVZLinoG3k"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC1"
+        ],
+        "Dupe Key": "Charlotte Teh | 2026-08-29 | Saturday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recoQR976cpsIoGmu"
+        ],
+        "Date": "2026-08-29",
+        "Lesson ID": "recya6QODQwYTFJYv",
+        "Student Level": [
+          "JC1"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recSyXU4WTAO1NQWt",
+      "createdTime": "2026-06-27T23:04:27.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "receTJAks2s66jcV5"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Beryl Chen Guoer | 2026-08-30 | Sunday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "reciJrRb24abJa4R4"
+        ],
+        "Date": "2026-08-30",
+        "Lesson ID": "recSyXU4WTAO1NQWt",
+        "Student Level": [
+          "Sec 4"
+        ]
+      },
+      "_mark": true
+    },
+    {
+      "id": "recrKiCgcC9TqrF3x",
+      "createdTime": "2026-06-27T23:04:29.000Z",
+      "fields": {
+        "Day of Week": 0,
+        "Slot": [
+          "recQWcbt3CAKTqatT"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "JC2"
+        ],
+        "Dupe Key": "Nicole Lim | 2026-08-30 | Sunday 5-7pm JC",
+        "Type": "Regular",
+        "Student": [
+          "recUwHUpvlDkieYlB"
+        ],
+        "Date": "2026-08-30",
+        "Lesson ID": "recrKiCgcC9TqrF3x",
+        "Student Level": [
+          "JC2"
+        ]
+      },
+      "_mark": true
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "recV9KHsoKGC5iX9y",
+      "createdTime": "2026-07-15T09:51:33.000Z",
+      "fields": {
+        "Status": "Active",
+        "Subjects In This Slot": [
+          "E Math",
+          "A Math"
+        ],
+        "Rate Type": "Current",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Enrollment ID": "Adrian Fong — Monday 3-5pm Secondary"
+      }
+    }
+  ],
+  "deletedLessons": [
+    {
+      "id": "rec1pPy2msdfq68PI",
+      "createdTime": "2026-09-06T19:01:20.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-11-09 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-11-09",
+        "Lesson ID": "rec1pPy2msdfq68PI",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "rec24YCa3iKXxulfs",
+      "createdTime": "2026-09-27T17:16:39.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-11-30 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-11-30",
+        "Lesson ID": "rec24YCa3iKXxulfs",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "rec2Zip6cMJZaFBXE",
+      "createdTime": "2026-10-04T16:42:07.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-12-07 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-12-07",
+        "Lesson ID": "rec2Zip6cMJZaFBXE",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "recHQuwtU6yYVb33v",
+      "createdTime": "2026-09-20T22:00:19.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-11-23 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-11-23",
+        "Lesson ID": "recHQuwtU6yYVb33v",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "recL2Gio0GfIshqbH",
+      "createdTime": "2026-10-11T22:07:44.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-12-14 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-12-14",
+        "Lesson ID": "recL2Gio0GfIshqbH",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "recLShMNEmfujnbdy",
+      "createdTime": "2026-08-16T23:00:21.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-10-19 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-10-19",
+        "Lesson ID": "recLShMNEmfujnbdy",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "recXuwDnUCINuRYkm",
+      "createdTime": "2026-08-09T23:00:21.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-10-12 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-10-12",
+        "Lesson ID": "recXuwDnUCINuRYkm",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "reccTkHdKaaVh9a6P",
+      "createdTime": "2026-09-13T23:00:06.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-11-16 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-11-16",
+        "Lesson ID": "reccTkHdKaaVh9a6P",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "recfqfcpETENN8xtt",
+      "createdTime": "2026-08-23T23:00:20.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-10-26 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-10-26",
+        "Lesson ID": "recfqfcpETENN8xtt",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    },
+    {
+      "id": "recsYn11DZyn50aRc",
+      "createdTime": "2026-08-30T16:23:50.000Z",
+      "fields": {
+        "Day of Week": 1,
+        "Slot": [
+          "recFzzCp6MPRIB5Qo"
+        ],
+        "Outcome": "📅 Scheduled",
+        "Status": "Scheduled",
+        "Level": [
+          "Sec 4"
+        ],
+        "Dupe Key": "Adrian Fong | 2026-11-02 | Monday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "rec42gfYk47inTQwz"
+        ],
+        "Date": "2026-11-02",
+        "Lesson ID": "recsYn11DZyn50aRc",
+        "Student Level": [
+          "Sec 4"
+        ]
+      }
+    }
+  ]
+}

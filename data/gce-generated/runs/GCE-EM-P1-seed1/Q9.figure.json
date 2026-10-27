@@ -1,0 +1,14 @@
+{
+  "family": "circle-config",
+  "points": [
+    { "name": "P", "at": 148 },
+    { "name": "Q", "at": 90 },
+    { "name": "R", "at": 32 }
+  ],
+  "show_centre": true,
+  "chords": ["PQ", "QR"],
+  "radii": ["P", "R"],
+  "angles": [
+    { "at": "O", "from": "P", "to": "R", "degrees": 116, "label": "116°" }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+ "stem": "The table shows some values of $x$ and the corresponding values of $y$ for $y = x^{2} + \\frac{3}{x}$.\n$$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|c|c|c|} \\hline x & -3 & -2.5 & -2 & -1.5 & -1 & -0.5 & 0.5 & 1 & 1.5 & 2 & 2.5 & 3 \\\\ \\hline y & 8 & 5.05 & 2.5 & & -2 & -5.75 & 6.25 & 4 & 4.25 & 5.5 & & 10 \\\\ \\hline \\end{array}$$",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Complete the table of values.",
+   "marks": 2,
+   "answer": "When $x = -1.5$, $y = 0.25$; when $x = 2.5$, $y = 7.45$"
+  },
+  {
+   "label": "(b)",
+   "text": "On the grid, draw the graph of $y = x^{2} + \\frac{3}{x}$ for $-3 \\le x \\le 3$.",
+   "marks": 3,
+   "answer": "Correct smooth curve in two branches: the left branch through $(-3, 8)$, $(-2.5, 5.05)$, $(-2, 2.5)$, $(-1.5, 0.25)$, $(-1, -2)$, $(-0.5, -5.75)$ and the right branch through $(0.5, 6.25)$, $(1, 4)$, $(1.5, 4.25)$, $(2, 5.5)$, $(2.5, 7.45)$, $(3, 10)$, with no curve drawn between $x = -0.5$ and $x = 0.5$; the right branch has a minimum near $(1.1, 3.9)$"
+  },
+  {
+   "label": "(c)",
+   "text": "",
+   "marks": 6,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "By drawing a tangent, use your graph to find the gradient of the curve at the point where $x = 2$.",
+     "marks": 2,
+     "answer": "$3.25$ (accept $2.9$ to $3.6$)"
+    },
+    {
+     "label": "(ii)",
+     "text": "Use your graph to explain why the equation $x^{2} + \\frac{3}{x} = 3$ has only one solution.",
+     "marks": 1,
+     "answer": "The line $y = 3$ cuts the curve at one point only (where $x \\approx -2.1$): the right-hand branch of the curve lies entirely above $y = 3$, its lowest point being at $y \\approx 3.9$, so there is no second intersection."
+    },
+    {
+     "label": "(iii)",
+     "text": "By drawing a suitable straight line on the grid, solve the equation $x^{3} - 2x^{2} - 3x + 3 = 0$.",
+     "marks": 3,
+     "answer": "Line $y = 2x + 3$; $x = -1.45$, $x = 0.75$, $x = 2.7$ (accept $-1.55 \\le x \\le -1.4$, $0.7 \\le x \\le 0.85$, $2.6 \\le x \\le 2.8$)"
+    }
+   ]
+  }
+ ],
+ "answer": "",
+ "total_marks": 11,
+ "topics": [
+  "Algebra (Graph on Graph Paper)",
+  "Graphs of Functions"
+ ],
+ "needs_figure": true,
+ "figure_description": "A blank GRAPH-PAPER GRID (2 mm squares, with the 1 cm lines drawn heavier) for the candidate to draw on; NO curve, NO tangent and NO straight line is printed on it. Scale: 2 cm to 1 unit on the x-axis, 1 cm to 1 unit on the y-axis. Axis window: x from -3 to 3 (12 cm wide), y from -6 to 10 (16 cm tall). The x-axis is the horizontal line y = 0 and the y-axis is the vertical line x = 0, both drawn as full-length lines with arrowheads at the positive ends; the x-axis is labelled 'x' at its right end and the y-axis is labelled 'y' at its top end; the origin is marked 'O'. Number the x-axis at every 1 unit (every 2 cm) from -3 to 3, and the y-axis at every 1 unit (every 1 cm) from -6 to 10 (or at every 2 units if space is tight: -6, -4, -2, 0, 2, 4, 6, 8, 10). Nothing else appears on the grid. For the setter's reference only (do NOT draw): the full table of values is x = -3, -2.5, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3 giving y = 8, 5.05, 2.5, 0.25, -2, -5.75, 6.25, 4, 4.25, 5.5, 7.45, 10; the tangent is taken at (2, 5.5); the suitable line is y = 2x + 3, running from (-3, -3) to (3, 9); the line y = 3 is used in (c)(ii).",
+ "solution": "(a) $y = x^{2} + \\frac{3}{x}$\\nWhen $x = -1.5$: $y = (-1.5)^{2} + \\frac{3}{-1.5} = 2.25 - 2 = 0.25$\\nWhen $x = 2.5$: $y = 2.5^{2} + \\frac{3}{2.5} = 6.25 + 1.2 = 7.45$\\nFull table: $x = -3, -2.5, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3$ gives $y = 8, 5.05, 2.5, 0.25, -2, -5.75, 6.25, 4, 4.25, 5.5, 7.45, 10$.\\n\\n(b) Plot the twelve points on the grid (2 cm to 1 unit on the $x$-axis, 1 cm to 1 unit on the $y$-axis, $-3 \\le x \\le 3$, $-6 \\le y \\le 10$) and join them with two smooth curves: the left branch from $(-3, 8)$ down to $(-0.5, -5.75)$, and the right branch from $(0.5, 6.25)$ down to a minimum near $(1.1, 3.9)$ and up to $(3, 10)$. No curve is drawn between $x = -0.5$ and $x = 0.5$ because $y$ is undefined at $x = 0$.\\n\\n(c)(i) Draw the tangent to the curve at $(2, 5.5)$ and take two points on it far apart, e.g. $(1, 2.25)$ and $(3, 8.75)$.\\nGradient $= \\frac{8.75 - 2.25}{3 - 1} = \\frac{6.5}{2} = 3.25$\\n(Exact value: $\\frac{dy}{dx} = 2x - \\frac{3}{x^{2}} = 4 - 0.75 = 3.25$; accept $2.9$ to $3.6$ from a drawn tangent.)\\n\\n(c)(ii) The solutions of $x^{2} + \\frac{3}{x} = 3$ are the $x$-coordinates of the points where the curve meets the line $y = 3$. The line $y = 3$ cuts the left-hand branch once, at $x \\approx -2.1$, but the right-hand branch has its lowest point at $y \\approx 3.9$ (exactly $y = 3.93$ at $x = 1.14$), which is above $y = 3$, so the line does not meet the right-hand branch. Hence there is only one solution.\\n\\n(c)(iii) $x^{3} - 2x^{2} - 3x + 3 = 0$\\nDivide throughout by $x$ ($x \\ne 0$): $x^{2} - 2x - 3 + \\frac{3}{x} = 0$\\n$x^{2} + \\frac{3}{x} = 2x + 3$\\nSo the required line is $y = 2x + 3$, which passes through $(-3, -3)$, $(0, 3)$ and $(3, 9)$.\\nDraw the line on the grid and read the $x$-coordinates of the three points where it cuts the curve:\\n$x = -1.45$, $x = 0.75$, $x = 2.7$\\n(Exact values $-1.4605\\ldots$, $0.7609\\ldots$, $2.6996\\ldots$; check: at $x = 2.7$, $x^{2} + \\frac{3}{x} = 7.29 + 1.111 = 8.40$ and $2x + 3 = 8.40$. Accept $-1.55 \\le x \\le -1.4$, $0.7 \\le x \\le 0.85$, $2.6 \\le x \\le 2.8$.)",
+ "syllabus_check": "Everything sits inside 4052 functions and graphs: the curve $y = x^{2} + \\frac{3}{x}$ is a quadratic plus a reciprocal $\\frac{a}{x}$ term (both named graph types), drawn on a grid from a table of values with a stated scale; the gradient at a point is found by drawing a tangent (no calculus is used by the candidate — the exact 3.25 is given only for the marker's tolerance); the 'only one solution' part is the graphical reading of where a horizontal line meets the curve; the suitable straight line is obtained by dividing the cubic by $x$ and rearranging, exactly as the syllabus's 'solving equations by drawing a suitable line' requires. Every table value is exact to at most 2 decimal places, so no rounding instruction is needed. No calculus, logarithms, surds or quadratic inequalities are required. Marks 2 + 3 + (2 + 1 + 3) = 11.",
+ "originality_note": "The exemplars use $2x^{2} - \\frac{x^{3}}{2} - 4$, $\\frac{2}{x^{2}} + 3x - 1$, $\\frac{320}{x} + 4x - 16$, $\\frac{x^{3}}{5} - 2x + 1$ and $3x^{2} - x^{3} - 1$ with lines such as $y = x$, $2y - 5x = 7$ and $5y + x = 10$. This question uses a different curve family (quadratic plus $\\frac{3}{x}$, two branches either side of $x = 0$) on the window $-3 \\le x \\le 3$, $-6 \\le y \\le 10$ at half-unit steps with blanks at $x = -1.5$ and $x = 2.5$; the tangent is at $x = 2$ (gradient 3.25); the horizontal line $y = 3$ gives the one-solution explanation via the right branch's minimum $y \\approx 3.9$; and the suitable line $y = 2x + 3$ solves $x^{3} - 2x^{2} - 3x + 3 = 0$ with three interior, well-separated intersections at $x \\approx -1.46$, $0.76$, $2.70$. Every value, root and tolerance was derived and checked numerically before being written; no exemplar's function, numbers, line or part sequence is reused."
+}

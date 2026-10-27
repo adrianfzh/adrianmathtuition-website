@@ -1,0 +1,27 @@
+{
+ "stem": "The diagram shows a sector $OAB$ of a circle, centre $O$ and radius 12 cm.\nAngle $AOB = 150^\\circ$.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Convert $150^\\circ$ to radians. Give your answer in terms of $\\pi$.",
+   "marks": 1,
+   "answer": "$\\frac{5\\pi}{6}$ radians"
+  },
+  {
+   "label": "(b)",
+   "text": "Calculate the area of the sector $OAB$. Give your answer in terms of $\\pi$.",
+   "marks": 1,
+   "answer": "$60\\pi$ cm$^2$"
+  }
+ ],
+ "answer": "",
+ "total_marks": 2,
+ "topics": [
+  "Circular Measure"
+ ],
+ "needs_figure": true,
+ "figure_description": "A single sector of a circle, not to scale, drawn with plain black lines on white. Centre O at the bottom-left of the figure. Two straight radii OA and OB of equal length meet at O with the reflex side open: OA runs horizontally to the right from O, and OB runs from O up and to the left so that the angle AOB at O is obtuse (150 degrees, drawn as roughly 150 degrees). A circular arc from A to B, centred at O, closes the sector on the side away from O (the minor arc, sweeping through the 150-degree angle). Labels: 'O' just below-left of the centre point; 'A' just beyond the end of the horizontal radius; 'B' just beyond the end of the other radius. A small angle arc drawn inside the sector at O between OA and OB with the label '150°' beside it. The radius OA is labelled '12 cm' along its length, written just below the line. Nothing else is marked: no radian measure, no area, no arc length, no shading, no grid, no axes, no other numbers.",
+ "solution": "(a) $180^\\circ = \\pi$ radians, so $150^\\circ = \\frac{150}{180} \\times \\pi = \\frac{5\\pi}{6}$ radians.\n(b) Area of sector $= \\frac{1}{2} r^2 \\theta = \\frac{1}{2} \\times 12^2 \\times \\frac{5\\pi}{6} = 72 \\times \\frac{5\\pi}{6} = 60\\pi$ cm$^2$.\n(Equivalently, area $= \\frac{150}{360} \\times \\pi \\times 12^2 = \\frac{5}{12} \\times 144\\pi = 60\\pi$ cm$^2$.)",
+ "syllabus_check": "4052 Mensuration: arc and sector of a circle with the angle in degrees or radians. Part (a) is the degree-to-radian conversion (exact, in terms of pi); part (b) is the area of a sector, which the candidate may do by (1/2) r^2 theta using (a) or directly by the fraction-of-circle form. The two parts test two different skills (conversion; sector area) and each is a one-mark, one-line step. Set from a diagram, as SEAB sector questions are. Nothing outside the syllabus.",
+ "originality_note": "The exemplars convert radians to degrees, find a shaded wiper area from a composite diagram, find a perimeter in the form a + b pi from a quadrant-and-semicircle figure, or find a major arc length inside a circle-properties question. This question is a plain single sector with a fresh radius/angle pair (12 cm, 150 degrees) chosen so that the radian measure and the sector area are both clean multiples of pi; it converts degrees to radians (the opposite direction to the 2023 exemplar) and then asks for an area, not an arc, so the second mark is a different skill from the first. It resembles none of the exemplars in situation, numbers or sequence of parts."
+}

@@ -1,0 +1,33 @@
+{
+ "stem": "Two shops, Shop A and Shop B, sell bags of rice, trays of eggs and bottles of cooking oil. The matrix $\\mathbf{P}$ shows the price, in dollars, of each item at each shop. The rows represent Shop A and Shop B, and the columns represent rice, eggs and cooking oil, in that order.\n$\\mathbf{P} = \\begin{pmatrix} 12 & 4 & 7 \\\\ 13 & 3 & 6 \\end{pmatrix}$\nMrs Tan needs to buy 2 bags of rice, 5 trays of eggs and 3 bottles of cooking oil.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Represent the numbers of items Mrs Tan needs to buy in a $3 \\times 1$ matrix $\\mathbf{Q}$.",
+   "marks": 1,
+   "answer": "$\\mathbf{Q} = \\begin{pmatrix} 2 \\\\ 5 \\\\ 3 \\end{pmatrix}$"
+  },
+  {
+   "label": "(b)",
+   "text": "Find the matrix $\\mathbf{C} = \\mathbf{PQ}$.",
+   "marks": 2,
+   "answer": "$\\mathbf{C} = \\begin{pmatrix} 65 \\\\ 59 \\end{pmatrix}$"
+  },
+  {
+   "label": "(c)",
+   "text": "Find the matrix $\\begin{pmatrix} 1 & -1 \\end{pmatrix}\\mathbf{C}$ and explain what the element of this matrix represents.",
+   "marks": 1,
+   "answer": "$\\begin{pmatrix} 6 \\end{pmatrix}$; buying all the items at Shop A costs $\\$6$ more than buying all of them at Shop B."
+  }
+ ],
+ "answer": "",
+ "total_marks": 4,
+ "topics": [
+  "Matrices"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) The rows of $\\mathbf{Q}$ must match the columns of $\\mathbf{P}$ (rice, eggs, cooking oil).\n$\\mathbf{Q} = \\begin{pmatrix} 2 \\\\ 5 \\\\ 3 \\end{pmatrix}$\n\n(b) $\\mathbf{C} = \\mathbf{PQ} = \\begin{pmatrix} 12 & 4 & 7 \\\\ 13 & 3 & 6 \\end{pmatrix} \\begin{pmatrix} 2 \\\\ 5 \\\\ 3 \\end{pmatrix} = \\begin{pmatrix} 12 \\times 2 + 4 \\times 5 + 7 \\times 3 \\\\ 13 \\times 2 + 3 \\times 5 + 6 \\times 3 \\end{pmatrix} = \\begin{pmatrix} 24 + 20 + 21 \\\\ 26 + 15 + 18 \\end{pmatrix} = \\begin{pmatrix} 65 \\\\ 59 \\end{pmatrix}$\n(The elements are the total cost, in dollars, of all the items at Shop A and at Shop B respectively.)\n\n(c) $\\begin{pmatrix} 1 & -1 \\end{pmatrix} \\begin{pmatrix} 65 \\\\ 59 \\end{pmatrix} = \\begin{pmatrix} 65 - 59 \\end{pmatrix} = \\begin{pmatrix} 6 \\end{pmatrix}$\nThe element is the difference between the two totals: buying all the items at Shop A costs $\\$6$ more than buying all of them at Shop B.",
+ "syllabus_check": "4052 Matrices: display of information as a column matrix, multiplication of a $2 \\times 3$ matrix by a $3 \\times 1$ matrix, and interpretation of a product in context, including the effect of pre-multiplying by the row matrix $\\begin{pmatrix} 1 & -1 \\end{pmatrix}$ (a difference of two rows). No inverses or determinants. Prices are whole dollars throughout; every answer is an exact integer.",
+ "originality_note": "The exemplars all run 'quantities sold (with an unknown x) times a price column, then one stated total fixes x'. Here the GIVEN matrix is a table of prices at two shops, the column matrix the candidate writes is one shopping list, the product compares the cost of that list shop by shop, and the closing step is a $\\begin{pmatrix} 1 & -1 \\end{pmatrix}$ difference whose single element must be read in context. No unknown inside a matrix, no sales-by-week rows, a different purpose for the product. New context (groceries at two shops), new numbers."
+}

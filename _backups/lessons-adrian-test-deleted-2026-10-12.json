@@ -1,0 +1,81 @@
+[
+  {
+    "id": "rec99cn5OgPucPtgJ",
+    "createdTime": "2026-07-15T17:00:50.000Z",
+    "fields": {
+      "Day of Week": 2,
+      "Notes": "Rescheduled from Mon, 20 Jul, 3-5pm",
+      "Slot": [
+        "recU4GFAJHZX3v6X2"
+      ],
+      "Outcome": "📅 Scheduled",
+      "Status": "Scheduled",
+      "Level": [
+        "Sec 4"
+      ],
+      "Dupe Key": "Adrian Fong | 2026-07-21 | Tuesday 3-5pm Secondary",
+      "Type": "Rescheduled",
+      "Makeup For": [
+        "rec2axUZaqOdP21kM"
+      ],
+      "Student": [
+        "rec42gfYk47inTQwz"
+      ],
+      "Date": "2026-07-21",
+      "Lesson ID": "rec99cn5OgPucPtgJ",
+      "Student Level": [
+        "Sec 4"
+      ]
+    }
+  },
+  {
+    "id": "recphSiFVLkrHUgo2",
+    "createdTime": "2026-08-17T13:24:04.000Z",
+    "fields": {
+      "Day of Week": 1,
+      "Slot": [
+        "recFzzCp6MPRIB5Qo"
+      ],
+      "Outcome": "📅 Scheduled",
+      "Status": "Scheduled",
+      "Level": [
+        "Sec 4"
+      ],
+      "Dupe Key": "Adrian Fong | 2026-08-17 | Monday 3-5pm Secondary",
+      "Type": "Regular",
+      "Student": [
+        "rec42gfYk47inTQwz"
+      ],
+      "Date": "2026-08-17",
+      "Lesson ID": "recphSiFVLkrHUgo2",
+      "Student Level": [
+        "Sec 4"
+      ]
+    }
+  },
+  {
+    "id": "recGmRkCN1SxWpNIo",
+    "createdTime": "2026-10-05T14:04:18.000Z",
+    "fields": {
+      "Day of Week": 1,
+      "Slot": [
+        "recFzzCp6MPRIB5Qo"
+      ],
+      "Outcome": "📅 Scheduled",
+      "Status": "Scheduled",
+      "Level": [
+        "Sec 4"
+      ],
+      "Dupe Key": "Adrian Fong | 2026-10-05 | Monday 3-5pm Secondary",
+      "Type": "Regular",
+      "Student": [
+        "rec42gfYk47inTQwz"
+      ],
+      "Date": "2026-10-05",
+      "Lesson ID": "recGmRkCN1SxWpNIo",
+      "Student Level": [
+        "Sec 4"
+      ]
+    }
+  }
+]

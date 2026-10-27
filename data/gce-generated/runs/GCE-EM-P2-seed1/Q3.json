@@ -1,0 +1,50 @@
+{
+ "stem": "The diagram shows a sketch of the curve $y = ax^2 + bx + c$.\nThe curve crosses the $x$-axis at the points $(-1, 0)$ and $(3, 0)$ and crosses the $y$-axis at the point $(0, 3)$.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Find the value of $a$, of $b$ and of $c$.",
+   "marks": 3,
+   "answer": "$a = -1$, $b = 2$, $c = 3$",
+   "subparts": []
+  },
+  {
+   "label": "(b)",
+   "text": "",
+   "marks": 3,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "Write the equation of the curve in the form $y = k - (x - h)^{2}$, where $h$ and $k$ are integers.",
+     "marks": 2,
+     "answer": "$4 - (x - 1)^2$"
+    },
+    {
+     "label": "(ii)",
+     "text": "Hence write down the coordinates of the maximum point of the curve.",
+     "marks": 1,
+     "answer": "$(1, 4)$"
+    }
+   ]
+  },
+  {
+   "label": "(c)",
+   "text": "The point $P$ lies on the curve and has $x$-coordinate 4.\nFind the equation of the straight line that passes through $P$ and the maximum point of the curve.",
+   "marks": 3,
+   "answer": "$y = -3x + 7$",
+   "subparts": []
+  }
+ ],
+ "answer": "",
+ "total_marks": 9,
+ "topics": [
+  "Graphs of Functions",
+  "Coordinate Geometry"
+ ],
+ "needs_figure": true,
+ "figure_description": "A sketch (not to scale) of a downward-opening parabola on a pair of coordinate axes. Draw the $x$-axis and $y$-axis as arrowed lines meeting at the origin, labelled $O$, with $x$ at the right-hand end and $y$ at the top. Axis window: $x$ from about $-2.5$ to $4.5$, $y$ from about $-6$ to $6$; no scale marks or numbers on the axes. The curve passes through three marked points, each drawn as a small solid dot with its coordinates printed beside it: $(-1, 0)$ on the $x$-axis to the left of $O$, $(3, 0)$ on the $x$-axis to the right of $O$, and $(0, 3)$ on the $y$-axis above $O$. The curve rises from the bottom left, crosses the $x$-axis at $(-1, 0)$, passes through $(0, 3)$ while still rising, reaches its highest point a little to the right of the $y$-axis (roughly above $x = 1$, at a height a little above the point $(0, 3)$), then falls, crosses the $x$-axis at $(3, 0)$ and continues down to the bottom right of the window. Print the equation $y = ax^2 + bx + c$ once beside the curve, near its upper right arm. Do NOT mark or label the maximum point, do NOT print any line of symmetry, do NOT mark the point $P$ or any point with $x$-coordinate 4, and do NOT draw any straight line: nothing the candidate is asked to find appears on the figure.",
+ "solution": "(a) Since the curve crosses the $x$-axis at $x = -1$ and $x = 3$, its equation can be written as $y = a(x + 1)(x - 3)$.\nThe curve passes through $(0, 3)$: $3 = a(0 + 1)(0 - 3) = -3a$, so $a = -1$.\nExpanding, $y = -(x + 1)(x - 3) = -(x^2 - 2x - 3) = -x^2 + 2x + 3$.\nHence $a = -1$, $b = 2$, $c = 3$.\n\n(b)(i) $-x^2 + 2x + 3 = -(x^2 - 2x) + 3 = -\\left[(x - 1)^2 - 1\\right] + 3 = -(x - 1)^2 + 1 + 3 = 4 - (x - 1)^2$.\nSo $k = 4$ and $h = 1$.\n\n(b)(ii) Since $(x - 1)^2 \\ge 0$, the greatest value of $y$ is $4$, occurring when $x = 1$.\nThe maximum point is $(1, 4)$.\n\n(c) When $x = 4$: $y = -(4)^2 + 2(4) + 3 = -16 + 8 + 3 = -5$, so $P$ is $(4, -5)$.\nGradient of the line through $P(4, -5)$ and the maximum point $(1, 4)$: $\\frac{4 - (-5)}{1 - 4} = \\frac{9}{-3} = -3$.\nUsing the point $(1, 4)$: $y - 4 = -3(x - 1)$, so $y = -3x + 7$.\nCheck at $P$: $-3(4) + 7 = -5$. Correct.\nThe equation of the line is $y = -3x + 7$.",
+ "syllabus_check": "4052 Functions and graphs: quadratic functions in factorised form (roots as $x$-intercepts) and the completed-square sketch form $y = \\pm(x - h)^2 + k$ with leading coefficient $-1$, as the syllabus states (no coefficient other than $\\pm 1$ is completed); sketch of a quadratic graph with intercepts given. Algebra: expansion of $-(x+1)(x-3)$, completing the square for $x^2 - 2x$. Coordinate geometry: gradient from two points, equation of a straight line $y = mx + c$. No midpoint, no calculus, nothing beyond 4052. A calculator is permitted throughout; all answers exact.",
+ "originality_note": "Own construction. The exemplars on this topic either draw a curve on a grid from a table of values (2023 specimen Q3, 2024 Q4(a), 2017 Q3, 2025 P1 Q26) or fit $y = ka^x$ through given points (2025 Q5(c), 2024 Q4(b)). This question draws nothing and uses no exponential: it reads a downward quadratic sketch from its three intercepts to recover $a$, $b$, $c$, rewrites it in completed-square form for the maximum, then leaves the graph for coordinate geometry through a point found on the curve. Intercepts $(-1,0)$, $(3,0)$, $(0,3)$, the coefficient $-1$, the maximum $(1,4)$, the point $(4,-5)$ and the line $y = -3x + 7$ are all chosen fresh and derived here."
+}

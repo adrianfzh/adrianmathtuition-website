@@ -1,0 +1,627 @@
+{
+ "key": "GCE-EM-P2",
+ "seed": 1,
+ "shape": {
+  "subject": "Mathematics",
+  "code": "4052",
+  "level": "EM",
+  "cut": 2023,
+  "duration": "2 hours 15 minutes",
+  "scope": "Numbers and their operations (primes, HCF/LCM, squares/cubes/roots, standard form, estimation, significant figures); ratio and proportion (incl. map scales, direct and inverse proportion); percentage (incl. reverse percentage); rate and speed (incl. average speed, conversion of units); financial mathematics (simple and compound interest, hire purchase, money exchange, taxation, utilities bills); algebraic expressions and formulae (expansion, factorisation incl. grouping and quadratic trinomials, algebraic fractions, changing the subject, algebraic identities); functions and graphs (linear, quadratic incl. completed-square and factorised forms, cubic, reciprocal y=a/x and a/x^2, exponential y=ka^x, drawing on a grid from a table of values, gradient of a curve by a tangent, solving equations by drawing a suitable line); equations and inequalities (linear, simultaneous linear, quadratic by factorisation / completing the square / the formula, fractional equations reducing to quadratics, linear inequalities incl. double inequalities, word problems leading to these); set language and notation (union, intersection, complement, subsets, Venn diagrams with numbers of elements); matrices (display of information, addition, scalar multiplication, multiplication of two matrices, interpretation of the product; no inverses); problems in real-world contexts (reading tables and information sheets, making and justifying a decision, estimating a cost or a quantity); angles, triangles and polygons (angle properties of parallel lines, triangles, quadrilaterals and regular polygons; construction with ruler, compasses and protractor: perpendicular bisectors and angle bisectors; scale drawings); congruence and similarity (tests, ratios of lengths, areas and volumes of similar figures and solids); properties of circles (symmetry properties: equal chords, perpendicular from centre, tangents from a point; angle properties: angle at centre, angle in a semicircle, angles in the same segment, opposite angles of a cyclic quadrilateral, tangent-radius; reasons stated); Pythagoras' theorem and trigonometry (sine, cosine and tangent for acute and obtuse angles, sine and cosine rules, area of a triangle as ½ab sin C, bearings, angles of elevation and depression, simple 3-D problems); mensuration (area of a triangle, parallelogram, trapezium, circle; arc length and sector area with the angle in RADIANS or degrees; surface area and volume of a prism, cylinder, pyramid, cone and sphere; composite solids); coordinate geometry (gradient, length, midpoint is NOT required, equation of a straight line y=mx+c, parallel lines, area of a rectilinear figure by shoelace is NOT required — use base×height or split into triangles); vectors in two dimensions (column vectors, magnitude, position vectors, addition, scalar multiples, collinearity, expressing one vector in terms of others, ratios of areas of triangles with a common height or on the same base); data handling and analysis (tables, bar charts, pie charts, pictograms, line graphs, histograms with equal class widths, dot diagrams, stem-and-leaf, box-and-whisker plots, cumulative frequency curves, median, quartiles, percentiles, range, interquartile range, mean and standard deviation for grouped and ungrouped data, comparing two distributions in context); probability (single events, combined events by possibility diagrams and tree diagrams, with and without replacement, mutually exclusive and independent events). NOT in 4052: calculus, logarithms, surds, the binomial theorem, trigonometric identities, the R-formula, quadratic inequalities, matrices inverses and determinants, vectors in three dimensions, the shoelace formula, the midpoint formula.",
+  "register": "REGISTER — how SEAB asks (4052)\n- Plain, exact, economical English. Instructions are imperatives: Find, Calculate, Work out, Write down, Simplify, Factorise, Expand, Solve, Show that, Explain why, Give a reason, Complete the table, Draw, Describe, Estimate, Express, State.\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A 1–3 mark question is often a single unlabelled part.\n- A scientific calculator is allowed on BOTH papers. Never write \"a calculator must not be used\". The paper's rubric already says: non-exact answers to 3 significant figures, angles to 1 decimal place, π = calculator value or 3.142 — so a question states a precision only when it wants something else (\"correct to 2 decimal places\", \"in its simplest form\", \"in terms of π\", \"as a fraction in its lowest terms\", \"in standard form\", \"to the nearest cent\").\n- Angles are in DEGREES with the degree sign ($58^\\circ$); a sector angle in radians is stated as \"1.8 radians\". Bearings are three-figure ($048^\\circ$). Money is dollars and cents ($\\$92.75$).\n- Contexts are short, concrete and Singaporean-neutral (a garden fountain, a box of apples, a map of Singapore, a candle business): the situation in one or two sentences, units given, then the parts. Never chatty, never a story.\n- \"Show that\" states its target exactly (\"Show that $x^2 - 102x + 1440 = 0$\", \"Show that $p = 2.5$\") and a later part uses it. \"Explain why …\" / \"Give a reason for your answer\" / \"Is he correct?\" parts are worth 1 mark and expect one sentence with a number in it. A circle-properties question says \"Give a reason for each step of your working.\"\n- Statistics and probability parts ask for interpretation in context (\"By commenting on the means and the standard deviations, compare …\", \"Explain what this tells you about …\").\n- Paper 1 (27 short questions, 90 marks): each question tests ONE idea in 1–7 marks, answered in the space provided; the paper walks the syllabus (number, algebra, geometry, statistics interleaved), with the vector and mensuration questions near the end.\n- Paper 2 (9 long questions, 90 marks): each question is 8–12 marks in 3–5 parts. Early questions are ALGEBRA MEDLEYS whose parts (a), (b), (c), (d) are separate short problems on different algebra skills. Later ones are one context developed through parts: a graph question (a table of values with two blanks, \"On the grid, draw the graph of …\", a gradient by a tangent, \"By drawing a suitable straight line, solve …\"), a trigonometry-on-the-ground question with bearings and a mast, a statistics + probability question over a table or histogram, a circle-properties + circular-measure question, a speed/quadratic question (\"Show that … = 0\", solve to 2 decimal places, reject a root, interpret), and the last question is a PROBLEM IN A REAL-WORLD CONTEXT: an information sheet (a table of prices, rates or measurements) followed by parts that end in a 5–7 mark \"Suggest a suitable … Justify your answer\" or \"Is it worth …? Show your working\" decision.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1 mark: read/state/one-line. 2 marks: one routine. 3–4 marks: a short chain. 5–7 marks: a multi-step argument or a decision with working."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "prompt_version": "gce-author-v1",
+ "blueprint_derived_at": "2026-09-08",
+ "generated_at": "2026-09-11T06:31:46.198Z",
+ "topicList": [
+  "Algebra (Expansion)",
+  "Algebra (Expressions)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Identities)",
+  "Algebra (Inequalities)",
+  "Algebra (Linear Equations)",
+  "Algebra (Quadratic Equations)",
+  "Algebra (Quadratic Graphs)",
+  "Algebra (Simultaneous Equations)",
+  "Algebra (Subject of Formula)",
+  "Indices",
+  "Indices (Standard Form)",
+  "Numbers (Estimation)",
+  "Numbers (HCF and LCM)",
+  "Numbers (Percentages)",
+  "Numbers (Prime Factorization)",
+  "Numbers (Rate)",
+  "Numbers (Ratio)",
+  "Numbers (Speed)",
+  "Proportion",
+  "Angles",
+  "Circle Properties",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Coordinate Geometry",
+  "Distance and Speed Time Graphs",
+  "Geometrical Constructions",
+  "Graphs of Functions",
+  "Map Scales",
+  "Mensuration",
+  "Polygons",
+  "Trigonometry",
+  "Vectors",
+  "Financial Math (Hire Purchase)",
+  "Financial Math (Interest)",
+  "Financial Math (Taxation)",
+  "Math In Real World Context",
+  "Matrices",
+  "Number Patterns",
+  "Sets",
+  "Probability",
+  "Statistics",
+  "Coordinate Geometry (Lines)",
+  "Pythagoras' Theorem",
+  "Symmetry",
+  "Financial Math (Exchange Rate)"
+ ],
+ "must_appear": [
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Quadratic Equations)",
+  "Circle Properties",
+  "Circular Measure",
+  "Coordinate Geometry",
+  "Graphs of Functions",
+  "Math In Real World Context"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Quadratic Equations)",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.0181
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.091
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.091
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.091
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Fractions)",
+   "target": 11,
+   "marks": [
+    9,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Financial Math (Hire Purchase)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.010000000000000002
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Graphs of Functions",
+   "target": 9,
+   "marks": [
+    9,
+    10
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.2
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.2
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 11,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.285
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.286
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.143
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.0143
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.0143
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Circular Measure",
+   "target": 9,
+   "marks": [
+    8,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Circle Properties",
+     "weight": 0.028499999999999998
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.0286
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0286
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0143
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 11,
+   "marks": [
+    11,
+    11
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.333
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.333
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.167
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.167
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Probability",
+   "target": 8,
+   "marks": [
+    7,
+    9
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.04000000000000001
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.04000000000000001
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.020000000000000004
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Circle Properties",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0125
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Math In Real World Context",
+     "weight": 0.334
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.222
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.0111
+    }
+   ]
+  }
+ ],
+ "exemplars": {
+  "1": [
+   {
+    "id": "60c9168d-07c4-454c-b444-2f455bd75a36",
+    "ref": "GCE 2025 P2 Q8"
+   },
+   {
+    "id": "14cef6ef-40db-4c4b-aedb-ce8545ac065b",
+    "ref": "GCE 2024 P2 Q6"
+   },
+   {
+    "id": "a2a3dab5-c1ec-4b59-a621-acb601da1a10",
+    "ref": "GCE 2023 specimen P2 Q8"
+   },
+   {
+    "id": "8031701c-dd03-407c-9d1d-6cb5bfc4158f",
+    "ref": "GCE 2025 P1 Q20"
+   },
+   {
+    "id": "12a67ec2-8a20-47e4-8921-8a3c5dc320f7",
+    "ref": "GCE 2024 P1 Q21"
+   }
+  ],
+  "2": [
+   {
+    "id": "21cf0b77-06e3-4b21-82b6-bde467aa7d8a",
+    "ref": "GCE 2024 P2 Q1"
+   },
+   {
+    "id": "f650d380-b315-4357-8798-46263e7870f7",
+    "ref": "GCE 2025 P2 Q1"
+   },
+   {
+    "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+    "ref": "GCE 2023 P2 Q2"
+   },
+   {
+    "id": "4f282fde-e945-4503-8a58-2189374690ed",
+    "ref": "GCE 2025 P1 Q23"
+   },
+   {
+    "id": "aa860c94-c851-4e49-b146-6916435524b9",
+    "ref": "GCE 2024 P1 Q5"
+   }
+  ],
+  "3": [
+   {
+    "id": "94560f4b-a427-4b3c-bbff-c1516ce72ec0",
+    "ref": "GCE 2025 P2 Q5"
+   },
+   {
+    "id": "e0dfab94-8d90-494a-858c-990449760d16",
+    "ref": "GCE 2023 specimen P2 Q3"
+   },
+   {
+    "id": "6399e899-8387-4772-9ec9-f002ce7269df",
+    "ref": "GCE 2024 P2 Q4"
+   },
+   {
+    "id": "fcd01980-8713-45e7-968e-fb68eae226c0",
+    "ref": "GCE 2025 P1 Q26"
+   },
+   {
+    "id": "64acdc91-c8bf-4921-bc2c-97845bb79824",
+    "ref": "GCE 2017 P2 Q3"
+   }
+  ],
+  "4": [
+   {
+    "id": "6399e899-8387-4772-9ec9-f002ce7269df",
+    "ref": "GCE 2024 P2 Q4"
+   },
+   {
+    "id": "d24f5978-7a46-45e7-898f-d4fbe92dcb11",
+    "ref": "GCE 2023 P2 Q4"
+   },
+   {
+    "id": "fcd01980-8713-45e7-968e-fb68eae226c0",
+    "ref": "GCE 2025 P1 Q26"
+   },
+   {
+    "id": "cc18bc30-7197-4cb9-bd57-e60e15415dc6",
+    "ref": "GCE 2021 P2 Q3"
+   },
+   {
+    "id": "4b0b299a-7e4f-4aa2-a591-1de8da008951",
+    "ref": "GCE 2019 P2 Q4"
+   }
+  ],
+  "5": [
+   {
+    "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+    "ref": "GCE 2023 specimen P2 Q5"
+   },
+   {
+    "id": "20345f91-46c3-4357-87da-d90b830bb060",
+    "ref": "GCE 2024 P2 Q8"
+   },
+   {
+    "id": "e594a84c-4369-4a1d-893c-e6907e45bcb2",
+    "ref": "GCE 2023 specimen P1 Q21"
+   },
+   {
+    "id": "2885c79b-8287-489f-892a-56e05dbefe36",
+    "ref": "GCE 2024 P1 Q9"
+   },
+   {
+    "id": "778084c8-2600-4b5d-9cea-dae8dc72da7e",
+    "ref": "GCE 2021 P2 Q6"
+   }
+  ],
+  "6": [
+   {
+    "id": "60c9168d-07c4-454c-b444-2f455bd75a36",
+    "ref": "GCE 2025 P2 Q8"
+   },
+   {
+    "id": "390b6a03-4a6b-44ac-a58a-eaf498a8e642",
+    "ref": "GCE 2023 specimen P2 Q6"
+   },
+   {
+    "id": "5627d27e-a8b8-4811-bf89-083d70fa265f",
+    "ref": "GCE 2024 P2 Q3"
+   },
+   {
+    "id": "2e397b9b-e15d-429d-b5e6-fc7eb757ce00",
+    "ref": "GCE 2023 specimen P1 Q14"
+   },
+   {
+    "id": "f8b0c2ea-6533-4dc7-9565-9485173e62d1",
+    "ref": "GCE 2022 P2 Q8"
+   }
+  ],
+  "7": [
+   {
+    "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+    "ref": "GCE 2025 P2 Q2"
+   },
+   {
+    "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+    "ref": "GCE 2024 P2 Q7"
+   },
+   {
+    "id": "29eb0e1c-3958-4601-acd0-de2729420552",
+    "ref": "GCE 2023 P2 Q7"
+   },
+   {
+    "id": "d4d607c6-160e-49a0-89a4-970a411a3da5",
+    "ref": "GCE 2025 P1 Q27"
+   },
+   {
+    "id": "8ca3599f-87dc-4fb1-98f5-b491a8928960",
+    "ref": "GCE 2024 P1 Q11"
+   }
+  ],
+  "8": [
+   {
+    "id": "20345f91-46c3-4357-87da-d90b830bb060",
+    "ref": "GCE 2024 P2 Q8"
+   },
+   {
+    "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+    "ref": "GCE 2023 specimen P2 Q5"
+   },
+   {
+    "id": "9754f1ff-ccbc-4001-9208-38b9b5e75b86",
+    "ref": "GCE 2025 P1 Q16"
+   },
+   {
+    "id": "b7eb639e-49a4-4868-9de3-6ab2cb96f68d",
+    "ref": "GCE 2024 P1 Q13"
+   },
+   {
+    "id": "2e22e4f7-084e-4617-8a86-1e5d40e25537",
+    "ref": "GCE 2023 specimen P1 Q20"
+   }
+  ],
+  "9": [
+   {
+    "id": "06644e75-f947-4d76-b5ef-69990767c093",
+    "ref": "GCE 2023 specimen P2 Q9"
+   },
+   {
+    "id": "2283a969-cca8-444f-9aae-c453bcbdae48",
+    "ref": "GCE 2025 P2 Q9"
+   },
+   {
+    "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+    "ref": "GCE 2024 P2 Q9"
+   },
+   {
+    "id": "954a0fe6-73d9-45b0-ac6e-5731b60bcc2b",
+    "ref": "GCE 2021 P2 Q10"
+   },
+   {
+    "id": "0d307f22-686c-42ee-a1d9-d92f371512dc",
+    "ref": "GCE 2020 P2 Q10"
+   }
+  ]
+ }
+}

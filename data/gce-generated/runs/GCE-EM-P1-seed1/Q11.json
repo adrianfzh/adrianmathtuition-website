@@ -1,0 +1,28 @@
+{
+ "stem": "",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Simplify $\\frac{2x^2 - 8}{x^2 - 5x + 6}$.",
+   "marks": 2,
+   "answer": "$\\frac{2(x + 2)}{x - 3}$"
+  },
+  {
+   "label": "(b)",
+   "text": "Hence solve $\\frac{2x^2 - 8}{x^2 - 5x + 6} = 4$.",
+   "marks": 1,
+   "answer": "$x = 8$"
+  }
+ ],
+ "answer": "",
+ "total_marks": 3,
+ "topics": [
+  "Algebra (Fractions)",
+  "Algebra (Factorization)"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) Factorise the numerator: $2x^2 - 8 = 2(x^2 - 4) = 2(x - 2)(x + 2)$.\nFactorise the denominator: $x^2 - 5x + 6 = (x - 2)(x - 3)$.\nSo $\\frac{2x^2 - 8}{x^2 - 5x + 6} = \\frac{2(x - 2)(x + 2)}{(x - 2)(x - 3)} = \\frac{2(x + 2)}{x - 3}$.\n\n(b) Using (a), $\\frac{2(x + 2)}{x - 3} = 4$\n$2x + 4 = 4x - 12$\n$16 = 2x$\n$x = 8$.\nCheck: $\\frac{2(64) - 8}{64 - 40 + 6} = \\frac{120}{30} = 4$.",
+ "syllabus_check": "4052 Algebraic expressions and formulae: factorisation of a difference of two squares (with a common factor) and a quadratic trinomial, then cancelling a common factor to simplify an algebraic fraction (a); a fractional equation that reduces to a linear equation once the simplified form is used (b). No topic outside 4052. Marks 2 + 1 = 3 match the slot.",
+ "originality_note": "The exemplars combine several fractions into one (2024 P1 Q5, 2025 P2 Q1(d), 2024 P2 Q1(d)) or solve fractional equations that lead to quadratics (2023 specimen Q13, 2025 P1 Q23). This question instead simplifies a single fraction by factorising both numerator and denominator, then uses that form so the follow-up equation collapses to a linear one — a different skill, new expression and new numbers. No algebraic fraction appears elsewhere in the paper."
+}

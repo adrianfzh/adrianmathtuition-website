@@ -1,0 +1,1433 @@
+{
+ "key": "GCE-EM-P1",
+ "seed": 1,
+ "shape": {
+  "subject": "Mathematics",
+  "code": "4052",
+  "level": "EM",
+  "cut": 2023,
+  "duration": "2 hours 15 minutes",
+  "scope": "Numbers and their operations (primes, HCF/LCM, squares/cubes/roots, standard form, estimation, significant figures); ratio and proportion (incl. map scales, direct and inverse proportion); percentage (incl. reverse percentage); rate and speed (incl. average speed, conversion of units); financial mathematics (simple and compound interest, hire purchase, money exchange, taxation, utilities bills); algebraic expressions and formulae (expansion, factorisation incl. grouping and quadratic trinomials, algebraic fractions, changing the subject, algebraic identities); functions and graphs (linear, quadratic incl. completed-square and factorised forms, cubic, reciprocal y=a/x and a/x^2, exponential y=ka^x, drawing on a grid from a table of values, gradient of a curve by a tangent, solving equations by drawing a suitable line); equations and inequalities (linear, simultaneous linear, quadratic by factorisation / completing the square / the formula, fractional equations reducing to quadratics, linear inequalities incl. double inequalities, word problems leading to these); set language and notation (union, intersection, complement, subsets, Venn diagrams with numbers of elements); matrices (display of information, addition, scalar multiplication, multiplication of two matrices, interpretation of the product; no inverses); problems in real-world contexts (reading tables and information sheets, making and justifying a decision, estimating a cost or a quantity); angles, triangles and polygons (angle properties of parallel lines, triangles, quadrilaterals and regular polygons; construction with ruler, compasses and protractor: perpendicular bisectors and angle bisectors; scale drawings); congruence and similarity (tests, ratios of lengths, areas and volumes of similar figures and solids); properties of circles (symmetry properties: equal chords, perpendicular from centre, tangents from a point; angle properties: angle at centre, angle in a semicircle, angles in the same segment, opposite angles of a cyclic quadrilateral, tangent-radius; reasons stated); Pythagoras' theorem and trigonometry (sine, cosine and tangent for acute and obtuse angles, sine and cosine rules, area of a triangle as ½ab sin C, bearings, angles of elevation and depression, simple 3-D problems); mensuration (area of a triangle, parallelogram, trapezium, circle; arc length and sector area with the angle in RADIANS or degrees; surface area and volume of a prism, cylinder, pyramid, cone and sphere; composite solids); coordinate geometry (gradient, length, midpoint is NOT required, equation of a straight line y=mx+c, parallel lines, area of a rectilinear figure by shoelace is NOT required — use base×height or split into triangles); vectors in two dimensions (column vectors, magnitude, position vectors, addition, scalar multiples, collinearity, expressing one vector in terms of others, ratios of areas of triangles with a common height or on the same base); data handling and analysis (tables, bar charts, pie charts, pictograms, line graphs, histograms with equal class widths, dot diagrams, stem-and-leaf, box-and-whisker plots, cumulative frequency curves, median, quartiles, percentiles, range, interquartile range, mean and standard deviation for grouped and ungrouped data, comparing two distributions in context); probability (single events, combined events by possibility diagrams and tree diagrams, with and without replacement, mutually exclusive and independent events). NOT in 4052: calculus, logarithms, surds, the binomial theorem, trigonometric identities, the R-formula, quadratic inequalities, matrices inverses and determinants, vectors in three dimensions, the shoelace formula, the midpoint formula.",
+  "register": "REGISTER — how SEAB asks (4052)\n- Plain, exact, economical English. Instructions are imperatives: Find, Calculate, Work out, Write down, Simplify, Factorise, Expand, Solve, Show that, Explain why, Give a reason, Complete the table, Draw, Describe, Estimate, Express, State.\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A 1–3 mark question is often a single unlabelled part.\n- A scientific calculator is allowed on BOTH papers. Never write \"a calculator must not be used\". The paper's rubric already says: non-exact answers to 3 significant figures, angles to 1 decimal place, π = calculator value or 3.142 — so a question states a precision only when it wants something else (\"correct to 2 decimal places\", \"in its simplest form\", \"in terms of π\", \"as a fraction in its lowest terms\", \"in standard form\", \"to the nearest cent\").\n- Angles are in DEGREES with the degree sign ($58^\\circ$); a sector angle in radians is stated as \"1.8 radians\". Bearings are three-figure ($048^\\circ$). Money is dollars and cents ($\\$92.75$).\n- Contexts are short, concrete and Singaporean-neutral (a garden fountain, a box of apples, a map of Singapore, a candle business): the situation in one or two sentences, units given, then the parts. Never chatty, never a story.\n- \"Show that\" states its target exactly (\"Show that $x^2 - 102x + 1440 = 0$\", \"Show that $p = 2.5$\") and a later part uses it. \"Explain why …\" / \"Give a reason for your answer\" / \"Is he correct?\" parts are worth 1 mark and expect one sentence with a number in it. A circle-properties question says \"Give a reason for each step of your working.\"\n- Statistics and probability parts ask for interpretation in context (\"By commenting on the means and the standard deviations, compare …\", \"Explain what this tells you about …\").\n- Paper 1 (27 short questions, 90 marks): each question tests ONE idea in 1–7 marks, answered in the space provided; the paper walks the syllabus (number, algebra, geometry, statistics interleaved), with the vector and mensuration questions near the end.\n- Paper 2 (9 long questions, 90 marks): each question is 8–12 marks in 3–5 parts. Early questions are ALGEBRA MEDLEYS whose parts (a), (b), (c), (d) are separate short problems on different algebra skills. Later ones are one context developed through parts: a graph question (a table of values with two blanks, \"On the grid, draw the graph of …\", a gradient by a tangent, \"By drawing a suitable straight line, solve …\"), a trigonometry-on-the-ground question with bearings and a mast, a statistics + probability question over a table or histogram, a circle-properties + circular-measure question, a speed/quadratic question (\"Show that … = 0\", solve to 2 decimal places, reject a root, interpret), and the last question is a PROBLEM IN A REAL-WORLD CONTEXT: an information sheet (a table of prices, rates or measurements) followed by parts that end in a 5–7 mark \"Suggest a suitable … Justify your answer\" or \"Is it worth …? Show your working\" decision.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1 mark: read/state/one-line. 2 marks: one routine. 3–4 marks: a short chain. 5–7 marks: a multi-step argument or a decision with working."
+ },
+ "paperNo": 1,
+ "total": 90,
+ "prompt_version": "gce-author-v1",
+ "blueprint_derived_at": "2026-09-08",
+ "generated_at": "2026-09-11T06:23:49.861Z",
+ "topicList": [
+  "Algebra (Expansion)",
+  "Algebra (Expressions)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Identities)",
+  "Algebra (Inequalities)",
+  "Algebra (Linear Equations)",
+  "Algebra (Quadratic Equations)",
+  "Algebra (Quadratic Graphs)",
+  "Algebra (Simultaneous Equations)",
+  "Algebra (Subject of Formula)",
+  "Indices",
+  "Indices (Standard Form)",
+  "Numbers (Estimation)",
+  "Numbers (HCF and LCM)",
+  "Numbers (Percentages)",
+  "Numbers (Prime Factorization)",
+  "Numbers (Rate)",
+  "Numbers (Ratio)",
+  "Numbers (Speed)",
+  "Proportion",
+  "Angles",
+  "Circle Properties",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Coordinate Geometry",
+  "Distance and Speed Time Graphs",
+  "Geometrical Constructions",
+  "Graphs of Functions",
+  "Map Scales",
+  "Mensuration",
+  "Polygons",
+  "Trigonometry",
+  "Vectors",
+  "Financial Math (Hire Purchase)",
+  "Financial Math (Interest)",
+  "Financial Math (Taxation)",
+  "Math In Real World Context",
+  "Matrices",
+  "Number Patterns",
+  "Sets",
+  "Probability",
+  "Statistics",
+  "Coordinate Geometry (Lines)",
+  "Pythagoras' Theorem",
+  "Symmetry",
+  "Financial Math (Exchange Rate)"
+ ],
+ "must_appear": [
+  "Algebra (Expansion)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Mensuration",
+  "Number Patterns",
+  "Numbers (HCF and LCM)",
+  "Sets",
+  "Statistics",
+  "Trigonometry"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Linear Equations)",
+   "target": 2,
+   "marks": [
+    1,
+    2
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Expressions)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Circular Measure",
+   "target": 2,
+   "marks": [
+    1,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (HCF and LCM)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Financial Math (Hire Purchase)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Financial Math (Hire Purchase)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.25
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Numbers (Prime Factorization)",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (HCF and LCM)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (Prime Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Financial Math (Interest)",
+   "target": 3,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Financial Math (Interest)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Algebra (Quadratic Graphs)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Graphs)",
+     "weight": 0.5
+    },
+    {
+     "topic": "Algebra (Expressions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Geometrical Constructions",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Geometrical Constructions",
+     "weight": 0.333
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Algebra (Identities)",
+   "target": 3,
+   "marks": [
+    2,
+    6
+   ],
+   "parts": [
+    3,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Identities)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.333
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Circle Properties",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Circle Properties",
+     "weight": 0.334
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.333
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Numbers (Ratio)",
+   "target": 4,
+   "marks": [
+    2,
+    5
+   ],
+   "parts": [
+    3,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.334
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Algebra (Fractions)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Statistics",
+     "weight": 0.5
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 12,
+   "topic": "Algebra (Subject of Formula)",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Numbers (Estimation)",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 13,
+   "topic": "Probability",
+   "target": 3,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.25
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 14,
+   "topic": "Algebra (Simultaneous Equations)",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.5
+    },
+    {
+     "topic": "Angles",
+     "weight": 0.5
+    }
+   ]
+  },
+  {
+   "pos": 15,
+   "topic": "Angles",
+   "target": 3,
+   "marks": [
+    3,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Angles",
+     "weight": 0.25
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 16,
+   "topic": "Congruency and Similarity",
+   "target": 3,
+   "marks": [
+    1,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.334
+    },
+    {
+     "topic": "Financial Math (Interest)",
+     "weight": 0.333
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 17,
+   "topic": "Sets",
+   "target": 2,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Sets",
+     "weight": 0.667
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 18,
+   "topic": "Indices (Standard Form)",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.25
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 19,
+   "topic": "Numbers (HCF and LCM)",
+   "target": 3,
+   "marks": [
+    2,
+    4
+   ],
+   "parts": [
+    3,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Graphs)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (HCF and LCM)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Numbers (Prime Factorization)",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 20,
+   "topic": "Algebra (Factorization)",
+   "target": 3,
+   "marks": [
+    2,
+    3
+   ],
+   "parts": null,
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Polygons",
+     "weight": 0.25
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 21,
+   "topic": "Matrices",
+   "target": 4,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.25
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.25
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 22,
+   "topic": "Algebra (Expansion)",
+   "target": 4,
+   "marks": [
+    2,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.25
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 23,
+   "topic": "Trigonometry",
+   "target": 6,
+   "marks": [
+    5,
+    7
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Trigonometry",
+     "weight": 0.5
+    },
+    {
+     "topic": "Algebra (Expansion)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Sets",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 24,
+   "topic": "Proportion",
+   "target": 3,
+   "marks": [
+    3,
+    5
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Proportion",
+     "weight": 0.25
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.25
+    }
+   ]
+  },
+  {
+   "pos": 25,
+   "topic": "Statistics",
+   "target": 4,
+   "marks": [
+    3,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.334
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.333
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.333
+    }
+   ]
+  },
+  {
+   "pos": 26,
+   "topic": "Mensuration",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Mensuration",
+     "weight": 0.6
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.2
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 27,
+   "topic": "Number Patterns",
+   "target": 6,
+   "marks": [
+    5,
+    7
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Vectors",
+     "weight": 0.667
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.333
+    }
+   ]
+  }
+ ],
+ "exemplars": {
+  "1": [
+   {
+    "id": "e259ecb8-a4fe-4733-bb2c-bb793555bba1",
+    "ref": "GCE 2023 P1 Q13"
+   },
+   {
+    "id": "ca0074d5-0e5a-4598-837b-1c75e956d9e4",
+    "ref": "GCE 2025 P1 Q5"
+   },
+   {
+    "id": "f650d380-b315-4357-8798-46263e7870f7",
+    "ref": "GCE 2025 P2 Q1"
+   },
+   {
+    "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+    "ref": "GCE 2023 P2 Q2"
+   },
+   {
+    "id": "773b55aa-3865-4bab-8393-1b59d5030864",
+    "ref": "GCE 2012 P1 Q8"
+   }
+  ],
+  "2": [
+   {
+    "id": "2885c79b-8287-489f-892a-56e05dbefe36",
+    "ref": "GCE 2024 P1 Q9"
+   },
+   {
+    "id": "b4f2580b-d8cb-4d30-8674-5da73971681b",
+    "ref": "GCE 2023 P1 Q2"
+   },
+   {
+    "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+    "ref": "GCE 2023 P2 Q5"
+   },
+   {
+    "id": "20345f91-46c3-4357-87da-d90b830bb060",
+    "ref": "GCE 2024 P2 Q8"
+   },
+   {
+    "id": "6efa44c2-ed48-47f4-b575-230d73cc5c61",
+    "ref": "GCE 2008 P1 Q6"
+   }
+  ],
+  "3": [
+   {
+    "id": "20c9c8ad-0d34-4855-8299-fe80975656db",
+    "ref": "GCE 2024 P1 Q3"
+   },
+   {
+    "id": "814bf16e-be96-497a-9d4b-8a951a189447",
+    "ref": "GCE 2023 specimen P2 Q2"
+   },
+   {
+    "id": "d35218f7-6d60-4d59-af0f-fc38043a4ad7",
+    "ref": "GCE 2018 P1 Q8"
+   },
+   {
+    "id": "8a06850d-33ea-4ed4-af69-a7d5871240ac",
+    "ref": "GCE 2014 P1 Q11"
+   },
+   {
+    "id": "788fefbd-62f3-4a8b-bb8a-a8b4c2b2406f",
+    "ref": "GCE 2013 P2 Q2"
+   }
+  ],
+  "4": [
+   {
+    "id": "870c994e-e660-437f-8b4f-aba42ecfeed8",
+    "ref": "GCE 2025 P1 Q10"
+   },
+   {
+    "id": "b55dbf3b-6874-4f1e-9366-f553431545b5",
+    "ref": "GCE 2024 P1 Q19"
+   },
+   {
+    "id": "e97a42ba-4147-469e-9fdd-89d53aff45cb",
+    "ref": "GCE 2023 P1 Q4"
+   },
+   {
+    "id": "ada70426-2b36-49db-b877-402d274bdb13",
+    "ref": "GCE 2019 P1 Q4"
+   },
+   {
+    "id": "d1ca87f3-aecf-4e8f-8cbf-b65a83fd9b74",
+    "ref": "GCE 2016 P1 Q5"
+   }
+  ],
+  "5": [
+   {
+    "id": "1302eff8-8a83-47e5-ac1d-49d734bcc00a",
+    "ref": "GCE 2024 P1 Q16"
+   },
+   {
+    "id": "1b08c48c-baf7-440f-b6d3-ade1b023dfc0",
+    "ref": "GCE 2023 P1 Q5"
+   },
+   {
+    "id": "51354413-f7bc-44d8-8257-f1cb49776819",
+    "ref": "GCE 2025 P1 Q3"
+   },
+   {
+    "id": "6a28ba60-1ffb-4577-a79c-28d556048ed8",
+    "ref": "GCE 2020 P1 Q15"
+   },
+   {
+    "id": "930dadb3-87ff-481b-932a-8c360180d4e8",
+    "ref": "GCE 2017 P1 Q13"
+   }
+  ],
+  "6": [
+   {
+    "id": "3d19ee56-4add-4d43-8a57-89bef4484362",
+    "ref": "GCE 2025 P1 Q15"
+   },
+   {
+    "id": "75d3a2ef-6354-4fdd-89e6-e0523d155163",
+    "ref": "GCE 2023 P1 Q6"
+   },
+   {
+    "id": "d62fa8d5-1d95-4dfe-8f01-a77e2db462c7",
+    "ref": "GCE 2020 P1 Q10"
+   },
+   {
+    "id": "b4ccc18e-16e0-41bb-ac14-6ea1e2fbf80f",
+    "ref": "GCE 2019 P1 Q15"
+   },
+   {
+    "id": "1edbe630-2f11-43e4-a179-2493e325ca97",
+    "ref": "GCE 2016 P1 Q11"
+   }
+  ],
+  "7": [
+   {
+    "id": "7316ef3f-26c9-44e7-9dda-6fb89fa1ba83",
+    "ref": "GCE 2025 P1 Q7"
+   },
+   {
+    "id": "76a7706b-1b5b-429e-8b41-50e185a36614",
+    "ref": "GCE 2023 specimen P1 Q7"
+   },
+   {
+    "id": "597ad0e7-603d-4cb3-b0d2-c975ccdad00e",
+    "ref": "GCE 2011 P1 Q20"
+   },
+   {
+    "id": "84329054-90b4-4bdd-9677-d29ffc9ef3e0",
+    "ref": "GCE 2019 P1 Q12"
+   },
+   {
+    "id": "9b6dbb5e-7b9d-4271-815c-76def2f8935d",
+    "ref": "GCE 2017 P1 Q10"
+   }
+  ],
+  "8": [
+   {
+    "id": "06de8d75-60a4-4a6d-8dd1-0dc7ae109669",
+    "ref": "GCE 2023 specimen P1 Q8"
+   },
+   {
+    "id": "cf63bc03-31b1-4ca6-851e-65dbfa3fae5a",
+    "ref": "GCE 2021 P1 Q15"
+   },
+   {
+    "id": "be5cc2f5-a208-4341-8195-b7dbd4559c86",
+    "ref": "GCE 2006 P1 Q16"
+   },
+   {
+    "id": "210c68e9-3d51-4a76-9812-fd967c9d740c",
+    "ref": "GCE 2016 P1 Q4"
+   },
+   {
+    "id": "400832b2-1b8b-4896-895b-6ccdfe6314d6",
+    "ref": "GCE 2007 P2 Q2"
+   }
+  ],
+  "9": [
+   {
+    "id": "b7eb639e-49a4-4868-9de3-6ab2cb96f68d",
+    "ref": "GCE 2024 P1 Q13"
+   },
+   {
+    "id": "2e22e4f7-084e-4617-8a86-1e5d40e25537",
+    "ref": "GCE 2023 specimen P1 Q20"
+   },
+   {
+    "id": "9754f1ff-ccbc-4001-9208-38b9b5e75b86",
+    "ref": "GCE 2025 P1 Q16"
+   },
+   {
+    "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+    "ref": "GCE 2023 P2 Q5"
+   },
+   {
+    "id": "20345f91-46c3-4357-87da-d90b830bb060",
+    "ref": "GCE 2024 P2 Q8"
+   }
+  ],
+  "10": [
+   {
+    "id": "f6b91b07-9216-4756-9c9d-96c27ab9cf3f",
+    "ref": "GCE 2023 specimen P1 Q10"
+   },
+   {
+    "id": "833b4449-22bf-441c-b917-79e31ac26878",
+    "ref": "GCE 2024 P2 Q2"
+   },
+   {
+    "id": "82d62f89-1a79-45e3-8888-6520ab2f99a4",
+    "ref": "GCE 2025 P2 Q3"
+   },
+   {
+    "id": "2621df8a-9b6e-442c-82d3-53a65c2c95b6",
+    "ref": "GCE 2019 P1 Q19"
+   },
+   {
+    "id": "e3ac2010-fd63-4e88-b618-49db597d3013",
+    "ref": "GCE 2009 P1 Q21"
+   }
+  ],
+  "11": [
+   {
+    "id": "aa860c94-c851-4e49-b146-6916435524b9",
+    "ref": "GCE 2024 P1 Q5"
+   },
+   {
+    "id": "533e23e2-581c-4c72-b540-bc8f6c1fb64f",
+    "ref": "GCE 2023 specimen P1 Q13"
+   },
+   {
+    "id": "4f282fde-e945-4503-8a58-2189374690ed",
+    "ref": "GCE 2025 P1 Q23"
+   },
+   {
+    "id": "f650d380-b315-4357-8798-46263e7870f7",
+    "ref": "GCE 2025 P2 Q1"
+   },
+   {
+    "id": "21cf0b77-06e3-4b21-82b6-bde467aa7d8a",
+    "ref": "GCE 2024 P2 Q1"
+   }
+  ],
+  "12": [
+   {
+    "id": "d5ba15da-b5d4-43b4-b8f6-0c95a394b33a",
+    "ref": "GCE 2025 P1 Q18"
+   },
+   {
+    "id": "dbe4686f-d911-4923-8dc3-e3f4950af27c",
+    "ref": "GCE 2024 P1 Q12"
+   },
+   {
+    "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+    "ref": "GCE 2023 P2 Q2"
+   },
+   {
+    "id": "d6855c6d-d84b-4ac6-a505-cde5a11780ac",
+    "ref": "GCE 2018 P1 Q17"
+   },
+   {
+    "id": "97346021-0475-41ae-9137-ef2acdda1553",
+    "ref": "GCE 2022 P1 Q20"
+   }
+  ],
+  "13": [
+   {
+    "id": "d4d607c6-160e-49a0-89a4-970a411a3da5",
+    "ref": "GCE 2025 P1 Q27"
+   },
+   {
+    "id": "8ca3599f-87dc-4fb1-98f5-b491a8928960",
+    "ref": "GCE 2024 P1 Q11"
+   },
+   {
+    "id": "e259ecb8-a4fe-4733-bb2c-bb793555bba1",
+    "ref": "GCE 2023 P1 Q13"
+   },
+   {
+    "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+    "ref": "GCE 2025 P2 Q2"
+   },
+   {
+    "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+    "ref": "GCE 2024 P2 Q7"
+   }
+  ],
+  "14": [
+   {
+    "id": "46a62516-c556-4dbf-ae78-5b76a835ab3a",
+    "ref": "GCE 2024 P1 Q14"
+   },
+   {
+    "id": "d9e1d2ad-e61c-4013-a2ac-6cfe4546c643",
+    "ref": "GCE 2023 P1 Q22"
+   },
+   {
+    "id": "f650d380-b315-4357-8798-46263e7870f7",
+    "ref": "GCE 2025 P2 Q1"
+   },
+   {
+    "id": "5b5106ab-669f-4d36-85ee-9fd35e7a0481",
+    "ref": "GCE 2023 specimen P2 Q1"
+   },
+   {
+    "id": "92a6ea12-50c3-4edf-a350-7b4eba3ecd77",
+    "ref": "GCE 2022 P1 Q6"
+   }
+  ],
+  "15": [
+   {
+    "id": "19c83c57-560b-4e09-8f21-1f0efcea7dbd",
+    "ref": "GCE 2025 P1 Q13"
+   },
+   {
+    "id": "788b0ed1-3dbd-429a-b9aa-920d13b4732c",
+    "ref": "GCE 2024 P1 Q15"
+   },
+   {
+    "id": "1459816f-4cc5-49f1-95b9-39c03f2abf2e",
+    "ref": "GCE 2023 P1 Q14"
+   },
+   {
+    "id": "c6e95650-9c7b-4c1f-b73e-073f05c8bc14",
+    "ref": "GCE 2018 P1 Q9"
+   },
+   {
+    "id": "e960998f-6d8e-4c9d-bd5d-58affb7b023a",
+    "ref": "GCE 2016 P1 Q10"
+   }
+  ],
+  "16": [
+   {
+    "id": "781c0361-3e87-4203-bb74-d31f84c43266",
+    "ref": "GCE 2023 specimen P1 Q16"
+   },
+   {
+    "id": "7010b84e-06c9-42e0-a0d7-86a89ec52ce6",
+    "ref": "GCE 2025 P1 Q21"
+   },
+   {
+    "id": "0aa31d1b-a2da-4272-adae-1c2559209b6b",
+    "ref": "GCE 2024 P1 Q26"
+   },
+   {
+    "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+    "ref": "GCE 2023 specimen P2 Q5"
+   },
+   {
+    "id": "20345f91-46c3-4357-87da-d90b830bb060",
+    "ref": "GCE 2024 P2 Q8"
+   }
+  ],
+  "17": [
+   {
+    "id": "5411da48-6cfa-4353-9bd3-26b1c455627c",
+    "ref": "GCE 2024 P1 Q17"
+   },
+   {
+    "id": "0a876142-869d-4ebd-bda5-3a5c91bd1de1",
+    "ref": "GCE 2023 P1 Q17"
+   },
+   {
+    "id": "d8b9c432-3f2a-4e54-a5fb-ca6ff6cb18c6",
+    "ref": "GCE 2025 P2 Q7"
+   },
+   {
+    "id": "01bd64cb-368b-45c1-a305-e25ef1586a83",
+    "ref": "GCE 2018 P1 Q7"
+   },
+   {
+    "id": "8a17da68-8d64-4ff7-ab31-94eb9611a93c",
+    "ref": "GCE 2016 P1 Q3"
+   }
+  ],
+  "18": [
+   {
+    "id": "3a05f52f-db24-4666-9bac-34c946cad925",
+    "ref": "GCE 2024 P1 Q18"
+   },
+   {
+    "id": "e0a243da-913b-49f8-9001-d5a4b457152a",
+    "ref": "GCE 2023 specimen P1 Q3"
+   },
+   {
+    "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+    "ref": "GCE 2025 P2 Q2"
+   },
+   {
+    "id": "26af6f78-edef-48f9-a281-1982a3ad9f24",
+    "ref": "GCE 2023 P2 Q1"
+   },
+   {
+    "id": "e3ac2010-fd63-4e88-b618-49db597d3013",
+    "ref": "GCE 2009 P1 Q21"
+   }
+  ],
+  "19": [
+   {
+    "id": "e97a42ba-4147-469e-9fdd-89d53aff45cb",
+    "ref": "GCE 2023 P1 Q4"
+   },
+   {
+    "id": "b55dbf3b-6874-4f1e-9366-f553431545b5",
+    "ref": "GCE 2024 P1 Q19"
+   },
+   {
+    "id": "ee0ca1e6-d8f0-4f6b-936a-58787af5e43f",
+    "ref": "GCE 2015 P1 Q14"
+   },
+   {
+    "id": "9129e7c9-2f66-44cb-824b-3de24d14a472",
+    "ref": "GCE 2013 P1 Q7"
+   },
+   {
+    "id": "15800f97-09a5-4656-9b70-c134054133ef",
+    "ref": "GCE 2011 P1 Q7"
+   }
+  ],
+  "20": [
+   {
+    "id": "67973dd4-a72b-4824-ac71-6f63f552b2e3",
+    "ref": "GCE 2024 P1 Q7"
+   },
+   {
+    "id": "9a90c4c2-15c9-45eb-a3e6-deef23c93ce5",
+    "ref": "GCE 2023 P1 Q15"
+   },
+   {
+    "id": "ca0074d5-0e5a-4598-837b-1c75e956d9e4",
+    "ref": "GCE 2025 P1 Q5"
+   },
+   {
+    "id": "f650d380-b315-4357-8798-46263e7870f7",
+    "ref": "GCE 2025 P2 Q1"
+   },
+   {
+    "id": "493b1bdb-62e0-4fea-a1f8-597f1324a45f",
+    "ref": "GCE 2022 P1 Q11"
+   }
+  ],
+  "21": [
+   {
+    "id": "69740c3f-1c25-4391-9e8f-b01320d26c6b",
+    "ref": "GCE 2023 specimen P1 Q18"
+   },
+   {
+    "id": "833b4449-22bf-441c-b917-79e31ac26878",
+    "ref": "GCE 2024 P2 Q2"
+   },
+   {
+    "id": "82d62f89-1a79-45e3-8888-6520ab2f99a4",
+    "ref": "GCE 2025 P2 Q3"
+   },
+   {
+    "id": "967ea9ef-f65d-4267-a50a-a3f3ea707aab",
+    "ref": "GCE 2019 P1 Q21"
+   },
+   {
+    "id": "b9a7a643-181c-4292-ab08-21335aabcbed",
+    "ref": "GCE 2017 P1 Q19"
+   }
+  ],
+  "22": [
+   {
+    "id": "9a90c4c2-15c9-45eb-a3e6-deef23c93ce5",
+    "ref": "GCE 2023 P1 Q15"
+   },
+   {
+    "id": "ca0074d5-0e5a-4598-837b-1c75e956d9e4",
+    "ref": "GCE 2025 P1 Q5"
+   },
+   {
+    "id": "ebabb11d-6e22-4c39-90e9-e45d5f7322f4",
+    "ref": "GCE 2024 P1 Q23"
+   },
+   {
+    "id": "d4c31d1f-2288-4710-a0d1-a243b3258ae4",
+    "ref": "GCE 2020 P1 Q19"
+   },
+   {
+    "id": "e020a904-615c-48dc-b4c5-2a553b12bdef",
+    "ref": "GCE 2008 P1 Q15"
+   }
+  ],
+  "23": [
+   {
+    "id": "8031701c-dd03-407c-9d1d-6cb5bfc4158f",
+    "ref": "GCE 2025 P1 Q20"
+   },
+   {
+    "id": "ebabb11d-6e22-4c39-90e9-e45d5f7322f4",
+    "ref": "GCE 2024 P1 Q23"
+   },
+   {
+    "id": "337f8a90-e048-406d-bf36-f88770a9660c",
+    "ref": "GCE 2023 P1 Q23"
+   },
+   {
+    "id": "75dafe53-e059-4b92-bfec-a91415dcf017",
+    "ref": "GCE 2023 specimen P2 Q7"
+   },
+   {
+    "id": "f05ebc88-2a20-4bba-bce3-60d467a1a143",
+    "ref": "GCE 2024 P2 Q5"
+   }
+  ],
+  "24": [
+   {
+    "id": "c938b3e2-6768-4a77-8672-093cff25a202",
+    "ref": "GCE 2023 P1 Q24"
+   },
+   {
+    "id": "852d1e3d-b276-4647-a97b-8a4a0e654dab",
+    "ref": "GCE 2025 P1 Q2"
+   },
+   {
+    "id": "37c3bea4-054a-48dc-90e6-86d057489842",
+    "ref": "GCE 2021 P1 Q16"
+   },
+   {
+    "id": "dee38c69-6480-4263-9457-e8659fa451c0",
+    "ref": "GCE 2019 P1 Q10"
+   },
+   {
+    "id": "42ce172e-d852-4728-9db5-67d55e40bc3a",
+    "ref": "GCE 2018 P1 Q12"
+   }
+  ],
+  "25": [
+   {
+    "id": "07f7d4e9-3413-4dc0-8a9e-71121a63da8e",
+    "ref": "GCE 2025 P1 Q25"
+   },
+   {
+    "id": "8ca3599f-87dc-4fb1-98f5-b491a8928960",
+    "ref": "GCE 2024 P1 Q11"
+   },
+   {
+    "id": "276888b3-7802-4e61-8fad-223ca249ca44",
+    "ref": "GCE 2023 specimen P1 Q11"
+   },
+   {
+    "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+    "ref": "GCE 2025 P2 Q2"
+   },
+   {
+    "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+    "ref": "GCE 2024 P2 Q7"
+   }
+  ],
+  "26": [
+   {
+    "id": "7010b84e-06c9-42e0-a0d7-86a89ec52ce6",
+    "ref": "GCE 2025 P1 Q21"
+   },
+   {
+    "id": "c44abbb6-afee-4bf2-a002-6c1e1fa3ed22",
+    "ref": "GCE 2023 specimen P1 Q25"
+   },
+   {
+    "id": "0aa31d1b-a2da-4272-adae-1c2559209b6b",
+    "ref": "GCE 2024 P1 Q26"
+   },
+   {
+    "id": "90ed63de-9265-49aa-b1af-dfa63998d311",
+    "ref": "GCE 2023 P2 Q3"
+   },
+   {
+    "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+    "ref": "GCE 2024 P2 Q9"
+   }
+  ],
+  "27": [
+   {
+    "id": "5f1877a1-3013-4775-8eec-2517bbf5d7e6",
+    "ref": "GCE 2023 specimen P1 Q26"
+   },
+   {
+    "id": "27eed91b-0c33-4fbc-b756-480873a6e13b",
+    "ref": "GCE 2024 P1 Q8"
+   },
+   {
+    "id": "2b823629-921d-4f98-adde-49ea9b9a7b03",
+    "ref": "GCE 2023 P2 Q8"
+   },
+   {
+    "id": "864b77a4-556a-4c0a-9f24-a27906fa2acd",
+    "ref": "GCE 2019 P1 Q25"
+   },
+   {
+    "id": "be914023-ba43-4791-9775-36d2999f533b",
+    "ref": "GCE 2005 P2 Q5"
+   }
+  ]
+ }
+}

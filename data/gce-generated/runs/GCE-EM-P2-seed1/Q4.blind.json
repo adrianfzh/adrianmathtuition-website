@@ -1,0 +1,11 @@
+{
+  "answers": {
+    "(a)": "At x = -1.5: y = (-1.5)^2 + 3/(-1.5) = 2.25 - 2 = 0.25.  At x = 2.5: y = 2.5^2 + 3/2.5 = 6.25 + 1.2 = 7.45.  Completed row: x = -3, -2.5, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3 gives y = 8, 5.05, 2.5, 0.25, -2, -5.75, 6.25, 4, 4.25, 5.5, 7.45, 10.",
+    "(b)": "Graph drawn. Two separate branches with the y-axis (x = 0) as a vertical asymptote, plotted to the given scales (2 cm to 1 unit on x, 1 cm to 1 unit on y). Left branch (-3 <= x < 0): a smooth curve falling steadily from (-3, 8) through (-2.5, 5.05), (-2, 2.5), (-1.5, 0.25) — crossing the x-axis at about x = -1.44 — then (-1, -2) and (-0.5, -5.75), plunging steeply down off the bottom of the grid as x -> 0 from the left. Right branch (0 < x <= 3): comes steeply down from off the top of the grid as x -> 0 from the right, through (0.5, 6.25) to (1, 4), reaching a minimum turning point near (1.14, 3.93), then rising through (1.5, 4.25), (2, 5.5), (2.5, 7.45) to (3, 10). The curve is entirely above y = 3 on the right branch.",
+    "(c)(i)": "Gradient at x = 2 (tangent drawn at the point (2, 5.5)) = 3.25 (exact value 2x - 3/x^2 = 4 - 0.75 = 3.25); a tangent-read answer anywhere in the range 3.0 to 3.5 is accepted.",
+    "(c)(ii)": "The solutions of x^2 + 3/x = 3 are the x-coordinates of the points where the horizontal line y = 3 cuts the curve. On the right-hand branch the lowest point of the curve is at about (1.14, 3.93), so the whole branch lies above y = 3 and the line never meets it. On the left-hand branch the curve falls continuously from y = 8 at x = -3 to large negative values as x -> 0, so it crosses y = 3 exactly once (at about x = -2.15). Hence the line y = 3 meets the curve at only one point, so the equation has only one solution.",
+    "(c)(iii)": "Dividing x^3 - 2x^2 - 3x + 3 = 0 by x gives x^2 - 2x - 3 + 3/x = 0, i.e. x^2 + 3/x = 2x + 3, so the suitable straight line to draw is y = 2x + 3 (through (-3, -3) and (3, 9)). It cuts the curve at three points, giving x = -1.46, x = 0.76 and x = 2.70 (accept x = -1.5 to -1.4, 0.75 to 0.78, 2.65 to 2.75)."
+  },
+  "solvable": true,
+  "issues": []
+}

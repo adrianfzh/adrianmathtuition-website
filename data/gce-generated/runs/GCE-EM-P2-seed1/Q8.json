@@ -1,0 +1,70 @@
+{
+ "stem": "$A$, $B$, $C$ and $D$ are points on a circle, centre $O$.\n$AOC$ is a diameter of the circle.\nThe tangent to the circle at $C$ meets $AB$ produced at $T$.\nAngle $BAC = 32^\\circ$ and angle $CBD = 37^\\circ$.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Find, giving a reason for each step of your working,",
+   "marks": 5,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "angle $ACB$,",
+     "marks": 2,
+     "answer": "$58^\\circ$"
+    },
+    {
+     "label": "(ii)",
+     "text": "angle $BCT$,",
+     "marks": 2,
+     "answer": "$32^\\circ$"
+    },
+    {
+     "label": "(iii)",
+     "text": "angle $CAD$.",
+     "marks": 1,
+     "answer": "$37^\\circ$"
+    }
+   ]
+  },
+  {
+   "label": "(b)",
+   "text": "Explain why $AD$ is not parallel to $BC$.",
+   "marks": 1,
+   "answer": "If $AD$ were parallel to $BC$, angle $CAD$ would equal angle $ACB$ (alternate angles); but $37^\\circ \\ne 58^\\circ$, so $AD$ is not parallel to $BC$.",
+   "subparts": []
+  },
+  {
+   "label": "(c)",
+   "text": "The radius of the circle is 6 cm.",
+   "marks": 4,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "Show that triangle $ABC$ is similar to triangle $CBT$.\nGive a reason for each statement you make.",
+     "marks": 2,
+     "answer": "Angle $ABC$ = angle $CBT = 90^\\circ$ (angle in a semicircle; $ABT$ is a straight line), angle $BAC$ = angle $BCT = 32^\\circ$; two pairs of equal angles, so the triangles are similar (AA)."
+    },
+    {
+     "label": "(ii)",
+     "text": "Calculate $BT$.",
+     "marks": 2,
+     "answer": "$3.97$ cm"
+    }
+   ]
+  }
+ ],
+ "answer": "",
+ "total_marks": 10,
+ "topics": [
+  "Circle Properties",
+  "Congruency and Similarity",
+  "Trigonometry"
+ ],
+ "needs_figure": true,
+ "figure_description": "A circle with centre O (marked with a dot and labelled O). Four points on the circumference, labelled A, B, C, D, in that order going clockwise round the circle. AOC is a straight line through the centre (a diameter): A at the far left of the circle, C at the far right. B is on the upper arc, to the right of the top of the circle (roughly where a radius at 64 degrees anticlockwise from OC meets the circle, so angle BOC is about 64 degrees). D is on the lower arc, below and slightly left of C (roughly where a radius at 74 degrees clockwise from OC meets the circle). Draw the chords AB, BC, AD, BD and CD as straight segments, and the diameter AC through O. Draw the tangent to the circle at C as a straight line (vertical in this orientation, touching the circle only at C) extended upward from C. Extend the chord AB beyond B in a straight line until it meets the tangent at C at a point above C; label that point T (so A, B, T are in a straight line, with B between A and T, and T sits on the tangent directly above C, at a height of about 1.25 times the radius above C). Mark the angle at A between AB and AC with a small arc labelled 32° (this is angle BAC, inside triangle ABC at vertex A). Mark the angle at B between BC and BD with a small arc labelled 37° (this is angle CBD, inside triangle BCD at vertex B). Do NOT mark any right angle at B or at C, do NOT mark angle ACB, angle BCT, angle ATC or angle CAD, and do NOT print the radius or any length on the figure. Add the words 'Not drawn to scale' beneath the figure. No shading.",
+ "solution": "(a)(i) Angle $ABC = 90^\\circ$ (angle in a semicircle, since $AC$ is a diameter).\nAngle $ACB = 180^\\circ - 90^\\circ - 32^\\circ = 58^\\circ$ (angle sum of triangle $ABC$).\n\n(a)(ii) Angle $OCT = 90^\\circ$ (tangent perpendicular to radius $OC$ at the point of contact $C$), so angle $ACT = 90^\\circ$ since $AOC$ is a straight line.\nAngle $BCT = 90^\\circ - 58^\\circ = 32^\\circ$.\n\n(a)(iii) Angle $CAD$ = angle $CBD = 37^\\circ$ (angles in the same segment, on chord $CD$).\n\n(b) If $AD$ were parallel to $BC$, then angle $CAD$ would equal angle $ACB$ (alternate angles). But angle $CAD = 37^\\circ$ and angle $ACB = 58^\\circ$, and $37^\\circ \\ne 58^\\circ$, so $AD$ is not parallel to $BC$.\n\n(c)(i) In triangles $ABC$ and $CBT$:\nangle $ABC = 90^\\circ$ (angle in a semicircle) and angle $CBT = 180^\\circ - 90^\\circ = 90^\\circ$ (angles on the straight line $ABT$), so angle $ABC$ = angle $CBT$;\nangle $BAC = 32^\\circ$ (given) and angle $BCT = 32^\\circ$ (from (a)(ii)), so angle $BAC$ = angle $BCT$.\nTwo pairs of corresponding angles are equal, so triangle $ABC$ is similar to triangle $CBT$ (AA).\n\n(c)(ii) $AC = 2 \\times 6 = 12$ cm.\nIn right-angled triangle $ABC$: $BC = 12 \\sin 32^\\circ = 6.359\\ldots$ cm and $AB = 12 \\cos 32^\\circ = 10.176\\ldots$ cm.\nFrom the similar triangles, $\\frac{BT}{BC} = \\frac{CB}{AB}$, so $BT = \\frac{BC^2}{AB} = \\frac{(12 \\sin 32^\\circ)^2}{12 \\cos 32^\\circ} = 3.973\\ldots$\n(Equivalently, in right-angled triangle $CBT$, $BT = BC \\tan 32^\\circ = 6.359\\ldots \\times \\tan 32^\\circ = 3.973\\ldots$.)\n$BT = 3.97$ cm (3 s.f.).\n\nConsistency check: with $O$ at the origin and radius 6, $A(-6, 0)$, $C(6, 0)$, $B$ at $64^\\circ$ from $OC$ (angle at centre $= 2 \\times 32^\\circ$), $D$ at $-74^\\circ$ (angle at centre $= 2 \\times 37^\\circ$); line $AB$ has gradient $\\tan 32^\\circ$ and meets the tangent $x = 6$ at $T(6, 12\\tan 32^\\circ) = (6, 7.50)$, above $B$, so $ABT$ is a straight line with $B$ between $A$ and $T$. Every given angle is realised.",
+ "syllabus_check": "4052 only: angle in a semicircle, tangent perpendicular to radius, angles in the same segment, angle sum of a triangle, angles on a straight line, alternate angles, similarity by AA, sine/cosine/tangent in a right-angled triangle. No alternate segment theorem, no circular measure (Q5 of this paper covers arcs and sectors), no surds or identities. Calculator used only for the trigonometric values in (c)(ii); every angle is exact.",
+ "originality_note": "New configuration: a diameter, a tangent at one end of the diameter, and the chord through the other end produced to meet that tangent, so that the semicircle right angle becomes the altitude to the hypotenuse of a right-angled triangle and the similarity falls out of two circle properties. The fourth point D is there only for the same-segment step and the 'explain why not parallel' 1-marker. None of the exemplars use a diameter-plus-tangent triangle, an altitude-to-hypotenuse similarity, a 'not parallel' explanation, or the angles 32/37; the exemplars' congruent-chord, touching-circles, sector-area and tangent-from-external-point structures are not used."
+}

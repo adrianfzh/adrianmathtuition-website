@@ -1,0 +1,60 @@
+{
+ "stem": "The points $A$, $B$ and $C$ have coordinates $(-4,\\,-1)$, $(2,\\,7)$ and $(10,\\,-1)$ respectively.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Find the equation of the line which passes through $C$ and is parallel to $AB$.\nGive your answer in the form $ax + by = c$, where $a$, $b$ and $c$ are integers.",
+   "marks": 3,
+   "answer": "$4x - 3y = 43$"
+  },
+  {
+   "label": "(b)",
+   "text": "Calculate the length of $AB$.",
+   "marks": 2,
+   "answer": "$AB = 10$ units"
+  },
+  {
+   "label": "(c)",
+   "text": "Calculate the area of triangle $ABC$.",
+   "marks": 2,
+   "answer": "$56$ units$^2$"
+  },
+  {
+   "label": "(d)",
+   "text": "$OPQ$ is a triangle.\n$\\overrightarrow{OP} = \\mathbf{p}$ and $\\overrightarrow{OQ} = \\mathbf{q}$.\n$R$ is the point on $PQ$ such that $PR : RQ = 1 : 2$.\n$S$ is the point on $OQ$ such that $OS : SQ = 1 : 2$.",
+   "marks": 4,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "Express $\\overrightarrow{OR}$ in terms of $\\mathbf{p}$ and $\\mathbf{q}$, as simply as possible.",
+     "marks": 2,
+     "answer": "$\\overrightarrow{OR} = \\frac{2}{3}\\mathbf{p} + \\frac{1}{3}\\mathbf{q}$"
+    },
+    {
+     "label": "(ii)",
+     "text": "Express $\\overrightarrow{SR}$ in terms of $\\mathbf{p}$ and $\\mathbf{q}$, as simply as possible.",
+     "marks": 1,
+     "answer": "$\\overrightarrow{SR} = \\frac{2}{3}\\mathbf{p}$"
+    },
+    {
+     "label": "(iii)",
+     "text": "Hence find $\\dfrac{\\text{area of triangle } QSR}{\\text{area of triangle } QOP}$.",
+     "marks": 1,
+     "answer": "$\\frac{4}{9}$"
+    }
+   ]
+  }
+ ],
+ "answer": "",
+ "total_marks": 11,
+ "topics": [
+  "Coordinate Geometry",
+  "Vectors"
+ ],
+ "needs_figure": true,
+ "figure_description": "A small sketch for part (d) only, labelled 'NOT TO SCALE'. Triangle OPQ with O at the bottom left, P at the bottom right (so OP is horizontal along the bottom) and Q above and slightly to the right of O, so that PQ slopes up to the left. R is marked on side PQ one third of the way from P to Q. S is marked on side OQ one third of the way from O to Q. The line segment SR is drawn (it will look parallel to OP; that is inherent in the configuration and nothing is written about it). Side OP carries a single arrowhead from O to P labelled p in bold; side OQ carries a single arrowhead from O to Q labelled q in bold. The vertices are labelled O, P, Q, R, S in upright capitals. No ratios, no lengths, no fractions, no other arrows and no vector expressions are printed on the figure. Parts (a), (b) and (c) have no figure.",
+ "solution": "(a) Gradient of $AB = \\frac{7 - (-1)}{2 - (-4)} = \\frac{8}{6} = \\frac{4}{3}$\nThe required line is parallel to $AB$, so its gradient is also $\\frac{4}{3}$, and it passes through $C(10,\\,-1)$:\n$y - (-1) = \\frac{4}{3}(x - 10)$\n$3(y + 1) = 4(x - 10)$\n$3y + 3 = 4x - 40$\n$4x - 3y = 43$\nCheck with $C$: $4(10) - 3(-1) = 40 + 3 = 43$.\n\n(b) $AB = \\sqrt{(2 - (-4))^{2} + (7 - (-1))^{2}} = \\sqrt{6^{2} + 8^{2}} = \\sqrt{36 + 64} = \\sqrt{100} = 10$ units\n\n(c) $A(-4,\\,-1)$ and $C(10,\\,-1)$ have the same $y$-coordinate, so $AC$ is horizontal.\nBase $AC = 10 - (-4) = 14$ units.\nThe perpendicular height from $B$ to $AC$ is $7 - (-1) = 8$ units.\nArea of triangle $ABC = \\frac{1}{2} \\times 14 \\times 8 = 56$ units$^2$\n\n(d)(i) $\\overrightarrow{PQ} = \\overrightarrow{OQ} - \\overrightarrow{OP} = \\mathbf{q} - \\mathbf{p}$\nSince $PR : RQ = 1 : 2$, $\\overrightarrow{PR} = \\frac{1}{3}\\overrightarrow{PQ} = \\frac{1}{3}(\\mathbf{q} - \\mathbf{p})$\n$\\overrightarrow{OR} = \\overrightarrow{OP} + \\overrightarrow{PR} = \\mathbf{p} + \\frac{1}{3}\\mathbf{q} - \\frac{1}{3}\\mathbf{p} = \\frac{2}{3}\\mathbf{p} + \\frac{1}{3}\\mathbf{q}$\n\n(d)(ii) Since $OS : SQ = 1 : 2$, $\\overrightarrow{OS} = \\frac{1}{3}\\mathbf{q}$\n$\\overrightarrow{SR} = \\overrightarrow{OR} - \\overrightarrow{OS} = \\frac{2}{3}\\mathbf{p} + \\frac{1}{3}\\mathbf{q} - \\frac{1}{3}\\mathbf{q} = \\frac{2}{3}\\mathbf{p}$\n\n(d)(iii) $\\overrightarrow{SR} = \\frac{2}{3}\\overrightarrow{OP}$, so $SR$ is parallel to $OP$ and $SR = \\frac{2}{3}OP$.\nTriangles $QSR$ and $QOP$ share the angle at $Q$, and angle $QSR = $ angle $QOP$ (corresponding angles, $SR \\parallel OP$), so the triangles are similar with $\\frac{SR}{OP} = \\frac{2}{3}$.\n$\\frac{\\text{area of triangle } QSR}{\\text{area of triangle } QOP} = \\left(\\frac{2}{3}\\right)^{2} = \\frac{4}{9}$\nCheck by common heights: triangles $QSR$ and $QOR$ have the common vertex $R$ with bases $QS$ and $QO$ on the same line, so $\\frac{\\text{area } QSR}{\\text{area } QOR} = \\frac{QS}{QO} = \\frac{2}{3}$; triangles $QOR$ and $QOP$ have the common vertex $O$ with bases $QR$ and $QP$ on the same line, so $\\frac{\\text{area } QOR}{\\text{area } QOP} = \\frac{QR}{QP} = \\frac{2}{3}$. Hence $\\frac{\\text{area } QSR}{\\text{area } QOP} = \\frac{2}{3} \\times \\frac{2}{3} = \\frac{4}{9}$, as before.",
+ "syllabus_check": "Every part sits inside 4052. (a) gradient of the line joining two points and the equation of a straight line through a given point parallel to a given line (parallel lines have equal gradients), rearranged to ax + by = c with integer coefficients — one 3-mark part, no separate mark for the gradient. (b) length of a line segment by Pythagoras' theorem (the 6-8-10 triple keeps it exact). (c) area of a triangle by base x height using a horizontal side as the base — no shoelace formula and no midpoint formula. (d) vectors in two dimensions: a point dividing a side in a given ratio, expressing OR and SR in terms of p and q by vector addition and scalar multiples, then the deduction that SR is parallel to OP with SR = (2/3)OP; the area ratio follows either by similar triangles (area scale factor = square of the length scale factor, Congruency and Similarity) or purely by the vectors-section rule for triangles with a common vertex and bases on the same line, both within 4052. Calculator allowed as the rubric states; every answer is exact so no precision statement is needed. No 3-D vectors, no calculus, no surds.",
+ "originality_note": "The exemplars build a trapezium OACB whose area gives a quadratic (2025 Q8), a k-and-p intersection plus a 25-unit length with a negative unknown (2024 Q3), a PQ-and-PR coordinate triangle followed by an OCD triangle with a point X fixed by a parallel condition and XD wanted (2022 Q8), or an OAB triangle with a 2:3 point and two midpoints leading to naming a quadrilateral (2023 specimen Q6). This question's coordinate half is a single triangle ABC with a parallel line through the third vertex, an exact length and an area by a horizontal base; its vector half is a fresh OPQ triangle with both dividing points given as 1:2 ratios (no midpoints, no parallel condition given — the parallel is what the candidate discovers) ending in a ratio of areas of two triangles, 4/9, a sequence none of the exemplars follows. The points (-4,-1), (2,7), (10,-1), the line 4x - 3y = 43, the area 56, the vectors (2/3)p + (1/3)q and (2/3)p and the ratio 4/9 were all chosen and derived from scratch and checked (the area ratio two ways), and no exemplar number, unknown or part order is reused."
+}

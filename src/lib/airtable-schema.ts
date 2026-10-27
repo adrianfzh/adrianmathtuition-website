@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-09-21T13:55:41.284Z
+// Last synced: 2026-10-27T16:24:40.932Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -51,7 +51,8 @@ export const SCHEMA = {
         "options": [
           "Trial",
           "Active",
-          "Inactive"
+          "Inactive",
+          "Graduated"
         ]
       },
       "Student Contact": {
@@ -415,7 +416,10 @@ export const SCHEMA = {
         "options": [
           "Web admin",
           "Bot (student)",
-          "Portal (student)"
+          "Portal (student)",
+          "WhatsApp (parent)",
+          "Bot (admin)",
+          "Bot (waiting list)"
         ]
       },
       "Rescheduled Lesson ID": {

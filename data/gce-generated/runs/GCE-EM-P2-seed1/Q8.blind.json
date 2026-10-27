@@ -1,0 +1,12 @@
+{
+  "answers": {
+    "(a)(i)": "angle ABC = 90° (angle in a semicircle, since AOC is a diameter). Angle ACB = 180° - 90° - 32° = 58° (angle sum of triangle ABC).",
+    "(a)(ii)": "angle BCT = 32° (tangent-chord / angles in alternate segment: angle between tangent CT and chord CB equals angle BAC in the alternate segment). [Equivalently angle OCT = 90° (tangent perpendicular to radius at C), so angle BCT = 90° - 58° = 32°.]",
+    "(a)(iii)": "angle CAD = 37° (angles in the same segment — angle CAD and angle CBD both stand on arc CD).",
+    "(b)": "If AD were parallel to BC, then angle DAC = angle ACB (alternate angles, AD // BC). But angle DAC = 37° and angle ACB = 58°, and 37° ≠ 58°, so AD is not parallel to BC.",
+    "(c)(i)": "Shown. Angle BAC = angle BCT = 32° (tangent-chord angle = angle in the alternate segment). Angle ABC = 90° (angle in a semicircle), and A, B, T are collinear, so angle CBT = 180° - 90° = 90° = angle ABC (angles on a straight line). Two pairs of equal angles, so triangle ABC is similar to triangle CBT (AA).",
+    "(c)(ii)": "AC = 2 x 6 = 12 cm. In right-angled triangle ABC: BC = 12 sin 32° = 6.359 cm, AB = 12 cos 32° = 10.178 cm. By similarity AB/CB = CB/TB, so BT = BC^2/AB = 6.359^2/10.178 = 3.97 cm (= 12 sin 32° tan 32°). BT = 3.97 cm (3 s.f.)"
+  },
+  "solvable": true,
+  "issues": []
+}

@@ -1,0 +1,29 @@
+# Already in this paper
+
+- Q1 (2 marks): Algebra (Linear Equations) — Solve the equation ….
+- Q2 (2 marks): Circular Measure — The diagram shows a sector … of a circle, centre … and radius 12 cm. Angle ….
+- Q3 (3 marks): Financial Math (Hire Purchase), Numbers (Percentages) — The cash price of an electric bicycle is …1840…\… followed by 18 equal monthly payments. The hire-purchase price is … more than the cash pri
+- Q4 (2 marks): Numbers (Prime Factorization) — Written as a product of its prime factors, ….
+- Q5 (3 marks): Financial Math (Interest) — Priya invests …5600…2.5\%$ per year compound interest.
+- Q6 (3 marks): Algebra (Quadratic Graphs) — The curve … has line of symmetry …. One of the points where the curve crosses the …-axis is ….
+- Q7 (4 marks): Geometrical Constructions — The diagram is an accurate scale drawing of a triangular garden …. The scale is 1 cm to 5 m. Angle … and … m.
+- Q8 (3 marks): Algebra (Identities), Algebra (Factorization) — It is given that … for all values of ….
+- Q9 (2 marks): Circle Properties — …, … and … are points on a circle, centre …. Angle …. Find angle …. Give a reason for each step of your working.
+- Q10 (4 marks): Numbers (Ratio) — A paint shop makes a shade of paint called Sea Mist by mixing blue paint, white paint and grey paint in the ratio … by volume.
+- Q11 (3 marks): Algebra (Fractions), Algebra (Factorization) — Simplify ….
+- Q12 (4 marks): Algebra (Subject of Formula) — …
+- Q13 (3 marks): Probability — A bakery sells muffins in three flavours: chocolate, banana and lemon. Each customer buys exactly one muffin. The probability that a custome
+- Q14 (2 marks): Algebra (Simultaneous Equations) — Solve these simultaneous equations. … … You must show your working.
+- Q15 (3 marks): Angles — The diagram shows a parallelogram …. … is the point on … such that … bisects angle …. Angle ….
+- Q16 (3 marks): Congruency and Similarity — Two solid trophies are geometrically similar and are made of the same metal. The smaller trophy has height … cm and the larger trophy has he
+- Q17 (2 marks): Sets — … … …
+- Q18 (4 marks): Indices (Standard Form) — The mass of one helium atom is … kg. A balloon contains … helium atoms.
+- Q19 (3 marks): Numbers (HCF and LCM) — A teacher has 216 pens and 288 erasers. She puts them into gift bags so that each bag has the same number of pens and the same number of era
+- Q20 (3 marks): Algebra (Factorization), Algebra (Fractions) — Simplify ….
+- Q21 (4 marks): Matrices — Two shops, Shop A and Shop B, sell bags of rice, trays of eggs and bottles of cooking oil. The matrix … shows the price, in dollars, of each
+- Q22 (4 marks): Algebra (Expansion), Algebra (Quadratic Equations) — A square tile has sides of length … cm. A square hole with sides of length … cm is cut from the tile, where …. The remaining part of the til
+- Q23 (6 marks): Trigonometry — The diagram shows a triangular plot of land … on horizontal ground. The side … runs along a straight road. … m, … m and angle ….
+- Q24 (3 marks): Proportion — The time, … seconds, taken by a pendulum to complete one swing is directly proportional to the square root of its length, … cm. A pendulum o
+- Q25 (4 marks): Statistics — The box-and-whisker plot shows the distribution of the times, in minutes, taken by 80 runners to complete a race.
+- Q26 (5 marks): Mensuration — The diagram shows a solid wooden ornament. It is made from a cylinder of radius 6 cm and height 10 cm. A hemisphere of radius 4 cm is remove
+- Q27 (6 marks): Number Patterns — The first five terms of a sequence are …, …, …, …, ….

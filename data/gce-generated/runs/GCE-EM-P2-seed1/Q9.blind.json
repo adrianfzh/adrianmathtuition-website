@@ -1,0 +1,12 @@
+{
+  "answers": {
+    "(a)": "V = pi x 40^2 x 120 = 192000pi = 603185.8 cm^3 = 603 litres (3 s.f.)",
+    "(b)(i)": "12 x 9 x 30 = 3240 litres",
+    "(b)(ii)": "Roof area = 3.6 x 2.5 = 9 m^2; rainfall 175 mm = 0.175 m, so rain on roof = 9 x 0.175 = 1.575 m^3 = 1575 litres. 80% of this reaches the tank: 0.8 x 1575 = 1260 litres",
+    "(c)": "Yes, it is worth installing. Monthly bill before: 40 x 2.74 + 3 x 3.69 = 109.60 + 11.07 = $120.67. Rainwater collected each month = 1260 litres = 1.26 m^3, and this is less than the 3240 litres the garden needs, so all of it replaces tap water. Tap water used becomes 43 - 1.26 = 41.74 m^3, costing 40 x 2.74 + 1.74 x 3.69 = 109.60 + 6.42 = $116.02. Monthly saving = 120.67 - 116.02 = $4.65 (1.26 x 3.69 = $4.6494). Over the 10-year lifespan (120 months) the saving is 4.6494 x 120 = $557.93, which is more than the $420 cost, a net gain of about $138 (payback after 420 / 4.6494 = 90.3 months, about 7 years 7 months, which is within the 10-year lifespan). So Mr Tan should install the tank."
+  },
+  "solvable": true,
+  "issues": [
+    "(c) needs the modelling assumption that the tank never overflows: the monthly collection (1260 litres) exceeds the tank's 603-litre capacity, but the daily collection averages 1260/30 = 42 litres against 108 litres used daily, so on average the tank empties faster than it fills and all the collected rain can be used. Without stating that assumption a candidate could instead cap the saving at the tank capacity."
+  ]
+}

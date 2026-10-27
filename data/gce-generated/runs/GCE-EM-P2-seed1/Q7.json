@@ -1,0 +1,50 @@
+{
+ "stem": "The table shows the distribution of the distances, $d$ km, cycled by the members of a cycling club in one week.\n\n$\\begin{array}{|c|c|c|c|c|c|} \\hline \\text{Distance } (d \\text{ km}) & 0 < d \\leqslant 20 & 20 < d \\leqslant 40 & 40 < d \\leqslant 60 & 60 < d \\leqslant 80 & 80 < d \\leqslant 100 \\\\ \\hline \\text{Frequency} & 5 & x & 18 & 13 & 7 \\\\ \\hline \\end{array}$\n\nThe estimated mean distance cycled is 50 km.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Find the value of $x$.",
+   "marks": 2,
+   "answer": "$x = 17$",
+   "subparts": []
+  },
+  {
+   "label": "(b)",
+   "text": "Calculate an estimate of the standard deviation of the distances.",
+   "marks": 2,
+   "answer": "22.8 km",
+   "subparts": []
+  },
+  {
+   "label": "(c)",
+   "text": "",
+   "marks": 4,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "One of the members is chosen at random. Find the probability that this member cycled more than 60 km.",
+     "marks": 1,
+     "answer": "$\\frac{1}{3}$"
+    },
+    {
+     "label": "(ii)",
+     "text": "Two of the members are chosen at random. Find the probability that exactly one of them cycled more than 60 km. Give your answer as a fraction in its lowest terms.",
+     "marks": 3,
+     "answer": "$\\frac{80}{177}$"
+    }
+   ]
+  }
+ ],
+ "answer": "",
+ "total_marks": 8,
+ "topics": [
+  "Statistics",
+  "Probability"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) Mid-values 10, 30, 50, 70, 90.\n$\\sum f = 5 + x + 18 + 13 + 7 = 43 + x$\n$\\sum fx = 5(10) + 30x + 18(50) + 13(70) + 7(90) = 50 + 30x + 900 + 910 + 630 = 2490 + 30x$\nEstimated mean $= \\frac{2490 + 30x}{43 + x} = 50$\n$2490 + 30x = 2150 + 50x$\n$20x = 340$\n$x = 17$\n\n(b) Total frequency $= 43 + 17 = 60$.\n$\\sum fx^2 = 5(100) + 17(900) + 18(2500) + 13(4900) + 7(8100) = 500 + 15300 + 45000 + 63700 + 56700 = 181200$\nStandard deviation $= \\sqrt{\\frac{181200}{60} - 50^2} = \\sqrt{3020 - 2500} = \\sqrt{520} = 22.803\\ldots = 22.8$ km (3 s.f.).\n\n(c)(i) Number who cycled more than 60 km $= 13 + 7 = 20$ out of 60.\n$P(\\text{more than 60 km}) = \\frac{20}{60} = \\frac{1}{3}$.\n\n(c)(ii) Selection is without replacement. 20 members cycled more than 60 km and 40 did not.\n$P(\\text{exactly one}) = P(\\text{more, not more}) + P(\\text{not more, more}) = \\frac{20}{60} \\times \\frac{40}{59} + \\frac{40}{60} \\times \\frac{20}{59} = 2 \\times \\frac{800}{3540} = \\frac{1600}{3540} = \\frac{80}{177}$.",
+ "syllabus_check": "4052 Data handling and analysis: estimated mean from grouped data used in reverse to find an unknown frequency (a linear equation in x), then the estimated standard deviation of grouped data. 4052 Probability: a single event from a frequency table; combined events without replacement, two orders summed for 'exactly one'. No figure required; the table is printed in the stem. The total frequency is deliberately not stated, so x can only come from the mean.",
+ "originality_note": "Rewritten after moderation (the previous draft re-skinned GCE 2024 P2 Q7(a) part for part). The vehicle is now a grouped table with an unknown frequency x and a stated estimated mean, with the total frequency withheld so the candidate must set up and solve (2490 + 30x)/(43 + x) = 50; the value of x then feeds the standard deviation and the probability parts, which is a structure none of the exemplars use. The median-interval and comment parts are gone. Context (a cycling club's weekly distances) and every number are new: frequencies 5, 17, 18, 13, 7 give an exact mean of 50, a standard deviation of sqrt(520) = 22.8, and 20 of 60 above 60 km so the probabilities reduce to 1/3 and 80/177. Nothing here repeats a context, structure or topic in the paper so far."
+}

@@ -1,0 +1,18 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both 603 litres. Checked: π × 40² × 120 = 192 000π = 603 185.8 cm³ = 603.19 L → 603 L (3 s.f.). Internal dimensions stated, so the capacity is unambiguous."},
+    {"label": "(b)(i)", "agree": true, "note": "Both 3240 litres. Checked: 9 × 12 × 30 = 3240."},
+    {"label": "(b)(ii)", "agree": true, "note": "Both 1260 litres. Checked: 3.6 × 2.5 = 9 m², 9 × 0.175 = 1.575 m³ = 1575 L, × 0.8 = 1260 L. The mm→m and m³→L conversions are the intended work for the 2 marks."},
+    {"label": "(c)", "agree": true, "note": "Both YES with identical figures: 1.26 m³ replaces tap water, 43 → 41.74 m³ keeps the saving in the $3.69 tier, $4.6494/month, $557.93 over 120 months > $420, payback 90.3 months ≈ 7.5 years < 10-year lifespan. The examiner does it by full bills ($120.67 → $116.02); the key does it by the tier difference — same result, presentation only. The tariff table (first 40 m³ at $2.74, each m³ above 40 at $3.69) reads unambiguously as a tiered tariff, and the information sheet supplies everything the decision needs (price, lifespan, tariff, household use, usage, collection). The examiner's flagged issue — the key assumes the tank never overflows although 1260 L/month exceeds its 603 L capacity — is real: the stem's 'Assume that all the rainwater collected is used' does the job only if 'collected' is read as the 1260 L of (b)(ii), and a careful candidate could cap at 603 L. The assumption holds in fact (average inflow 42 L/day against 108 L/day drawn off), but it needs to be pinned in the wording, not left to the candidate."}
+  ],
+  "all_agree": true,
+  "key_verdict": "Setter and blind examiner agree on every part and every figure; the key is correct, but the never-overflows assumption it relies on is only implicit in the stem and should be made explicit.",
+  "score": 4,
+  "fixes": [
+    "Pin the modelling assumption to the (b)(ii) figure: change the (c) sentence to 'Assume that all the rainwater that reaches the tank is used to water the garden instead of tap water.' — this rules out a candidate capping the monthly saving at the 603-litre capacity, which the current 'rainwater collected' wording leaves open.",
+    "The 603 litres from (a) is never used again; in a real Q9 every figure on the sheet earns its place. Either accept it as a deliberate distractor neutralised by the fix above, or make it load-bearing — e.g. '(a) Show that a full tank holds enough water for 5 days of watering but not 6. [2]' (603 ÷ 108 = 5.58), moving the hose data ahead of it.",
+    "Tighten the final A1: award it for a conclusion that compares $557.93 with $420 (or the 7.5-year payback with the 10-year lifespan), whichever way the candidate decides; the current key's open-ended 'also accept NO' should be tied to that comparison, not to general remarks about rainfall varying."
+  ],
+  "too_close_to": null,
+  "why": "A properly built information-sheet decision closer in the 2024/2025 Q9 register — plausible Singapore water tariff, tidy numbers (9 m², 1575 L, 1260 L, 41.74 m³), and the tier step is a genuine discriminator worth its marks; it misses the 5 only because the never-overflows assumption is left implicit and (a) does not feed forward, both light edits."
+}

@@ -1,0 +1,33 @@
+{
+ "stem": "A paint shop makes a shade of paint called Sea Mist by mixing blue paint, white paint and grey paint in the ratio $2 : 9 : 4$ by volume.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Find the volume of white paint in 7.5 litres of Sea Mist.",
+   "marks": 1,
+   "answer": "4.5 litres"
+  },
+  {
+   "label": "(b)",
+   "text": "Express the ratio   volume of grey paint : volume of Sea Mist   in the form $1 : n$.",
+   "marks": 1,
+   "answer": "$1 : 3.75$"
+  },
+  {
+   "label": "(c)",
+   "text": "A decorator has 1.5 litres of blue paint, 8 litres of white paint and 2.6 litres of grey paint.\nFind the greatest volume of Sea Mist she can make.",
+   "marks": 2,
+   "answer": "9.75 litres"
+  }
+ ],
+ "answer": "",
+ "total_marks": 4,
+ "topics": [
+  "Numbers (Ratio)"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) Total number of parts $= 2 + 9 + 4 = 15$.\nVolume of white paint $= \\frac{9}{15} \\times 7.5 = 4.5$ litres.\n\n(b) Grey : Sea Mist $= 4 : 15 = 1 : \\frac{15}{4} = 1 : 3.75$.\n\n(c) Each batch of 15 parts needs 2 parts blue, 9 parts white and 4 parts grey.\nVolume of one part allowed by each colour:\nblue: $1.5 \\div 2 = 0.75$ litres,\nwhite: $8 \\div 9 = 0.888\\ldots$ litres,\ngrey: $2.6 \\div 4 = 0.65$ litres.\nThe grey paint runs out first, so one part is at most $0.65$ litres.\nGreatest volume of Sea Mist $= 15 \\times 0.65 = 9.75$ litres.\n(Check: this uses $2 \\times 0.65 = 1.3$ litres of blue and $9 \\times 0.65 = 5.85$ litres of white, both available.)",
+ "syllabus_check": "4052 Ratio and proportion: dividing a quantity in a given three-part ratio (a), expressing a ratio in the form 1 : n (b), and a limiting-ingredient ratio problem requiring comparison of the three available amounts (c). The two 1-mark parts use only the stem and come first; the 2-mark chain is the closer. No topic outside 4052; calculator use is routine. Marks 1 + 1 + 2 = 4 match the slot.",
+ "originality_note": "Not a two-person money transfer that changes a ratio (exemplars 1 and 4), not a chained A:B, B:C ratio with a fraction moving between groups (exemplar 3), not a population table (exemplar 5; only the 'Express … in the form 1 : n' verb is borrowed, as the moderator asked). The context (a three-colour paint mixture) and the limiting-ingredient reasoning in (c) are new to this paper; nothing in paper-so-far.md uses ratio, paint or mixtures."
+}

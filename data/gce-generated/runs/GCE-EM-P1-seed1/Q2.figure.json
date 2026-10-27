@@ -1,0 +1,16 @@
+{
+  "family": "sector",
+  "specVersion": 1,
+  "angle": 150,
+  "angleUnit": "deg",
+  "radius": 12,
+  "radiusLabel": "12 cm",
+  "showSegment": false,
+  "shade": null,
+  "labels": {
+    "centre": "O",
+    "start": "A",
+    "end": "B",
+    "arc": ""
+  }
+}

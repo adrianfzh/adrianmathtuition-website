@@ -1,0 +1,27 @@
+{
+ "stem": "A teacher has 216 pens and 288 erasers. She puts them into gift bags so that each bag has the same number of pens and the same number of erasers, with none left over.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Find the greatest number of gift bags she can make.",
+   "marks": 2,
+   "answer": "72"
+  },
+  {
+   "label": "(b)",
+   "text": "She also puts stickers into each of the gift bags, with the same number in each bag and none left over. Stickers are sold in packets of 10.\nFind the smallest number of packets of stickers she must buy.",
+   "marks": 1,
+   "answer": "36 packets (360 stickers)"
+  }
+ ],
+ "answer": "",
+ "total_marks": 3,
+ "topics": [
+  "Numbers (HCF and LCM)"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) The number of bags must divide both 216 and 288 exactly, so the greatest number of bags is the HCF of 216 and 288.\n$216 = 2^3 \\times 3^3$\n$288 = 2^5 \\times 3^2$\nHCF $= 2^3 \\times 3^2 = 72$\nGreatest number of gift bags $= 72$.\n(Each bag then has $216 \\div 72 = 3$ pens and $288 \\div 72 = 4$ erasers.)\n\n(b) The stickers come in packets of 10, so the number bought is a multiple of 10. They are shared equally among 72 bags with none left over, so the number is also a multiple of 72.\nSmallest number $=$ LCM of 10 and 72 $= 2^3 \\times 3^2 \\times 5 = 360$.\n(That is 36 packets, giving $360 \\div 72 = 5$ stickers in each bag.)\n\n(b) The number of stickers must be a multiple of 72 and of 10. LCM(72, 10) = 360, so she buys 360 stickers = 36 packets.",
+ "syllabus_check": "4052 Numbers and their operations: (a) the highest common factor of two numbers from their prime factorisations, recognised from an equal-sharing context ('with none left over'); (b) the lowest common multiple of two numbers, recognised from a context where a quantity must be a multiple of two different numbers (packet size and number of bags). Both skills sit in the HCF/LCM strand; Q4 of this paper tests perfect squares and cubes from an index form, a different skill. All answers are exact integers.",
+ "originality_note": "The exemplars are index-form manipulations (perfect squares and cubes, recovering N from a stated HCF and LCM, listing factors, cube roots). This is a packing context in which the candidate must decide for themselves that the greatest number of bags is an HCF and that the smallest sticker purchase is an LCM, with the LCM part hanging off the answer to (a) (multiple of 10 and of 72). New situation, new numbers (216, 288, packets of 10), and a part sequence (HCF then a dependent LCM) that none of the exemplars use."
+}

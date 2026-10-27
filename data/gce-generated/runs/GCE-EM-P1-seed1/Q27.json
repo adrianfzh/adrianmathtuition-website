@@ -1,0 +1,53 @@
+{
+ "stem": "The first five terms of a sequence are $5$, $12$, $21$, $32$, $45$.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Write down the next term of the sequence.",
+   "marks": 1,
+   "answer": "$60$"
+  },
+  {
+   "label": "(b)",
+   "text": "Find an expression, in terms of $n$, for the $n$th term of the sequence.",
+   "marks": 2,
+   "answer": "$n^2 + 4n$"
+  },
+  {
+   "label": "(c)",
+   "text": "",
+   "marks": 3,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "Show that every term of the sequence is 4 less than a square number.",
+     "marks": 1,
+     "answer": "$n^2 + 4n = (n+2)^2 - 4$, and $(n+2)^2$ is a square number"
+    },
+    {
+     "label": "(ii)",
+     "text": "Hence explain why 500 is not a term of the sequence.",
+     "marks": 1,
+     "answer": "$500 + 4 = 504$ is not a square number ($22^2 = 484$, $23^2 = 529$)"
+    },
+    {
+     "label": "(iii)",
+     "text": "Hence find the value of $n$ for which the $n$th term of the sequence is 1152.",
+     "marks": 1,
+     "answer": "$n = 32$"
+    }
+   ]
+  }
+ ],
+ "answer": "",
+ "total_marks": 6,
+ "topics": [
+  "Number Patterns"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) The differences between consecutive terms are $7, 9, 11, 13$, so the next difference is $15$.\nNext term $= 45 + 15 = 60$.\n\n(b) The second difference is constant, $2$, so the $n$th term is $n^2 + bn + c$.\n$n = 1$: $1 + b + c = 5$; $n = 2$: $4 + 2b + c = 12$.\nSubtracting, $3 + b = 7$, so $b = 4$ and $c = 0$.\n$n$th term $= n^2 + 4n$ (which is $n(n+4)$). Check: $n = 5$ gives $25 + 20 = 45$.\n\n(c)(i) $n^2 + 4n = (n+2)^2 - 4$.\n$(n+2)^2$ is a square number, so every term is 4 less than a square number.\n\n(c)(ii) If 500 were a term, then $500 + 4 = 504$ would be a square number.\n$22^2 = 484$ and $23^2 = 529$, so $504$ is not a square number. Hence 500 is not a term of the sequence.\n\n(c)(iii) $1152 + 4 = 1156 = 34^2$.\nSo $(n+2)^2 = 34^2$, giving $n + 2 = 34$ and $n = 32$.\nCheck: $32^2 + 4 \\times 32 = 1024 + 128 = 1152$.",
+ "syllabus_check": "4052 Number patterns: continuing a sequence from its differences, finding the nth term of a quadratic sequence, writing a quadratic in completed-square form (algebraic expressions), and a reasoning argument about whether a number is a term. No content outside 4052.",
+ "originality_note": "A new quadratic sequence ($n^2 + 4n$: 5, 12, 21, 32, 45) built to a completed-square 'show that' ($(n+2)^2 - 4$) which then drives both the reasoning part (500 is not a term because 504 is not a square) and the closing 'find n' (1156 = 34^2). The exemplars are a linear sequence with a sum formula $2n^2 + 8n$, an arithmetic sequence with five unknowns, a number-grid cross, sum formulas $pn^2 + qn$, and a Fibonacci parking-payment table; none is a quadratic sequence closed by a square-number argument. No number-pattern context appears in paper-so-far.md."
+}

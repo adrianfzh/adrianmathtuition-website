@@ -1,0 +1,28 @@
+{
+ "stem": "The cash price of an electric bicycle is $\\$1840$.\nUnder a hire-purchase scheme, a customer pays a deposit of $\\$400$ followed by 18 equal monthly payments.\nThe hire-purchase price is $22.5\\%$ more than the cash price.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Calculate the hire-purchase price.",
+   "marks": 1,
+   "answer": "$\\$2254$"
+  },
+  {
+   "label": "(b)",
+   "text": "Calculate the amount of each monthly payment.",
+   "marks": 2,
+   "answer": "$\\$103$"
+  }
+ ],
+ "answer": "",
+ "total_marks": 3,
+ "topics": [
+  "Financial Math (Hire Purchase)",
+  "Numbers (Percentages)"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) Hire-purchase price $= 1840 \\times \\frac{122.5}{100} = 1840 \\times 1.225 = \\$2254$.\n(b) Total of the monthly payments $= 2254 - 400 = \\$1854$.\nEach monthly payment $= \\frac{1854}{18} = \\$103$.",
+ "syllabus_check": "4052 Financial mathematics (hire purchase) with a percentage increase: find the hire-purchase price from a percentage above the cash price, then subtract the deposit and divide by the number of instalments. 1 mark for the percentage step, 2 for the two-step instalment calculation. Nothing outside the syllabus.",
+ "originality_note": "New context (an electric bicycle) and a new structure: the hire-purchase price is given as a percentage ABOVE the cash price and the deposit is a fixed dollar amount, so the candidate works forwards to the price and then to one instalment. The exemplars instead give the instalment and ask for the total or the extra cost as a percentage, give the hire-purchase price directly and ask for the deposit as a percentage, or give a percentage deposit and the hire-purchase price and ask for the instalment. Numbers chosen so 1840 x 1.225 = 2254 and (2254 - 400) / 18 = 103 exactly."
+}

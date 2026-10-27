@@ -1,0 +1,1853 @@
+{
+ "key": "GCE-AM-P2",
+ "seed": 4,
+ "set": null,
+ "variety": true,
+ "models": {
+  "author": "opus (Claude Code agent)",
+  "solver": "opus (Claude Code agent)",
+  "moderator": "fable (Claude Code agent)",
+  "figure": "opus (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1",
+  "Set 1 P2",
+  "Set 2 P1",
+  "Set 2 P2",
+  "Set 3 P1",
+  "Set 3 P2"
+ ],
+ "shape": {
+  "subject": "Additional Mathematics",
+  "code": "4049",
+  "level": "AM",
+  "exam": "O-Level",
+  "cut": 2021,
+  "duration": "2 hours 15 minutes",
+  "standardYears": "2024/25",
+  "scope": "Quadratic functions, equations and inequalities (incl. nature of roots, simultaneous equations involving one linear and one non-linear equation); surds; indices and logarithms (incl. exponential growth/decay models); polynomials, remainder and factor theorems, partial fractions; binomial theorem for positive integer index; linear law; coordinate geometry of straight lines, perpendicular bisectors, areas of rectilinear figures; equations of circles; plane geometry proofs (angle properties of circles, similar/congruent triangles, tangent-chord theorem, midpoint theorem, intersecting chords); trigonometry (ratios of special angles, graphs of sin/cos/tan and their transformations, identities incl. sec/cosec/cot, addition and double-angle formulae, R-formula, equations, real-world models); differentiation (chain/product/quotient rules, trig/exp/log functions, tangents and normals, increasing/decreasing functions, rates of change, maxima/minima); integration (as reverse of differentiation, standard forms incl. (ax+b)^n, trig, e^x, 1/x, definite integrals, areas between curves and lines); kinematics of a particle in a straight line via calculus. NOT in 4049: vectors, matrices, statistics, complex numbers, integration by parts or substitution, inverse trigonometric functions, series beyond binomial.",
+  "register": "REGISTER — how SEAB asks\n- Plain, exact, economical English. Instructions are imperatives: Find, Show that, Hence, Explain why, Determine, Express, Solve, Sketch, State, Calculate, Verify, Use … to …, Given that …\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A single-part question has no labels.\n- Precision demands are explicit: \"giving your answer in the form $a + b\\sqrt{3}$, where $a$ and $b$ are integers\", \"correct to 2 decimal places\", \"in terms of $\\pi$\", \"in exact form\", \"in logarithmic form\".\n- A \"Show that\"/\"Prove that\" part states its target exactly; a later part uses it (\"Hence …\", \"Using your answer to part (a) …\").\n- Contexts are brief and concrete (a coffee machine, a patch of water, a ball thrown upwards), never chatty; units are given; constants are named (\"where $k$ is a constant\"); the model is stated as a formula.\n- \"A calculator must not be used in this question.\" opens a question whose point is exact arithmetic (surds, exact trigonometric values). Otherwise no calculator remark.\n- Function notation $\\mathrm{f}(x)$, $\\mathrm{f}'(x)$, $\\frac{dy}{dx}$, $\\int \\ldots \\,dx$; angles in radians unless degrees are stated; a domain such as $0 \\le x \\le 2\\pi$ or $-\\frac{\\pi}{2} \\le \\theta \\le \\frac{\\pi}{2}$ is always stated for a trigonometric equation.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1–2 marks: state/verify/one-line deduction. 3–4 marks: one standard routine. 5–7 marks: a multi-step argument. A long closing question of 9–12 marks has 3–5 parts that build on one another."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "sections": null,
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-10-26T15:38:05.527Z",
+ "topicList": [
+  "Quadratic Functions",
+  "Simultaneous Equations",
+  "Nature of Roots",
+  "Quadratic Inequalities",
+  "Surds",
+  "Polynomials",
+  "Partial Fractions",
+  "Indices",
+  "Logarithms",
+  "Binomial Theorem",
+  "Linear Law",
+  "Coordinate Geometry",
+  "Circles",
+  "Plane Geometry",
+  "Trigonometry (Ratios)",
+  "Trigonometry (Graphs)",
+  "Trigonometry (Identities)",
+  "Trigonometry (Equations)",
+  "Trigonometry (R-Formula)",
+  "Trigonometry (Applications)",
+  "Differentiation (Techniques)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Increasing and Decreasing Functions)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Maximum and Minimum)",
+  "Integration (Techniques)",
+  "Integration (Definite Integrals)",
+  "Integration (Area)",
+  "Integration (Applications)",
+  "Kinematics"
+ ],
+ "must_appear": [
+  "Differentiation (Techniques)",
+  "Logarithms",
+  "Polynomials"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Binomial Theorem",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.468
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.213
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.213
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.106
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Polynomials",
+   "target": 7,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Polynomials",
+     "weight": 0.212
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.175
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.175
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.175
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.175
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.088
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Partial Fractions",
+   "target": 6,
+   "marks": [
+    5,
+    8
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Applications)",
+     "weight": 0.186
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.185
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.185
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.111
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Logarithms",
+   "target": 8,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.147
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.147
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.147
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.147
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.088
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.088
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.088
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.074
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.074
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 8,
+   "marks": [
+    6,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.239
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.19
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.131
+    },
+    {
+     "topic": "Differentiation (Increasing and Decreasing Functions)",
+     "weight": 0.119
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.119
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.071
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.071
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.06
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Trigonometry (Identities)",
+   "target": 8,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.249
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.167
+    },
+    {
+     "topic": "Simultaneous Equations",
+     "weight": 0.167
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.167
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.167
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.083
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Linear Law",
+   "target": 9,
+   "marks": [
+    7,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Indices",
+     "weight": 0.172
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.17
+    },
+    {
+     "topic": "Circles",
+     "weight": 0.106
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.106
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.106
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.106
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.064
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.064
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.053
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.053
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Plane Geometry",
+   "target": 8,
+   "marks": [
+    9,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.297
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.185
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.185
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.111
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Kinematics",
+   "target": 10,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Kinematics",
+     "weight": 0.177
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.122
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.067
+    },
+    {
+     "topic": "Integration (Applications)",
+     "weight": 0.067
+    },
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.067
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.056
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Trigonometry (Graphs)",
+   "target": 9,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Circles",
+     "weight": 0.23
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.23
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.135
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.135
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.135
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.135
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Integration (Area)",
+   "target": 12,
+   "marks": [
+    12,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.277
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.213
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.128
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.106
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.106
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.064
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.053
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.053
+    }
+   ]
+  }
+ ],
+ "title": "A Math · Paper 2 · Predicted Practice Paper · O-Level format",
+ "assembled_at": "2026-10-26T16:04:23.574Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Binomial Theorem",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "The first two terms in the expansion of $(1 + kx)^n$ in ascending powers of $x$, where $k$ is a constant and $n$ is a positive integer, are $1 + 4x$. The third and fourth terms of this expansion have equal coefficients. Find the value of $k$ and the value of $n$.",
+    "parts": [],
+    "answer": "$k = \\frac{1}{2}$, $n = 8$",
+    "total_marks": 5,
+    "topics": [
+     "Binomial Theorem"
+    ],
+    "skills": [
+     "reading 'third and fourth terms' as the terms in $x^2$ and $x^3$ and writing their coefficients with a general index $n$",
+     "cancelling $\\binom{n}{3}k^3 = \\binom{n}{2}k^2$ to the linear relation $(n - 2)k = 3$ instead of expanding into a cubic in $n$",
+     "solving the coefficient conditions simultaneously with $nk = 4$ for the index and the constant"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "$(1 + kx)^n = 1 + \\binom{n}{1}kx + \\binom{n}{2}k^2x^2 + \\binom{n}{3}k^3x^3 + \\ldots$\nCoefficient of $x$: $nk = 4 \\quad (1)$, so $k \\ne 0$.\nThird term: $\\binom{n}{2}k^2x^2$. Fourth term: $\\binom{n}{3}k^3x^3$.\nEqual coefficients: $\\frac{n(n-1)}{2}k^2 = \\frac{n(n-1)(n-2)}{6}k^3$\nDivide by $\\frac{n(n-1)}{2}k^2$ (non-zero, since $k \\ne 0$ and $n \\ge 3$ for a fourth term to exist):\n$1 = \\frac{(n-2)k}{3}$\n$nk - 2k = 3 \\quad (2)$\nSubstitute (1) into (2): $4 - 2k = 3$\n$k = \\frac{1}{2}$\nFrom (1): $n = 4 \\div \\frac{1}{2} = 8$\nCheck: $(1 + \\frac{1}{2}x)^8 = 1 + 4x + 28\\left(\\frac{1}{4}\\right)x^2 + 56\\left(\\frac{1}{8}\\right)x^3 + \\ldots = 1 + 4x + 7x^2 + 7x^3 + \\ldots$\n**Answer:** $k = \\frac{1}{2}$, $n = 8$",
+    "syllabus_check": "4049 Binomial Theorem: the expansion of $(a + b)^n$ for positive integer $n$, the general term and $\\binom{n}{r}$ notation. Simultaneous linear equations only. No figure, no calculator needed.",
+    "originality_note": "Earlier Sets found an unknown from given numerical coefficients (Set 2 P2 Q6: $n$ and $a$ from coefficients $-24$ and $240$ of a combined conjugate product; Set 3 P1 Q7: a quadratic in $a$ from one product coefficient) or cancelled terms in a difference (Set 1 P1 Q5). Here no second coefficient value is given: the condition is an EQUALITY of two consecutive coefficients with general index, so the work is the ratio $\\binom{n}{3}/\\binom{n}{2} = \\frac{n-2}{3}$ that collapses to a linear relation, and the trap is reading 'third and fourth terms' as $x^3$ and $x^4$. Not a re-skin of GCE 2023 P2 Q1 (zero coefficient in a product, find $k$), 2024 P1 Q5 or 2025 P1 Q7, all of which fix the index."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P2 Q5",
+     "jaccard": 0.149,
+     "nearest_set": "Set 2 P2 Q6",
+     "jaccard_set": 0.058,
+     "repeated_skills": []
+    },
+    "marks": 5,
+    "checked_at": "2026-10-26T15:45:37.152Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "single": "k = 1/2, n = 8"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give k = 1/2, n = 8. Checked: nk = 4 and C(n,2)k^2 = C(n,3)k^3 give (n-2)k = 3, so 4 - 2k = 3, k = 1/2, n = 8; the x^2 and x^3 coefficients of (1 + x/2)^8 are both 7."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree and the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register: a real paper opens 'The first two terms in the expansion of (1 + kx)^n in ascending powers of x are 1 + 4x.' rather than 'begins 1 + 4x'; one light edit.",
+     "Optional, for a cleaner statement of what is demanded: 'The coefficients of the third and fourth terms are equal' (the reading 'third term = x^2 term' is the intended small trap and may stay)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An unparted 5-mark opener with a general index n carried through two coefficient conditions; the candidate must see that dividing the two coefficient equations gives the linear relation (n - 2)k = 3 (expanding gives a cubic in n), then eliminate with nk = 4 to clean values k = 1/2, n = 8. Not a re-skin of any 2024/25 question (binomial sits in P1 there and all are products or terms independent of x), and a different skill from Set 2 P2 Q6(b) (two numerical coefficients of a conjugate product, both signs of a) and Set 3 P1 Q7 (product of two expansions); comparable in weight and cleanness to Set 1 P2 Q1's bare 5-mark hidden-quadratic equation."
+   },
+   "exemplars": [
+    {
+     "id": "22303d15-cdcc-4b0c-9fea-70f382242699",
+     "ref": "GCE 2023 P2 Q1"
+    },
+    {
+     "id": "b2ca24ac-f0a9-4304-8df4-0179f34cfa1d",
+     "ref": "GCE 2021 specimen P1 Q3"
+    },
+    {
+     "id": "f9712d69-9043-4a95-875d-329a8919e1a3",
+     "ref": "GCE 2025 P1 Q7"
+    },
+    {
+     "id": "e5583299-4957-406d-b0f2-2e38449d068f",
+     "ref": "GCE 2024 P1 Q5"
+    },
+    {
+     "id": "bbe1776c-339f-4d7e-99b4-9f6efc3c5058",
+     "ref": "GCE 2022 P1 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Polynomials",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "Do not use a calculator in this question.\nA rectangular sheet of card measures $16$ cm by $10$ cm. A square of side $x$ cm is cut from each of the four corners of the sheet, and the sides are then folded up to make an open box. The volume of the box is $112$ cm$^3$.\nFind the possible values of $x$, giving your answers in exact form. Explain why any other root of your equation is not a possible value of $x$.",
+    "parts": [],
+    "answer": "$x = 1$ or $x = 6 - 2\\sqrt{2}$ ($6 + 2\\sqrt{2}$ is rejected: it is greater than $5$, so $10 - 2x$ would be negative)",
+    "total_marks": 7,
+    "topics": [
+     "Polynomials"
+    ],
+    "skills": [
+     "set up a cubic volume equation from a folded-card context, the equation not given in factorised form",
+     "factor theorem by trial with no factor supplied, then the quadratic factor and exact surd roots",
+     "reject a root of the cubic from the physical constraint 0 < x < 5, decided exactly without a calculator, although that root makes the volume formula positive"
+    ],
+    "needs_figure": true,
+    "figure_description": "A flat rectangle (the card) 16 cm wide and 10 cm tall, drawn to scale in plan view. A small square of side x is shaded or drawn at each of the four corners, all four the same size (draw x about 1.5 on that scale). Label the long side \"16 cm\" and the short side \"10 cm\" outside the rectangle, and label one side of one corner square \"x cm\". Dashed lines join the inner corners of the squares to show the fold lines. No other numbers, no 3-D box, no answer.",
+    "solution": "The box has height $x$ cm, length $(16 - 2x)$ cm and width $(10 - 2x)$ cm.\n$V = x(16 - 2x)(10 - 2x) = 4x(8 - x)(5 - x)$.\n$4x(8 - x)(5 - x) = 112$\n$x(40 - 13x + x^2) = 28$\n$x^3 - 13x^2 + 40x - 28 = 0$\n\nLet $\\mathrm{p}(x) = x^3 - 13x^2 + 40x - 28$.\n$\\mathrm{p}(1) = 1 - 13 + 40 - 28 = 0$, so $x - 1$ is a factor.\nComparing coefficients: $x^3 - 13x^2 + 40x - 28 = (x - 1)(x^2 - 12x + 28)$.\n$x^2 - 12x + 28 = 0$\n$x = \\frac{12 \\pm \\sqrt{144 - 112}}{2} = \\frac{12 \\pm \\sqrt{32}}{2} = 6 \\pm 2\\sqrt{2}$.\nThe roots are $1$, $6 - 2\\sqrt{2}$ and $6 + 2\\sqrt{2}$.\nThe width $10 - 2x$ must be positive, so $0 < x < 5$.\n$2\\sqrt{2} = \\sqrt{8}$, and $1 < \\sqrt{8} < 6$, so $0 < 6 - 2\\sqrt{2} < 5$: valid.\n$6 + 2\\sqrt{2} > 6 > 5$, so $10 - 2x < 0$ and $16 - 2x < 0$: two negative lengths whose product is positive, which is why this value still satisfies the equation. It is not a possible value of $x$.\n**Answer:** $x = 1$ or $x = 6 - 2\\sqrt{2}$.\nCheck: $x = 6 - 2\\sqrt{2}$ gives $16 - 2x = 4 + 4\\sqrt{2}$, $10 - 2x = 4\\sqrt{2} - 2$; $(4 + 4\\sqrt{2})(4\\sqrt{2} - 2) = 16\\sqrt{2} - 8 + 32 - 8\\sqrt{2} = 24 + 8\\sqrt{2}$; $(6 - 2\\sqrt{2})(24 + 8\\sqrt{2}) = 144 + 48\\sqrt{2} - 48\\sqrt{2} - 32 = 112$.",
+    "syllabus_check": "4049 Polynomials: factor theorem, factorising a cubic, solving a cubic equation; quadratic formula with surds in simplest form. No calculus is needed and none is asked; volume of a cuboid is lower-secondary knowledge.",
+    "originality_note": "Earlier Sets' polynomial questions are all abstract: constants from a remainder after division by a quadratic (Set 1 P2 Q2), a factor for all k and repeated roots (Set 2 P1 Q10), a factor with a non-unit coefficient feeding partial fractions (Set 1 P1 Q12), constants from a surd root (Set 3 P1 Q8). This one builds the cubic from a context, finds its factor by trial with nothing supplied, and closes on a context rejection decided exactly (a root that satisfies the algebra because two lengths are both negative), not on a discriminant or a range of k. Unlike GCE 2022 P2 Q2, 2024 P2 Q6 and 2025 P2 Q4, there are no unknown constants to find. Today's 2026 P1 used volume only for an optimisation; this asks for no derivative."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q4",
+     "jaccard": 0.067,
+     "nearest_set": "Set 3 P2 Q1",
+     "jaccard_set": 0.06,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-10-26T16:02:29.756Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "x = 1 or x = 6 - 2√2; x = 6 + 2√2 is rejected since 6 + 2√2 > 5 makes 10 - 2x < 0 (need 0 < x < 5)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "x(16 - 2x)(10 - 2x) = 112 gives 4x(x^2 - 13x + 40) = 112, i.e. x^3 - 13x^2 + 40x - 28 = 0. Shown by both."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: p(1) = 0, (x - 1)(x^2 - 12x + 28), roots 1 and 6 ± 2√2; 6 + 2√2 > 5 makes the width 10 - 2x negative, so x = 1 or 6 - 2√2. Verified: x = 1 gives 14 × 8 × 1 = 112; x = 6 - 2√2 gives (6 - 2√2)(4 + 4√2)(4√2 - 2) = 112."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree and the key is right, including the rejected root.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Part labels: a real paper gives the reason its own line — (b)(i) 'Find the possible values of x, giving your answers in exact form. [4]' and (b)(ii) 'Explain why one root of the equation in part (a) is not a possible value of x. [1]' — so the B1 for the explanation is visible to the candidate.",
+     "Wording: 'the four flaps that remain are folded up' → 'the sides are then folded up' (SEAB's phrasing for the open-box model)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The candidate builds the cubic from the folded card (nothing beyond the dimensions is stated), finds the factor by trial with none supplied, reaches exact surd roots under the calculator ban and must then decide the binding constraint 0 < x < 5 exactly (6 + 2√2 > 5 without a calculator) and explain in words why a root that still makes the formula give 112 is impossible — the same 2024/25 polynomial routine as GCE 2024 P2 Q6(b) / 2025 P2 Q4 but inside a model the candidate sets up, with clean numbers (1, 6 ± 2√2, 112). Not a re-skin of a 2024/25 question and a different skill from Set 1 P2 Q2 (remainder by a quadratic, then discriminant), Set 2 P1 Q6 (cubic in √k from an integral) and Set 3 P1 Q8 (constants from a surd root); as demanding and as clean as Set 1 P2 Q2 at 7 marks, with a reasoned closer."
+   },
+   "exemplars": [
+    {
+     "id": "13226df5-5455-499c-89d9-521c661d8fe6",
+     "ref": "GCE 2022 P1 Q9"
+    },
+    {
+     "id": "8e1d2031-ec74-4b3a-8c6a-99a5fac95bbc",
+     "ref": "GCE 2022 P2 Q2"
+    },
+    {
+     "id": "dda2fb93-d93f-47a7-9218-3322317b1b5a",
+     "ref": "GCE 2021 specimen P1 Q10"
+    },
+    {
+     "id": "cc0ccc7b-e0f4-4257-b84a-c8e4f92dffda",
+     "ref": "GCE 2025 P1 Q3"
+    },
+    {
+     "id": "e3760789-c8bf-4dea-a2b1-8142f18449ad",
+     "ref": "GCE 2025 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Partial Fractions",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $\\int_{0}^{k} \\frac{6}{2x^2 + 5x + 2}\\,dx = \\ln 9$, where $k$ is a positive constant.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $k$.",
+      "marks": 5,
+      "answer": "$k = 4$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "By considering $\\int_{0}^{p} \\frac{6}{2x^2 + 5x + 2}\\,dx$ as an expression in $p$, where $p$ is a positive constant, explain why the value of this integral is less than $\\ln 16$ for every positive value of $p$.",
+      "marks": 1,
+      "answer": "$\\int_{0}^{p} \\frac{6}{2x^2 + 5x + 2}\\,dx = 2\\ln\\frac{2(2p + 1)}{p + 2} = 2\\ln\\left(4 - \\frac{6}{p + 2}\\right)$; since $\\frac{6}{p + 2} > 0$, $4 - \\frac{6}{p + 2} < 4$, so the integral is less than $2\\ln 4 = \\ln 16$.",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $k = 4$ (b) the integral equals $2\\ln\\left(4 - \\frac{6}{p + 2}\\right)$, and $4 - \\frac{6}{p + 2} < 4$, so it is less than $2\\ln 4 = \\ln 16$",
+    "total_marks": 6,
+    "topics": [
+     "Partial Fractions",
+     "Integration (Definite Integrals)"
+    ],
+    "skills": [
+     "deciding unprompted to factorise the quadratic denominator $2x^2 + 5x + 2$ and split the integrand into partial fractions before integrating",
+     "a definite integral with an unknown upper limit, combined by the laws of logarithms into a single logarithm and solved as a linear equation in the limit",
+     "bounding a definite integral for every value of its upper limit by rewriting $\\frac{2(2p+1)}{p+2}$ as $4 - \\frac{6}{p+2}$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)\nThe integrand cannot be integrated as it stands, so factorise the denominator and use partial fractions.\n$2x^2 + 5x + 2 = (2x + 1)(x + 2)$\nLet $\\frac{6}{(2x + 1)(x + 2)} = \\frac{A}{2x + 1} + \\frac{B}{x + 2}$.\nThen $6 = A(x + 2) + B(2x + 1)$.\nPut $x = -2$: $6 = -3B$, so $B = -2$.\nPut $x = -\\frac{1}{2}$: $6 = \\frac{3}{2}A$, so $A = 4$.\nSo $\\frac{6}{2x^2 + 5x + 2} = \\frac{4}{2x + 1} - \\frac{2}{x + 2}$.\n$\\int_{0}^{k} \\left(\\frac{4}{2x + 1} - \\frac{2}{x + 2}\\right) dx = \\left[2\\ln(2x + 1) - 2\\ln(x + 2)\\right]_{0}^{k}$\n$= 2\\ln(2k + 1) - 2\\ln(k + 2) - (2\\ln 1 - 2\\ln 2)$\n$= 2\\ln\\frac{2(2k + 1)}{k + 2}$\nSo $2\\ln\\frac{2(2k + 1)}{k + 2} = \\ln 9 = 2\\ln 3$.\n$\\frac{2(2k + 1)}{k + 2} = 3$\n$4k + 2 = 3k + 6$\n**Answer:** $k = 4$\n(b)\nBy part (a) with $k$ replaced by $p$: $\\int_{0}^{p} \\frac{6}{2x^2 + 5x + 2}\\,dx = 2\\ln\\frac{2(2p + 1)}{p + 2}$.\n$\\frac{2(2p + 1)}{p + 2} = \\frac{4(p + 2) - 6}{p + 2} = 4 - \\frac{6}{p + 2}$\nFor $p > 0$, $\\frac{6}{p + 2} > 0$, so $4 - \\frac{6}{p + 2} < 4$.\nSince $\\ln$ is an increasing function, the integral is less than $2\\ln 4$.\n**Answer:** the integral $= 2\\ln\\left(4 - \\frac{6}{p + 2}\\right) < 2\\ln 4 = \\ln 16$ for every $p > 0$.",
+    "syllabus_check": "4049: factorising a quadratic; partial fractions with two distinct linear factors; integration of $\\frac{1}{ax + b}$; definite integrals; laws of logarithms; solving a linear equation. Part (b) is an inequality argument on a fraction; no limits notation, substitution or integration by parts is needed.",
+    "originality_note": "Rewritten after moderation: the earlier draft (gradient function through a point, repeated factor) repeated Set 3 P1 Q4's frame and Set 1 P1 Q12's skill, and borrowed GCE 2025 P2 Q3's stem sentence. Now the unknown is the UPPER LIMIT of a definite integral and the decomposition is unprompted. The log coefficients are equal (2 and 2), so the integral collapses to one logarithm of a ratio and the closing step is a linear equation in k: not Set 2 P1 Q6's cubic in root k, not Q2's or Q9's rejected root, not Q6's quadratic in tan x, not Q4's integer from an inequality. Part (b), a bound for every value of the limit read from 4 - 6/(p + 2), is a reasoning step no earlier Set has asked of partial fractions. Differs from the exemplars (2021/22/23 decomposition only; 2024 P1 Q12 repeated factor shown equal to a value) and from Set 1 (a + ln b), Set 2 (improper, stationary points) and Set 3 (irreducible quadratic). Clean numbers: A = 4, B = -2, k = 4; marks [5]+[1] match the paper-shape plan."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2013 P1 Q7",
+     "jaccard": 0.081,
+     "nearest_set": "Set 1 P2 Q4",
+     "jaccard_set": 0.07,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-10-26T15:46:40.050Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "k = 4",
+     "(b)": "Integral = 2 ln[(4p+2)/(p+2)] = 2 ln[4 - 6/(p+2)]; since 6/(p+2) > 0, (4p+2)/(p+2) < 4, so integral < 2 ln 4 = ln 16 for every p > 0 (shown)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both k = 4. Re-worked: 2x^2 + 5x + 2 = (2x + 1)(x + 2); A = 4, B = -2; integral = 2 ln(2(2k + 1)/(k + 2)); setting 2(2k + 1)/(k + 2) = 3 gives 4k + 2 = 3k + 6, k = 4, and 2(9)/6 = 3 confirms it."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both rewrite 2(2p + 1)/(p + 2) = 4 - 6/(p + 2) < 4 for p > 0, so the integral is less than 2 ln 4 = ln 16. Correct; the argument is also positive (it is 1 at p = 0 and increasing), so the logarithm is defined for every positive p."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on both parts and both are right: k = 4, and the integral is 2 ln(4 - 6/(p + 2)) < ln 16 for every positive p.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Marks are lean rather than wrong: (a) makes the candidate factorise the denominator unprompted, find two partial-fraction constants, integrate with the 1/2 on 2x + 1, substitute both limits, combine three logarithms into one and solve for k. GCE 2024 P1 Q12 paid [5] for the partial fractions alone and [5] for the integral to a printed form. This sits inside the one-mark tolerance of 'marks match the work', so it is not a re-mark the slot needs; if the session has a spare mark from a routine slot, re-mark (a) [5] -> [6] (question 7 marks, (b) unchanged, no part loses).",
+     "Closing-step echo across the paper (Lesson 2): Q3(b) closes by bounding 4 - 6/(p + 2) below 4; Q5 closes by reading the greatest turning rate from the least value of 900 + x^2; Q9 shows s(t) stays positive by factorising. All three are 'bound an expression by inspecting one term'. Q3(b) is the SEAB one-mark 'Explain why' closer (GCE 2024 P2 Q4(a)(ii)) and should stay; the session should make sure Q5 and Q9 do not also END on that move. If Q3 must change instead, replace (b) by: 'Find the exact value of int_{-1/4}^{0} 6/(2x^2 + 5x + 2) dx, giving your answer as a single logarithm. [2]' (answer ln(49/16); a negative lower limit and logarithms of fractions, a different skill)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean 2024/25-style chain: the candidate must decide to factorise and split into partial fractions (nothing printed, not even the factorised form), integrate, combine logarithms and solve for an unknown upper limit, then close with a one-mark reason in words; the numbers close exactly (k = 4, ln 9, ln 16). It is less scaffolded than Set 1 P1 Q12 (which supplied the factor and the ladder) and no 2024/25 P2 question shares its structure; Set 2 P1 Q6 also set a definite integral with an unknown upper limit, but through a printed show-that cubic in sqrt(k), a different technique and closing, so it is not a repeat; the setter's three skill phrases are true and specific. Score 4 rather than 5 for the lean (a) marks and the paper-level echo of the bounding closer."
+   },
+   "exemplars": [
+    {
+     "id": "682f78ee-fff2-4e71-b7d4-b3d2bc7d0d1f",
+     "ref": "GCE 2022 P1 Q3"
+    },
+    {
+     "id": "660fdff8-22a6-4cd3-84a1-b0ea2c6c2513",
+     "ref": "GCE 2021 specimen P2 Q1"
+    },
+    {
+     "id": "6fde5681-0650-487f-b9aa-5561ec16b2cb",
+     "ref": "GCE 2021 P1 Q5"
+    },
+    {
+     "id": "5aa01a2e-0ea3-4e4d-930f-5a3564268399",
+     "ref": "GCE 2023 P1 Q2"
+    },
+    {
+     "id": "cada459a-5436-41aa-92f2-80e3a77be480",
+     "ref": "GCE 2024 P1 Q12"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Logarithms",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The loudness, $L$ decibels, of a sound of intensity $I$ units is given by $L = 10\\lg\\left(\\frac{I}{I_0}\\right)$, where $I_0$ is a positive constant. When two or more sounds are heard at the same time, their intensities add. At a distance of $r$ metres from a machine, the intensity of the sound of the machine is inversely proportional to $r^2$.\nIn a workshop, each machine of a certain type produces a loudness of $76$ decibels at a distance of $2$ metres from it. Any other sound in the workshop may be ignored.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that, whenever a worker doubles the distance between the worker and one of these machines, the loudness heard falls by the same number of decibels, and find this number correct to $1$ decimal place.",
+      "marks": 3,
+      "answer": "$L(r) - L(2r) = 10\\lg 4$, which does not depend on $r$; the loudness falls by $6.0$ decibels."
+     },
+     {
+      "label": "(b)",
+      "text": "A worker's bench is $3$ metres from a group of these machines, which may be treated as being at a single point. The loudness at the bench must not exceed $85$ decibels. Find the greatest number of these machines that may be run at the same time.",
+      "marks": 5,
+      "answer": "$17$"
+     }
+    ],
+    "answer": "(a) $10\\lg 4 \\approx 6.0$ decibels, independent of the starting distance. (b) $17$ machines.",
+    "total_marks": 8,
+    "topics": [
+     "Logarithms"
+    ],
+    "skills": [
+     "turning 'intensity inversely proportional to r^2' into a ratio of intensities and, by the law lg(a/b) = lg a - lg b, a fall in loudness of 10 lg 4 that is independent of the starting distance",
+     "building the loudness of n identical sources at a new distance from one given reading: intensities (not decibels) add, so the intensity is multiplied by n and by (2/3)^2, giving L = 76 + 10 lg n - 20 lg 1.5",
+     "solving a logarithmic inequality for a whole number of machines and taking the greatest integer, 17, not the rounded 18"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)\nLet the intensity at distance $r$ be $I_1 = \\frac{c}{r^2}$, where $c$ is a constant.\nAt distance $2r$: $I_2 = \\frac{c}{(2r)^2} = \\frac{I_1}{4}$.\n$L(r) - L(2r) = 10\\lg\\left(\\frac{I_1}{I_0}\\right) - 10\\lg\\left(\\frac{I_1}{4I_0}\\right)$\n$= 10\\lg\\left(\\frac{I_1}{I_0} \\times \\frac{4I_0}{I_1}\\right)$\n$= 10\\lg 4$\nThis does not contain $r$, so the fall is the same whatever the starting distance.\n$10\\lg 4 = 6.0206\\ldots$\n**Answer:** the loudness falls by $6.0$ decibels.\n\n(b)\nLet one machine give intensity $I_1$ at $2$ m, so $10\\lg\\left(\\frac{I_1}{I_0}\\right) = 76$.\nAt $3$ m, one machine gives intensity $I_1 \\times \\left(\\frac{2}{3}\\right)^2 = \\frac{4}{9}I_1$.\n$n$ machines together give intensity $\\frac{4n}{9}I_1$ at the bench (intensities add).\nLoudness at the bench: $L = 10\\lg\\left(\\frac{4n}{9} \\times \\frac{I_1}{I_0}\\right)$\n$= 76 + 10\\lg n + 10\\lg\\frac{4}{9}$\n$= 76 + 10\\lg n - 20\\lg 1.5$\nRequire $76 + 10\\lg n - 20\\lg 1.5 \\le 85$\n$10\\lg n \\le 9 + 20\\lg 1.5 = 12.5218\\ldots$\n$\\lg n \\le 1.25218\\ldots$\n$n \\le 10^{1.25218\\ldots} = 17.87\\ldots$\n$n$ is a whole number of machines, so the greatest value is $17$ (with $18$ machines the loudness is about $85.03$ decibels, too loud).\n**Answer:** $17$ machines.",
+    "syllabus_check": "4049 Logarithms: laws of logarithms (lg of a product and a quotient, lg of a power), common logarithms, solving a logarithmic inequality, use of a logarithmic model in a real-world context. The physics facts needed (intensities add; inverse square) are stated in the stem. No content outside 4049.",
+    "originality_note": "Earlier Sets' logarithm questions are a change-of-base equation (Set 1), two populations at 20%/25% (Set 2 P2 Q1), an area with ln k (Set 2 P2 Q10), tangent/normal to e^{2x} (Set 3 P2 Q3), a freezer warming model T = R - Be^{-kt} (Set 3 P2 Q4) and a hidden quadratic in e^x (Set 3 P2 Q5). All of those solve an exponential for a time or a root. This question is a LOGARITHMIC scale (decibels), where the work is the laws of logarithms turning ratios of intensities into differences of loudness, and the trap is adding decibels instead of intensities. It is not doubling growth (2026 P1), not depreciation (GCE 2024 P2 Q1) and not cooling (GCE 2023 P2 Q3)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P1 Q6",
+     "jaccard": 0.013,
+     "nearest_set": "Set 2 P1 Q2",
+     "jaccard_set": 0.013,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-26T15:41:13.248Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown; doubling r makes I become I/4, so L falls by 10 lg 4 = 6.0 decibels (independent of r)",
+     "(b)": "17"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: doubling r divides I by 4, so L(r) - L(2r) = 10 lg 4 = 6.02..., independent of r; 6.0 decibels to 1 d.p."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 17. Verified: at 3 m one machine gives (2/3)^2 of its 2 m intensity, n machines give 4n/9 of it, so L = 76 + 10 lg(4n/9) ≤ 85 gives 4n/9 ≤ 10^0.9 = 7.94..., n ≤ 17.87; 18 machines give 76 + 10 lg 8 = 85.03 > 85, so 17."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree and the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Make the parts build (Set 1's parts feed each other; here (b) never uses (a)): put the bench 4 m from the machines so one machine there reads 76 - 6.0 = 70 decibels by part (a), and (b) becomes 70 + 10 lg n ≤ 85, n ≤ 10^1.5 = 31.6, greatest n = 31 (32 machines give 85.05). Then (a) is a gate and the (2/3)^2 step is replaced by reusing the shown result.",
+     "Register of (a): 'Show that, when the distance of a worker from one of these machines is doubled, the loudness heard decreases by a constant amount. Find this amount, in decibels, correct to 1 decimal place.'"
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A logarithmic model in context (the Set's required one): the formula is printed because the syllabus cannot produce the decibel law, but the candidate must turn 'inversely proportional to r^2' into a ratio of intensities, use lg(a/b) = lg a - lg b to show a fall independent of r, and in (b) work from the one reading (76 dB at 2 m) without ever knowing I_0, scale the intensity (not the decibels) by n and by (2/3)^2, and close a log inequality on the greatest whole number 17 rather than the rounded 18 — the context changes the maths. Not a re-skin of GCE 2024 P2 Q1 or 2025 P1 Q1 (no exponential fit, no geometric decay); earlier Sets' logarithm questions (change of base, fish populations, freezer warming, e^x discriminant, subtangent) test other skills, though the whole-number closer has the same flavour as Set 2 P2 Q1's n = 13. Comparable to Set 1 P2 Q3/Q5 at 7–8 marks in demand and cleanness; its one shortfall against Set 1 is that (a) and (b) are independent, which the first fix repairs."
+   },
+   "exemplars": [
+    {
+     "id": "aa982da1-67df-462e-9c85-03d59f68d6f3",
+     "ref": "GCE 2021 P1 Q12"
+    },
+    {
+     "id": "795f3575-95c7-4c0a-aa62-c3f89d6b2438",
+     "ref": "GCE 2025 P2 Q8"
+    },
+    {
+     "id": "3ec5cb88-bbd3-497c-ba47-8ce7a1f43343",
+     "ref": "GCE 2023 P2 Q3"
+    },
+    {
+     "id": "f2d2e5eb-d98d-4637-99fc-4037949bd8c5",
+     "ref": "GCE 2022 P2 Q6"
+    },
+    {
+     "id": "cb863cc3-2c9b-481f-944f-bd1b6597ce49",
+     "ref": "GCE 2024 P2 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "A security lamp stands at the point $L$ on level ground, $30$ m from a long straight fence. The point $O$ on the fence is the point of the fence nearest to $L$. At time $t = 0$ seconds a runner is at the point $A$ on the fence, $80$ m from $O$. The runner runs along the fence towards $O$, passes $O$ and carries on along the fence, at a constant speed of $5$ m/s. The diagram shows the runner at the point $R$ on the fence. The lamp turns so that its beam always points at the runner.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that, when the runner is $x$ m from $O$, the lamp is turning at a rate of $\\frac{150}{900 + x^2}$ radians per second.",
+      "marks": 3,
+      "answer": "Shown: $\\tan\\theta = \\frac{x}{30}$, so $\\sec^2\\theta\\,\\frac{d\\theta}{dt} = \\frac{1}{30}\\frac{dx}{dt}$, with $\\sec^2\\theta = 1 + \\frac{x^2}{900}$ and speed $5$, giving $\\frac{150}{900 + x^2}$ rad/s."
+     },
+     {
+      "label": "(b)",
+      "text": "Find the values of $t$ at which the lamp is turning at a rate of $0.06$ radians per second.",
+      "marks": 3,
+      "answer": "$t = 8$ and $t = 24$"
+     },
+     {
+      "label": "(c)",
+      "text": "Find the greatest rate at which the lamp turns, and state the value of $t$ at which this occurs.",
+      "marks": 2,
+      "answer": "$\\frac{1}{6}$ rad/s, when $t = 16$ (as the runner passes $O$)"
+     }
+    ],
+    "answer": "(a) shown; (b) $t = 8$, $t = 24$; (c) $\\frac{1}{6}$ rad/s at $t = 16$",
+    "total_marks": 8,
+    "topics": [
+     "Differentiation (Rates of Change)"
+    ],
+    "skills": [
+     "introduce the angle of the beam unaided and build $\\tan\\theta = \\frac{x}{30}$ from the right angle at the nearest point $O$ (the perpendicular is not stated), then connected rates through $\\frac{d}{dt}\\tan\\theta = \\sec^2\\theta\\,\\frac{d\\theta}{dt}$ with the angular rate as the UNKNOWN and the linear speed given",
+     "write the rate as a function of the runner's position, $\\frac{150}{900 + x^2}$",
+     "use the context to keep BOTH instants at which the turning rate takes a value (40 m before and 40 m after $O$, $t = 8$ and $t = 24$), and read the greatest turning rate from the least value of $900 + x^2$ at $x = 0$"
+    ],
+    "needs_figure": true,
+    "figure_description": "Plan view on level ground. A long straight horizontal line is the fence. The point O is on the fence. L is a point 30 m directly below O (LO perpendicular to the fence; mark the right angle at O). A is on the fence 80 m to the right of O (label \"80 m\" between O and A). R is a point on the fence between O and A (the runner), with a straight dashed line from L to R (the beam). Label \"30 m\" on LO. Do NOT label the angle at L, do NOT label OR with x or any length, and print no rate or time. Points labelled L, O, R, A only. Draw roughly to scale (30 : 80).",
+    "solution": "(a) Let $\\theta$ radians be the angle $OLR$, where $R$ is the runner's position on the fence, and let $OR = x$ m.\nSince $O$ is the point of the fence nearest to $L$, $LO$ is perpendicular to the fence, so angle $LOR = 90^\\circ$.\n$\\tan\\theta = \\frac{x}{30}$\nDifferentiate with respect to $t$:\n$\\sec^2\\theta\\,\\frac{d\\theta}{dt} = \\frac{1}{30}\\frac{dx}{dt}$\nThe runner's speed is $5$ m/s, so $\\left|\\frac{dx}{dt}\\right| = 5$ (x decreases at 5 m/s before $O$ and increases at 5 m/s after $O$).\n$\\sec^2\\theta = 1 + \\tan^2\\theta = 1 + \\frac{x^2}{900} = \\frac{900 + x^2}{900}$\nRate of turning $= \\left|\\frac{d\\theta}{dt}\\right| = \\frac{5}{30} \\times \\frac{900}{900 + x^2} = \\frac{150}{900 + x^2}$ rad/s (shown).\n\n(b) $\\frac{150}{900 + x^2} = 0.06$\n$900 + x^2 = 2500$\n$x^2 = 1600$, so $x = 40$ (distance, $x \\ge 0$).\nThe runner is $40$ m from $O$ twice: once before reaching $O$ and once after passing it.\nBefore $O$: the runner has run $80 - 40 = 40$ m, so $t = \\frac{40}{5} = 8$.\nAfter $O$: the runner has run $80 + 40 = 120$ m, so $t = \\frac{120}{5} = 24$.\n**Answer:** $t = 8$ and $t = 24$.\n\n(c) $900 + x^2 \\ge 900$, with equality only when $x = 0$.\nSo the rate $\\frac{150}{900 + x^2}$ is greatest when $x = 0$, i.e. when the runner is at $O$.\nGreatest rate $= \\frac{150}{900} = \\frac{1}{6}$ rad/s.\nThe runner reaches $O$ after running $80$ m: $t = \\frac{80}{5} = 16$.\n**Answer:** $\\frac{1}{6}$ rad/s, at $t = 16$.",
+    "syllabus_check": "4049: differentiation of $\\tan x$ and connected rates of change by the chain rule; the identity $1 + \\tan^2\\theta = \\sec^2\\theta$; right-angled triangle trigonometry. No inverse trigonometric functions are needed (the angle is never found), no optimisation by calculus (part (c) is read from the least value of $900 + x^2$), nothing outside the syllabus.",
+    "originality_note": "Earlier Sets' rates-of-change questions give the rate of an angle and ask for lengths (Set 1 P1 Q11 fan), or give a volume flow or a shrinking thickness (Set 2 P1 Q4 trough, Set 3 P1 Q1 dough). Here the LINEAR speed is given and the ANGULAR rate is unknown, the angle is not defined in the stem (the candidate introduces it and supplies the right angle from 'nearest point'), the answer is turned into a function of position through the sec-tan identity, and the context forces two kept instants in (b). GCE 2025 P1 Q11 shares a right-angled configuration (a fixed leg, a point moving perpendicular to it) but asks the rate of the hypotenuse and an area bound by Pythagoras; this question uses no Pythagoras, asks the rate of an angle through $\\tan$, keeps two instants either side of the foot of the perpendicular and closes on the least value of $900 + x^2$. No other question in this paper exists yet; the 2026 Paper 1 had no connected-rates question. Every number is the author's own (30, 80, 5, 0.06)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2020 P2 Q2",
+     "jaccard": 0.034,
+     "nearest_set": "Set 1 P1 Q11",
+     "jaccard_set": 0.042,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-26T16:02:29.929Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "t = 8, t = 24",
+     "(c)": "1/6 rad/s (0.167 rad/s), at t = 16"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Checked: LO is perpendicular to the fence because O is the nearest point, so tan(theta) = x/30; sec^2(theta) d(theta)/dt = (1/30) dx/dt with |dx/dt| = 5 and sec^2(theta) = (900 + x^2)/900 gives |d(theta)/dt| = 150/(900 + x^2). Correct; the modulus is handled honestly (x decreases before O, increases after)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both t = 8 and t = 24. Checked: 900 + x^2 = 2500, x = 40; runner has covered 40 m (t = 8) and 120 m (t = 24). A 30-40-50 triangle, clean."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 1/6 rad/s at t = 16. Checked: the denominator is least at x = 0 (the runner at O, 80 m at 5 m/s)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and the key is correct on my own working.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(b) says 'Find the two values of t': the second instant (40 m beyond O, after the runner has passed the lamp) is the part's idea, and printing 'two' hands it over. Write 'Find the values of t at which the lamp is turning at a rate of 0.06 radians per second' and let the candidate keep both cases from the context (standard.md item 8 / Set 1 quality 6).",
+     "Skills phrase overlaps Q6 of this paper: Q6's named skill is 'expressing sin 2x and cos 2x in terms of tan x through 1 + tan^2 x = sec^2 x', and Q5's names 'turn sec^2 theta back into the distance by 1 + tan^2 theta = sec^2 theta'. In Q5 the identity is incidental (the candidate can equally read sec^2 theta = LR^2/900 = (900 + x^2)/900 from the triangle), so reword the skill phrase to 'write sec^2 theta in terms of x (from the triangle or the identity) so the turning rate is a function of position' and drop 'Trigonometry (Identities)' as a second topic tag; the question itself needs no change.",
+     "Register (optional): (a) reads more like SEAB as 'Show that, at the instant when the runner is x m from O, the rate at which the lamp is turning is 150/(900 + x^2) radians per second.'"
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A derived-relation rates question with the angular rate as the unknown: the perpendicular at O is not stated, the context fixes the sign of dx/dt and produces the second instant, and the last part closes on a structural fact (greatest rate as the runner passes O) with 3-4-5 numbers throughout; it matches Set 1 P1 Q11's shape and quality, repeats no earlier Set and no 2024/25 P2 question, and only the 'two values' hint and the skills wording need a light edit."
+   },
+   "exemplars": [
+    {
+     "id": "27681c15-8155-4451-8a03-55c3a24b1e5c",
+     "ref": "GCE 2025 P1 Q11"
+    },
+    {
+     "id": "737e17c6-a091-4317-b2bd-3f1a8bfd9012",
+     "ref": "GCE 2023 P1 Q11"
+    },
+    {
+     "id": "3b596b55-169b-4dca-89aa-9db5d9a2d940",
+     "ref": "GCE 2021 P1 Q13"
+    },
+    {
+     "id": "14d24a81-10c5-473d-9376-b1be1af3db49",
+     "ref": "GCE 2022 P2 Q8"
+    },
+    {
+     "id": "01951fa6-eda8-4ef6-b301-9133047475b2",
+     "ref": "GCE 2024 P1 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Trigonometry (Identities)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $\\mathrm{f}(x) = \\sin^4 x + \\cos^4 x$, where $x$ is in radians.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Express $\\mathrm{f}(x)$ in the form $a + b\\cos 4x$, where $a$ and $b$ are constants to be found.",
+      "marks": 2,
+      "answer": "$\\mathrm{f}(x) = \\frac{3}{4} + \\frac{1}{4}\\cos 4x$ ($a = \\frac{3}{4}$, $b = \\frac{1}{4}$)"
+     },
+     {
+      "label": "(b)",
+      "text": "Solve the equation $\\mathrm{f}(x) = \\sin^2 2x$ for $0 \\le x \\le \\pi$.",
+      "marks": 4,
+      "answer": "$x = 0.478,\\ 1.09,\\ 2.05,\\ 2.66$"
+     },
+     {
+      "label": "(c)",
+      "text": "Hence find the exact value of $\\int_{0}^{\\frac{\\pi}{4}} \\left(\\sin^4 x + \\cos^4 x\\right)dx$.",
+      "marks": 2,
+      "answer": "$\\frac{3\\pi}{16}$"
+     }
+    ],
+    "answer": "(a) $\\mathrm{f}(x) = \\frac{3}{4} + \\frac{1}{4}\\cos 4x$; (b) $x = 0.478, 1.09, 2.05, 2.66$; (c) $\\frac{3\\pi}{16}$",
+    "total_marks": 8,
+    "topics": [
+     "Trigonometry (Identities)",
+     "Trigonometry (Equations)"
+    ],
+    "skills": [
+     "reducing fourth powers to a multiple angle: sin^4 x + cos^4 x = (sin^2 x + cos^2 x)^2 - 2sin^2 x cos^2 x, then the double-angle formula used twice (sin 2x, then cos 4x) to reach 3/4 + 1/4 cos 4x with the constants not printed",
+     "rewriting the other side, sin^2 2x, through the same double-angle step as 1/2(1 - cos 4x) so the equation becomes linear in cos 4x, then reading a negative cosine over the quadrupled interval 0 <= 4x <= 4pi for four radian answers",
+     "using the multiple-angle form to integrate a fourth power exactly: the integral of sin^4 x + cos^4 x from 0 to pi/4 becomes 3pi/16 because the cos 4x term integrates to zero over the interval"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $\\sin^4 x + \\cos^4 x = (\\sin^2 x + \\cos^2 x)^2 - 2\\sin^2 x\\cos^2 x$\n$= 1 - \\frac{1}{2}(2\\sin x\\cos x)^2$\n$= 1 - \\frac{1}{2}\\sin^2 2x$\nUse $\\cos 4x = 1 - 2\\sin^2 2x$, so $\\sin^2 2x = \\frac{1}{2}(1 - \\cos 4x)$.\n$\\mathrm{f}(x) = 1 - \\frac{1}{4}(1 - \\cos 4x)$\n$= \\frac{3}{4} + \\frac{1}{4}\\cos 4x$\n**Answer:** $a = \\frac{3}{4}$, $b = \\frac{1}{4}$\n\n(b) $\\sin^2 2x = \\frac{1}{2}(1 - \\cos 4x)$.\n$\\frac{3}{4} + \\frac{1}{4}\\cos 4x = \\frac{1}{2} - \\frac{1}{2}\\cos 4x$\n$3 + \\cos 4x = 2 - 2\\cos 4x$\n$3\\cos 4x = -1$\n$\\cos 4x = -\\frac{1}{3}$\nFor $0 \\le x \\le \\pi$, $0 \\le 4x \\le 4\\pi$.\nBasic angle $= 1.2310$; $\\cos 4x < 0$, so $4x$ is in the 2nd or 3rd quadrant.\n$4x = \\pi - 1.2310,\\ \\pi + 1.2310,\\ 3\\pi - 1.2310,\\ 3\\pi + 1.2310$\n$4x = 1.9106,\\ 4.3726,\\ 8.1938,\\ 10.6557$\n$x = 0.4777,\\ 1.0931,\\ 2.0485,\\ 2.6639$\n**Answer:** $x = 0.478,\\ 1.09,\\ 2.05,\\ 2.66$\n\n(c) $\\int_{0}^{\\frac{\\pi}{4}} \\left(\\sin^4 x + \\cos^4 x\\right)dx = \\int_{0}^{\\frac{\\pi}{4}} \\left(\\frac{3}{4} + \\frac{1}{4}\\cos 4x\\right)dx$\n$= \\left[\\frac{3}{4}x + \\frac{1}{16}\\sin 4x\\right]_{0}^{\\frac{\\pi}{4}}$\n$= \\frac{3\\pi}{16} + \\frac{1}{16}\\sin\\pi - 0$\n$= \\frac{3\\pi}{16}$\n**Answer:** $\\frac{3\\pi}{16}$",
+    "syllabus_check": "4049: sin^2 x + cos^2 x = 1, double-angle formulae for sin 2A and cos 2A (applied with A = x and A = 2x), solving a trigonometric equation in radians on a stated domain, the range and period of cos. No R-formula, no sec^2 x = 1 + tan^2 x, no factor formulae, no inverse trigonometric functions beyond a basic angle.",
+    "originality_note": "Replaces the rejected tan x substitution question. No earlier Set reduces fourth powers to cos 4x. The shape is not 'prove an identity, then hence solve a quadratic in one ratio' (Set 3 P2 Q11, Set 1 P1 Q5): (a) has no printed target (the candidate finds a and b), (b) carries no 'Hence' and becomes LINEAR in cos 4x once the right side is also rewritten (no quadratic, no factor-out-cos x as in Set 2 P1 Q5 or the 2026 P1 identity), and (c) is a solution count with end points, not a range of k (unlike GCE 2024 P2 Q9(c) and Set 1 P1 Q2). Does not use 1 + tan^2 x = sec^2 x (Q5) or the R-formula (2026 P1). Q10 of this paper solves a cosine inequality for windows; here it is an equation and a count on a quadrupled interval."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2013 P2 Q5",
+     "jaccard": 0.129,
+     "nearest_set": "Set 2 P2 Q3",
+     "jaccard_set": 0.09,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-26T15:55:52.347Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "f(x) = 3/4 + (1/4)cos 4x  (a = 3/4, b = 1/4)",
+     "(b)": "x = 0.478, 1.09, 2.05, 2.66",
+     "(c)": "k = 1; x = 0, π/2, π"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give f(x) = 3/4 + (1/4)cos 4x. Checked: sin^4 x + cos^4 x = 1 - 2sin^2 x cos^2 x = 1 - (1/2)sin^2 2x = 1 - (1/4)(1 - cos 4x) = 3/4 + (1/4)cos 4x."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give x = 0.478, 1.09, 2.05, 2.66. Checked: the equation reduces to cos 4x = -1/3; 4x = 1.9106, 4.3726, 8.1938, 10.6557 on [0, 4pi], so x = 0.4777, 1.0931, 2.0485, 2.6639. (Via 1 - (1/2)sin^2 2x = sin^2 2x, sin^2 2x = 2/3, the same four values.)"
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give k = 1 with x = 0, pi/2, pi. Checked: cos 4x = 4k - 3 on the closed interval 0 <= 4x <= 4pi gives four solutions for -1 < 4k - 3 < 1, two for 4k - 3 = -1 (4x = pi, 3pi) and three only for 4k - 3 = 1 (4x = 0, 2pi, 4pi). k = 1 is the unique value."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The blind examiner and the setter agree on every part and I confirm all three; the key is correct and (c) has exactly one value of k.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "re-mark: (b) gains one mark and (a) loses one, so [2, 4, 2]. Part (b) is the work GCE 2024 P2 Q9(b) paid 6 for (rewrite through the identity, a linear step to cos 4x = -1/3, four radian answers over two periods 0 <= 4x <= 4pi); 3 marks under-pays it and cannot be earned at 1.5 minutes a mark. Part (a) is a known three-line reduction (square sin^2 x + cos^2 x = 1, then the double-angle formula twice) and is worth 2.",
+     "Part (c)'s closing step, 'the value of k for which f(x) = k has exactly N solutions on 0 <= x <= pi, with the end points counted', is the skill Set 1 P1 Q2(b) already tested ('2 sin 3x + 1 = k has exactly four solutions for 0 <= x <= pi'), and the three-part skeleton identity -> solve -> k by the number of solutions is GCE 2024 P2 Q9's [4, 6, 2]. Close differently, keeping an idea in the closer: '(c) Hence find the exact value of the integral from 0 to pi/4 of (sin^4 x + cos^4 x) dx. [2]' (answer 3pi/16) — the idea is seeing that the fourth powers can be integrated only through the form found in (a), the kind of bridge Set 1 uses (P2 Q5, P1 Q12) and this paper has not yet used in a trigonometric setting. Do not replace it with an exact solve of f(x) = 7/8 in terms of pi, which repeats (b)'s skill."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Correct, clean and in SEAB register; the parts build (a feeds b and c), (a) prints only the target form, and (c) carries a real twist of the kind standard.md names (an end point that counts, both 4x = 0 and 4x = 4pi), so the question is at the 2024/25 standard and not routine. It falls short of 5 only on marks (b is under-paid for the work GCE 2024 P2 Q9(b) paid 6 for) and on its closer, which re-uses Set 1 P1 Q2(b)'s count-in-k skill and mirrors the 2024 P2 Q9 skeleton; the fourth-power identity itself is new to the Sets and no 2024/25 question is re-skinned."
+   },
+   "exemplars": [
+    {
+     "id": "20a3ac3e-c456-4417-93c6-5ad8633078f9",
+     "ref": "GCE 2022 P2 Q3"
+    },
+    {
+     "id": "c9364801-cf89-4065-b998-1bf95011e472",
+     "ref": "GCE 2021 P1 Q10"
+    },
+    {
+     "id": "e050e37b-5560-4f20-a27f-aa59aeb2d4c0",
+     "ref": "GCE 2025 P2 Q6"
+    },
+    {
+     "id": "e228e0f2-1b3d-4b57-a0e8-668f3e821142",
+     "ref": "GCE 2025 P1 Q9"
+    },
+    {
+     "id": "e885a94b-a05e-497e-9362-7138f1454585",
+     "ref": "GCE 2023 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Linear Law",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "A garden sprinkler stands at a point $O$ on a large flat lawn and sprays water equally in all directions. Containers are placed in a straight line from $O$, and after the sprinkler has been running for one hour the depth of water, $d$ mm, collected in the container at a distance of $r$ m from $O$ is measured.\n| $r$ | $0.5$ | $1.5$ | $2.5$ | $3.5$ | $4.5$ |\n| --- | --- | --- | --- | --- | --- |\n| $d$ | $11.8$ | $10.0$ | $7.28$ | $4.50$ | $2.37$ |\nTwo models are suggested for these readings:\nModel 1: $d = A\\mathrm{e}^{-kr}$\nModel 2: $d = A\\mathrm{e}^{-kr^2}$\nwhere, in each model, $A$ and $k$ are positive constants.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "By drawing straight line graphs on graph paper, determine which model is supported by the data. Give a reason for your answer.",
+      "marks": 4,
+      "answer": "Model 2. The points of $\\ln d$ against $r$, $(0.5, 2.47)$, $(1.5, 2.30)$, $(2.5, 1.99)$, $(3.5, 1.50)$, $(4.5, 0.86)$, lie on a curve, not a straight line; the points of $\\ln d$ against $r^2$, $(0.25, 2.47)$, $(2.25, 2.30)$, $(6.25, 1.99)$, $(12.25, 1.50)$, $(20.25, 0.86)$, lie on a straight line."
+     },
+     {
+      "label": "(b)",
+      "text": "A part of the lawn is said to be well watered if the depth of water collected there in the hour is at least $4$ mm. Use your graph to estimate the area of the lawn that is well watered.",
+      "marks": 3,
+      "answer": "$43.1$ m$^2$ (accept $42$ to $44.5$)"
+     },
+     {
+      "label": "(c)",
+      "text": "The sprinkler is replaced by one that delivers water at twice the rate, so that the depth of water collected at every point of the lawn is doubled. Without drawing another line, estimate the increase in the area of the lawn that is well watered.",
+      "marks": 2,
+      "answer": "$\\frac{\\pi\\ln 2}{k} \\approx 27.2$ m$^2$ (accept $26.5$ to $28$)"
+     }
+    ],
+    "answer": "(a) Model 2: $\\ln d$ against $r$ is curved, $\\ln d$ against $r^2$ is a straight line; (b) $43.1$ m$^2$; (c) $27.2$ m$^2$",
+    "total_marks": 9,
+    "topics": [
+     "Linear Law",
+     "Logarithms"
+    ],
+    "skills": [
+     "choosing between two exponential models, $A\\mathrm{e}^{-kr}$ and $A\\mathrm{e}^{-kr^2}$, by a straight-line test: $\\ln d$ against $r$ bends while $\\ln d$ against $r^2$ is straight, with the reason stated in words",
+     "reading a threshold depth straight off the line with no printed rung for the constants, seeing that the horizontal variable $r^2$ is already the well-watered area divided by $\\pi$",
+     "the effect of scaling the dependent variable on a log-linear line (a parallel shift by $\\ln 2$) used to find a change in area without a new graph"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Model 1: $\\ln d = \\ln A - kr$, a straight line if $\\ln d$ is plotted against $r$.\nModel 2: $\\ln d = \\ln A - kr^2$, a straight line if $\\ln d$ is plotted against $r^2$.\n$r$: $0.5$, $1.5$, $2.5$, $3.5$, $4.5$\n$r^2$: $0.25$, $2.25$, $6.25$, $12.25$, $20.25$\n$\\ln d$: $2.47$, $2.30$, $1.99$, $1.50$, $0.86$\nThe points of $\\ln d$ against $r$ lie on a curve: the gradient between neighbouring points goes $-0.17$, $-0.32$, $-0.48$, $-0.64$, getting steeper.\nThe points of $\\ln d$ against $r^2$ lie on a straight line.\n**Answer:** Model 2, because only the graph of $\\ln d$ against $r^2$ is a straight line.\n(b) $d$ decreases as $r$ increases, so the well-watered lawn is the disc about $O$ of radius $r$ where $d = 4$.\nOn the line, $\\ln d = \\ln 4 = 1.39$ gives $r^2 \\approx 13.7$.\nArea $= \\pi r^2 \\approx \\pi \\times 13.7 \\approx 43.1$ m$^2$ (no square root needed: the horizontal axis is already $r^2$).\n**Answer:** about $43.1$ m$^2$\n(c) Gradient of the line $= \\frac{0.86 - 2.47}{20.25 - 0.25} \\approx -0.080$, so $k \\approx 0.080$.\nDoubling $d$ adds $\\ln 2$ to $\\ln d$: the new line is the old line moved up by $\\ln 2$, with the same gradient.\nAt $\\ln d = \\ln 4$, $r^2$ increases by $\\frac{\\ln 2}{k} = \\frac{0.693}{0.080} \\approx 8.66$.\nIncrease in area $= \\frac{\\pi\\ln 2}{k} \\approx 27.2$ m$^2$ (new area about $70.4$ m$^2$).\n(Alternatively: the old depth now only needs to be at least $2$ mm; $\\ln 2 = 0.693$ on the extended line gives $r^2 \\approx 22.4$, an increase of $8.66$ in $r^2$.)\n**Answer:** about $27.2$ m$^2$",
+    "syllabus_check": "4049 Linear Law (converting a non-linear relation to linear form, deciding by a straight-line graph which relation fits, reading gradient and intercept) with natural logarithms; area of a circle. Data generated from $A = 12$, $k = 0.08$ in Model 2, $d$ to 3 s.f.; Model 1's plot is visibly curved (neighbouring gradients $-0.17$ to $-0.64$). Graph-read answers carry tolerances.",
+    "originality_note": "Rebuilt after the moderator's verdict. The question now opens with two competing models and asks the candidate to decide between them by a straight-line test with a reason in words, a skill no earlier Set has tested (Set 2 P2 Q2 linearised one given saturation law and read a limit; Set 3 P1 Q5 fitted a two-term model from a gradient and a point). No printed 'estimate A and k' rung: the area is read straight from the line. Readings at unequal half-metre distances (0.5 to 4.5 m), so the table is not GCE 2022 P1 Q2's t = 1 to 5 design. The parallel-shift part is kept."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P1 Q2",
+     "jaccard": 0.034,
+     "nearest_set": "Set 2 P2 Q2",
+     "jaccard_set": 0.024,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-26T15:48:54.811Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Plot ln d against r^2: points (0.25, 2.47), (2.25, 2.30), (6.25, 1.99), (12.25, 1.50), (20.25, 0.863) lie on a straight line (gradient about -0.080, intercept about 2.49), whereas ln d against r gives a curve (gradients -0.165, -0.318, -0.481, -0.641 increasing in size). So Model 2 is supported; k = 0.08, A = 12.0 (accept k 0.078-0.082, A 11.8-12.2)",
+     "(b)": "ln 4 = 1.386 gives r^2 = 13.7 (r = 3.71 m); well-watered area = pi r^2 = 43.1 m^2 (accept about 42-44 m^2 from graph)",
+     "(c)": "r^2 increases by ln2/k = 8.66, so area increases by pi(ln 2)/0.08 = 27.2 m^2 (accept about 26-28 m^2)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both choose Model 2 for the same reason. Checked: the data close on A = 12, k = 0.08 in Model 2 (12e^{-0.02} = 11.76, 12e^{-0.18} = 10.02, 12e^{-0.5} = 7.28, 12e^{-0.98} = 4.50, 12e^{-1.62} = 2.37, all to 3 s.f.); ln d = 2.468, 2.303, 1.985, 1.504, 0.863. Against r the chord gradients are -0.165, -0.318, -0.481, -0.641 (the middle point sits 0.32 above the chord joining the end points, so the bend is visible on a grid); against r^2 the points are collinear to the rounding, gradient about -0.080, intercept about 2.49."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: ln 4 = 1.386 on the line gives r^2 ≈ 13.7, area = π × 13.7 ≈ 43.1 m^2. Recomputed exactly: r^2 = ln 3 / 0.08 = 13.73, area 43.1 m^2; the tolerance 42–44.5 covers a graph read of r^2 between 13.4 and 14.2."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: doubling d lifts ln d by ln 2, so r^2 grows by ln 2 / k = 0.693 / 0.080 = 8.66 and the area by π × 8.66 ≈ 27.2 m^2. Equivalent route: the old depth need only reach 2 mm, ln 2 = 0.693 on the line gives r^2 = ln 6 / 0.08 = 22.4 (r = 4.73 m, just past the last container at 4.5 m, so this route needs the r^2 axis to run a little beyond 20.25)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is right; the data close exactly on A = 12, k = 0.08.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Grids: a real paper prints the grid it wants used. Add 'on the grids provided' to (a) and have the assembly step print two grids — ln d (0 to 3) against r (0 to 5), and ln d (0 to 3) against r^2 (0 to 25, not 20.25, so that the ln 2 = 0.693 reading in (c), r^2 ≈ 22.4, is on the paper for the candidate who takes the 'old depth need only reach 2 mm' route).",
+     "Register: (c) reads 'find the increase in the area'; the value comes from a gradient read off the candidate's own line, so SEAB would write 'estimate the increase in the area' (as 2022 P1 Q2(b), (c) and 2024 P2 Q10(a)(iii) say 'estimate')."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The rebuilt slot answers every point of the first verdict: the candidate now decides between two models by a straight-line test and gives the reason in words (a linear-law skill no Set has asked — Set 2 P2 Q2 linearised one given law, Set 3 P1 Q5 fitted a two-term model from a gradient and a point), the area is read straight off the r^2 axis with no printed 'estimate A and k' rung, the readings sit at unequal half-metre distances so the table is no longer GCE 2022 P1 Q2's, and the parallel-shift closer survives; the context carries real information (equal spray → a disc, 'at least 4 mm' → a threshold, 'twice the rate' → a shift of ln 2), the numbers close exactly on A = 12, k = 0.08, the idea sits in the last 2-mark part as Set 1 P2 Q5(c) and Q7(c) do, and the closing step (an increase in an area) matches no other closer in paper-so-far.md; it needs only the printed grids and one word of register to be indistinguishable from a 2024/25 question."
+   },
+   "exemplars": [
+    {
+     "id": "baf4a751-d3f0-4caa-bce4-9d5aad090538",
+     "ref": "GCE 2021 specimen P2 Q2"
+    },
+    {
+     "id": "d63d0115-e21e-4a06-b890-5366fd19d861",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "e7b67bb3-ddea-4630-b7f0-46ec6eb28771",
+     "ref": "GCE 2024 P2 Q10"
+    },
+    {
+     "id": "2a20403d-af88-418b-907e-f80b48d86880",
+     "ref": "GCE 2022 P1 Q2"
+    },
+    {
+     "id": "16d02618-b721-4c18-ac7f-2b8dac481205",
+     "ref": "GCE 2020 P2 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Plane Geometry",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "In the diagram, the points $A$, $B$, $C$ and $D$ lie on a circle with centre $O$. The chords $AC$ and $BD$ intersect at $X$ and are perpendicular to each other. The line through $X$ perpendicular to $CD$ meets $CD$ at $N$ and, when produced, meets $AB$ at $M$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show, giving all reasons, that angle $MXA$ = angle $MAX$.",
+      "marks": 3,
+      "answer": "Angle $MXA$ = angle $NXC$ (vert. opp.) $= 90^\\circ -$ angle $XCN$ (angle sum of right-angled triangle $XNC$) $= 90^\\circ -$ angle $ABD$ (angles in the same segment) $= 90^\\circ -$ angle $ABX$ = angle $BAX$ = angle $MAX$ (angle sum of triangle $AXB$, angle $AXB = 90^\\circ$). Shown."
+     },
+     {
+      "label": "(b)",
+      "text": "Hence prove that $M$ is the midpoint of $AB$.",
+      "marks": 2,
+      "answer": "$MA = MX$ (sides opposite equal angles); angle $MXB = 90^\\circ -$ angle $MXA = 90^\\circ -$ angle $MAX$ = angle $MBX$, so $MB = MX$; hence $MA = MB$ and $M$ is the midpoint of $AB$."
+     },
+     {
+      "label": "(c)",
+      "text": "The point $P$ is the midpoint of $CD$. It is given that the line through $X$ perpendicular to $AB$ passes through $P$. Prove that $OMXP$ is a parallelogram.",
+      "marks": 3,
+      "answer": "$OM \\perp AB$ and $OP \\perp CD$ (line from the centre to the midpoint of a chord is perpendicular to the chord); $XP \\perp AB$ (given) so $OM \\parallel XP$; $MX \\perp CD$ (given) so $MX \\parallel OP$. Both pairs of opposite sides are parallel, so $OMXP$ is a parallelogram."
+     }
+    ],
+    "answer": "(a) shown; (b) shown: MA = MX = MB; (c) OM // XP and MX // OP, so OMXP is a parallelogram.",
+    "total_marks": 8,
+    "topics": [
+     "Plane Geometry"
+    ],
+    "skills": [
+     "angle chase in a cyclic quadrilateral with perpendicular diagonals: vertically opposite angles, angles in the same segment and the complements in two right-angled triangles, with no angle letters given",
+     "proving a point is the midpoint of a chord by showing it is equidistant from both ends through two isosceles triangles (converse of base angles)",
+     "perpendicular from the centre to the midpoint of a chord, combined with a given perpendicular, to prove two pairs of parallel sides and a parallelogram"
+    ],
+    "needs_figure": true,
+    "figure_description": "A circle with centre O (O marked with a dot and labelled). Four points on the circle, going CLOCKWISE: A at about the 'eight o'clock' position (lower left, slightly below the horizontal through O), B near the top, slightly right of O (about 'twelve-thirty'), C at the lower right (about 'four o'clock', at the same height as A), D near the bottom, slightly right of O (about 'five-thirty'). For drawing: take the circle as x^2 + y^2 = 25 with O at the origin, A(-4.77, -1.5), B(1.2, 4.85), C(4.77, -1.5), D(1.2, -4.85). Draw the chords AC (horizontal) and BD (vertical) crossing at X(1.2, -1.5); mark the right angle at X. Draw the straight lines AB and CD. Draw the straight line from M(-1.78, 1.68) on AB through X to N(2.87, -3.28) on CD, and mark the right angle at N between XN and CD. Label A, B, C, D, X, N, M and O. Do NOT draw or label P (the midpoint of CD), do not draw OM, OP or XP, and show no equal-length marks, no equal-angle marks and no angle values. Nothing else is shaded or labelled.",
+    "solution": "(a) $M$, $X$, $N$ are collinear and $A$, $X$, $C$ are collinear, so\nangle $MXA$ = angle $NXC$ (vertically opposite angles).\nIn triangle $XNC$, angle $XNC = 90^\\circ$, so\nangle $NXC = 90^\\circ -$ angle $XCN = 90^\\circ -$ angle $ACD$ (angle sum of a triangle).\nAngle $ACD$ = angle $ABD$ (angles in the same segment, both subtended by the chord $AD$).\nSo angle $MXA = 90^\\circ -$ angle $ABX$.\nIn triangle $AXB$, angle $AXB = 90^\\circ$ (the chords are perpendicular), so\nangle $BAX = 90^\\circ -$ angle $ABX$ (angle sum of a triangle).\nTherefore angle $MXA$ = angle $BAX$ = angle $MAX$.\n**Answer:** angle $MXA$ = angle $MAX$, as required.\n\n(b) From (a), triangle $MAX$ has two equal angles, so $MA = MX$ (sides opposite equal angles are equal).\nAngle $AXB = 90^\\circ$, so angle $MXB = 90^\\circ -$ angle $MXA$.\nIn triangle $AXB$, angle $MBX = 90^\\circ -$ angle $MAX$.\nSince angle $MXA$ = angle $MAX$, angle $MXB$ = angle $MBX$, so $MB = MX$.\nHence $MA = MX = MB$, and $M$ lies on $AB$.\n**Answer:** $M$ is the midpoint of $AB$.\n\n(c) $M$ is the midpoint of the chord $AB$ (part (b)), so $OM \\perp AB$ (the line joining the centre to the midpoint of a chord is perpendicular to the chord).\nThe line through $X$ perpendicular to $AB$ passes through $P$, so $XP \\perp AB$.\nBoth $OM$ and $XP$ are perpendicular to $AB$, so $OM \\parallel XP$.\n$P$ is the midpoint of the chord $CD$, so $OP \\perp CD$ (same reason).\n$MX$ lies on the line $MXN$, which is perpendicular to $CD$ (given).\nBoth $MX$ and $OP$ are perpendicular to $CD$, so $MX \\parallel OP$.\nBoth pairs of opposite sides of $OMXP$ are parallel.\n**Answer:** $OMXP$ is a parallelogram.",
+    "syllabus_check": "4049 plane geometry: angles in the same segment, vertically opposite angles, angle sum of a triangle, isosceles triangle (sides opposite equal angles), perpendicular from the centre to a chord bisects it (and its converse form: the line from the centre to the midpoint is perpendicular), properties of a parallelogram. No converse-of-cyclic or theorems outside the syllabus are needed; the symmetric result used in (c) is stated for the candidate. Checked numerically on x^2 + y^2 = 25 with X(1.2, -1.5): M is exactly the midpoint of AB and O + X = M + P, so OMXP is a parallelogram.",
+    "originality_note": "Configuration not used in any earlier Set or the shown SEAB exemplars: no tangent, no similar triangles, no product of lengths. Earlier Sets used the tangent-chord angle, similar triangles giving CB^2 = CX x CA, collinearity from semicircles with the midpoint theorem, and an isosceles triangle from an angle bisector with a tangent-secant product. This question tests the perpendicular-diagonals angle chase (same segment plus complements), locating a midpoint by two isosceles triangles, and the centre-to-midpoint perpendicular, closing on a structural fact (a parallelogram). Closing step is a two-pairs-of-parallel-sides argument, not a numerical or discriminant step. Part (a) supplies no angle letters; the angles and facts are left to the candidate. (c) states the symmetric result openly, per the tutor's 'no unstated leap' rule."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P1 Q6",
+     "jaccard": 0.052,
+     "nearest_set": "Set 1 P1 Q7",
+     "jaccard_set": 0.093,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-26T15:47:34.826Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "shown",
+     "(c)": "shown"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Checked on the stated coordinates (circle x^2 + y^2 = 25, X(1.2, -1.5), N(2.87, -3.28), M(-1.78, 1.68) all consistent). Chain: angle MXA = angle NXC (vert. opp.) = 90 - angle ACD (right angle at N) = 90 - angle ABD (same segment, chord AD; B and C on the same arc) = angle BAX (right angle at X). Valid in the drawn configuration (M on segment AB, N on segment CD)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "MA = MX from (a); XM lies inside the right angle AXB, so angle MXB = 90 - angle MXA = 90 - angle MAX = angle MBX, giving MB = MX. Correct."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "OM perpendicular to AB (centre to midpoint of a chord), XP perpendicular to AB (given) so OM parallel to XP; OP perpendicular to CD, MXN perpendicular to CD (given) so MX parallel to OP. Vertex order O-M-X-P is right: vector OM = vector PX = (-1.78, 1.68). Correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on all three proofs; the key is sound and every step is a syllabus reason.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register of (c): 'By the same argument as in parts (a) and (b), ... ; you may assume this' is not how SEAB hands over a fact. Print it as a given: 'The point P is the midpoint of CD. It is given that the line through X perpendicular to AB passes through P. Prove that OMXP is a parallelogram. [3]'",
+     "Optional: (a) is the unguided part (four reasons, no angle letter) and carries the standard; 'Show, giving all reasons, that angle MXA = angle MAX' matches GCE 2024 P1 Q6's wording and tells the candidate the marks are for the reasons."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean unguided angle chase with no angle letters, each part feeding the next and the question closing on two configuration facts (a midpoint, a parallelogram) — the shape standard.md asks of the plane-geometry slot and as good as Set 1 P1 Q7; it shares only the opening phrase 'chords AC and BD intersect at X' with Set 1 P1 Q7, whose configuration (equal chords, a tangent) and skills are different. One wording edit in (c) away from a real question."
+   },
+   "exemplars": [
+    {
+     "id": "d9576081-3d6e-4bf1-998c-334eb1cec642",
+     "ref": "GCE 2021 specimen P1 Q11"
+    },
+    {
+     "id": "306e23e9-371b-4feb-94b8-5a0cd82bc358",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "3ddc70aa-b93b-4b34-a816-81e951378437",
+     "ref": "GCE 2025 P2 Q10"
+    },
+    {
+     "id": "1d51d59d-01ac-42af-a87b-6b9c36aa9d0e",
+     "ref": "GCE 2024 P1 Q6"
+    },
+    {
+     "id": "6be6dc14-b43c-48fb-b50b-9d0aefe487ec",
+     "ref": "GCE 2022 P1 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Kinematics",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A particle $P$ moves in a straight line so that, $t$ seconds after passing through a fixed point $O$, its velocity, $v$ m/s, is given by $v = 36\\mathrm{e}^{-2t} - 18\\mathrm{e}^{-t}$, $t \\ge 0$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $t$ at which $P$ is instantaneously at rest, and explain why $P$ changes its direction of motion only once.",
+      "marks": 3,
+      "answer": "$t = \\ln 2$; $v = 18\\mathrm{e}^{-2t}(2 - \\mathrm{e}^{t})$ with $18\\mathrm{e}^{-2t} > 0$, so $v > 0$ for $t < \\ln 2$ and $v < 0$ for $t > \\ln 2$ (as $\\mathrm{e}^{t}$ increases): $v$ changes sign only at $t = \\ln 2$."
+     },
+     {
+      "label": "(b)",
+      "text": "Find an expression, in terms of $t$, for the displacement of $P$ from $O$ and hence explain why $P$ never returns to $O$.",
+      "marks": 3,
+      "answer": "$s = 18\\mathrm{e}^{-t} - 18\\mathrm{e}^{-2t}$; $s = 18\\mathrm{e}^{-2t}(\\mathrm{e}^{t} - 1) > 0$ for all $t > 0$ since $\\mathrm{e}^{t} > 1$, so $s \\ne 0$ and $P$ never returns to $O$."
+     },
+     {
+      "label": "(c)",
+      "text": "Find, in exact form, the value of $t$ at which the total distance travelled by $P$ is $5$ m.",
+      "marks": 4,
+      "answer": "$t = \\ln 3$"
+     }
+    ],
+    "answer": "(a) $t = \\ln 2$; one change of direction (v changes sign only at $t = \\ln 2$)  (b) $s = 18\\mathrm{e}^{-t} - 18\\mathrm{e}^{-2t} > 0$ for $t > 0$  (c) $t = \\ln 3$",
+    "total_marks": 10,
+    "topics": [
+     "Kinematics"
+    ],
+    "skills": [
+     "sign of an exponential velocity factorised as $18\\mathrm{e}^{-2t}(2 - \\mathrm{e}^{t})$ to show exactly one change of direction",
+     "displacement from $s(0) = 0$, factorised to show it stays positive so the particle never returns to the start",
+     "working backwards from a given total distance: the outward leg (4.5 m) is used up, so the particle is on its return leg at $s = 4$; quadratic in $\\mathrm{e}^{-t}$ factorised, with the outward-leg root rejected"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $v = 0$: $36\\mathrm{e}^{-2t} = 18\\mathrm{e}^{-t}$, so $\\mathrm{e}^{t} = 2$.\n$t = \\ln 2$\n$v = 18\\mathrm{e}^{-2t}(2 - \\mathrm{e}^{t})$ and $18\\mathrm{e}^{-2t} > 0$ for all $t$.\n$\\mathrm{e}^{t}$ increases with $t$: $2 - \\mathrm{e}^{t} > 0$ for $0 \\le t < \\ln 2$ and $2 - \\mathrm{e}^{t} < 0$ for $t > \\ln 2$.\nSo $v > 0$ before $t = \\ln 2$ and $v < 0$ after it: $v$ changes sign only once, so $P$ changes direction only once.\n**Answer:** $t = \\ln 2$\n\n(b) $s = \\int (36\\mathrm{e}^{-2t} - 18\\mathrm{e}^{-t})\\,dt = -18\\mathrm{e}^{-2t} + 18\\mathrm{e}^{-t} + c$\n$t = 0$, $s = 0$: $-18 + 18 + c = 0$, so $c = 0$.\n$s = 18\\mathrm{e}^{-t} - 18\\mathrm{e}^{-2t} = 18\\mathrm{e}^{-2t}(\\mathrm{e}^{t} - 1)$\nFor $t > 0$: $\\mathrm{e}^{t} > 1$ and $18\\mathrm{e}^{-2t} > 0$, so $s > 0$.\nThe displacement is never zero after $t = 0$, so $P$ never returns to $O$.\n**Answer:** $s = 18\\mathrm{e}^{-t} - 18\\mathrm{e}^{-2t}$\n\n(c) At $t = \\ln 2$: $s = 18\\left(\\frac{1}{2}\\right) - 18\\left(\\frac{1}{4}\\right) = 4.5$\nDistance in the first $\\ln 2$ seconds $= 4.5$ m $< 5$ m.\nSo $P$ has moved $0.5$ m back towards $O$: $s = 4.5 - 0.5 = 4$ with $t > \\ln 2$.\n$18\\mathrm{e}^{-t} - 18\\mathrm{e}^{-2t} = 4$\nLet $u = \\mathrm{e}^{-t}$: $9u^2 - 9u + 2 = 0$\n$(3u - 1)(3u - 2) = 0$, so $u = \\frac{1}{3}$ or $u = \\frac{2}{3}$\n$t > \\ln 2$ means $u < \\frac{1}{2}$, so $u = \\frac{1}{3}$ (the root $u = \\frac{2}{3}$ gives $t = \\ln 1.5 < \\ln 2$, the instant $s = 4$ on the way out).\n$\\mathrm{e}^{t} = 3$\n**Answer:** $t = \\ln 3$  ($\\approx 1.10$)",
+    "syllabus_check": "4049 kinematics of a particle in a straight line via calculus: displacement by integrating $\\mathrm{e}^{kt}$, instants of rest, direction of motion, total distance; solving an exponential equation via a factorised quadratic in $\\mathrm{e}^{-t}$. Nothing outside 4049.",
+    "originality_note": "Not a re-skin of any exemplar or earlier Set. Set 3 P2 Q9 fixed a constant from an instant of rest and summed distance legs of a trig model over a given interval; Set 2 P2 Q8 had an exponential acceleration and two vehicles; Set 1 P2 Q8 a polynomial lift model. Here the velocity is given, there is no constant to fix, and the distance question runs backwards: the total distance is given and the time is found, which needs the candidate to see the outward leg ends at 4.5 m (not printed), place the particle on its return leg at s = 4, and reject the root of the quadratic in e^{-t} that belongs to the outward leg. The 'never returns to O' argument from the sign of a factorised displacement is not in any earlier Set."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2012 P1 Q9",
+     "jaccard": 0.133,
+     "nearest_set": "Set 3 P2 Q9",
+     "jaccard_set": 0.219,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-10-26T15:45:37.515Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "t = ln 2. v = 6e^{-t}(2e^{-t} - 1); 6e^{-t} > 0 always and 2e^{-t} - 1 is strictly decreasing, zero only at t = ln 2 (positive before, negative after), so v changes sign only once.",
+     "(b)": "s = 6e^{-t} - 6e^{-2t} (c = 0 since s = 0 at t = 0). s = 6e^{-t}(1 - e^{-t}) > 0 for all t > 0 since e^{-t} > 0 and e^{-t} < 1, so P never returns to O.",
+     "(c)": "t = ln(3 + √3)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give t = ln 2. Setter factorises v = 6e^{-2t}(2 - e^{t}), examiner v = 6e^{-t}(2e^{-t} - 1); both are correct one-sign-change arguments (positive before ln 2, negative after). Checked: 12e^{-2t} = 6e^{-t} gives e^{t} = 2."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give s = 6e^{-t} - 6e^{-2t} with c = 0 from s(0) = 0, and s = 6e^{-t}(1 - e^{-t}) > 0 for t > 0. Checked by differentiation. (s tends to 0 as t grows but is never 0, so 'never returns' is sound.)"
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give t = ln(3 + sqrt 3). Checked: s(ln 2) = 3 - 1.5 = 1.5 < 2, so the particle is 0.5 m into its return leg, s = 1; 6u^2 - 6u + 1 = 0, u = (3 -/+ sqrt 3)/6; t > ln 2 forces u < 1/2, u = (3 - sqrt 3)/6, e^{t} = 6/(3 - sqrt 3) = 3 + sqrt 3, about 1.55 s. The total distance tends to 3 m, so 2 m is reached exactly once."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; the key is correct and every explanation holds.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Closing-step clash inside this paper (lesson 2): Q2 already ends by solving a quadratic by the formula to exact surd roots and rejecting one by a constraint from the question; Q9(c) ends the same way (6u^2 - 6u + 1 = 0 by the formula, surd roots, the outward-leg root rejected, then rationalising). Close differently by re-numbering so the quadratic factorises: take v = 36e^{-2t} - 18e^{-t} (same t = ln 2 in (a), s = 18e^{-t} - 18e^{-2t} in (b), s(ln 2) = 4.5) and ask in (c) for the total distance 5 m, so s = 4 gives 9u^2 - 9u + 2 = (3u - 1)(3u - 2) = 0, u = 1/3 (u = 2/3 is the outward leg, t = ln 1.5 < ln 2), t = ln 3. The return-leg decision and the rejected root stay; the formula-and-surd finish that duplicates Q2 goes."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean 2024/25-standard kinematics question: (a) and (b) each end on a one-sentence reason (like GCE 2024 P2 Q4(a) and 2025 P2 Q5), and (c) holds the idea - from a given total distance the candidate must see the 1.5 m outward leg is used up and set s = 1 on the return leg, then keep the right root of the quadratic in e^{-t}, closing in ln(3 + sqrt 3). It reverses Set 3 P2 Q9's total-distance skill rather than repeating it (that one summed legs over a trig model to 3 s.f.), shares only the standard particle stem, and is not a re-skin of GCE 2021 P2 Q8 or GCE 2012 P1 Q9. Beside Set 1 P2 Q8 it is as demanding for its marks, its parts feed each other, its numbers close exactly and its last part turns the question round; the one defect is the surd-quadratic closing already used by Q2 of this paper."
+   },
+   "exemplars": [
+    {
+     "id": "7bbe6b23-ba87-4d42-80e3-35f89f343c24",
+     "ref": "GCE 2021 specimen P1 Q13"
+    },
+    {
+     "id": "e44ee8b7-01b6-4813-843a-aba3efa5162c",
+     "ref": "GCE 2021 P2 Q8"
+    },
+    {
+     "id": "7aaac191-6e12-4501-9b5d-04b59160841b",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "1256eefe-1ee9-439e-9321-9354b9eb1265",
+     "ref": "GCE 2023 P2 Q7"
+    },
+    {
+     "id": "3fd0c2a4-c811-4101-bc71-08c5a4ccddf8",
+     "ref": "GCE 2022 P1 Q12"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Trigonometry (Graphs)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "A boat on a tidal river has to pass under a low bridge. The depth of water, $d$ m, beneath the bridge at time $t$ hours after midnight is modelled by $d = 5 - 3\\cos\\frac{\\pi t}{6}$, where the angle is in radians. The underside of the bridge is $14$ m above the river bed. The lowest point of the boat's keel is $3.5$ m below the water surface and the top of its mast is $7.5$ m above the water surface. The boat can pass under the bridge only when the lowest point of its keel is above the river bed and the top of its mast is below the underside of the bridge.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Sketch the graph of $d$ against $t$ for $0 \\le t \\le 12$, stating the coordinates of the maximum and minimum points.",
+      "marks": 2,
+      "answer": "Inverted cosine curve from the minimum $(0, 2)$ up to the maximum $(6, 8)$ and down to the minimum $(12, 2)$."
+     },
+     {
+      "label": "(b)",
+      "text": "",
+      "marks": 4,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Using your sketch, explain why the boat cannot pass under the bridge at high water.",
+        "marks": 1,
+        "answer": "At high water $d = 8$, so the underside of the bridge is only $14 - 8 = 6$ m above the surface, less than the $7.5$ m mast."
+       },
+       {
+        "label": "(ii)",
+        "text": "Find the intervals of time, between midnight and noon, during which the boat can pass under the bridge.",
+        "marks": 3,
+        "answer": "From 02:00 to 04:00 and from 08:00 to 10:00"
+       }
+      ]
+     },
+     {
+      "label": "(c)",
+      "text": "A second boat has a mast of the same height as the first boat, but a deeper keel. Between midnight and noon, the second boat can pass under the bridge for a total of exactly $2$ hours. Find the depth of the lowest point of its keel below the water surface.",
+      "marks": 3,
+      "answer": "$5$ m"
+     }
+    ],
+    "answer": "(a) Sketch from the minimum (0, 2) up to the maximum (6, 8) and down to the minimum (12, 2). (b)(i) At high water the bridge is only 14 - 8 = 6 m above the surface, less than the 7.5 m mast. (b)(ii) 02:00 to 04:00 and 08:00 to 10:00. (c) 5 m",
+    "total_marks": 9,
+    "topics": [
+     "Trigonometry (Graphs)",
+     "Trigonometry (Applications)"
+    ],
+    "skills": [
+     "turning two physical clearances (keel above the river bed, mast below the bridge) into a two-sided band $3.5 \\le d \\le 6.5$ on a tidal cosine model, read from the sketch as blocked at high water as well as at low water",
+     "solving $-\\frac12 \\le \\cos\\frac{\\pi t}{6} \\le \\frac12$ in radians over one period and intersecting the two solution sets",
+     "working backwards from a total passing time: the symmetry of the curve about high water makes the two windows equal, so the new keel bound is the depth at the window's start"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The period is $\\frac{2\\pi}{\\pi/6} = 12$ hours, so $0 \\le t \\le 12$ is one full cycle.\nSince $-1 \\le \\cos\\frac{\\pi t}{6} \\le 1$, $d$ lies between $5 - 3 = 2$ and $5 + 3 = 8$.\nAt $t = 0$ and $t = 12$: $\\cos\\frac{\\pi t}{6} = 1$, so $d = 2$ (minimum).\nAt $t = 6$: $\\cos\\pi = -1$, so $d = 8$ (maximum).\nSketch: a smooth curve from $(0, 2)$ rising through $(3, 5)$ to $(6, 8)$, then falling through $(9, 5)$ to $(12, 2)$.\n**Answer:** minimum points $(0, 2)$ and $(12, 2)$; maximum point $(6, 8)$.\n\n(b)(i) From the sketch, high water is $d = 8$ at $t = 6$.\nHeight of the bridge above the surface $= 14 - 8 = 6$ m.\n$6 < 7.5$, so the mast would not fit under the bridge.\n**Answer:** at high water the bridge is only $6$ m above the surface, less than the $7.5$ m mast.\n\n(b)(ii) Keel: the water must be at least $3.5$ m deep.\n$5 - 3\\cos\\frac{\\pi t}{6} \\ge 3.5$\n$\\cos\\frac{\\pi t}{6} \\le \\frac12$\nMast: $14 - d \\ge 7.5$, so $d \\le 6.5$.\n$5 - 3\\cos\\frac{\\pi t}{6} \\le 6.5$\n$\\cos\\frac{\\pi t}{6} \\ge -\\frac12$\nFor $0 \\le t \\le 12$, $0 \\le \\frac{\\pi t}{6} \\le 2\\pi$.\n$\\cos\\frac{\\pi t}{6} = \\frac12$: $\\frac{\\pi t}{6} = \\frac{\\pi}{3}, \\frac{5\\pi}{3}$, so $t = 2, 10$.\n$\\cos\\frac{\\pi t}{6} = -\\frac12$: $\\frac{\\pi t}{6} = \\frac{2\\pi}{3}, \\frac{4\\pi}{3}$, so $t = 4, 8$.\nFrom the sketch: $d \\ge 3.5$ for $2 \\le t \\le 10$; $d \\le 6.5$ for $t \\le 4$ or $t \\ge 8$.\nBoth hold for $2 \\le t \\le 4$ and $8 \\le t \\le 10$.\n**Answer:** from 02:00 to 04:00 and from 08:00 to 10:00.\n\n(c) Same mast, so the mast still needs $d \\le 6.5$: $t \\le 4$ or $t \\ge 8$.\nLet the keel be $k$ m below the surface; the boat needs $d \\ge k$.\nThe curve is symmetric about $t = 6$, so the two windows are $[t_1, 4]$ and $[8, 12 - t_1]$, of equal length.\nTotal $2$ hours, so each window is $1$ hour: $t_1 = 4 - 1 = 3$.\n$k = d(3) = 5 - 3\\cos\\frac{\\pi}{2} = 5$\nCheck: $d \\ge 5$ gives $\\cos\\frac{\\pi t}{6} \\le 0$, so $3 \\le t \\le 9$; with the mast, $3 \\le t \\le 4$ and $8 \\le t \\le 9$: total $2$ hours.\n**Answer:** $5$ m.",
+    "syllabus_check": "4049 trigonometry: graph of $y = a\\cos bx + c$ (sketch with turning points), solving trigonometric equations and inequalities in radians over a stated range, and a real-world periodic model. Every part is exact and calculator-free.",
+    "originality_note": "Earlier Sets fitted constants of a cosine height model from highest and lowest points (Set 1 P2 Q7), found a, b, c from a minimum and the greatest gradient (Set 2 P1 Q7), fitted a tan curve (Set 3 P1 Q9) and counted solutions with a horizontal line (Set 1 P1 Q2). Here the model is printed and the idea is the context: two clearances (keel and mast) give a two-sided band on the depth, so the boat is blocked at high water as well as at low water; the last part works backwards from a total passing time to the keel depth through the symmetry of the curve. No real 2021-2025 question or earlier Set uses a bridge-and-keel band or a two-sided cosine inequality."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2004 P1 Q6",
+     "jaccard": 0.026,
+     "nearest_set": "Set 1 P1 Q2",
+     "jaccard_set": 0.036,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-26T15:52:43.336Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Cosine-shaped curve starting at minimum: minimum points (0, 2) and (12, 2), maximum point (6, 8); d = 5 at t = 3 and t = 9",
+     "(b)(i)": "At high water d = 8, so the mast top is 8 + 7.5 = 15.5 m above the river bed, which exceeds 14 m (the boat needs d < 6.5), so it cannot pass",
+     "(b)(ii)": "Need 3.5 < d < 6.5: 2 < t < 4 and 8 < t < 10, i.e. 02:00 to 04:00 and 08:00 to 10:00",
+     "(c)": "5 m"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: inverted cosine over one period, minimum points (0, 2) and (12, 2), maximum (6, 8); the examiner adds the mid-points (3, 5), (9, 5). Period 12 = 2pi/(pi/6) checked."
+     },
+     {
+      "label": "(b)(i)",
+      "agree": true,
+      "note": "Same fact in two dressings: setter says the bridge is 14 - 8 = 6 m above the surface, less than the 7.5 m mast; examiner says the mast top is 8 + 7.5 = 15.5 m above the bed, more than 14 m. Equivalent."
+     },
+     {
+      "label": "(b)(ii)",
+      "agree": true,
+      "note": "Both reach 02:00-04:00 and 08:00-10:00 from cos(pi t/6) <= 1/2 (t in [2, 10]) and cos(pi t/6) >= -1/2 (t <= 4 or t >= 8). The examiner writes the band strictly (3.5 < d < 6.5), which the stem's 'only when ... above ... below' supports; the setter writes it with equality. The end points differ only in presentation; a scheme would accept either."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 5 m. Checked: mast bound t <= 4 or t >= 8 unchanged; keel k gives windows [t1, 4] and [8, 12 - t1] by symmetry about t = 6, total 2(4 - t1) = 2 so t1 = 3 and k = d(3) = 5 - 3cos(pi/2) = 5. Unique, since the total falls monotonically from 8 h (k <= 2) to 0 (k = 6.5), and 5 > 3.5 matches 'deeper keel'."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; the only difference is strict versus non-strict end points in (b)(ii), a presentation matter the stem resolves either way.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "re-mark: fold (b)(i) [1] into (b)(ii) so the band part is [4] and the question reads (a) [2], (b) [4], (c) [3] — (b)(ii) builds two inequalities from the context, solves two cosine equations in radians for four boundary times and intersects the two sets, which 2024/25 pays four marks (GCE 2024 P2 Q9(b) pays six for one equation with four answers); (b)(i) as a separate [1] is a one-line reading of the sketch that the band already contains. Nothing else gains or loses. (If the sketch is to keep doing work, keep (b)(i) as it is and accept the [1].)",
+     "Variety note for the whole-paper read, not a reason to reject: the service step 'solve cos(pi t/6) = +-1/2 in radians over one period' is a cousin of Q6's 'read a negative cosine over 0 <= 4x <= 4pi'; here it only serves the two-sided band and the intersection, which Q6 does not do, and the two questions close differently (Q6 on a count of solutions, Q10 on a symmetry argument)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A tidal model whose three context numbers (14 m bridge, 3.5 m keel, 7.5 m mast) all do work: the candidate must turn two clearances into the band 3.5 <= d <= 6.5 unprompted, intersect two solution sets, and in (c) see that symmetry about high water makes the two windows equal so a total time fixes the new keel depth — a working-backwards idea in a small last part with clean numbers (2, 4, 8, 10; k = 5), which is Set 1's shape (P2 Q7's closing 'work backwards to a new k' is the same quality, a different skill). It is a different skill-set from Set 1 P2 Q7 (constants from max/min, one equation, new period) and from Set 1 P1 Q2 / Set 3 P1 Q9 (sketch plus count / tan constants), re-skins no 2024/25 question, nothing is printed as a target, and all gates passed; it is a real question after the light re-marking of (b)."
+   },
+   "exemplars": [
+    {
+     "id": "ac7e2630-78dd-4fa9-94d7-1cf5a55d346c",
+     "ref": "GCE 2025 P1 Q12"
+    },
+    {
+     "id": "5c25951b-f81a-439e-bd5e-ecc6237d4a5e",
+     "ref": "GCE 2024 P1 Q10"
+    },
+    {
+     "id": "1256eefe-1ee9-439e-9321-9354b9eb1265",
+     "ref": "GCE 2023 P2 Q7"
+    },
+    {
+     "id": "087a763f-0746-4052-a352-e5cbf9e99b0e",
+     "ref": "GCE 2022 P1 Q10"
+    },
+    {
+     "id": "0458c4d4-e382-40cc-a4d4-bd2ba256da0f",
+     "ref": "GCE 2021 P1 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Integration (Area)",
+   "target": 12,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows part of the curve $y = x^3 - 3x$. The point $P$ on the curve has $x$-coordinate $a$, where $a$ is a positive constant. The tangent to the curve at $P$ meets the curve again at the point $Q$. The region enclosed by the curve and the line $PQ$ is shaded.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find, in terms of $a$, the coordinates of $Q$.",
+      "marks": 4,
+      "answer": "$Q\\left(-2a,\\ 6a - 8a^3\\right)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find, in terms of $a$, the area of the shaded region.",
+      "marks": 4,
+      "answer": "$\\frac{27a^4}{4}$ units$^2$"
+     },
+     {
+      "label": "(c)",
+      "text": "The tangent to the curve at $Q$ meets the curve again at the point $R$. Using your answers to parts (a) and (b), or otherwise, show that the area of the region enclosed by the curve and the line $QR$ is $16$ times the area of the shaded region.",
+      "marks": 4,
+      "answer": "$R$ has $x$-coordinate $4a$; the area enclosed by the curve and $QR$ is $108a^4 = 16 \\times \\frac{27a^4}{4}$ units$^2$"
+     }
+    ],
+    "answer": "(a) $Q\\left(-2a,\\ 6a - 8a^3\\right)$  (b) $\\frac{27a^4}{4}$ units$^2$  (c) $R$ at $x = 4a$; area $108a^4 = 16 \\times \\frac{27a^4}{4}$",
+    "total_marks": 12,
+    "topics": [
+     "Integration (Area)",
+     "Differentiation (Tangents and Normals)"
+    ],
+    "skills": [
+     "second intersection of a tangent with a cubic found by seeing that the point of contact is a repeated root: $(x - a)^2$ is a factor of $x^3 - 3a^2x + 2a^3$, so $x = -2a$, with a general constant",
+     "area enclosed by a cubic and its own tangent, integrated in terms of the constant $a$ ($\\frac{27a^4}{4}$)",
+     "reusing a general result with the parameter replaced by $-2a$ (a negative value) to find the next point $R$ and the next area, the curve now lying BELOW the tangent, to prove the areas are in the ratio $16 : 1$"
+    ],
+    "needs_figure": true,
+    "figure_description": "Axes with origin O labelled. Draw the curve y = x^3 - 3x for -2.6 <= x <= 2.3 (y window about -10 to 6); print the equation y = x^3 - 3x beside the curve. The curve has a local maximum at (-1, 2) and a local minimum at (1, -2) (do NOT label these). Draw the figure for the instance a = 1.2: the point P at (1.2, -1.872) on the curve, to the right of the minimum, and the straight line y = 1.32x - 3.456 (the tangent at P), drawn from about x = -2.6 to x = 2.3; it touches the curve at P and meets the curve again at Q at (-2.4, -6.624), on the left-hand branch below the x-axis. Label the two points P and Q only, with NO coordinates and no value of a; do not print the equation of the line. Shade the region enclosed between the curve (above) and the line PQ (below) for -2.4 <= x <= 1.2. Do NOT draw the tangent at Q and do NOT show or label any point R.",
+    "solution": "(a) $\\frac{dy}{dx} = 3x^2 - 3$, so the gradient at $P\\left(a,\\ a^3 - 3a\\right)$ is $3a^2 - 3$.\nTangent at $P$: $y - (a^3 - 3a) = (3a^2 - 3)(x - a)$\n$y = (3a^2 - 3)x - 2a^3$.\nMeets the curve: $x^3 - 3x = (3a^2 - 3)x - 2a^3$\n$x^3 - 3a^2x + 2a^3 = 0$.\nThe line touches the curve at $x = a$, so $x = a$ is a repeated root and $(x - a)^2$ is a factor:\n$x^3 - 3a^2x + 2a^3 = (x - a)^2(x + 2a)$ (check: $(x^2 - 2ax + a^2)(x + 2a) = x^3 - 3a^2x + 2a^3$).\nSo $Q$ has $x = -2a$, and $y = (-2a)^3 - 3(-2a) = 6a - 8a^3$.\n**Answer:** $Q\\left(-2a,\\ 6a - 8a^3\\right)$\n\n(b) On $-2a \\le x \\le a$ the curve lies above the tangent (from the diagram, and $(x - a)^2(x + 2a) \\ge 0$ there).\nArea $= \\int_{-2a}^{a} \\left[(x^3 - 3x) - \\left((3a^2 - 3)x - 2a^3\\right)\\right] dx$\n$= \\int_{-2a}^{a} \\left(x^3 - 3a^2x + 2a^3\\right) dx$\n$= \\left[\\frac{x^4}{4} - \\frac{3a^2x^2}{2} + 2a^3x\\right]_{-2a}^{a}$\n$= \\left(\\frac{a^4}{4} - \\frac{3a^4}{2} + 2a^4\\right) - \\left(4a^4 - 6a^4 - 4a^4\\right)$\n$= \\frac{3a^4}{4} + 6a^4$\n$= \\frac{27a^4}{4}$.\n**Answer:** $\\frac{27a^4}{4}$ units$^2$\n\n(c) The working of part (a) did not use $a > 0$, so it holds for the point of contact $x = -2a$: replacing $a$ by $-2a$, the tangent at $Q$ meets the curve again where $x = -2(-2a) = 4a$. So $R$ has $x$-coordinate $4a$.\n(Directly: gradient at $Q$ is $12a^2 - 3$; tangent at $Q$: $y = (12a^2 - 3)x + 16a^3$; $x^3 - 12a^2x - 16a^3 = (x + 2a)^2(x - 4a) = 0$.)\nCurve minus tangent at $Q$ $= (x + 2a)^2(x - 4a) \\le 0$ for $-2a \\le x \\le 4a$, so here the tangent lies ABOVE the curve.\nArea $= \\int_{-2a}^{4a} \\left(-x^3 + 12a^2x + 16a^3\\right) dx$\n$= \\left[-\\frac{x^4}{4} + 6a^2x^2 + 16a^3x\\right]_{-2a}^{4a}$\n$= \\left(-64a^4 + 96a^4 + 64a^4\\right) - \\left(-4a^4 + 24a^4 - 32a^4\\right)$\n$= 96a^4 + 12a^4$\n$= 108a^4$.\n(Or: part (b)'s working with $a$ replaced by $-2a$ gives $\\int_{4a}^{-2a} = \\frac{27(-2a)^4}{4} = 108a^4$; the limits run backwards, so the area is $108a^4$.)\n$\\frac{108a^4}{\\frac{27a^4}{4}} = \\frac{432}{27} = 16$.\nSo the area enclosed by the curve and $QR$ is $16$ times the shaded area.\n**Answer:** $R$ at $x = 4a$; area $108a^4 = 16 \\times \\frac{27a^4}{4}$, as required.",
+    "syllabus_check": "4049: differentiation of a polynomial, equation of a tangent, factorising a cubic with a known (repeated) root, definite integral of a polynomial as the area of a region bounded by a curve and a line. A general positive constant is carried throughout (as GCE 2025 P2 Q9). No area between two curves, no integration by substitution. No optimisation (keeps the paper's one optimisation for Q5).",
+    "originality_note": "Not a re-skin of any exemplar or earlier Set. Earlier Sets' area questions use a tangent PARALLEL to a given line and the y-axis (Set 1 P1 Q13), a horizontal line across e^x (Set 2 P2 Q10), a chord through the y-intercept of a parabola split by the x-axis (Set 3 P1 Q13) and a 1 : 2 split under 1/(1 + cos x) (Set 3 P2 Q6); GCE 2025 P2 Q9 uses a chord y = kx of a parabola with the area printed. Here the line is the curve's own tangent, the second intersection must come from seeing the repeated root at the point of contact (not handed over), the area is NOT printed, and the closer turns the question round: the construction repeated from Q, using part (a) with a negative parameter and noticing the curve now lies below the tangent, gives a configuration fact (each new region is 16 times the last). Today's 2026 P1 tested a signed area of a trigonometric curve; this tests none of that."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 11,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 specimen P2 Q3",
+     "jaccard": 0.155,
+     "nearest_set": "Set 3 P1 Q13",
+     "jaccard_set": 0.157,
+     "repeated_skills": []
+    },
+    "marks": 12,
+    "checked_at": "2026-10-26T15:44:39.234Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Q(-2a, 6a - 8a^3)",
+     "(b)": "27a^4/4",
+     "(c)": "shown (tangent at Q meets curve again at R(4a, 64a^3 - 12a); area = (6a)^4/12 = 108a^4 = 16 x 27a^4/4)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both Q(-2a, 6a - 8a^3). Checked: tangent y = (3a^2 - 3)x - 2a^3; x^3 - 3a^2 x + 2a^3 = (x - a)^2 (x + 2a), so the second intersection is x = -2a and y = -8a^3 + 6a."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 27a^4/4. Checked with t = x - a: integral of t^2 (t + 3a) from -3a to 0 = 27a^4/4; equivalently (width 3a)^4 / 12. Curve above the tangent on [-2a, a] since (x - a)^2 (x + 2a) >= 0 there."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both shown: R at x = 4a (the contact x = -2a gives the other intersection at -2(-2a) = 4a), area (6a)^4 / 12 = 108a^4 = 16 x 27a^4/4. Curve below the tangent on [-2a, 4a] since (x + 2a)^2 (x - 4a) <= 0; the setter's solution handles the sign correctly."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; the key is correct and the show-that in (c) is true.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Part (c) [4] is fair only for the candidate who sees that (a) and (b) hold for any contact point and replaces a by -2a (the curve now below the tangent); the direct route (gradient 12a^2 - 3, new tangent, cubic factorised with (x + 2a)^2, a fresh integral from -2a to 4a with a^4 terms, then the ratio) is about seven marks of work for four and runs past the 6 minutes the marks buy. A real paper signals the reuse (Lesson 1): begin (c) 'Using your answers to parts (a) and (b), or otherwise, show that …'. If the signal is not added, re-mark to [3, 4, 5]: (a) loses one (derivative, tangent, cubic, repeated factor is a 3-mark routine once the repeated root is seen) and (c) gains one."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean 12-mark closer with the general constant carried to an unprinted area, two genuine decisions (the point of contact as a repeated root in (a); the reuse with a negative parameter and the sign flip in (c)), parts that each feed the next, and a last part that finds a structural fact (the 16 : 1 ratio), beside Set 1 P2 Q10's 'twice the volume of the ball'. It is not a re-skin of GCE 2025 P2 Q9 (line through a parabola, a condition on k) nor of Set 3 P1 Q13 (chord through the y-intercept of a parabola, split by the x-axis): the tangent-to-a-cubic repeated-root skill and the iterated tangent are new to our Sets. Only the unsignalled reuse in (c) keeps it from 5. All gates passed."
+   },
+   "exemplars": [
+    {
+     "id": "5a4b7b29-7ddf-417f-b430-3df768274d3b",
+     "ref": "GCE 2022 P2 Q10"
+    },
+    {
+     "id": "0132ea10-0e58-472b-bc2a-82b1afdeb76a",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "0a5a253d-f9ba-4481-a8df-8d052813700d",
+     "ref": "GCE 2025 P2 Q9"
+    },
+    {
+     "id": "9c3708ed-70b3-47e6-b6f7-bd57fcdbd621",
+     "ref": "GCE 2024 P1 Q13"
+    },
+    {
+     "id": "385afa74-fb00-48a8-ad07-8884affc04a8",
+     "ref": "GCE 2021 P1 Q14"
+    }
+   ]
+  }
+ ]
+}

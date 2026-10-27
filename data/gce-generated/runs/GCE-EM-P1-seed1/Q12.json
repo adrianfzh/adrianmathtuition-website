@@ -1,0 +1,27 @@
+{
+ "stem": "$q = \\sqrt{\\frac{p + 2r}{p - r}}$",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Rearrange the formula to make $p$ the subject.",
+   "marks": 3,
+   "answer": "$p = \\frac{r(q^2 + 2)}{q^2 - 1}$"
+  },
+  {
+   "label": "(b)",
+   "text": "Hence find $p$ when $q = 3$ and $r = 8$.",
+   "marks": 1,
+   "answer": "$p = 11$"
+  }
+ ],
+ "answer": "",
+ "total_marks": 4,
+ "topics": [
+  "Algebra (Subject of Formula)"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) Square both sides: $q^2 = \\frac{p + 2r}{p - r}$.\nMultiply by $(p - r)$: $q^2(p - r) = p + 2r$\n$q^2 p - q^2 r = p + 2r$\nCollect the terms in $p$ on one side: $q^2 p - p = 2r + q^2 r$\n$p(q^2 - 1) = r(q^2 + 2)$\n$p = \\frac{r(q^2 + 2)}{q^2 - 1}$.\n\n(b) $p = \\frac{8(3^2 + 2)}{3^2 - 1} = \\frac{8 \\times 11}{8} = 11$.\nCheck: $\\sqrt{\\frac{11 + 16}{11 - 8}} = \\sqrt{9} = 3$.",
+ "syllabus_check": "4052 Algebraic expressions and formulae: changing the subject of a formula in which the new subject appears twice inside a square root — square, clear the fraction, collect like terms, factorise, divide (a); substitution into the rearranged formula (b). No topic outside 4052. Marks 3 + 1 = 4 match the slot.",
+ "originality_note": "The exemplars rearrange fractional formulae with the subject on both sides (2025 P1 Q18, 2022 P1 Q20), an x^2 fraction (2018 P1 Q17), or evaluate first and rearrange second (2024 P1 Q12, 2023 P2 Q2(c)). This formula has the subject twice under a square root, so the first step is squaring rather than cross-multiplying, and the part order is reversed: the rearrangement comes first and the numerical part uses it. New letters, new structure, new numbers; no other question in the paper changes the subject of a formula."
+}

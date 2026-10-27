@@ -1,0 +1,1976 @@
+{
+ "key": "GCE-JC-P2",
+ "seed": 4,
+ "set": 1,
+ "variety": true,
+ "models": {
+  "author": "opus (Claude Code agent)",
+  "solver": "opus (Claude Code agent)",
+  "moderator": "fable (Claude Code agent)",
+  "figure": "opus (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1"
+ ],
+ "shape": {
+  "subject": "Mathematics",
+  "code": "9758",
+  "level": "JC2",
+  "setLevel": "JC",
+  "exam": "A-Level",
+  "cut": 2017,
+  "duration": "3 hours",
+  "standardYears": "2022–2024",
+  "additional": "List of Formulae (MF26)",
+  "sections": {
+   "a": "Section A: Pure Mathematics [40 marks]",
+   "b": "Section B: Probability and Statistics [60 marks]"
+  },
+  "excludeTopics": [
+   "Distributions (Poisson)",
+   "Mathematical Induction"
+  ],
+  "figures": "an Argand diagram, a curve sketch with its asymptotes, a region to be rotated, a 3-D configuration for a vector question, a scatter diagram, a normal curve, a tree diagram, a printed table of data",
+  "notation": "H2 notation: \\mathrm{f}: x \\mapsto \\ldots, \\mathrm{f}^{-1}, \\mathrm{fg}, column vectors \\begin{pmatrix} 1 \\\\ 2 \\\\ 3 \\end{pmatrix} (also \\mathbf{i}, \\mathbf{j}, \\mathbf{k}), \\mathbf{r} = \\mathbf{a} + \\lambda\\mathbf{b}, \\mathbf{r} \\cdot \\mathbf{n} = d, \\mathbf{a} \\times \\mathbf{b}, z^{*}, \\arg z, \\sum_{r=1}^{n}, u_n and S_n, \\mathrm{N}(\\mu, \\sigma^2), \\mathrm{B}(n, p), \\bar{X}, \\mathrm{H}_0 and \\mathrm{H}_1, \\mathrm{P}(A \\mid B), \\mathrm{e}^{x}.",
+  "scope": "PURE MATHEMATICS (all of Paper 1; Section A of Paper 2). Functions: domain and range, one-one functions and inverses (restricting a domain so that an inverse exists; the graph of f^{-1} as the reflection of f in y = x; the domain of f^{-1} is the range of f), composite functions and the condition for fg to exist, repeated composition (f^2, f^{2025}(x) by finding the pattern); NOT (fg)^{-1} = g^{-1}f^{-1}, NOT restricting a domain to make a composite exist. Graphs and transformations: sketching y = (ax+b)/(cx+d) and y = (ax^2+bx+c)/(dx+e) with their asymptotes (vertical, horizontal, oblique), intercepts, turning points and symmetry; y^2 = ax, x^2 = by, the ellipse x^2/a^2 + y^2/b^2 = 1 and the hyperbolas x^2/a^2 - y^2/b^2 = 1, y^2/b^2 - x^2/a^2 = 1; the transformations y = af(x), y = f(x) + a, y = f(x + a), y = f(ax) and combinations described as a SEQUENCE (order matters); the graphs of y = |f(x)|, y = f(|x|) and y = 1/f(x) from y = f(x); simple parametric curves and their sketches. Equations and inequalities: formulating an equation, a system of linear equations (solved on the graphing calculator) or an inequality from a situation; solving an equation exactly or numerically; inequalities f(x)/g(x) > 0 with linear or quadratic f and g by a sign test, never by cross-multiplying; the modulus and |x - a| < b <=> a - b < x < a + b, |x - a| > b <=> x < a - b or x > a + b; solving an inequality from a sketch, and a related inequality by a substitution (x -> |x|, x -> e^x) into one already solved. Sequences and series: a sequence as a function of n, the relation u_n = S_n - S_{n-1}, sequences given by a formula or by a recurrence u_{n+1} = f(u_n) (generating terms, a limit L satisfying L = f(L) when the sequence converges, the behaviour read from a graph or a table), sum and difference of two series, convergence of a series and the sum to infinity, arithmetic and geometric series (nth term, sum to n terms, the condition |r| < 1 for convergence, the sum to infinity), finance and other models built on them (savings with increasing deposits, a loan with monthly interest and repayments, a bouncing ball); NOT the method of differences (removed in the revised 9758 — never set a telescoping sum; a sum whose result is GIVEN may be used for a change of variable), NOT mathematical induction. Vectors: 2-D and 3-D vectors, position, displacement and direction vectors, magnitude, unit vectors, distance between points, collinearity, the ratio theorem (a point dividing a line in a given ratio, midpoints), the scalar product (angle between vectors, a . n-hat as a length of projection, perpendicularity), the vector product (area of a triangle or parallelogram, |a x n-hat| as a perpendicular distance, a normal to a plane); vector and cartesian equations of lines and of planes (r . n = d, r = a + lambda b + mu c, cartesian); the foot of the perpendicular from a point to a line or a plane and the distance, the reflection of a point in a line or a plane; the angle between two lines, a line and a plane, two planes; the relationship between two lines (intersecting, parallel, skew), a line and a plane (meets in a point, lies in it, parallel to it), two planes (the line of intersection); problems in a stated 3-D situation (an aircraft path, a pipeline under a plane of rock); NOT the shortest distance or common perpendicular between two skew lines, NOT triple products. Complex numbers: extending the number system, complex roots of a quadratic, conjugate roots of a polynomial equation with real coefficients (and using them to find unknown real coefficients or the remaining root), modulus, argument (principal, in (-pi, pi]) and conjugate, the four operations in cartesian form, equality of complex numbers (a pair of simultaneous equations in z and w solved by elimination or by comparing real and imaginary parts), the Argand diagram, the geometrical effect of conjugation, negation, addition, subtraction and multiplication by i (a rotation through a right angle); NOT polar or modulus-argument form, NOT exponential form r e^{i theta}, NOT de Moivre, NOT loci. Differentiation: the sign of f' and f'' read from and drawn on a graph, the graph of y = f'(x) from y = f(x), implicit and parametric differentiation, the nature of stationary points by the first or second derivative test, tangents and normals (including to implicit and parametric curves, and where a tangent meets the curve again or passes through a given point), maxima and minima in a modelled situation (an area, a volume, a cost) with the maximum shown to be one, connected rates of change (a bowl filling, a ladder, a shadow); NOT non-stationary points of inflexion, NOT the second derivative of a parametric curve. Maclaurin series: the standard series for (1+x)^n with rational n, e^x, sin x, cos x, ln(1+x) with their ranges of validity (all in MF26), the first terms of a series by repeated differentiation (also from a differential relation such as dy/dx = k e^x (1 + y^2), differentiating that relation again), by repeated implicit differentiation, or by multiplying and substituting standard series (e^x cos 2x, ln((1+x)/(1-x)), (1+x)^n with a non-integer n, tan^{-1}(sqrt 2 + x) via its derivatives), the series as an approximation (an integral estimated from its first terms, a value of pi or ln 2), small-angle approximations sin x ~ x, cos x ~ 1 - x^2/2, tan x ~ x; NOT the general term. Integration techniques: f'(x)[f(x)]^n (n = -1 included), f'(x) e^{f(x)}, sin^2 x, cos^2 x, tan^2 x and products of sines and cosines via the factor formulae, the four standard forms 1/(x^2 + a^2), 1/sqrt(a^2 - x^2), 1/(x^2 - a^2), 1/(a^2 - x^2) (results in MF26), partial fractions, integration by a GIVEN substitution (including a trigonometric one for sqrt(a^2 - x^2)), integration by parts (including ln x, x^2 e^x, e^x sin x by two rounds), a modulus integrand split at its zero; NOT reduction formulae. Definite integrals: the integral as a limit of a sum, area under and between curves and lines (regions below the x-axis, areas against the y-axis, a parametric curve via integral y (dx/dt) dt), volumes of revolution about the x-axis or the y-axis (a cartesian curve, a region between two curves, a spherical cap or a bowl), exact values by hand where asked and numerical values from the graphing calculator otherwise; NOT the volume of revolution of a parametric curve. Differential equations: general and particular solutions of dy/dx = f(x) g(y) by separating variables, including reducing an equation to that form by a GIVEN substitution, second-order equations of the form d^2y/dx^2 = f(x) or a first-order equation in v = dx/dt by direct integration, formulating an equation from a situation (rate of change proportional to the amount, rate in minus rate out, a logistic-type dP/dt = kP(N - P), Newton cooling, a falling parachutist), interpreting the solution and its long-term behaviour, sketching the solution curve. PROBABILITY AND STATISTICS (Section B of Paper 2 only). Probability and counting: the addition and multiplication principles, permutations and combinations, arrangements in a line or a circle with repetition and restrictions (identical objects, objects together, objects separated), selection of committees with conditions; addition and multiplication of probabilities, mutually exclusive and independent events (tested numerically), tables of outcomes, Venn diagrams, tree diagrams and counting methods for probabilities, conditional probability P(A|B) = P(A and B)/P(B), P(A or B) = P(A) + P(B) - P(A and B), games with turns and geometric-series probabilities, probabilities in terms of an unknown n or p. Discrete random variables: a probability distribution from a table, expectation and variance from it, E(aX + b) and Var(aX + b); the binomial distribution B(n, p) as a model with its two conditions stated in context (independent trials, a constant probability), its mean np and variance np(1 - p), probabilities and cumulative probabilities from the graphing calculator, the most likely value, a binomial on top of a binomial (the number of days on which an event happens), the range of p from a modal value; NOT cumulative distribution functions, NOT the Poisson distribution (removed from 9758), NOT the geometric distribution, NOT the normal approximation to the binomial. Normal distribution: N(mu, sigma^2) as a model, the standard normal, probabilities and inverse probabilities from the graphing calculator, the symmetry of the curve (drawn with its main features), finding mu and/or sigma from one or two given probabilities (standardising and solving), E and Var of aX + b and of aX + bY with X and Y independent (the sum of n independent copies X_1 + ... + X_n against the multiple nX; the difference of two totals; a percentage reduction as a scaling), the mass exceeded by a given percentage; NOT the normal approximation to the binomial. Sampling: population and simple random sample, why and how a random sample is taken and what makes one unsuitable, the sample mean as a random variable with E(X-bar) = mu and Var(X-bar) = sigma^2/n, its distribution from a normal population, the Central Limit Theorem for a large sample from any population (n >= 30 as the rule of thumb), unbiased estimates of the population mean and variance from raw data or from summarised data (sum x and sum x^2, or sum (x - a) and sum (x - a)^2). Hypothesis testing: null and alternative hypotheses stated with the parameter defined, the test statistic, critical region and critical value, level of significance and p-value, a test of a population mean from a normal population with known variance or from a large sample (a z-test), one-tail and two-tail tests and the reason for the choice, the conclusion in the context of the question, the assumptions a test needs, the range of a significance level or of a variance consistent with a stated conclusion; NOT the terms Type I and Type II error, NOT a test of the difference of two means, NOT a t-test. Correlation and linear regression: a scatter diagram and what it shows, the product moment correlation coefficient as a measure of linear fit and its interpretation (values near -1, 0 and 1; unaffected by a change of units), the least-squares regression line (the meaning of the residuals and of least squares; y on x, and x on y, and which to use), interpolation and extrapolation and the reliability of an estimate, a square, reciprocal, logarithmic or other transformation to achieve linearity and the choice between candidate models by comparing r; NOT deriving the formulae, NOT r^2 = b_1 b_2, NOT hypothesis tests on r. ASSUMED KNOWLEDGE (O-Level A Math): quadratics and the discriminant, surds, polynomials and partial fractions, binomial theorem for a positive integer index, indices and logarithms, trigonometric identities and the R-formula, the sine and cosine rules, basic differentiation and integration.",
+  "register": "REGISTER — how SEAB asks (9758)\n- Plain, exact, economical English. Every part is an imperative: Find, Show that, Hence (or Hence, or otherwise), Deduce, State, Sketch, Explain (why / whether / how you know / in context), Determine (whether / the possible values), Verify, Use … to …, Write down, Solve, Express, Describe (a sequence of transformations; the set of points; the relationship), Justify your answer, Give a reason, Suggest.\n- Parts are (a), (b), (c) with sub-parts (i), (ii); every leaf part carries its marks in [ ]; a 3–6 mark question may be unparted. The parts of a long question BUILD: an early \"Show that\" prints the result the later parts need, and \"Hence\", \"Using the result in part (b)\" or \"Use your answer to part (c)(i)\" says so.\n- Precision is stated when it matters: \"giving your answer in exact form\", \"in the form a + ib where a and b are real numbers\", \"correct to 3 significant figures\", \"in terms of p\", \"to the nearest cent\", \"correct to 2 decimal places\", \"as a single simplified fraction\"; otherwise the rubric's 3 s.f. applies and nothing is said. \"Find exactly\", \"Find the exact value\" and \"Solve exactly\" forbid a decimal; \"Use calculus\", \"Using calculus\", \"By integration\" and \"Show by integration\" forbid a calculator read-off; \"Do not use a calculator in answering this question.\" opens a whole question (a complex-number question, an exact-integral question, an exact inequality); \"Without using a calculator\" opens a part. Section B says \"State the distribution you use\", \"In this question you should state the parameters of any distributions you use\", \"Define any symbols you use\", \"Give your conclusion in the context of the question\".\n- The graphing calculator is assumed. Numerical roots, definite integrals, the regression constants, r, binomial and normal probabilities and inverse-normal values are READ from it and the question asks only for the value — a question that wants the working says so. Where a graph is used to find a solution the candidate sketches it. Unsupported calculator answers earn no method marks, so a 4-mark part is never a single calculator read.\n- Notation is the syllabus's: \\mathrm{f}: x \\mapsto \\frac{ax+k}{x-a}, x \\in \\mathbb{R}, x \\neq a; \\mathrm{f}(x), \\mathrm{f}^{-1}, \\mathrm{fg}, \\mathrm{f}^2; \\frac{\\mathrm{d}y}{\\mathrm{d}x}, \\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2}, \\int \\ldots \\,\\mathrm{d}x; \\sum_{r=1}^{n}; u_n and S_n; column vectors and \\mathbf{i}, \\mathbf{j}, \\mathbf{k}; \\mathbf{r} = \\mathbf{a} + \\lambda\\mathbf{b}; \\mathbf{r} \\cdot \\mathbf{n} = d; the cartesian line \\frac{x+2}{3} = \\frac{y-1}{2} = z - 5; z^{*}, |z|, \\arg z; \\mathrm{N}(\\mu, \\sigma^2), \\mathrm{B}(n, p), \\bar{X}, \\mathrm{H}_0: \\mu = 17.3, \\mathrm{P}(A \\mid B). Angles in radians unless degrees are named; \\mathrm{e}^{x}, \\ln x, \\mathrm{i} upright.\n- Contexts are brief, concrete and self-contained; they carry the numbers the model needs and nothing more (a pipeline under a river, an ornament cut from a sphere, a parachutist, a roller-coaster loop, savings then a loan, a company's two machines, a swimmer's times, a bird feeder, a quality-control sample). Units are given; constants are named (\"where k is a positive constant\", \"where \\alpha is a constant\"). No story, no chattiness, no names beyond one or two.\n- Paper 1 opens with 4–6-mark questions (a system of equations, an inequality, a vector fact, a complex-number question, a short sequence question) and climbs to two or three 12–15-mark closers — a differential-equation model, a vector problem in a stated 3-D situation, a finance question on arithmetic and geometric series, a parametric or graph model, a functions question with several parts — with one question that \"may require concepts and skills from more than one topic\" in a real-world context. Paper 2 Section A is four (occasionally five) pure questions of 6–13 marks; Section B climbs from a 5–6-mark probability or counting starter through binomial, normal, sampling and hypothesis-testing questions to a 12–17-mark closer, usually the regression or the normal-plus-test question, set in a real-world context.\n- Section B asks for words as often as numbers: \"State, in context, two assumptions needed for X to be well modelled by a binomial distribution\", \"Explain whether … should use a one-tailed or a two-tailed test\", \"State hypotheses for the test, defining any parameters you use\", \"give your conclusion in the context of the question\", \"Explain whether your estimate is reliable\", \"Explain what the scatter diagram tells you about the relationship\", \"Explain whether the 65 members comprise a sample or a population\", \"Explain why it is reasonable to assume that the two distributions are independent\". A 1-mark explain part expects one sentence with the reason in it; a 2-mark one, two distinct points.\n- Marks follow the work at about 1.8 minutes a mark (100 marks in 3 hours). 1–2 marks: state / write down / one deduction / one calculator value. 3–4: one standard routine, or a routine with one decision. 5–6: a routine with a decision and a second idea, a model built from the situation, or a proof. 7 or more in ONE part is rare and needs a chain (a differential equation solved from a substitution to a particular solution; a regression model chosen, fitted and used). Marks climb through each paper and through each section."
+ },
+ "paperNo": 2,
+ "total": 100,
+ "sections": {
+  "boundary": 5,
+  "a": "Section A: Pure Mathematics [40 marks]",
+  "b": "Section B: Probability and Statistics [60 marks]"
+ },
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-09-26T15:41:04.430Z",
+ "topicList": [
+  "APGP",
+  "Binomial Expansion",
+  "Complex Numbers",
+  "Differentiation (Concavity)",
+  "Differentiation (Maclaurin Series)",
+  "Differentiation (Maximum and Minimum)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Techniques)",
+  "Equations",
+  "Functions",
+  "Graphing Techniques",
+  "Inequalities",
+  "Integration (Area and Volume)",
+  "Integration (Differential Equations)",
+  "Integration (Techniques)",
+  "Parametric Equations",
+  "Series and Sequences",
+  "Vectors",
+  "Distributions (Binomial)",
+  "Distributions (DRV)",
+  "Distributions (Normal)",
+  "Distributions (Sampling)",
+  "Hypothesis Testing",
+  "Linear Regression",
+  "Permutations and Combinations",
+  "Probability",
+  "Sampling Methods"
+ ],
+ "must_appear": [
+  "Distributions (Binomial)",
+  "Distributions (Normal)",
+  "Hypothesis Testing",
+  "Linear Regression"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Inequalities",
+   "target": 7,
+   "marks": [
+    4,
+    8
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.0222
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0194
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.139
+    },
+    {
+     "topic": "Equations",
+     "weight": 0.125
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.006900000000000001
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.005600000000000001
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.005600000000000001
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.005600000000000001
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 2,
+   "topic": "Differentiation (Techniques)",
+   "target": 9,
+   "marks": [
+    6,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.014199999999999999
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.0079
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.053
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0039000000000000003
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 3,
+   "topic": "Functions",
+   "target": 11,
+   "marks": [
+    7,
+    13
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Functions",
+     "weight": 0.016800000000000002
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0158
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.0108
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.0083
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.0033000000000000004
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0033000000000000004
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0025000000000000005
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.0025000000000000005
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 4,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 13,
+   "marks": [
+    10,
+    13
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.021900000000000003
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.0183
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0119
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.0092
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.0092
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.0092
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0055000000000000005
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0037
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.028
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 5,
+   "topic": "Permutations and Combinations",
+   "target": 7,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.414
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.183
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.173
+    },
+    {
+     "topic": "Distributions (DRV)",
+     "weight": 0.154
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.038
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.038
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 6,
+   "topic": "Distributions (Binomial)",
+   "target": 8,
+   "marks": [
+    7,
+    11
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.409
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.286
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.095
+    },
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.086
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.076
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.048
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 7,
+   "topic": "Hypothesis Testing",
+   "target": 8,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    3,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Distributions (Sampling)",
+     "weight": 0.202
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.202
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.162
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.152
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.111
+    },
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.101
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.04
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.03
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 8,
+   "topic": "Linear Regression",
+   "target": 10,
+   "marks": [
+    7,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.361
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.144
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.134
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.103
+    },
+    {
+     "topic": "Distributions (Sampling)",
+     "weight": 0.103
+    },
+    {
+     "topic": "Distributions (DRV)",
+     "weight": 0.093
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.062
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 9,
+   "topic": "Probability",
+   "target": 13,
+   "marks": [
+    11,
+    15
+   ],
+   "parts": [
+    4,
+    8
+   ],
+   "pool": [
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.359
+    },
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.337
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.196
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.065
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.043
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 10,
+   "topic": "Distributions (Normal)",
+   "target": 14,
+   "marks": [
+    12,
+    17
+   ],
+   "parts": [
+    2,
+    8
+   ],
+   "pool": [
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.234
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.224
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.15
+    },
+    {
+     "topic": "Distributions (Sampling)",
+     "weight": 0.15
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.093
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.093
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.056
+    }
+   ],
+   "section": "B"
+  }
+ ],
+ "title": "H2 Mathematics · Set 1 · Paper 2 · A-Level format",
+ "assembled_at": "2026-09-26T16:00:16.377Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Inequalities",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Without using a calculator, solve the inequality $|x-4| < \\dfrac{3}{x}$.",
+      "marks": 4,
+      "answer": "$0 < x < 1$ or $3 < x < 2+\\sqrt{7}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Deduce the set of values of $x$ for which $|x-4| \\geqslant \\dfrac{3}{x}$.",
+      "marks": 1,
+      "answer": "$x < 0$ or $1 \\leqslant x \\leqslant 3$ or $x \\geqslant 2+\\sqrt{7}$"
+     },
+     {
+      "label": "(c)",
+      "text": "Hence solve exactly the inequality $\\left|\\ln x - 4\\right| \\geqslant \\dfrac{3}{\\ln x}$.",
+      "marks": 2,
+      "answer": "$0 < x < 1$ or $\\mathrm{e} \\leqslant x \\leqslant \\mathrm{e}^{3}$ or $x \\geqslant \\mathrm{e}^{2+\\sqrt{7}}$"
+     }
+    ],
+    "answer": "(a) $0 < x < 1$ or $3 < x < 2+\\sqrt{7}$ (b) $x < 0$ or $1 \\leqslant x \\leqslant 3$ or $x \\geqslant 2+\\sqrt{7}$ (c) $0 \\leqslant x \\leqslant \\ln 3$ or $x \\geqslant \\ln\\left(2+\\sqrt{7}\\right)$",
+    "total_marks": 7,
+    "topics": [
+     "Inequalities"
+    ],
+    "skills": [
+     "deducing $x > 0$ because a modulus can never be less than a negative quantity, before multiplying through, so that $|x-4| < \\frac{3}{x}$ becomes the double quadratic inequality $-3 < x^2-4x < 3$",
+     "complement of a solution set on a domain that excludes $x = 0$: every negative $x$ satisfies the reversed non-strict inequality and the critical values join the set",
+     "substitution $x \\to \\mathrm{e}^{x}$ recognised through $\\mathrm{e}^{2x}-4\\mathrm{e}^{x} = \\mathrm{e}^{x}(\\mathrm{e}^{x}-4)$ with $\\mathrm{e}^{x} > 0$, the negative branch rejected and the rest converted by logarithms",
+     "the substitution x → ln x into a solved inequality, every branch converted by exponentials with the domain x > 0 of ln x noted"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Since $|x-4| \\geqslant 0$ for every $x$, the inequality can hold only if $\\frac{3}{x} > 0$, i.e. $x > 0$: for $x < 0$ the right-hand side is negative and no $x$ satisfies it, and $x = 0$ is excluded.   [B1: $x > 0$ with the reason]\nFor $x > 0$, multiplying by $x$ keeps the direction: $x|x-4| < 3$, and since $x > 0$, $x|x-4| = |x(x-4)| = |x^2-4x|$. So\n$|x^2-4x| < 3 \\iff -3 < x^2-4x < 3$.   [M1: modulus removed correctly once the sign of $x$ is known]\n$x^2-4x > -3 \\iff x^2-4x+3 > 0 \\iff (x-1)(x-3) > 0 \\iff x < 1$ or $x > 3$.\n$x^2-4x < 3 \\iff x^2-4x-3 < 0$; the roots of $x^2-4x-3 = 0$ are $x = 2 \\pm \\sqrt{7}$, so $2-\\sqrt{7} < x < 2+\\sqrt{7}$.   [A1: critical values $1$, $3$ and $2 \\pm \\sqrt{7}$]\nCombining with $x > 0$ (note $2-\\sqrt{7} < 0$): $0 < x < 1$ or $3 < x < 2+\\sqrt{7}$.   [A1]\n(Alternative by cases, after $x > 0$: for $x \\geqslant 4$, $x-4 < \\frac{3}{x} \\iff x^2-4x-3 < 0 \\iff 4 \\leqslant x < 2+\\sqrt{7}$, as $2+\\sqrt{7} \\approx 4.65$; for $0 < x < 4$, $4-x < \\frac{3}{x} \\iff x^2-4x+3 > 0 \\iff 0 < x < 1$ or $3 < x < 4$. The union is the same set.)\n(The error the part is built to catch: multiplying by $x$ without first establishing $x > 0$ gives $x|x-4| < 3$, which every negative $x$ satisfies, so $x < 0$ is wrongly added to the answer. For $x < 0$ the multiplication reverses the inequality, $x|x-4| > 3$, which is impossible since the left side is not positive.)\nCheck: $x = \\frac{1}{2}$: $3.5 < 6$, true; $x = 2$: $2 < 1.5$, false; $x = 4$: $0 < 0.75$, true; $x = 5$: $1 < 0.6$, false.\n\n(b) $|x-4| \\geqslant \\frac{3}{x}$ holds exactly where the inequality in (a) fails, among real $x \\neq 0$ (the right-hand side is undefined at $x = 0$). Every $x < 0$ satisfies it (left side $\\geqslant 0 >$ right side), and the critical values $1$, $3$ and $2+\\sqrt{7}$, where the two sides are equal, are now included:\n$x < 0$ or $1 \\leqslant x \\leqslant 3$ or $x \\geqslant 2+\\sqrt{7}$.   [B1]\n\n(c) $\\mathrm{e}^{2x}-4\\mathrm{e}^{x} = \\mathrm{e}^{x}(\\mathrm{e}^{x}-4)$ and $\\mathrm{e}^{x} > 0$, so $\\left|\\mathrm{e}^{2x}-4\\mathrm{e}^{x}\\right| = \\mathrm{e}^{x}\\left|\\mathrm{e}^{x}-4\\right|$ and the inequality becomes $\\left|\\mathrm{e}^{x}-4\\right| \\geqslant \\frac{3}{\\mathrm{e}^{x}}$, which is the inequality in (b) with $x$ replaced by $\\mathrm{e}^{x}$.   [M1: the link to (b) through $x \\to \\mathrm{e}^{x}$]\nHence $\\mathrm{e}^{x} < 0$ (rejected, since $\\mathrm{e}^{x} > 0$ for all $x$) or $1 \\leqslant \\mathrm{e}^{x} \\leqslant 3$ or $\\mathrm{e}^{x} \\geqslant 2+\\sqrt{7}$,\nso $0 \\leqslant x \\leqslant \\ln 3$ or $x \\geqslant \\ln\\left(2+\\sqrt{7}\\right)$.   [A1]\nCheck: $x = 0$: $|1-4| = 3$ (equality); $x = \\ln 3$: $|9-12| = 3$ (equality); $x = \\ln\\left(2+\\sqrt{7}\\right)$: $\\mathrm{e}^{2x}-4\\mathrm{e}^{x} = \\left(2+\\sqrt{7}\\right)\\left(\\sqrt{7}-2\\right) = 7-4 = 3$ (equality); $x = -1$: $|0.135-1.472| = 1.34 < 3$, so excluded; $x = 1.3$: $|13.46-14.68| = 1.21 < 3$, so excluded.\n(Otherwise: with $u = \\mathrm{e}^{x} > 0$, $|u^2-4u| \\geqslant 3 \\iff u^2-4u \\geqslant 3$ or $u^2-4u \\leqslant -3$, giving $u \\geqslant 2+\\sqrt{7}$ ($u \\leqslant 2-\\sqrt{7}$ rejected as $u > 0$) or $1 \\leqslant u \\leqslant 3$: the same answer.)\n\n(c) [revised at moderation] Put u = ln x (x > 0). The inequality is |u − 4| ≥ 3/u, so by (b): u < 0, or 1 ≤ u ≤ 3, or u ≥ 2 + √7. Hence 0 < x < 1, or e ≤ x ≤ e^3, or x ≥ e^{2+√7}. M1 for the substitution with all three branches carried, A1 for the three sets with the strict 0 < x < 1 (u < 0 means 0 < x < 1; u = 0 is excluded since 3/u is undefined).",
+    "syllabus_check": "9758 Equations and inequalities: an inequality with a variable denominator solved without cross-multiplying blindly (the sign of $x$ settled first), the modulus removed via $|x-a| < b \\iff a-b < x < a+b$ or by cases, quadratic inequalities (assumed knowledge), the complementary non-strict inequality on a domain with $x \\neq 0$, and a related inequality solved by the substitution $x \\to \\mathrm{e}^{x}$ into one already solved. 'Without using a calculator' sits on part (a) only, not on the whole question (Paper 1 Q4 owns the whole-question ban); (c) says 'solve exactly', so no decimal is accepted. The substitution is $x \\to \\mathrm{e}^{x}$, not $x \\to |x|$ (Paper 1 Q6 used $\\mathrm{f}(|x|)$). No figure; exact answers throughout ($2+\\sqrt{7}$, $\\ln 3$, $\\ln(2+\\sqrt{7})$).",
+    "originality_note": "No earlier Set has an inequality question, and nothing in this paper yet. Not a re-skin of a real paper: GCE 2023 P2 Q1 is a modulus-versus-modulus inequality then a rational inequality combined into one fraction; GCE 2024 P1 Q4 is a rational sign test followed by the $x \\to |x|$ substitution; GCE 2025 P1 Q5 is a quadratic in $\\mathrm{e}^{x}$ followed by an integral of a modulus; GCE 2019 P1 Q4 and GCE 2019 P2 Q2 are sketch-then-read questions. Here the modulus is bounded by a reciprocal, so the sign of $x$ must be settled before anything is multiplied (the trap that adds every negative $x$), (b) takes the complement on a domain with a hole at $0$, where the negative reals come back in and the critical values join, and (c) must be recognised as (b) under $x \\to \\mathrm{e}^{x}$ through the factor $\\mathrm{e}^{x}(\\mathrm{e}^{x}-4)$, with the negative branch lost to $\\mathrm{e}^{x} > 0$."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q1",
+     "jaccard": 0.172,
+     "nearest_set": "Set 1 P1 Q6",
+     "jaccard_set": 0.024,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-09-26T15:50:04.630Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "0 < x < 1 or 3 < x < 2 + \\sqrt{7}",
+     "(b)": "x < 0 or 1 \\leqslant x \\leqslant 3 or x \\geqslant 2 + \\sqrt{7}",
+     "(c)": "0 < x < 1 or e \\leqslant x \\leqslant e^{3} or x \\geqslant e^{2+\\sqrt{7}}"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 0 < x < 1 or 3 < x < 2 + \\sqrt{7}. Checked: |x-4| >= 0 forces 3/x > 0 so x > 0; then |x^2 - 4x| < 3 gives (x-1)(x-3) > 0 and 2 - \\sqrt{7} < x < 2 + \\sqrt{7}; intersected with x > 0 the set is (0, 1) u (3, 2 + \\sqrt{7}). Spot checks x = 1/2 (3.5 < 6), x = 2 (2 < 1.5 false), x = 4 (0 < 0.75), x = 4.7 (0.7 < 0.638 false) agree."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give x < 0 or 1 <= x <= 3 or x >= 2 + \\sqrt{7}. The complement on x != 0: every negative x satisfies it (left side >= 0 > right side), and equality holds at 1, 3 and 2 + \\sqrt{7} (at the last, both sides equal \\sqrt{7} - 2), so the critical values join."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 0 <= x <= \\ln 3 or x >= \\ln(2 + \\sqrt{7}). With u = e^x > 0, |u^2 - 4u| = u|u - 4| >= 3 is (b) in u; the branch u < 0 is empty, leaving 1 <= u <= 3 or u >= 2 + \\sqrt{7}. Equality at x = 0 (|1 - 4| = 3), x = \\ln 3 (|9 - 12| = 3) and x = \\ln(2 + \\sqrt{7}) ((2 + \\sqrt{7})(\\sqrt{7} - 2) = 3); x = -1 and x = 1.2 are correctly excluded."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and both are right; the key is exactly correct.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "This paper tests 'a quadratic in e^x with a root or branch rejected by positivity' twice: here in (c) (u = e^x, the branch u < 0 rejected) and in Q3(a) (the inverse of a function quadratic in e^x, the root chosen by the domain). Since Q3 is the later slot the session may prefer to change Q3; if this slot is to change instead, keep (a) and (b) and replace the map in (c) by one that keeps the negative branch alive so the x < 0 trap of (b) carries real weight, e.g. 'Hence solve exactly |ln x - 4| >= 3/(ln x)' giving 0 < x < 1 or e <= x <= e^3 or x >= e^{2+\\sqrt{7}} (the skill becomes: the substitution x -> ln x, all three branches converted by exponentials, with the domain x > 0 of ln x noted)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A clean SEAB-register Section A opener whose two ideas belong to the candidate: in (a) that a modulus cannot be below a negative quantity, so x > 0 must be established before multiplying through (every route, including cases, has to meet the sign of x), and in (c) that e^{2x} - 4e^x = e^x(e^x - 4) with e^x > 0 turns the disguised inequality into (b) under x -> e^x, the intermediate form unprinted; (b)'s non-strict complement with the x < 0 branch is the twist of standard.md item 4. It borrows the 'hence, by substitution' device of GCE 2024 P1 Q4 but with a different inequality type, a complement step and a disguised map, so it is not a re-skin, and no Set 1 P1 question touches inequalities; marks match 2023 P2 Q1(b)/2024 P1 Q4 within a mark and the whole is finishable in about 12 minutes."
+   },
+   "exemplars": [
+    {
+     "id": "4ef4eabd-9eea-4f01-94ac-0d50746abf39",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "f7dccfcd-09b3-4c76-b897-eef349402dc5",
+     "ref": "GCE 2024 P1 Q4"
+    },
+    {
+     "id": "d22b230a-c38e-4196-907f-f30b9693f71b",
+     "ref": "GCE 2023 P2 Q1"
+    },
+    {
+     "id": "93af3416-c86a-4b29-88bf-6e1c123ee10d",
+     "ref": "GCE 2019 P1 Q4"
+    },
+    {
+     "id": "e6266236-99ab-4fab-9240-9408cba0f7b4",
+     "ref": "GCE 2019 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Differentiation (Techniques)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The curve $C$ has equation $x^3 - 3xy^2 = 16$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\frac{x^2 - y^2}{2xy}$.",
+      "marks": 2,
+      "answer": "Shown: $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\frac{x^2 - y^2}{2xy}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the coordinates of any stationary points on $C$, and determine their nature.",
+      "marks": 4,
+      "answer": "$(-2, 2)$, a minimum point ($\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = \\frac{1}{2} > 0$); $(-2, -2)$, a maximum point ($\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = -\\frac{1}{2} < 0$)"
+     },
+     {
+      "label": "(c)",
+      "text": "Determine whether there is any point on $C$ at which the tangent to $C$ passes through the origin. Justify your answer.",
+      "marks": 3,
+      "answer": "There is no such point: for the tangent at $(p, q)$ to pass through $O$, $q = p\\frac{\\mathrm{d}y}{\\mathrm{d}x}$, which (as $q \\neq 0$) gives $p^2 = 3q^2$; then $p^3 - 3pq^2 = p(p^2 - 3q^2) = 0 \\neq 16$, a contradiction (and the only tangent parallel to the $y$-axis, $x = \\sqrt[3]{16}$, does not pass through $O$)"
+     }
+    ],
+    "answer": "(a) Shown. (b) $(-2, 2)$, a minimum point, and $(-2, -2)$, a maximum point ($\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = \\frac{1}{y} = \\pm\\frac{1}{2}$ there). (c) No point of $C$ has a tangent through the origin: the condition forces $x^2 = 3y^2$, which contradicts $x(x^2 - 3y^2) = 16$.",
+    "total_marks": 9,
+    "topics": [
+     "Differentiation (Techniques)",
+     "Differentiation (Maximum and Minimum)"
+    ],
+    "skills": [
+     "implicit differentiation of the cubic curve $x^3 - 3xy^2 = 16$, where $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0$ gives the pair of lines $y = \\pm x$ and both must be followed back to the curve (one real $x$, two points)",
+     "nature of the stationary points of an implicit curve by differentiating the implicit relation a second time with $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0$ substituted ($\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = \\frac{1}{y}$): a maximum point that lies below a minimum point, on different branches",
+     "deciding whether any tangent to an implicit curve passes through a given point (the origin): the condition $y = x\\frac{\\mathrm{d}y}{\\mathrm{d}x}$ reduces to $x^2 = 3y^2$, which contradicts the curve's equation, with the tangent parallel to the $y$-axis checked separately"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Differentiating $x^3 - 3xy^2 = 16$ implicitly with respect to $x$ (product rule on $3xy^2$):\n$3x^2 - 3y^2 - 6xy\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0$\n$6xy\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 3x^2 - 3y^2$\n$\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\frac{x^2 - y^2}{2xy}$ (shown).\n\n(b) No point of $C$ has $x = 0$ (it gives $0 = 16$).\nFor a stationary point, $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0$, so $x^2 - y^2 = 0$ with $xy \\neq 0$, i.e. $y = x$ or $y = -x$.\nIn either case $y^2 = x^2$, so the equation of $C$ gives $x^3 - 3x^3 = -2x^3 = 16$, so $x^3 = -8$ and $x = -2$ (the only real root).\nThen $y = \\pm 2$: the stationary points are $(-2, 2)$ and $(-2, -2)$. At both, $2xy = \\mp 8 \\neq 0$, so $\\frac{\\mathrm{d}y}{\\mathrm{d}x}$ is defined and equal to 0 there.\nNature: write the result of (a) as $2xy\\frac{\\mathrm{d}y}{\\mathrm{d}x} = x^2 - y^2$ and differentiate again with respect to $x$:\n$2y\\frac{\\mathrm{d}y}{\\mathrm{d}x} + 2x\\left(\\frac{\\mathrm{d}y}{\\mathrm{d}x}\\right)^2 + 2xy\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = 2x - 2y\\frac{\\mathrm{d}y}{\\mathrm{d}x}$.\nAt a stationary point $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0$, so $2xy\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = 2x$, i.e. $\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = \\frac{1}{y}$.\nAt $(-2, 2)$: $\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = \\frac{1}{2} > 0$, so $(-2, 2)$ is a minimum point.\nAt $(-2, -2)$: $\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = -\\frac{1}{2} < 0$, so $(-2, -2)$ is a maximum point.\n[The maximum point lies below the minimum point. $C$ is symmetric in the $x$-axis, and for $x < 0$ it has two separate branches: for $x < 0$, $y^2 = \\frac{x^3 - 16}{3x} = \\frac{x^2}{3} - \\frac{16}{3x}$, whose least value on $x < 0$ is $4$, at $x = -2$. So the branch with $y > 0$ has lowest point $(-2, 2)$ and the branch with $y < 0$ has highest point $(-2, -2)$.]\n\n(c) Let $P(p, q)$ be any point on $C$, so $p^3 - 3pq^2 = p(p^2 - 3q^2) = 16$; in particular $p \\neq 0$.\nTangent parallel to the $y$-axis: $2pq = 0$, so $q = 0$ and $p^3 = 16$, giving the point $(\\sqrt[3]{16}, 0)$; its tangent $x = \\sqrt[3]{16}$ does not pass through $O$.\nOtherwise $q \\neq 0$, and the tangent at $P$ is $y - q = m(x - p)$, where $m = \\frac{p^2 - q^2}{2pq}$. It passes through $O(0, 0)$ if and only if $-q = -mp$, i.e. $q = mp = \\frac{p^2 - q^2}{2q}$.\nSo $2q^2 = p^2 - q^2$, i.e. $p^2 = 3q^2$.\nBut then $p^3 - 3pq^2 = p(p^2 - 3q^2) = 0 \\neq 16$, so $P$ would not lie on $C$ — a contradiction.\nHence there is no point on $C$ at which the tangent to $C$ passes through the origin.\n[The lines $y = \\pm\\frac{x}{\\sqrt{3}}$ through $O$ are asymptotes of $C$; the tangents approach them but none passes through $O$.]",
+    "syllabus_check": "9758 Differentiation only: implicit differentiation (product rule); stationary points and their nature by the second-derivative test, the second derivative obtained by differentiating the implicit relation again; tangents to an implicit curve, including one parallel to the $y$-axis, and whether a tangent passes through a given point — all in the 9758 differentiation content. No parametric second derivative, no non-stationary point of inflexion, no Maclaurin series, no modelled maximum. No calculator needed; every value exact and integer or simple fraction ($\\sqrt[3]{16}$ appears only as the position of the vertical tangent).",
+    "originality_note": "New curve $x^3 - 3xy^2 = 16$ (a homogeneous cubic set equal to a constant, symmetric in the $x$-axis, three branches), replacing the curve of GCE 2014 P1 Q2 ($x^2y + xy^2 + 54 = 0$), which the moderator found lifted. Not GCE 2014 P1 Q2 (the one point where the gradient is $-1$), GCE 2017 P1 Q3 (exact stationary points of the conic $y^2 - 2xy + 5x^2 = 10$, nature at one) or GCE 2018 P1 Q7 (two tangents at $x = 1$ meeting at $N$): here $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0$ gives a pair of lines, both followed to the curve; the two stationary points share an $x$-coordinate and have opposite natures, the maximum below the minimum; and the last part is a decision, closed by a contradiction, about tangents through the origin. Differs from our Set 1 P1 Q3 (a $\\tan^{-1}$ function with zero derivative), Set 1 P1 Q7 ($\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\sin 2y$ then a Maclaurin series), Set 1 P1 Q6 (stationary points of an explicit rational curve, then $\\mathrm{f}(|x|) = k$) and Set 1 P1 Q8 (perpendicular tangents to a parametric curve): no sketch, no set of values of $k$, no parametric curve."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2014 P1 Q2",
+     "jaccard": 0.11,
+     "nearest_set": "Set 1 P1 Q6",
+     "jaccard_set": 0.048,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-09-26T15:56:03.150Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "(-2, 2) is a minimum point (d2y/dx2 = 1/2 > 0); (-2, -2) is a maximum point (d2y/dx2 = -1/2 < 0)",
+     "(c)": "No such point. Tangent at (x, y) passes through O iff y = x(dy/dx), i.e. 2y^2 = x^2 - y^2, so x^2 = 3y^2; then x^3 - 3xy^2 = x^3 - x^3 = 0, not 16, a contradiction. (The vertical tangent at (16^(1/3), 0) is x = 16^(1/3), which does not pass through O; x = 0 is never on C.)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Re-derived: 3x^2 - 3y^2 - 6xy dy/dx = 0, so dy/dx = (x^2 - y^2)/(2xy). Correct; xy = 0 never occurs on C (x = 0 gives 0 = 16; y = 0 gives the single point (16^(1/3), 0), where the tangent is vertical, not stationary)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give (-2, 2) a minimum and (-2, -2) a maximum. Confirmed: dy/dx = 0 forces y^2 = x^2, then -2x^3 = 16 gives the one real x = -2 and y = +/-2. Differentiating 2xy dy/dx = x^2 - y^2 again and putting dy/dx = 0 gives 2xy d2y/dx2 = 2x, so d2y/dx2 = 1/y: +1/2 at (-2, 2), -1/2 at (-2, -2). Cross-checked on the explicit branches: for x < 0, y^2 = x^2/3 - 16/(3x) has derivative 2x/3 + 16/(3x^2) = 0 at x = -2 and second derivative 2/3 + 4/3 = 2 > 0, so y^2 is least (= 4) there; the upper branch has its lowest point at (-2, 2) and the lower branch its highest at (-2, -2). The maximum below the minimum is genuine, not a slip."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both conclude no such point, by the same argument, and it is right: the tangent at (p, q) passes through O iff q = p dy/dx; with q != 0 this is 2q^2 = p^2 - q^2, i.e. p^2 = 3q^2, and then p^3 - 3pq^2 = p(p^2 - 3q^2) = 0 != 16. The only vertical tangent, x = 16^(1/3) at (16^(1/3), 0), misses O. No singular point exists (numerator and denominator vanish together only at (0, 0), which is not on C). Confirmed independently: F = x^3 - 3xy^2 is homogeneous of degree 3, so p F_x + q F_y = 3F(p, q) = 48 != 0 at every point of C, which is exactly the condition for the tangent to miss the origin."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement: the setter and the blind examiner agree on all three parts and each is confirmed by independent working, including the maximum point (-2, -2) lying below the minimum point (-2, 2) on different branches.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A clean implicit-curve question at the 2022-2024 standard for 9 marks in the Q2 slot: (a) is a standard derivation that gates (b) and (c); (b) makes the candidate follow both lines y = +/-x back to the curve and decide the nature of stationary points on an implicit curve by a second implicit differentiation, with a maximum that sits below a minimum as the twist; (c) is the idea the candidate must supply - turning 'the tangent passes through O' into y = x dy/dx, reducing it to x^2 = 3y^2 and closing the non-existence proof against the curve's own equation, with the vertical tangent disposed of - one idea, in about six minutes, and no part carries two. The first-round objection is answered: x^3 - 3xy^2 = 16 is a different polynomial from GCE 2014 P1 Q2's x^2 y + xy^2 + 54 = 0 and the parts ask different things (stationary points and nature, then a tangent through O, not a gradient -1 point), the novelty gate passes (Jaccard 0.11), GCE 2024 P1 Q6(b)(i) uses a tangent through the origin only to fix a constant on an explicit curve, and no 2022-2024 Paper 2 question is an implicit curve. Nothing in Set 1 P1 tests these skills (Q7's implicit step feeds a Maclaurin series, Q6's stationary points are on an explicit rational function, Q8's tangents are parametric), nothing in this paper so far does (Q4 is connected rates), the setter's skills phrases are true and specific, and the marks match the work (2 + 4 + 3)."
+   },
+   "exemplars": [
+    {
+     "id": "d72d34dc-8e60-4409-af48-4e14a70b862c",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "1a3823d9-5073-45fd-b1d1-313924ab1802",
+     "ref": "GCE 2021 P1 Q7"
+    },
+    {
+     "id": "f5fdd6a7-3060-474f-972d-06161088beee",
+     "ref": "GCE 2018 P1 Q7"
+    },
+    {
+     "id": "3276fbf0-a5fd-41e8-9ebf-afeb8b29b5ea",
+     "ref": "GCE 2017 P1 Q4"
+    },
+    {
+     "id": "1a661094-4551-46ba-93aa-9304a219abb3",
+     "ref": "GCE 2022 P1 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Functions",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "The function $\\mathrm{f}$ is defined by\n$\\mathrm{f}: x \\mapsto \\mathrm{e}^{x} + 4\\mathrm{e}^{-x}, \\quad x \\in \\mathbb{R},\\ x \\geqslant a,$\nwhere $a$ is a constant.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the least value of $a$ for which the function $\\mathrm{f}^{-1}$ exists, giving your answer in exact form.",
+      "marks": 2,
+      "answer": "$a = \\ln 2$"
+     },
+     {
+      "label": "(b)",
+      "text": "It is now given that $a$ takes the value found in part (a). Find $\\mathrm{f}^{-1}(x)$ and state the domain of $\\mathrm{f}^{-1}$.",
+      "marks": 3,
+      "answer": "$\\mathrm{f}^{-1}(x) = \\ln\\left(\\frac{x + \\sqrt{x^2 - 16}}{2}\\right)$; domain of $\\mathrm{f}^{-1}$ is $[4, \\infty)$, i.e. $x \\geqslant 4$"
+     },
+     {
+      "label": "(c)",
+      "text": "Sketch, on the same diagram, the graphs of $y = \\mathrm{f}(x)$ and $y = \\mathrm{f}^{-1}(x)$, stating the exact coordinates of the end-point of each graph. Explain why the equation $\\mathrm{f}(x) = \\mathrm{f}^{-1}(x)$ has no solution.",
+      "marks": 3,
+      "answer": "Sketch: $y = \\mathrm{f}(x)$ starts at $(\\ln 2, 4)$, increasing and concave upward; $y = \\mathrm{f}^{-1}(x)$ is its reflection in $y = x$, starting at $(4, \\ln 2)$, increasing and concave downward. Since $\\mathrm{e}^{x} - x \\geqslant 1$ and $4\\mathrm{e}^{-x} > 0$, $\\mathrm{f}(x) > x$ for all $x \\geqslant \\ln 2$, so the graph of $\\mathrm{f}$ lies entirely above $y = x$ and its reflection, the graph of $\\mathrm{f}^{-1}$, lies entirely below $y = x$; the graphs never meet, so $\\mathrm{f}(x) = \\mathrm{f}^{-1}(x)$ has no solution."
+     },
+     {
+      "label": "(d)",
+      "text": "The function $\\mathrm{g}$ is defined by $\\mathrm{g}: x \\mapsto k + \\mathrm{e}^{-x}, \\ x \\in \\mathbb{R}$, where $k$ is a constant.",
+      "marks": 3,
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the set of values of $k$ for which the composite function $\\mathrm{fg}$ exists.",
+        "marks": 2,
+        "answer": "$\\{k \\in \\mathbb{R} : k \\geqslant \\ln 2\\}$"
+       },
+       {
+        "label": "(ii)",
+        "text": "For these values of $k$, find the range of $\\mathrm{fg}$, giving your answer in terms of $k$.",
+        "marks": 1,
+        "answer": "$R_{\\mathrm{fg}} = \\left(\\mathrm{e}^{k} + 4\\mathrm{e}^{-k}, \\infty\\right)$, i.e. $\\mathrm{fg}(x) > \\mathrm{e}^{k} + 4\\mathrm{e}^{-k}$"
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $a = \\ln 2$. (b) $\\mathrm{f}^{-1}(x) = \\ln\\left(\\frac{x + \\sqrt{x^2 - 16}}{2}\\right)$, domain $x \\geqslant 4$. (c) Sketch with end-points $(\\ln 2, 4)$ on $y = \\mathrm{f}(x)$ and $(4, \\ln 2)$ on $y = \\mathrm{f}^{-1}(x)$; $\\mathrm{f}(x) > x$ for all $x \\geqslant \\ln 2$, so the graph of $\\mathrm{f}$ is above $y = x$, the graph of $\\mathrm{f}^{-1}$ below it, and they never meet. (d)(i) $k \\geqslant \\ln 2$. (d)(ii) $\\left(\\mathrm{e}^{k} + 4\\mathrm{e}^{-k}, \\infty\\right)$.",
+    "total_marks": 11,
+    "topics": [
+     "Functions"
+    ],
+    "skills": [
+     "inverse of a function that is quadratic in $\\mathrm{e}^{x}$, the root chosen by the restricted domain ($\\mathrm{e}^{x} \\geqslant 2$) because both roots are positive",
+     "explaining why $y = \\mathrm{f}(x)$ and $y = \\mathrm{f}^{-1}(x)$ never meet from $\\mathrm{f}(x) > x$ (graph above $y = x$, its reflection below)",
+     "existence of $\\mathrm{fg}$ with a parameter: an open range $(k, \\infty)$ inside the closed domain $[\\ln 2, \\infty)$ with the boundary value included, and the range of $\\mathrm{fg}$ in terms of $k$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $\\mathrm{f}'(x) = \\mathrm{e}^{x} - 4\\mathrm{e}^{-x}$. $\\mathrm{f}'(x) = 0 \\iff \\mathrm{e}^{2x} = 4 \\iff x = \\ln 2$. [M1]\n$\\mathrm{f}''(x) = \\mathrm{e}^{x} + 4\\mathrm{e}^{-x} > 0$, so the curve has a minimum point at $(\\ln 2, \\mathrm{f}(\\ln 2)) = (\\ln 2, 2 + 2) = (\\ln 2, 4)$: $\\mathrm{f}$ is strictly decreasing for $x < \\ln 2$ and strictly increasing for $x > \\ln 2$.\nIf $a < \\ln 2$, the domain contains points on both sides of $x = \\ln 2$ with the same value of $\\mathrm{f}$ (a horizontal line $y = c$ with $4 < c \\leqslant \\mathrm{f}(a)$ meets the graph twice), so $\\mathrm{f}$ is not one-one and $\\mathrm{f}^{-1}$ does not exist. If $a \\geqslant \\ln 2$, $\\mathrm{f}$ is strictly increasing, hence one-one.\nLeast value of $a$ is $\\ln 2$. [A1]\n\n(b) Let $y = \\mathrm{e}^{x} + 4\\mathrm{e}^{-x}$, $x \\geqslant \\ln 2$. Multiplying by $\\mathrm{e}^{x}$: $(\\mathrm{e}^{x})^2 - y\\,\\mathrm{e}^{x} + 4 = 0$, so $\\mathrm{e}^{x} = \\frac{y \\pm \\sqrt{y^2 - 16}}{2}$. [M1]\nBoth roots are positive (their product is 4), so $\\mathrm{e}^{x} > 0$ does not decide between them. The domain gives $x \\geqslant \\ln 2$, i.e. $\\mathrm{e}^{x} \\geqslant 2$. Since the two roots have product 4, the smaller root $\\frac{y - \\sqrt{y^2 - 16}}{2}$ is less than 2 whenever $y > 4$ (the roots are equal, both 2, only when $y = 4$). So the minus sign is rejected and $\\mathrm{e}^{x} = \\frac{y + \\sqrt{y^2 - 16}}{2}$, $x = \\ln\\left(\\frac{y + \\sqrt{y^2 - 16}}{2}\\right)$. [A1, with the reason for the rejection]\nHence $\\mathrm{f}^{-1}(x) = \\ln\\left(\\frac{x + \\sqrt{x^2 - 16}}{2}\\right)$.\n$D_{\\mathrm{f}^{-1}} = R_{\\mathrm{f}}$: $\\mathrm{f}$ increases from $\\mathrm{f}(\\ln 2) = 4$ and $\\mathrm{f}(x) \\to \\infty$ as $x \\to \\infty$, so $D_{\\mathrm{f}^{-1}} = [4, \\infty)$. [B1]\nCheck: $\\mathrm{f}^{-1}(5) = \\ln\\frac{5 + 3}{2} = \\ln 4$ and $\\mathrm{f}(\\ln 4) = 4 + 1 = 5$.\n\n(c) Sketch: $y = \\mathrm{f}(x)$ begins at the end-point $(\\ln 2, 4)$ and rises, concave upward ($\\mathrm{f}''(x) > 0$), without bound. [B1]\n$y = \\mathrm{f}^{-1}(x)$ is the reflection of $y = \\mathrm{f}(x)$ in the line $y = x$: it begins at the end-point $(4, \\ln 2)$ and rises, concave downward, without bound (the line $y = x$ may be drawn as the mirror line). [B1]\nExplanation: for every real $x$, $\\mathrm{e}^{x} - x \\geqslant 1$ (the least value of $\\mathrm{e}^{x} - x$ is 1, at $x = 0$), so $\\mathrm{f}(x) - x = (\\mathrm{e}^{x} - x) + 4\\mathrm{e}^{-x} > 0$, i.e. $\\mathrm{f}(x) > x$ for all $x \\geqslant \\ln 2$. The graph of $\\mathrm{f}$ therefore lies entirely above the line $y = x$, so its reflection in $y = x$, the graph of $\\mathrm{f}^{-1}$, lies entirely below that line. The two graphs have no common point, so $\\mathrm{f}(x) = \\mathrm{f}^{-1}(x)$ has no solution. [B1]\n(Equivalently: $\\mathrm{f}$ is increasing, so a point common to both graphs would lie on $y = x$ and satisfy $\\mathrm{f}(x) = x$, which is impossible since $\\mathrm{f}(x) > x$.)\n\n(d)(i) As $x$ ranges over $\\mathbb{R}$, $\\mathrm{e}^{-x}$ takes every value in $(0, \\infty)$, so $R_{\\mathrm{g}} = (k, \\infty)$. [B1]\n$\\mathrm{fg}$ exists $\\iff R_{\\mathrm{g}} \\subseteq D_{\\mathrm{f}} = [\\ln 2, \\infty) \\iff k \\geqslant \\ln 2$. The value $k = \\ln 2$ is included: then $R_{\\mathrm{g}} = (\\ln 2, \\infty)$, which lies inside $[\\ln 2, \\infty)$. Set of values: $\\{k \\in \\mathbb{R} : k \\geqslant \\ln 2\\}$. [A1]\n\n(d)(ii) For $k \\geqslant \\ln 2$, $\\mathrm{g}$ maps $\\mathbb{R}$ onto $(k, \\infty) \\subseteq [\\ln 2, \\infty)$, on which $\\mathrm{f}$ is strictly increasing and unbounded. Since $\\mathrm{g}(x)$ never equals $k$, the value $\\mathrm{f}(k)$ is not attained: $R_{\\mathrm{fg}} = (\\mathrm{f}(k), \\infty) = \\left(\\mathrm{e}^{k} + 4\\mathrm{e}^{-k}, \\infty\\right)$. [B1]\n(For example, $k = \\ln 2$ gives $(4, \\infty)$, which is not the range $[4, \\infty)$ of $\\mathrm{f}$.)",
+    "syllabus_check": "9758 Functions: restricting a domain so that an inverse exists (least $a$ from the minimum point, found by differentiation, an A Math skill assumed), finding $\\mathrm{f}^{-1}(x)$ with the domain of $\\mathrm{f}^{-1}$ as the range of $\\mathrm{f}$, the graph of $\\mathrm{f}^{-1}$ as the reflection of $\\mathrm{f}$ in $y = x$, the condition $R_{\\mathrm{g}} \\subseteq D_{\\mathrm{f}}$ for $\\mathrm{fg}$ to exist and the range of a composite. Solving a quadratic in $\\mathrm{e}^{x}$ is assumed O-Level A Math knowledge. No $(\\mathrm{fg})^{-1}$, no domain restricted to make a composite exist (the parameter is in g's rule, not a restriction of a domain), no figure printed, no calculator ban; a graphing calculator helps with the sketch but every answer is exact.",
+    "originality_note": "New function and new sequence. Real papers restrict a quadratic (GCE 2025 specimen P2 Q1, GCE 2024 P2 Q3), $\\frac{1}{1-x^2}$ (GCE 2015 P2 Q3), a modulus rational (GCE 2023 P1 Q7) or a log (GCE 2011 P2 Q3); here the function is quadratic in $\\mathrm{e}^{x}$ and the inverse needs a root chosen by $\\mathrm{e}^{x} \\geqslant 2$ with BOTH roots positive. Where GCE 2011 P2 Q3 and GCE 2008 P2 Q4 solve $\\mathrm{f}(x) = \\mathrm{f}^{-1}(x)$ on $y = x$, this question reverses it: the candidate must explain why there is NO solution. The composite part carries a parameter in g and asks for the existence condition with an open range meeting a closed domain, then the range in terms of $k$ (GCE 2013 P2 Q1 only asks why fg does not exist). Set 1 P1 Q3 tested a constant $\\tan^{-1}$ function by a zero derivative, and Set 1 P1 Q6 a rational curve with $\\mathrm{f}(|x|)$; neither asks for an inverse, a reflection or a composite."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2015 P2 Q3",
+     "jaccard": 0.14,
+     "nearest_set": "Set 1 P1 Q3",
+     "jaccard_set": 0.077,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-26T15:50:36.426Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = ln 2 (f'(x) = e^x - 4e^{-x} = 0 at x = ln 2, the minimum point (ln 2, 4))",
+     "(b)": "f^{-1}(x) = ln( (x + sqrt(x^2 - 16)) / 2 ); domain of f^{-1} = [4, ∞)",
+     "(c)": "Sketch: y = f(x) increasing from end-point (ln 2, 4); y = f^{-1}(x) its reflection in y = x, increasing from end-point (4, ln 2). No solution: f is increasing and f(x) > e^x > x for all x ≥ ln 2, so the graph of y = f(x) lies entirely above y = x; any intersection of y = f(x) and y = f^{-1}(x) (f increasing) would have to lie on y = x, so the graphs never meet and f(x) = f^{-1}(x) has no solution.",
+     "(d)(i)": "R_g = (k, ∞) must be a subset of D_f = [ln 2, ∞): {k ∈ R : k ≥ ln 2}",
+     "(d)(ii)": "R_fg = (e^k + 4e^{-k}, ∞)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give a = ln 2: f'(x) = e^x - 4e^{-x} = 0 at e^{2x} = 4, the minimum point (ln 2, 4); f is one-one exactly when the domain starts at or after it. Checked."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give f^{-1}(x) = ln((x + sqrt(x^2 - 16))/2) with domain [4, infinity). Checked: u = e^x satisfies u^2 - yu + 4 = 0, both roots positive with product 4, so for y > 4 the smaller root is below 2 and the domain e^x >= 2 forces the plus sign; f^{-1}(5) = ln 4 and f(ln 4) = 5."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Same sketch (f from end-point (ln 2, 4), concave up; f^{-1} its reflection from (4, ln 2)) and the same argument in two dressings: setter uses e^x - x >= 1, examiner uses e^x > x; either gives f(x) > x on the whole domain, so the graph of f is above y = x, its reflection below, and they never meet. Valid."
+     },
+     {
+      "label": "(d)(i)",
+      "agree": true,
+      "note": "Both give {k : k >= ln 2}. Checked: R_g = (k, infinity) is open, so k = ln 2 is admitted by the closed domain [ln 2, infinity) of f."
+     },
+     {
+      "label": "(d)(ii)",
+      "agree": true,
+      "note": "Both give R_fg = (e^k + 4e^{-k}, infinity). Checked: f is strictly increasing and unbounded on (k, infinity) for k >= ln 2, and f(k) itself is never attained because g never equals k."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and both are right; the key is exact, the end-points are exact and the open bracket in (d)(ii) is correct.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register: delete the \"[3]\" printed beside the (d) stem (\"The function g is defined by ... [3]\") - SEAB prints marks only beside the answered parts, here (i) [2] and (ii) [1]; the stem carries none.",
+     "Register: SEAB's phrase is \"In the rest of this question\" (GCE 2022 P2 Q10(d)) or \"It is now given that a takes the value found in part (a).\" as a sentence before (b); \"In the rest of the question, a takes ...\" reads as a school paper.",
+     "Key hygiene: the (d) answers are printed twice (once as \"(d) (i) ... (ii) ...\" and again as \"(d)(i)\" / \"(d)(ii)\"); keep the second, labelled pair only.",
+     "Paper-level note for the session, not a rejection of this slot: Q1 of this paper already turns on a quadratic in e^x with a branch rejected (e^{2x} - 4e^x = e^x(e^x - 4), e^x > 0) and ends in ln 4; Q3(b) is a quadratic in e^x whose root the domain e^x >= 2 chooses, ending in ln 2. The decisions differ (positivity decides in Q1, positivity cannot decide in Q3), so it is not the same skill asked the same way, but Section A now leans twice on \"quadratic in e^x, then logarithms\". If the session wants that varied, re-brief Q1 (the lighter, 7-mark slot) toward an inequality skill without the e^x substitution rather than touch this question."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A functions question with two ideas the candidate must supply - the inverse's root chosen by the domain because positivity cannot decide it, and the reversed classic (explain why f(x) = f^{-1}(x) has NO solution, from f(x) > x and the reflection) - with the boundary value in (d)(i) as a real twist, clean numbers (ln 2, 4, sqrt(x^2 - 16)), parts that build, 20 minutes of work for 11 marks and a key that is exactly right; nothing in 2022-2024 P2 or the exemplars shares its structure (GCE 2015 P2 Q3 shares only the stock inverse-and-domain wording on a rational function) and Set 1's only functions question (P1 Q3, the constant tan^{-1} function) is a different skill. The stem's printed [3], one non-SEAB phrase and the duplicated key lines are the light edits that keep it at 4."
+   },
+   "exemplars": [
+    {
+     "id": "f262fc91-148d-402e-9a99-5821ee630bc3",
+     "ref": "GCE 2024 P2 Q5"
+    },
+    {
+     "id": "7e948df2-adee-4917-b0d4-9b2a5028f9e3",
+     "ref": "GCE 2025 P1 Q10"
+    },
+    {
+     "id": "db50bc68-7fb3-4035-9062-af5d8275b80a",
+     "ref": "GCE 2023 P1 Q7"
+    },
+    {
+     "id": "30747ebc-40d9-4764-9e4b-5e31b21609d0",
+     "ref": "GCE 2017 P2 Q3"
+    },
+    {
+     "id": "dccd7467-715d-431c-8a49-7e340d09cf17",
+     "ref": "GCE 2022 P1 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "A fuel tank is a closed cylinder of internal radius $1$ m and internal length $5$ m. The tank lies with its axis horizontal. The diagram shows the circular cross-section of the tank, with centre $O$, when the depth of fuel in the tank is $h$ m. The surface of the fuel meets this cross-section in the line $AB$, and $\\theta$ radians is the angle subtended at $O$ by the arc of the circle that is in contact with the fuel, where $0 < \\theta < 2\\pi$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that, for $0 < \\theta < \\pi$, $h = 1 - \\cos\\frac{1}{2}\\theta$ and the volume of fuel in the tank, $V$ m$^3$, is given by $V = \\frac{5}{2}(\\theta - \\sin\\theta)$.",
+      "marks": 3,
+      "answer": "Shown: $h = 1 - \\cos\\frac{1}{2}\\theta$ and $V = \\frac{5}{2}(\\theta - \\sin\\theta)$"
+     },
+     {
+      "label": "(b)",
+      "text": "It is given that both results in part (a) are also true for $\\pi \\le \\theta < 2\\pi$.\nFuel is pumped into the tank at a constant rate of $0.3$ m$^3$ per minute, starting when the depth of fuel is $0.5$ m. At time $t$ minutes after pumping starts, the depth of fuel is $h$ m.\nFind the rate at which the area of the horizontal surface of the fuel is increasing at the instant when pumping starts.",
+      "marks": 3,
+      "answer": "$0.2$ m$^2$ per minute"
+     },
+     {
+      "label": "(c)",
+      "text": "",
+      "marks": 3,
+      "answer": "(i) Shown; (ii) least rate $0.03$ m per minute, when the depth of fuel is $1$ m",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Show that $\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{3}{100}\\operatorname{cosec}\\frac{1}{2}\\theta$.",
+        "marks": 2,
+        "answer": "Shown: $\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{3}{100}\\operatorname{cosec}\\frac{1}{2}\\theta$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Hence find the least rate at which the depth of fuel increases, and state the depth of fuel when this occurs.",
+        "marks": 1,
+        "answer": "$0.03$ m per minute, when the depth of fuel is $1$ m (the tank is half full)"
+       }
+      ]
+     },
+     {
+      "label": "(d)",
+      "text": "Find the depth of fuel at the instant when the depth is increasing at a rate of $0.06$ m per minute. Find also the exact time taken from the start of pumping to this instant.",
+      "marks": 4,
+      "answer": "Depth $= 1 + \\frac{\\sqrt{3}}{2}$ m $(\\approx 1.87$ m$)$; time $= \\frac{25}{3}(\\pi + \\sqrt{3})$ minutes $(\\approx 40.6$ minutes$)$"
+     }
+    ],
+    "answer": "(a) Shown. (b) $0.2$ m$^2$ per minute. (c)(i) Shown. (c)(ii) $0.03$ m per minute, when the depth of fuel is $1$ m. (d) Depth $1 + \\frac{\\sqrt{3}}{2}$ m $(\\approx 1.87$ m$)$; time $\\frac{25}{3}(\\pi + \\sqrt{3})$ minutes $(\\approx 40.6$ minutes$)$.",
+    "total_marks": 13,
+    "topics": [
+     "Differentiation (Rates of Change)",
+     "Equations"
+    ],
+    "skills": [
+     "volume of liquid in a horizontal cylinder built as sector minus triangle in terms of the angle subtended by the wetted arc, with the depth from the half-angle",
+     "connected rates through an angle parameter: the rate of change of the liquid's surface area, and the depth's rate as a cosec expression whose least value is at half-full",
+     "two depths with the same rate of rise, the one below the starting depth rejected by the context, then an exact time from the volume between two angles"
+    ],
+    "needs_figure": true,
+    "figure_description": "The circular cross-section of the tank only (no 3-D view). A circle about 6 cm across; its centre is marked with a dot and labelled O. A horizontal chord AB is drawn BELOW O, positioned so that angle AOB is about 120 degrees (A at the left end of the chord, B at the right end). The radii OA and OB are drawn as straight lines, and OA is labelled 1 m. The region of the circle below the chord AB (the fuel) is shaded. The angle AOB between OA and OB, on the side facing the shaded region (the angle that opens downwards towards the lowest point of the circle), is marked with a small arc at O and labelled θ. A vertical double-headed arrow runs from the lowest point of the circle up to the chord AB and is labelled h m. No other labels: no numerical value of θ or h, no formula for the volume or for h, no axes, no length of the tank.",
+    "solution": "(a) In the cross-section the fuel occupies the segment of the circle cut off by the chord $AB$ and bounded by the arc in contact with the fuel. For $0 < \\theta < \\pi$ this segment is the sector $OAB$ of angle $\\theta$ minus the triangle $OAB$.\nArea of sector $= \\frac{1}{2}(1)^2\\theta = \\frac{1}{2}\\theta$; area of triangle $OAB = \\frac{1}{2}(1)(1)\\sin\\theta = \\frac{1}{2}\\sin\\theta$.\nArea of fuel in the cross-section $= \\frac{1}{2}(\\theta - \\sin\\theta)$ m$^2$. The tank has a uniform cross-section and length $5$ m, so $V = 5 \\times \\frac{1}{2}(\\theta - \\sin\\theta) = \\frac{5}{2}(\\theta - \\sin\\theta)$.\nThe perpendicular from $O$ to $AB$ bisects angle $AOB$, so the distance from $O$ to $AB$ is $1 \\times \\cos\\frac{1}{2}\\theta$. The lowest point of the cross-section is $1$ m below $O$, so $h = 1 - \\cos\\frac{1}{2}\\theta$.\n(b) When pumping starts, $h = 0.5$, so $\\cos\\frac{1}{2}\\theta = \\frac{1}{2}$, $\\frac{1}{2}\\theta = \\frac{\\pi}{3}$, $\\theta = \\frac{2\\pi}{3}$.\n$\\frac{\\mathrm{d}V}{\\mathrm{d}\\theta} = \\frac{5}{2}(1 - \\cos\\theta)$; at $\\theta = \\frac{2\\pi}{3}$ this is $\\frac{5}{2}\\left(1 + \\frac{1}{2}\\right) = \\frac{15}{4}$.\n$\\frac{\\mathrm{d}V}{\\mathrm{d}t} = \\frac{\\mathrm{d}V}{\\mathrm{d}\\theta}\\frac{\\mathrm{d}\\theta}{\\mathrm{d}t}$ gives $0.3 = \\frac{15}{4}\\frac{\\mathrm{d}\\theta}{\\mathrm{d}t}$, so $\\frac{\\mathrm{d}\\theta}{\\mathrm{d}t} = 0.08$ rad per minute.\nThe surface of the fuel is a rectangle of length $5$ m and width $AB = 2\\sin\\frac{1}{2}\\theta$ m, so its area is $S = 10\\sin\\frac{1}{2}\\theta$.\n$\\frac{\\mathrm{d}S}{\\mathrm{d}t} = 5\\cos\\frac{1}{2}\\theta \\cdot \\frac{\\mathrm{d}\\theta}{\\mathrm{d}t} = 5 \\times \\frac{1}{2} \\times 0.08 = 0.2$ m$^2$ per minute.\n(c)(i) $\\frac{\\mathrm{d}\\theta}{\\mathrm{d}t} = \\frac{0.3}{\\frac{5}{2}(1 - \\cos\\theta)} = \\frac{0.12}{1 - \\cos\\theta} = \\frac{0.12}{2\\sin^2\\frac{1}{2}\\theta} = \\frac{0.06}{\\sin^2\\frac{1}{2}\\theta}$.\n$\\frac{\\mathrm{d}h}{\\mathrm{d}\\theta} = \\frac{1}{2}\\sin\\frac{1}{2}\\theta$, so $\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{1}{2}\\sin\\frac{1}{2}\\theta \\times \\frac{0.06}{\\sin^2\\frac{1}{2}\\theta} = \\frac{0.03}{\\sin\\frac{1}{2}\\theta} = \\frac{3}{100}\\operatorname{cosec}\\frac{1}{2}\\theta$.\n(c)(ii) For $0 < \\theta < 2\\pi$, $0 < \\sin\\frac{1}{2}\\theta \\le 1$, so $\\frac{\\mathrm{d}h}{\\mathrm{d}t} \\ge 0.03$, with equality when $\\frac{1}{2}\\theta = \\frac{\\pi}{2}$, i.e. $\\theta = \\pi$ and $h = 1 - \\cos\\frac{\\pi}{2} = 1$. Least rate $0.03$ m per minute, when the depth is $1$ m (the tank is half full, where the surface is widest).\n(d) $\\frac{3}{100}\\operatorname{cosec}\\frac{1}{2}\\theta = 0.06 \\Rightarrow \\sin\\frac{1}{2}\\theta = \\frac{1}{2}$. Since $0 < \\frac{1}{2}\\theta < \\pi$, $\\frac{1}{2}\\theta = \\frac{\\pi}{6}$ or $\\frac{5\\pi}{6}$, so $\\theta = \\frac{\\pi}{3}$ or $\\frac{5\\pi}{3}$.\n$\\theta = \\frac{\\pi}{3}$ gives $h = 1 - \\frac{\\sqrt{3}}{2} \\approx 0.134$ m, which is less than $0.5$ m; the depth only increases from $0.5$ m once pumping starts, so this depth never occurs after pumping starts and is rejected.\nSo $\\theta = \\frac{5\\pi}{3}$ and $h = 1 - \\cos\\frac{5\\pi}{6} = 1 + \\frac{\\sqrt{3}}{2} \\approx 1.87$ m (less than $2$ m, so the tank is not yet full).\nVolume pumped in $= \\frac{5}{2}\\left(\\frac{5\\pi}{3} - \\sin\\frac{5\\pi}{3}\\right) - \\frac{5}{2}\\left(\\frac{2\\pi}{3} - \\sin\\frac{2\\pi}{3}\\right) = \\frac{5}{2}\\left[\\left(\\frac{5\\pi}{3} + \\frac{\\sqrt{3}}{2}\\right) - \\left(\\frac{2\\pi}{3} - \\frac{\\sqrt{3}}{2}\\right)\\right] = \\frac{5}{2}(\\pi + \\sqrt{3})$ m$^3$.\nTime $= \\frac{\\frac{5}{2}(\\pi + \\sqrt{3})}{0.3} = \\frac{25}{3}(\\pi + \\sqrt{3})$ minutes $\\approx 40.6$ minutes.",
+    "syllabus_check": "9758 Differentiation: connected rates of change in a stated physical situation (the chain rule through a parameter). Assumed O-Level A Math knowledge only for the geometry and trigonometry: sector area $\\frac{1}{2}r^2\\theta$ in radians, triangle area $\\frac{1}{2}ab\\sin C$, $1 - \\cos\\theta = 2\\sin^2\\frac{1}{2}\\theta$, and solving $\\sin x = \\frac{1}{2}$ in a stated interval. No differential equation, no volume of revolution, no integration, no polar form, no Poisson, no method of differences. Every answer is exact and needs no calculator. The figure shows only the givens ($O$, $A$, $B$, the $1$ m radius, $\\theta$ and $h$).",
+    "originality_note": "No earlier Set has a rates-of-change question. Unlike GCE 2025 P2 Q4 (hemispherical bowl, printed $V(h)$, time to fill, a depth rate, then a variable rate $10\\pi t$ integrated) and GCE 2022 P2 Q2 (vertical cylinder filled at $kt$), and unlike the open cone of GCE 2016 P2 Q1: here the vessel is a horizontal cylinder, the candidate builds $V$ and $h$ as functions of an angle parameter, the first connected rate is of the surface AREA, the depth rate is found as a function whose least value is at half-full, and the last part is a root decision (two depths with the same rate of rise, one before pumping began) followed by an exact volume between two angles. It shares nothing with Set 1 P1 Q5 (sphere in a cone, a minimum volume) or Set 1 P1 Q10 (a differential-equation model); it uses no parametric curve, no integration and no series."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P2 Q1",
+     "jaccard": 0.046,
+     "nearest_set": "Set 1 P1 Q10",
+     "jaccard_set": 0.028,
+     "repeated_skills": []
+    },
+    "marks": 13,
+    "checked_at": "2026-09-26T15:57:17.240Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown (distance from O to AB = cos(θ/2), so h = 1 − cos(θ/2); segment area = ½(1)²(θ − sin θ), so V = 5 × ½(θ − sin θ) = (5/2)(θ − sin θ))",
+     "(b)": "0.2 m² per minute (surface area S = 10 sin(θ/2); at h = 0.5, θ = 2π/3, dV/dθ = 15/4, dθ/dt = 0.08, dS/dt = 5cos(π/3) × 0.08 = 0.2)",
+     "(c)(i)": "shown (dV/dθ = (5/2)(1 − cos θ) = 5 sin²(θ/2), dh/dθ = ½ sin(θ/2), so dh/dt = ½ sin(θ/2) × 0.3/(5 sin²(θ/2)) = (3/100) cosec(θ/2))",
+     "(c)(ii)": "least rate 0.03 m per minute (when θ = π), at depth 1 m",
+     "(d)": "sin(θ/2) = 1/2 with θ ≥ 2π/3 gives θ = 5π/3; depth = 1 + √3/2 m ≈ 1.87 m; time = (25/3)(π + √3) minutes ≈ 40.6 min"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both show h = 1 - cos(theta/2) from the perpendicular bisector of AB and V = 5 x (sector - triangle) = (5/2)(theta - sin theta). Checked: the segment formula (1/2)(theta - sin theta) also holds for the major segment, so the 'given also true for pi <= theta < 2pi' line in (b) is true."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 0.2 m^2 per minute. Checked: h = 0.5 gives theta = 2pi/3; dV/dtheta = 15/4 so dtheta/dt = 0.08; surface S = 5 x AB = 10 sin(theta/2), dS/dt = 5 cos(pi/3) x 0.08 = 0.2. Cross-checked via S = 10 sqrt(2h - h^2) and dh/dt = 0.06/sqrt(3): also 0.2."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Both shown: dh/dt = (1/2) sin(theta/2) x 0.3 / ((5/2)(1 - cos theta)) with 1 - cos theta = 2 sin^2(theta/2) gives (3/100) cosec(theta/2). The one-line route dV/dh = surface area = 10 sin(theta/2) gives the same."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both: least rate 0.03 m per minute at theta = pi, depth 1 m. Checked: cosec(theta/2) >= 1 on 0 < theta < 2pi with equality only at theta = pi; depth 1 m is reached from the 0.5 m start."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: sin(theta/2) = 1/2 gives theta = pi/3 (h = 1 - sqrt3/2 = 0.134 m, below the 0.5 m start, rejected) or theta = 5pi/3, depth 1 + sqrt3/2 = 1.87 m; time = [V(5pi/3) - V(2pi/3)]/0.3 = (5/2)(pi + sqrt3)/0.3 = (25/3)(pi + sqrt3) = 40.6 min. Checked numerically: V(5pi/3) = 15.255, V(2pi/3) = 3.071, difference 12.184, /0.3 = 40.61."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter's key and the blind examiner agree on every part, and my own working confirms each value; the rejection of theta = pi/3 by the starting depth is correct, and 0.06 m per minute is met exactly once after pumping starts (the rate falls from 0.0346 to 0.03 at half-full, then rises).",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Wording of (a)/(b): (a) prints h = 1 - cos(theta/2) with no restriction but V only for 0 < theta < pi, then (b) says 'both results in part (a) are also true for pi <= theta < 2pi'. Put the restriction on both: '(a) Show that, for 0 < theta < pi, h = 1 - cos(theta/2) and the volume of fuel ... is V = (5/2)(theta - sin theta).' Then (b)'s sentence reads consistently.",
+     "(c)(i) at [2] is a mark light for dV/dtheta, the chain rule and the half-angle identity (2023 P2 Q2(a) paid a comparable derivation 3); it is within one mark of the 2022-2024 rate, so no re-mark is required, but if a mark is ever freed elsewhere in the paper it belongs here."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A Section A closer at the 2022-2024 standard: the candidate builds V from sector minus triangle (not printed as a formula to substitute), must think of the fuel surface as a 5 x 2 sin(theta/2) rectangle in (b), chooses the half-angle identity in (c)(i), and in (d) keeps one of two roots by the starting depth then finds an exact time from the volume between two angles - one idea per part, clean numbers (0.2, 0.03, 1 + sqrt3/2, (25/3)(pi + sqrt3)), finishable in about 20 minutes. Not a re-skin of 2022 P2 Q2 (variable-rate container, no geometry) or 2022 P2 Q5 (spherical cap by integration, cubic in p), and no rates-of-change question exists in Set 1 P1; the only edit a real paper would make is the range wording in (a), and the three printed gates are on the generous side of SEAB's habit."
+   },
+   "exemplars": [
+    {
+     "id": "5ce59773-1280-4413-a690-d846887fcd6d",
+     "ref": "GCE 2025 P2 Q4"
+    },
+    {
+     "id": "c5c73788-48fd-4c56-b07e-afa63e8a0b62",
+     "ref": "GCE 2025 specimen P1 Q1"
+    },
+    {
+     "id": "b15dc58b-d392-4aed-a7e2-f60a04ba3f3d",
+     "ref": "GCE 2016 P2 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Permutations and Combinations",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "Ten people, including Mr Lim and Mrs Lim, are to be seated at two round tables, one with 6 seats and the other with 4 seats. At each table, seating arrangements that are rotations of one another are regarded as the same.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the number of different ways in which the 10 people can be seated.",
+      "marks": 2,
+      "answer": "$151\\,200$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the number of ways in which the 10 people can be seated so that Mr Lim and Mrs Lim sit next to each other.",
+      "marks": 3,
+      "answer": "$33\\,600$"
+     },
+     {
+      "label": "(c)",
+      "text": "The 10 people are seated at random. Given that Mr Lim and Mrs Lim sit at the same table, find the probability that they do not sit next to each other.",
+      "marks": 2,
+      "answer": "$\\frac{11}{21}$ $(0.524)$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 7,
+    "topics": [
+     "Permutations and Combinations",
+     "Probability"
+    ],
+    "skills": [
+     "seating at two round tables of different sizes: choosing who sits at each table, then a circular arrangement at each (the tables are distinguishable, so no division by 2)",
+     "a pair next to each other at a round table, split into cases by which table the pair shares, with the pair treated as one unit and the companions chosen first",
+     "conditional probability from counted arrangements: P(not adjacent | same table) = P(same table, not adjacent) / P(same table)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Choose the 6 guests who sit at the 6-seat table: $\\binom{10}{6} = 210$ ways; the other 4 sit at the 4-seat table.\nArrangements round the 6-seat table: $(6-1)! = 120$. Arrangements round the 4-seat table: $(4-1)! = 6$.\nNumber of ways $= 210 \\times 120 \\times 6 = 151\\,200$. [M1 A1]\n\n(b) If Mr and Mrs Lim sit next to each other they sit at the same table. Two cases.\nCase 1: both at the 6-seat table. Choose the other 4 guests at that table from the remaining 8: $\\binom{8}{4} = 70$. Treat the couple as one unit: 5 units round the table in $(5-1)! = 24$ ways, and the couple can be arranged in $2! = 2$ ways within the unit, giving $48$. The other 4 guests round the 4-seat table: $3! = 6$.\nCase 1 total $= 70 \\times 48 \\times 6 = 20\\,160$. [M1]\nCase 2: both at the 4-seat table. Choose the other 2 guests at that table from the remaining 8: $\\binom{8}{2} = 28$. Couple as one unit: 3 units round the table in $(3-1)! = 2$ ways, $\\times 2$ within the unit, giving $4$. The other 6 guests round the 6-seat table: $5! = 120$.\nCase 2 total $= 28 \\times 4 \\times 120 = 13\\,440$. [M1]\nNumber of ways $= 20\\,160 + 13\\,440 = 33\\,600$. [A1]\n\n(c) Number of ways in which they sit at the same table:\nboth at the 6-seat table: $\\binom{8}{4} \\times 5! \\times 3! = 70 \\times 720 = 50\\,400$;\nboth at the 4-seat table: $\\binom{8}{2} \\times 5! \\times 3! = 28 \\times 720 = 20\\,160$;\ntotal $= 70\\,560$.\nSitting next to each other is contained in sitting at the same table, so the number of ways in which they sit at the same table but not next to each other is $70\\,560 - 33\\,600 = 36\\,960$. [M1]\nRequired probability $= \\frac{36\\,960}{151\\,200} = \\frac{11}{45}$ $(0.244)$. [A1]\nAlternatively: $\\mathrm{P}(\\text{same table}) = \\frac{6}{10} \\times \\frac{5}{9} + \\frac{4}{10} \\times \\frac{3}{9} = \\frac{7}{15}$ and $\\mathrm{P}(\\text{next to each other}) = \\frac{33\\,600}{151\\,200} = \\frac{2}{9}$, so the probability is $\\frac{7}{15} - \\frac{2}{9} = \\frac{21 - 10}{45} = \\frac{11}{45}$.\n(Check by direct count: at the 4-seat table 'not next to each other' means opposite each other, $28 \\times 2 \\times 120 = 6720$; at the 6-seat table $70 \\times (120 - 48) \\times 6 = 30\\,240$; total $36\\,960$.)\nAll three counts were confirmed by a complete enumeration of the $10!$ seatings of labelled seats, divided by $6 \\times 4$ rotations.\n\n(c) [revised at moderation] P(same table) = [C(8,4)·5!·3! + C(8,2)·5!·3!]/151 200 = (50 400 + 20 160)/151 200 = 7/15. P(same table and next to each other) = 33 600/151 200 = 2/9. So P(same table, not next to each other) = 7/15 − 2/9 = 11/45, and P(not next to each other | same table) = (11/45)/(7/15) = 11/21 ≈ 0.524. M1 for the conditioning event P(same table) = 7/15 (or the count 70 560), A1 for 11/21.",
+    "syllabus_check": "9758 Section B, Permutations and Combinations: arrangements in a circle with a restriction (two people together, treated as a unit), selection of who sits at each table (combinations), the multiplication and addition principles over cases; Probability: a probability from counting and P(A and not B) = P(A) - P(B) when B is contained in A. No figure, no calculator needed beyond arithmetic, nothing outside the syllabus (no identical tables, no reflections/bracelets, no identical objects in a circle).",
+    "originality_note": "No GCE question from 2008 to 2025 seats people at two tables. The circular questions in the corpus seat one group round a single table or circle (GCE 2016 P2 Q7(iii)-(iv), three officers adjacent or separated round one table of 10; GCE 2012 P2 Q7(v), sisters adjacent in one circle for 1 mark; GCE 2017 P2 Q6(iii), father cards separated in a circle). The exemplars are a row of digit cards (GCE 2025 P2 Q7), committees with conditions (GCE 2022 P2 Q7, GCE 2024 P2 Q6) and ratio-of-probability counters/shapes questions (GCE 2023 P2 Q6, GCE 2020 P2 Q8); none shares this situation or its sequence of parts. No earlier Set has a Permutations and Combinations question, and this paper's other slots put conditional probability and independence in Q9, so part (c) deliberately asks for a difference of probabilities, not a conditional one. The decision that carries the standard is splitting by which table the couple shares (different table sizes give different block counts, and at the 4-seat table 'not next to each other' can only mean opposite)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P2 Q7",
+     "jaccard": 0.077,
+     "nearest_set": "Set 1 P1 Q4",
+     "jaccard_set": 0.01,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-09-26T15:49:03.159Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "151200",
+     "(b)": "33600",
+     "(c)": "11/45 (0.244)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 151 200. Re-derived: C(10,6) x 5! x 3! = 210 x 120 x 6 = 151 200; the two tables differ in size so they are distinguishable and there is no division by 2."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 33 600. Re-derived: 6-seat table C(8,4) x 4! x 2 x 3! = 20 160; 4-seat table C(8,2) x 2! x 2 x 5! = 13 440; sum 33 600. Cross-checked as a probability: 6/10 x 5/9 x 2/5 + 4/10 x 3/9 x 2/3 = 2/15 + 4/45 = 2/9 = 33 600 / 151 200."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 11/45 (0.244). Re-derived: P(same table) = 6/10 x 5/9 + 4/10 x 3/9 = 7/15; 7/15 - 2/9 = 11/45. Direct count agrees: 6/10 x 5/9 x 3/5 + 4/10 x 3/9 x 1/3 = 9/45 + 2/45 = 11/45 (at the 4-seat table 'not next to each other' means opposite)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part, and my own working confirms all three values (151 200; 33 600; 11/45), so the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Close on a conditional probability, the way the 2022-2024 starters close (GCE 2022 P2 Q6(b) 'Given that Babs wins', 2025 P2 Q7(d) 'Given that the even digits are all together'): replace (c) with 'The 10 guests are seated at random. Given that Mr Lim and Mrs Lim sit at the same table, find the probability that they do not sit next to each other.' [2] - key 11/21 (= (11/45) / (7/15)); the candidate must then supply P(same table) = 7/15 as the conditioning event rather than only subtract the answer to (b) from it.",
+     "Register: SEAB would open 'Ten people, including Mr and Mrs Lim, are to be seated at two round tables, one with 6 seats and the other with 4 seats.' - drop 'at a dinner', 'a married couple' and 'and every seat is taken' (10 guests fill 10 seats, so the sentence adds nothing); keep the rotations sentence.",
+     "For the session, not a rejection: no words are asked for anywhere, which standard.md section 5 item 10 lists as a question-level anti-pattern. I have not rejected on it because the 2022-2024 counting and probability starters this slot is measured against (GCE 2022 P2 Q6, GCE 2023 P2 Q6, GCE 2024 P2 Q7) ask for none either, so the rule as written would reject those real questions; but this slot contributes zero explain units, so Section B's 4-11 must come entirely from Q6-Q10, or a one-mark reason in context is added here."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A clean two-table circular-arrangement question: (b) needs the candidate to decide that adjacency forces the same table and to split by which table (unequal cases), (c) needs the complement of 'next to each other' inside 'same table' (or the opposite-seat observation at the 4-seat table); numbers are exam-clean (151 200, 33 600, 11/45), the marks match what 2025 P2 Q7 paid the same weight (2 for the total, 3 for a restriction, 2 for the probability), it re-skins no 2022-2024 question and nothing in this Set's Paper 1 or earlier in this paper touches counting. It is a familiar tutorial configuration that closes one notch plainer than a GCE starter (no conditional, no words), so a real question after a light edit rather than indistinguishable from one."
+   },
+   "exemplars": [
+    {
+     "id": "232a8b8e-28d7-4241-b313-6aca1d37c784",
+     "ref": "GCE 2020 P2 Q8"
+    },
+    {
+     "id": "eca2cf75-cec1-4d5a-b639-ae0751834839",
+     "ref": "GCE 2025 P2 Q7"
+    },
+    {
+     "id": "d9e58d77-8afb-49f0-b9b2-3457c30c44b1",
+     "ref": "GCE 2024 P2 Q6"
+    },
+    {
+     "id": "54e3d49b-026b-4a0f-8e8b-9fec5b2a0d90",
+     "ref": "GCE 2023 P2 Q6"
+    },
+    {
+     "id": "3407ab1c-7cb5-4829-959d-1fec4a5a10c5",
+     "ref": "GCE 2022 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Distributions (Binomial)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "An airline operates a flight which has 180 seats for passengers. On average, $5\\%$ of the people who have bought a ticket for this flight do not turn up for it, so the airline sells more than 180 tickets for each flight. The number of ticket-holders who turn up for a randomly chosen flight is denoted by $X$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "State, in context, two assumptions needed for $X$ to be well modelled by a binomial distribution.",
+      "marks": 2,
+      "answer": "Whether a ticket-holder turns up for the flight is independent of whether any other ticket-holder turns up; the probability that a ticket-holder turns up is the same for every ticket-holder."
+     },
+     {
+      "label": "(b)",
+      "text": "Explain why one of these assumptions may not be reasonable for the people who buy tickets for this flight.",
+      "marks": 1,
+      "answer": "People who buy tickets together and travel as a group (a family or a tour group) tend either all to turn up or all not to turn up, so ticket-holders do not turn up independently of one another. (Or: the probability of turning up differs between ticket-holders, e.g. business travellers with flexible tickets are more likely to change flights than holidaymakers.)"
+     },
+     {
+      "label": "(c)",
+      "text": "Assume now that $X$ has a binomial distribution. The airline sells 184 tickets for each of the 7 flights on this route in a randomly chosen week. Find the probability that, on at least 2 of these 7 flights, a ticket-holder who turns up cannot be given a seat. State the distribution you use.",
+      "marks": 3,
+      "answer": "$0.00536$ (with $Y \\sim \\mathrm{B}(7,\\ 0.0164)$, where $0.0164 = \\mathrm{P}(X \\geqslant 181)$ for $X \\sim \\mathrm{B}(184,\\ 0.95)$)"
+     },
+     {
+      "label": "(d)",
+      "text": "The airline wants the probability that every ticket-holder who turns up for a flight can be given a seat to be at least $0.95$. Find the greatest number of tickets that the airline can sell for each flight.",
+      "marks": 2,
+      "answer": "$185$"
+     }
+    ],
+    "answer": "(a) Ticket-holders turn up independently of one another; the probability of turning up is the same for every ticket-holder. (b) e.g. groups (families, tour groups) travel together, so turning up is not independent. (c) $0.722$ (d) $185$",
+    "total_marks": 8,
+    "topics": [
+     "Distributions (Binomial)",
+     "Probability"
+    ],
+    "skills": [
+     "explaining in context why the independence (or constant-probability) assumption of a binomial model may fail for people who travel together",
+     "greatest number of trials $n$ for which a binomial cumulative probability $\\mathrm{P}(X \\le 180)$ stays at least $0.95$, found by tabulating $n$ on the calculator against a fixed seat count",
+     "a binomial built on a binomial: P(X ≥ 181) for X ~ B(184, 0.95) becomes the p of Y ~ B(7, p) over the week"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Whether one ticket-holder turns up for the flight is independent of whether any other ticket-holder turns up. The probability that a ticket-holder turns up for the flight is the same (0.95) for every ticket-holder. [B1 each, in context]\n(b) Many people buy their tickets together and travel as a group, for example a family or a tour group. If one member of such a group does not turn up (illness, a late taxi), the others are also likely not to turn up, so whether ticket-holders turn up is not independent. [B1] Also accept: the probability of turning up is not the same for every ticket-holder, e.g. business travellers with flexible tickets are more likely to switch flights than holidaymakers with non-refundable tickets.\n(c) $X \\sim \\mathrm{B}(184, 0.95)$. At least one ticket-holder cannot be given a seat means $X \\ge 181$; exactly one cannot be given a seat means $X = 181$.\n$\\mathrm{P}(X \\ge 181) = 1 - \\mathrm{P}(X \\le 180) = 1 - 0.983575 = 0.016425$\n$\\mathrm{P}(X = 181) = 0.011860$\n$\\mathrm{P}(X = 181 \\mid X \\ge 181) = \\frac{\\mathrm{P}(X = 181)}{\\mathrm{P}(X \\ge 181)} = \\frac{0.011860}{0.016425} = 0.722$ (3 s.f.) [M1 ratio of the two binomial probabilities, A1]\n(d) Let $n$ be the number of tickets sold for a flight, so that $X \\sim \\mathrm{B}(n, 0.95)$. [B1] Every ticket-holder who turns up can be given a seat means $X \\le 180$, so we need $\\mathrm{P}(X \\le 180) \\ge 0.95$.\nFrom the graphing calculator: when $n = 184$, $\\mathrm{P}(X \\le 180) = 0.9836$; when $n = 185$, $\\mathrm{P}(X \\le 180) = 0.9567 \\ge 0.95$; when $n = 186$, $\\mathrm{P}(X \\le 180) = 0.9071 < 0.95$. [M1 values for $n = 185$ and $n = 186$]\n$\\mathrm{P}(X \\le 180)$ decreases as $n$ increases, so the greatest number of tickets the airline can sell is $185$. [A1]\n\n(c) [revised at moderation] For one flight, X ~ B(184, 0.95): P(X ≥ 181) = 1 − P(X ≤ 180) = 0.01640 (calculator). Let Y be the number of the 7 flights on which someone cannot be seated: Y ~ B(7, 0.0164). P(Y ≥ 2) = 1 − P(Y ≤ 1) = 0.00536. M1 for P(X ≥ 181) = 0.0164, M1 for stating Y ~ B(7, 0.0164), A1 for 0.00536. (d) now [2]: M1 for the two tabulated values P(X ≤ 180) = 0.9567 at n = 185 and 0.9071 at n = 186 (B(n, 0.95) implicit in the tabulation), A1 for 185.",
+    "syllabus_check": "9758 Section B only: the binomial distribution as a model with its two conditions stated and critiqued in context, binomial probabilities and cumulative probabilities from the graphing calculator, conditional probability $\\mathrm{P}(A \\mid B) = \\mathrm{P}(A \\cap B)/\\mathrm{P}(B)$ between two binomial events (here $A \\subset B$), and an unknown number of trials $n$ fixed by a probability condition by tabulation. No Poisson, no normal approximation to the binomial, no geometric distribution, no cumulative distribution function.",
+    "originality_note": "No earlier Set has a binomial question, and no GCE 9758/9740 paper in the corpus uses an overbooked flight. The real binomial questions of 2019, 2023, 2024 and 2025 (quality-control counts of faulty items: assumptions stated, one probability, a binomial of a binomial over a week, a total over several days) and the 2025 specimen (the range of $p$ from a modal value) all fix $n$ and vary the event or $p$; here the seat count fixes the event and the candidate must introduce the number of trials $n$ as the unknown, the assumption is critiqued rather than only stated, and a conditional probability links two binomial events read from the context. There is no binomial-of-a-binomial, no total over days and no mean-variance relation."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P2 Q9",
+     "jaccard": 0.08,
+     "nearest_set": "Set 1 P1 Q10",
+     "jaccard_set": 0.005,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-26T15:51:09.668Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Each ticket-holder turns up (or not) independently of every other ticket-holder; the probability that a ticket-holder turns up is the same, 0.95, for every ticket-holder (on every flight).",
+     "(b)": "Independence may fail: people often buy tickets and travel in groups (families, colleagues), so if one does not turn up the others in the group are also likely not to turn up. (Alternatively, the no-show probability may vary between passengers, e.g. business vs leisure travellers.)",
+     "(c)": "X ~ B(184, 0.95); P(X >= 181) = 0.016425 per flight. Y = number of the 7 flights on which someone cannot be seated, Y ~ B(7, 0.016425); P(Y >= 2) = 1 - P(Y=0) - P(Y=1) = 0.00536 (3 s.f.)",
+     "(d)": "Need P(X <= 180) >= 0.95 with X ~ B(n, 0.95): n = 185 gives 0.9567 >= 0.95, n = 186 gives 0.9071 < 0.95; greatest number of tickets = 185"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give independence between ticket-holders and a constant probability (0.95) of turning up, each stated in the flight context."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give the group-travel reason (families, tour groups, colleagues) for independence failing; the setter also accepts the unequal-probability reason (business vs holiday travellers)."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 0.722. Re-worked: X ~ B(184, 0.95), P(X = 181) = 0.011860, P(X >= 181) = 1 - P(X <= 180) = 0.016425, ratio 0.72206 = 0.722 (3 s.f.)."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both 185. Re-worked: with X ~ B(n, 0.95), P(X <= 180) = 0.9836 (n = 184), 0.9567 (n = 185), 0.9071 (n = 186); decreasing in n, so greatest n is 185."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The blind examiner and the setter agree on every part, and my own working confirms 0.722 in (c) and 185 in (d); the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(c) repeats a skill already in this paper: Q5 (as now filed in paper-so-far.md) asks a conditional probability whose numerator event sits inside the conditioning event, P(not adjacent | same table) = P(same table, not adjacent)/P(same table), and (c) is the same move one question later, P(X = 181 | X >= 181) = P(X = 181)/P(X >= 181). Replace (c) with the binomial skill no question of this paper carries — the binomial of a binomial the 2022–2024 binomial question always has (GCE 2023 P2 Q10(a)(iv), GCE 2024 P2 Q9(c)(iii)): e.g. 'The airline sells 184 tickets for each of the 7 flights on this route in a randomly chosen week. Find the probability that on at least 2 of these flights a ticket-holder who turns up cannot be given a seat. State the distribution you use. [3]' (the candidate must first find P(X >= 181) = 0.0164 and then set up B(7, 0.0164)); the marks then read 2/1/3/3 = 9, or keep 8 by paying (d) 2 marks (M1 the two tabulated values, A1 185, with B(n, 0.95) implicit in the tabulation).",
+     "(c) as it stands: put the condition in SEAB's conditional form — 'Given that at least one ticket-holder who turns up for this flight cannot be given a seat, find the probability that exactly one ticket-holder cannot be given a seat.' (cf. GCE 2022 P2 Q6(b) 'Given that Babs wins the game, find …'); 'It is known that …' is the phrase SEAB uses to introduce data (GCE 2025 specimen P2 Q7(c)), not a conditioning event, and a candidate may read it as a fact about the flight rather than as the event to condition on."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "An 8-mark Section B binomial question in SEAB's register with a context that carries the maths (5% no-show makes p = 0.95 for the count who turn up, 180 seats fixes the threshold, 'at least one cannot be seated' must be translated to X >= 181): (a)/(b) are the assumptions-in-context and an explain unit paid as 2022–2024 pays them, (c) needs a conditional probability built from the words, and (d) moves the unknown to the number of trials n with the seat count fixed — each one idea, all finishable in the time, no 2022–2024 question re-skinned, no earlier Set question on this topic. Not 5 because (c)'s conditional-with-nested-events is the move Q5 of this paper already makes, and its condition is not phrased the way SEAB phrases one; the binomial-of-a-binomial part that 2022–2024 binomial questions carry is the natural replacement."
+   },
+   "exemplars": [
+    {
+     "id": "016e6135-7dc1-4c3d-b932-33ba9e18aed6",
+     "ref": "GCE 2025 specimen P2 Q7"
+    },
+    {
+     "id": "093eb388-262e-493c-a45a-60b0c61b6fa6",
+     "ref": "GCE 2022 P2 Q8"
+    },
+    {
+     "id": "2ce77b2a-cf63-4834-a536-17ced88b460b",
+     "ref": "GCE 2018 P2 Q6"
+    },
+    {
+     "id": "b845c6e0-bcf4-47ab-a49f-1d9678c8e5e8",
+     "ref": "GCE 2017 P2 Q5"
+    },
+    {
+     "id": "5769402e-9fad-47d8-a24c-205407b27fb2",
+     "ref": "GCE 2024 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Hypothesis Testing",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "Over a long period, the mean journey time of buses on a certain route during the morning peak was $36.0$ minutes. A new system of traffic lights is then installed along the route. A commuters' association believes that the new system has increased the mean morning journey time. The bus company, whose timetable for the route is based on a mean morning journey time of $36.0$ minutes, wishes to find out whether the mean morning journey time is now different from this value. The journey times, $x$ minutes, of a random sample of $50$ morning journeys made after the installation are summarised as follows.\n$n = 50, \\qquad \\sum (x - 35) = 95, \\qquad \\sum (x - 35)^2 = 768.5$\nThe association and the bus company each use this sample to carry out a hypothesis test.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate unbiased estimates of the population mean and variance of the morning journey time after the installation.",
+      "marks": 2,
+      "answer": "Mean $36.9$ minutes; variance $12$ minutes$^2$"
+     },
+     {
+      "label": "(b)",
+      "text": "State hypotheses for the association's test and for the bus company's test, defining any parameter you use.",
+      "marks": 2,
+      "answer": "$\\mu$ minutes = population mean morning journey time after the installation. Association: $\\mathrm{H}_0: \\mu = 36.0$, $\\mathrm{H}_1: \\mu > 36.0$. Bus company: $\\mathrm{H}_0: \\mu = 36.0$, $\\mathrm{H}_1: \\mu \\neq 36.0$."
+     },
+     {
+      "label": "(c)",
+      "text": "Find the $p$-value of the association's test, and state what this $p$-value means in the context of the question.",
+      "marks": 2,
+      "answer": "$p$-value $= 0.0331$. If the population mean morning journey time is still $36.0$ minutes, the probability that a random sample of $50$ morning journeys has a mean journey time of $36.9$ minutes or more is $0.0331$."
+     },
+     {
+      "label": "(d)",
+      "text": "Both tests are carried out at the $\\alpha\\%$ level of significance. Find the set of values of $\\alpha$ for which the association concludes that the mean morning journey time has increased but the bus company does not conclude that the mean morning journey time has changed.",
+      "marks": 2,
+      "answer": "$3.31 < \\alpha < 6.62$"
+     }
+    ],
+    "answer": "(a) $36.9$ minutes, $12$ minutes$^2$; (b) $\\mu$ = population mean morning journey time after the installation; association $\\mathrm{H}_0: \\mu = 36.0$, $\\mathrm{H}_1: \\mu > 36.0$; bus company $\\mathrm{H}_0: \\mu = 36.0$, $\\mathrm{H}_1: \\mu \\neq 36.0$; (c) $0.0331$, the probability, if the mean is still $36.0$ minutes, that a random sample of $50$ journeys has mean at least $36.9$ minutes; (d) $3.31 < \\alpha < 6.62$",
+    "total_marks": 8,
+    "topics": [
+     "Hypothesis Testing",
+     "Distributions (Sampling)"
+    ],
+    "skills": [
+     "one-tailed and two-tailed hypotheses written for two parties who test the SAME sample with different aims",
+     "the p-value of a large-sample z-test (unbiased estimates from data coded about a value other than the hypothesised mean, Central Limit Theorem) and its meaning in context",
+     "the band of significance levels at which a one-tailed test rejects H0 but the two-tailed test on the same data does not, from the two-tailed p-value being double the one-tailed one"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $\\bar{x} = 35 + \\frac{95}{50} = 36.9$.\n$s^2 = \\frac{1}{49}\\left[768.5 - \\frac{95^2}{50}\\right] = \\frac{1}{49}(768.5 - 180.5) = \\frac{588}{49} = 12$.\nUnbiased estimate of the population mean $= 36.9$ minutes; unbiased estimate of the population variance $= 12$ minutes$^2$. [B1 B1] (The data are coded about 35, not about the hypothesised 36.0: $\\bar{x} = 35 + 1.9$.)\n(b) Let $\\mu$ minutes be the population mean morning journey time after the installation.\nThe association believes the mean has increased, so its test is one-tailed: $\\mathrm{H}_0: \\mu = 36.0$ against $\\mathrm{H}_1: \\mu > 36.0$.\nThe bus company wants to know whether the mean differs from 36.0 in either direction (its timetable is wrong if journeys are longer or shorter), so its test is two-tailed: $\\mathrm{H}_0: \\mu = 36.0$ against $\\mathrm{H}_1: \\mu \\neq 36.0$. [B1 for $\\mu$ defined with the association's pair; B1 for the bus company's pair]\n(c) Under $\\mathrm{H}_0$, since $n = 50$ is large, by the Central Limit Theorem $\\bar{X} \\sim \\mathrm{N}\\left(36.0, \\frac{12}{50}\\right)$ approximately.\nTest statistic $z = \\frac{36.9 - 36.0}{\\sqrt{12/50}} = \\frac{0.9}{\\sqrt{0.24}} = 1.837$ (4 s.f.).\n$p$-value $= \\mathrm{P}(\\bar{X} \\ge 36.9) = \\mathrm{P}(Z \\ge 1.8371) = 0.033096 = 0.0331$ (3 s.f.). [B1]\nMeaning: assuming the population mean morning journey time is still $36.0$ minutes, the probability that a random sample of $50$ morning journeys has a mean journey time of $36.9$ minutes or more is $0.0331$. [B1]\n(d) The bus company's test is two-tailed, so its $p$-value is $\\mathrm{P}(|Z| \\ge 1.8371) = 2 \\times 0.033096 = 0.066193 = 0.0662$ (3 s.f.). [M1]\n$\\mathrm{H}_0$ is rejected when the $p$-value $\\le \\frac{\\alpha}{100}$.\nThe association rejects $\\mathrm{H}_0$ (concludes that the mean has increased) when $\\frac{\\alpha}{100} \\ge 0.033096$, i.e. $\\alpha \\ge 3.3096$.\nThe bus company does not reject $\\mathrm{H}_0$ (does not conclude that the mean has changed) when $\\frac{\\alpha}{100} < 0.066193$, i.e. $\\alpha < 6.6193$.\nHence $3.31 < \\alpha < 6.62$ (3 s.f.; the end-points are $3.3096\\ldots$ and $6.6193\\ldots$, so either inequality sign at the left end is accepted). [A1]\n[Equivalently, with critical values: the association rejects when $1.837$ exceeds the upper $\\frac{\\alpha}{100}$ point of $\\mathrm{N}(0, 1)$, and the bus company does not reject when $1.837$ is below the upper $\\frac{\\alpha}{200}$ point.] Note that $\\alpha = 5$ lies in this band: at the usual 5% level the two organisations reach different conclusions from the same journeys.",
+    "syllabus_check": "9758 Section B only: a test of a population mean from a large sample with the variance estimated (z-test via the Central Limit Theorem); unbiased estimates of the population mean and variance from summarised data in the form $\\sum (x - a)$, $\\sum (x - a)^2$; null and alternative hypotheses with the parameter defined; one-tail and two-tail tests chosen from the aim; the $p$-value and its meaning; the level of significance and the rejection rule. No t-test, no Type I/II error terms, no test of a difference of two means, no Poisson.",
+    "originality_note": "New situation: bus journey times after a traffic-light change, tested on ONE sample by two parties with different aims. The reversed part is new in direction: past papers ask for the least integer $\\alpha$ (GCE 2024 P2 Q8), a range of $\\alpha$ for one test (GCE 2016 P2 Q6), a range of the variance (GCE 2018 P2 Q5, 2025 specimen P2 Q10) or of $\\bar{x}$ (GCE 2011, 2012, 2014); here the candidate must see that the two-tailed $p$-value is double the one-tailed one and find the band of $\\alpha$ where the two conclusions disagree. The 2025 specimen has a 2-tail Production Manager and a 1-tail Finance Manager, but with separate samples and no comparison of conclusions; this question compares the two conclusions on the same data and asks for the meaning of the $p$-value in context instead of a Central Limit Theorem explanation. Data coded about 35, not the hypothesised 36.0 (avoids GCE 2010 P2 Q6's 42.0-minute mean and GCE 2011's 38.0). No earlier Set has a hypothesis-testing question."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P2 Q8",
+     "jaccard": 0.068,
+     "nearest_set": "Set 1 P1 Q6",
+     "jaccard_set": 0.013,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-26T15:47:50.861Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Unbiased estimate of population mean = 36.9 minutes; unbiased estimate of population variance = 12 (min^2)",
+     "(b)": "Let mu be the population mean morning journey time (minutes) after the installation. Association: H0: mu = 36.0 vs H1: mu > 36.0. Bus company: H0: mu = 36.0 vs H1: mu != 36.0.",
+     "(c)": "Under H0, by CLT (n = 50 large) Xbar ~ N(36, 12/50) approx; z = 1.837, p-value = P(Xbar >= 36.9) = 0.0331 (3 s.f.). Meaning: if the mean morning journey time is still 36.0 minutes, the probability of a random sample of 50 journeys having a mean time of 36.9 minutes or more is 0.0331.",
+     "(d)": "Association rejects H0 iff 0.0331 <= alpha/100; bus company does not reject iff two-tailed p = 0.0662 > alpha/100. Set: {alpha : 3.31 <= alpha < 6.62}"
+    },
+    "solvable": true,
+    "issues": [
+     "(c)/(d): values assume the large-sample z-test with the sample variance 12 used for sigma^2 (the 9758 convention); a t-test would give slightly different p-values (about 0.036 one-tailed).",
+     "(d): the inclusive/strict endpoints follow the convention 'reject H0 when p-value <= significance level'."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give mean 36.9 minutes and variance 12 minutes^2. Re-worked: xbar = 35 + 95/50 = 36.9; s^2 = (768.5 - 95^2/50)/49 = 588/49 = 12 exactly. Examination-clean, and the coding about 35 (not the hypothesised 36.0) is a live trap a reflex 36 + 1.9 = 37.9 falls into."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both define mu as the population mean morning journey time after the installation and give H0: mu = 36.0 with H1: mu > 36.0 (association) and H1: mu != 36.0 (bus company). The tails are decisions the candidate makes from 'increased' and 'different from this value' (the timetable sentence justifies the two-tailed choice); the stem states neither tail nor hypotheses."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: by the CLT (n = 50) Xbar ~ N(36.0, 12/50), z = 0.9/sqrt(0.24) = 1.8371, p = P(Z >= 1.8371) = 0.033096 = 0.0331 (3 s.f.), with the same in-context meaning. Re-worked and confirmed. The blind examiner's remark that a t-test would give about 0.036 is not a disagreement: 9758 uses the large-sample z-test with s^2 for sigma^2, and the t-test is outside the syllabus."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Two-tailed p-value 2 x 0.033096 = 0.066193 = 0.0662; association rejects when alpha/100 >= 0.033096, bus company does not reject when alpha/100 < 0.066193; band 3.31 <= alpha < 6.62. Setter writes 3.31 < alpha < 6.62 and accepts either sign at the left end; blind writes 3.31 <= alpha < 6.62. Same set to 3 s.f., differing only in the endpoint convention (reject when p <= alpha/100), which the setter already allows. alpha is real here (2024 P2 Q8 said integer), so an interval is the right form; the 5% level sits inside it, which is the point of the question."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part; I re-worked all four (xbar = 36.9, s^2 = 12 exactly, z = 1.837, one-tailed p = 0.03310, two-tailed 0.06619, band 3.31 <= alpha < 6.62) and the key is right, the only difference being the inclusive sign at the left end of (d), a convention the setter accepts either way.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Add the one-mark in-context reason about the sample or the distribution that every 2022-2024 hypothesis-test question carries and this one lacks (2022 P2 Q11(e) two assumptions, 2023 P2 Q8(a)(ii) why the sample is unsuitable, 2024 P2 Q8(e) whether 10 mornings suffice): e.g. '(e) Explain why the association was able to carry out its test without knowing the distribution of the journey times. [1]' (the Central Limit Theorem in words, n = 50 large), or '(e) The bus company later repeats its test with a random sample of 8 morning journeys. State an assumption it must now make. [1]'. This takes the slot to 9 marks; if the session must hold 8, fold it into (c) as 'Find the p-value of the association's test, explaining why the distribution of journey times need not be known, and state what this p-value means in the context of the question. [3]' and let the session take one mark from a routine part elsewhere. Marks otherwise match 2022-2024 pay within one mark (estimates [2], hypotheses defined [2], p-value + meaning [2], the two-tailed p-value and the band [2]), so no re-mark is needed."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A genuine 2024-shape hypothesis question: the two parties make the tail a decision inside (b) rather than a printed one, the coding about 35 rather than the hypothesised 36.0 is a real twist in (a), and (d) turns the 2024 P2 Q8(c) idea (a p-value read as a significance level) into a band between the one- and two-tailed p-values on the same data - one idea supplied by the candidate, clean numbers (s^2 = 12), SEAB register, finishable in the 14 minutes 8 marks buy, and no Set 1 P1 or in-paper skill anywhere near it (nearest Jaccard 0.068 to GCE 2024 P2 Q8, 0.013 to Set 1 P1 Q6; gates passed). It is one light edit short of indistinguishable: every real 2022-2024 hypothesis question also asks a one-mark reason about the sample or the distribution, and this asks none."
+   },
+   "exemplars": [
+    {
+     "id": "5e22b998-13e6-4754-9d81-96989d8627ed",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "6fcaef67-d9f4-4d8a-9115-ae5e79f4439f",
+     "ref": "GCE 2021 P2 Q8"
+    },
+    {
+     "id": "b60aa3a4-7a2e-42ec-b990-48bc7ff22ac4",
+     "ref": "GCE 2019 P2 Q9"
+    },
+    {
+     "id": "c4ca8080-284f-4164-bad3-7fc2475641c4",
+     "ref": "GCE 2018 P2 Q5"
+    },
+    {
+     "id": "c1845fb2-1a47-497e-b394-b818ab6a35f0",
+     "ref": "GCE 2017 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Linear Regression",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "An ecologist visits 8 islands in an archipelago. For each island she records its area, $A$ km$^{2}$, and the number, $S$, of species of resident bird found on the island. The results are shown in the table.\n\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|} \\hline A & 0.3 & 0.8 & 1.5 & 2.6 & 4.2 & 7.0 & 11.5 & 18.4 \\\\ \\hline S & 20 & 28 & 34 & 38 & 44 & 52 & 60 & 72 \\\\ \\hline \\end{array}$\n\nA scatter diagram for the data is shown below.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "The scatter diagram shows the data. Explain what the scatter diagram tells you about the way in which $S$ changes as $A$ increases.",
+      "marks": 1,
+      "answer": "As $A$ increases, $S$ increases, but by less and less for each extra km$^2$: the points rise steeply at first and then flatten, so the relationship is not linear.",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "The ecologist considers the two models $S = a + b\\ln A$ and $S = kA^{n}$, where $a$, $b$, $k$ and $n$ are constants. By calculating a suitable product moment correlation coefficient for each model, determine which model gives the better fit to the data, and find the values of the constants for that model. Give each product moment correlation coefficient correct to 4 decimal places.",
+      "marks": 5,
+      "answer": "$r$ between $\\ln A$ and $S$ is $0.9772$; $r$ between $\\ln A$ and $\\ln S$ is $0.9984$, which is closer to 1, so $S = kA^{n}$ is the better model. $\\ln S = 3.37 + 0.301\\ln A$, so $n = 0.301$ and $k = 29.2$.",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "In this part you should use the model you chose in part (b).",
+      "marks": 4,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Two islands $P$ and $Q$ in the archipelago are such that $P$ has twice as many species of resident bird as $Q$. Find the ratio of the area of $P$ to the area of $Q$.",
+        "marks": 2,
+        "answer": "$\\frac{\\text{area of } P}{\\text{area of } Q} = 2^{\\frac{1}{n}} = 10.0$"
+       },
+       {
+        "label": "(ii)",
+        "text": "An island in the archipelago that the ecologist did not visit has area $6.0$ km$^{2}$. Estimate the number of species of resident bird on this island, and explain whether your estimate is reliable.",
+        "marks": 2,
+        "answer": "About 50 species ($S = 50.0$). Reliable: $A = 6.0$ lies within the range of the data, $0.3 \\leqslant A \\leqslant 18.4$, and $r = 0.9984$ is very close to 1."
+       }
+      ]
+     }
+    ],
+    "answer": "",
+    "total_marks": 10,
+    "topics": [
+     "Linear Regression"
+    ],
+    "skills": [
+     "linearising a power model $S = kA^{n}$ by regressing $\\ln S$ on $\\ln A$ (both variables transformed) and recovering $k = \\mathrm{e}^{c}$ from the intercept",
+     "choosing between a logarithmic model $S = a + b\\ln A$ and a power model by comparing the product moment correlation coefficients of their linearised forms",
+     "using the power law to find the area ratio for a doubled count, $(A_P/A_Q)^{n} = 2$ with $k$ cancelling, then an interpolated estimate judged for reliability"
+    ],
+    "needs_figure": true,
+    "figure_description": "A scatter diagram of the 8 data points only, no line and no curve. Horizontal axis A (km²) from 0 to 20 with ticks every 5; vertical axis S (number of species) from 0 to 80 with ticks every 20; axes labelled A and S with O at the origin; a light grid is acceptable. Plot exactly these points as small crosses or dots: (0.3, 20), (0.8, 28), (1.5, 34), (2.6, 38), (4.2, 44), (7.0, 52), (11.5, 60), (18.4, 72). Nothing else is printed: no regression line, no equation, no labels on the points.",
+    "solution": "(a) Sketch: $A$ on the horizontal axis (0 to 20), $S$ on the vertical axis (0 to 80), 8 points plotted. For small $A$ the points rise steeply ($S$ goes from 20 to 38 as $A$ goes from 0.3 to 2.6); for larger $A$ they rise more slowly ($S$ goes from 44 to 72 as $A$ goes from 4.2 to 18.4). The points lie close to a curve that is concave downwards.\nAs $A$ increases, $S$ increases, but at a decreasing rate, so a linear model $S = c + dA$ is not appropriate (even though $r$ between $A$ and $S$ is $0.957$). [B1 sketch, B1 description]\n\n(b) Model $S = a + b\\ln A$ is linear in $\\ln A$ and $S$: $r$ between $\\ln A$ and $S$ $= 0.97721\\ldots = 0.9772$ (4 d.p.). [B1]\nModel $S = kA^{n}$: taking logarithms, $\\ln S = \\ln k + n\\ln A$, which is linear in $\\ln A$ and $\\ln S$: $r$ between $\\ln A$ and $\\ln S$ $= 0.99843\\ldots = 0.9984$ (4 d.p.). [B1]\nSince $0.9984$ is closer to 1 than $0.9772$, the model $S = kA^{n}$ gives the better fit. [B1]\nLeast squares regression line of $\\ln S$ on $\\ln A$ (from the calculator): $\\ln S = 3.3737 + 0.30087\\ln A$.\nSo $n = 0.301$ (3 s.f.) and $\\ln k = 3.3737$, giving $k = \\mathrm{e}^{3.3737} = 29.19 = 29.2$ (3 s.f.). [B1 both]\n(Using $\\lg$ instead: $\\lg S = 1.4652 + 0.30087\\lg A$, the same $r$ and $n$, and $k = 10^{1.4652} = 29.2$.)\n(For comparison, the other model's line is $S = 30.4 + 12.1\\ln A$, which would even give $S < 0$ for $A < 0.081$, unrealistic for a very small island.)\n\n(c)(i) Let the areas be $A_P$ and $A_Q$. Then $kA_P^{\\,n} = 2kA_Q^{\\,n}$, so $\\left(\\frac{A_P}{A_Q}\\right)^{n} = 2$ ($k$ cancels, so the ratio is the same for any such pair of islands). [M1]\n$\\frac{A_P}{A_Q} = 2^{\\frac{1}{n}} = 2^{\\frac{1}{0.30087}} = 10.01\\ldots = 10.0$ (3 s.f.) (with $n = 0.301$: $2^{\\frac{1}{0.301}} = 10.0$). [A1]\nSo an island with twice as many species of resident bird has about 10 times the area.\n\n(c)(ii) $S = 29.19 \\times 6.0^{0.30087}$: $\\ln S = 3.3737 + 0.30087\\ln 6 = 3.9128$, so $S = 50.04 \\approx 50$ species (with $k = 29.2$, $n = 0.301$: $S = 50.1 \\approx 50$). [B1]\nThe estimate is reliable: $A = 6.0$ lies within the range of the data ($0.3 \\leqslant A \\leqslant 18.4$), so this is interpolation, and $r = 0.9984$ is very close to 1, so $\\ln S$ and $\\ln A$ have a strong linear relationship. [B1]",
+    "syllabus_check": "9758 Correlation and linear regression: a scatter diagram and what it shows; the product moment correlation coefficient as a measure of linear fit and the choice between candidate models by comparing r; a logarithmic transformation to achieve linearity (the syllabus's 'square, reciprocal, logarithmic or other transformation'); the least squares regression line of y on x from the graphing calculator (ln S on ln A, the area being the independent variable); interpolation and the reliability of an estimate. Reducing y = kx^n to ln y = ln k + n ln x is O-Level A Math linear law (assumed knowledge). No formulae derived, no hypothesis test on r, no r^2 = b1b2. Section B only; calculator values read (r to 4 d.p. as stated, constants to 3 s.f.).",
+    "originality_note": "No SEAB regression question (2008-2025 and the 2025 specimen) or earlier Set uses a species-area situation, and no earlier Set has a regression question at all. Every SEAB model comparison transforms ONE variable (x^2, x^3, ln x, sqrt x, 1/x, e^y, ln y); this one needs a power model with an unknown exponent, linearised in BOTH variables (ln S on ln A) with k recovered from the intercept. GCE 2024 P2 Q11(a) compares ln m with sqrt m for cereal prices and ends in a price estimate; here the log model's rival is a free-exponent power law, and part (c)(i), the area ratio for twice as many species where k cancels and the answer holds for any pair of islands, has no counterpart in any real paper. The sequence scatter -> two models -> property of the model -> estimate is not that of GCE 2023 P2 Q7, 2025 P2 Q8 or the 2025 specimen (pumpkin masses, d^2 against d^3)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P2 Q11",
+     "jaccard": 0.065,
+     "nearest_set": "Set 1 P1 Q2",
+     "jaccard_set": 0.009,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-09-26T15:55:57.879Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Scatter diagram of S against A: points rise steeply for small A then level off (concave curve). S increases as A increases, but at a decreasing rate (non-linear).",
+     "(b)": "S = a + b ln A: r (between ln A and S) = 0.9772; S = kA^n: r (between ln A and ln S) = 0.9984. |r| is closer to 1 for S = kA^n, so S = kA^n is the better model. ln S = 3.3737 + 0.30087 ln A, giving k = 29.2, n = 0.301 (S = 29.2A^0.301).",
+     "(c)(i)": "A_P/A_Q = 2^(1/n) = 2^(1/0.301) = 10.0 (area of P is about 10 times area of Q)",
+     "(c)(ii)": "S = 29.2(6.0)^0.301 = 50.0, i.e. about 50 species. Reliable: A = 6.0 lies within the data range 0.3 to 18.4 (interpolation) and r = 0.9984 is very close to 1, so the model fits the data very well."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both describe the same picture: points rising steeply for small A then more gradually (concave), S increasing at a decreasing rate, not linear. Slopes between consecutive points fall from 16 to 1.7, so the curvature is real on a sketch."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Recomputed: r(ln A, S) = 0.97721 -> 0.9772; r(ln A, ln S) = 0.99843 -> 0.9984; ln S = 3.3737 + 0.30087 ln A, so n = 0.301 and k = e^3.3737 = 29.2. Setter and examiner identical; S = kA^n is the better model."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "(A_P/A_Q)^n = 2 with k cancelling; 2^(1/0.30087) = 10.012 and 2^(1/0.301) = 10.002, both 10.0 to 3 s.f. Setter and examiner identical."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "29.19 x 6.0^0.30087 = 50.04, or 29.2 x 6.0^0.301 = 50.07: about 50 species. Reliable, A = 6.0 inside 0.3..18.4 and r = 0.9984. Setter and examiner identical."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere: every value in the setter's key is confirmed by the blind examiner and by an independent recomputation of the two correlation coefficients, the regression line, the area ratio and the estimate.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Print the scatter diagram in the question, as GCE 2022 P2 Q10 and GCE 2024 P2 Q11 do (no 2022-2024 regression question had the candidate draw one, and this data is log-spread: A = 0.3, 0.8 and 1.5 fall within the first 8% of a 0-20 axis). Then re-mark: (a) becomes 'Explain what the scatter diagram tells you about the way in which S changes as A increases' [1], and (b) gains the mark [5], matching GCE 2023 P2 Q7's 1 + 1 for the two coefficients and 3 for the choice with the constants; the total stays 10."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The species-area power law is a real context whose data give n = 0.30 (the ecological value), the transformation is left to the candidate and needs both variables logged, which no 2022-2024 paper asked, (c)(i) is a genuine use of the model with k cancelling, and the three explain units and the marks sit exactly where GCE 2023 P2 Q7 and GCE 2024 P2 Q11(a) put them. The shared scatter -> two models by r -> line -> estimate skeleton is the roster's fixed shape for this slot, not a re-skin; the one thing a 2022-2024 paper would do differently is print the scatter diagram for data spread like this rather than have it sketched."
+   },
+   "exemplars": [
+    {
+     "id": "eb999daf-761a-4284-9591-adb7c63dc05c",
+     "ref": "GCE 2025 specimen P2 Q6"
+    },
+    {
+     "id": "8ce2055f-c20e-47f0-a165-f000a7d19751",
+     "ref": "GCE 2017 P2 Q8"
+    },
+    {
+     "id": "12191fd4-e406-4588-a590-68bb4a5e5bda",
+     "ref": "GCE 2020 P2 Q7"
+    },
+    {
+     "id": "35a67a23-6f33-4e20-a74a-ba80f469e964",
+     "ref": "GCE 2018 P2 Q9"
+    },
+    {
+     "id": "942d54c6-e048-425b-97b6-6e63d14287b7",
+     "ref": "GCE 2023 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Probability",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "In a penalty kick, the kicker kicks the ball towards either the left side or the right side of the goal and, at the same moment, the goalkeeper dives towards either the left side or the right side of the goal. When the goalkeeper dives towards the side to which the ball is kicked, the probability that a goal is scored is $0.3$. When the goalkeeper dives towards the other side, the probability that a goal is scored is $0.9$.\nKofi takes penalty kicks against the goalkeeper Lim. On each kick, Kofi kicks towards the left side with probability $0.6$ and Lim dives towards the left side with probability $p$, where $0 \\le p \\le 1$. Kofi's choice and Lim's choice are independent of each other.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that the probability that Kofi scores a goal with a penalty kick is $0.66 - 0.12p$.",
+      "marks": 2,
+      "answer": "$0.66 - 0.12p$ (shown)"
+     },
+     {
+      "label": "(b)",
+      "text": "Kofi wonders whether the side he kicks towards affects his chance of scoring.",
+      "marks": 3,
+      "answer": "(i) $p = 0.5$; (ii) Kofi's chance of scoring is the same whichever side he kicks towards.",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the value of $p$ for which the events 'Kofi kicks towards the left side' and 'Kofi scores a goal' are independent.",
+        "marks": 2,
+        "answer": "$p = 0.5$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Explain, in the context of the question, what this independence means for Kofi.",
+        "marks": 1,
+        "answer": "When $p = 0.5$, Kofi scores with probability $0.6$ whichever side he kicks towards, so he cannot increase his chance of scoring by changing the side he kicks towards (or how often he chooses the left side)."
+       }
+      ]
+     },
+     {
+      "label": "(c)",
+      "text": "For the value of $p$ found in part (b)(i), find the probability that, given that Kofi does not score a goal with a particular penalty kick, Lim dived towards the side to which the ball was kicked.",
+      "marks": 2,
+      "answer": "$0.875$ $\\left(= \\frac{7}{8}\\right)$"
+     },
+     {
+      "label": "(d)",
+      "text": "Kofi and Lim now play a game in which Kofi takes a sequence of penalty kicks against Lim. A kick that does not result in a goal is called a miss. Kofi wins the game as soon as the total number of goals he has scored in the game is 2 more than the total number of misses, and Lim wins the game as soon as the total number of misses is 2 more than the total number of goals. The probability that Kofi scores a goal with any one kick is $g$, where $0 < g < 1$, and the outcomes of different kicks are independent.\nShow that the probability that Kofi wins the game is $\\frac{g^2}{1 - 2g + 2g^2}$.",
+      "marks": 3,
+      "answer": "$\\frac{g^2}{1 - 2g + 2g^2}$ (shown)"
+     },
+     {
+      "label": "(e)",
+      "text": "Throughout the game, Kofi and Lim make their choices on every kick with the probabilities given at the start of the question, using the same value of $p$ on every kick. Lim wants the probability that Kofi wins the game to be less than $0.6$. Find the range of values of $p$ that Lim could choose.",
+      "marks": 3,
+      "answer": "$0.912 < p \\le 1$ (exactly $\\frac{50\\sqrt{6} - 117}{6} < p \\le 1$)"
+     }
+    ],
+    "answer": "(a) $0.66 - 0.12p$ (shown). (b)(i) $p = 0.5$. (b)(ii) Kofi scores with probability $0.6$ whichever side he kicks towards, so changing his side cannot improve his chance of scoring. (c) $0.875$. (d) $\\frac{g^2}{1 - 2g + 2g^2}$ (shown). (e) $0.912 < p \\le 1$.",
+    "total_marks": 13,
+    "topics": [
+     "Probability"
+    ],
+    "skills": [
+     "independence of two events used as an equation to find an unknown probability from a tree, then interpreted in context",
+     "a 'win by two clear' repeated-trial game: kicks taken in pairs from level, winning probability summed as a geometric series",
+     "a probability inequality solved as a quadratic in g (root above 1 rejected) and carried back through g = 0.66 - 0.12p to a range of the underlying parameter"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Let $L$ = Kofi kicks towards the left side, $K$ = Lim dives towards the left side, $G$ = a goal is scored. $\\mathrm{P}(L) = 0.6$, $\\mathrm{P}(K) = p$, $L$ and $K$ independent.\n\n(a) Tree: first branch $L$ / $L'$, second branch $K$ / $K'$, third branch $G$ / $G'$ (0.3 when the dive matches the kick, 0.9 otherwise).\n$\\mathrm{P}(G) = 0.6[0.3p + 0.9(1 - p)] + 0.4[0.9p + 0.3(1 - p)]$ [M1: all four branches]\n$= 0.6(0.9 - 0.6p) + 0.4(0.3 + 0.6p) = 0.54 - 0.36p + 0.12 + 0.24p = 0.66 - 0.12p$ (shown) [A1]\n\n(b)(i) $\\mathrm{P}(L \\cap G) = 0.6[0.3p + 0.9(1 - p)] = 0.6(0.9 - 0.6p) = 0.54 - 0.36p$.\n$\\mathrm{P}(L)\\,\\mathrm{P}(G) = 0.6(0.66 - 0.12p) = 0.396 - 0.072p$.\nIndependent $\\iff 0.54 - 0.36p = 0.396 - 0.072p$ [M1] $\\iff 0.144 = 0.288p \\iff p = 0.5$ [A1].\n(Equivalently $\\mathrm{P}(G \\mid L) = \\mathrm{P}(G)$: $0.9 - 0.6p = 0.66 - 0.12p$.)\n\n(b)(ii) With $p = 0.5$: $\\mathrm{P}(G \\mid L) = 0.3p + 0.9(1 - p) = 0.15 + 0.45 = 0.6$ and $\\mathrm{P}(G \\mid L') = 0.9p + 0.3(1 - p) = 0.45 + 0.15 = 0.6$. Kofi's probability of scoring is $0.6$ whichever side he kicks towards, so he cannot increase his chance of scoring against Lim by changing the side he kicks towards. [B1]\n\n(c) $p = 0.5$. Let $S$ = Lim dives towards the side to which the ball is kicked.\n$\\mathrm{P}(S) = \\mathrm{P}(L)\\mathrm{P}(K) + \\mathrm{P}(L')\\mathrm{P}(K') = 0.6(0.5) + 0.4(0.5) = 0.5$, so $\\mathrm{P}(S \\cap G') = 0.5 \\times 0.7 = 0.35$ [M1: both matching branches].\n$\\mathrm{P}(G') = 1 - (0.66 - 0.06) = 0.4$.\n$\\mathrm{P}(S \\mid G') = \\frac{0.35}{0.4} = 0.875$ [A1].\n\n(d) Let $d$ = (goals so far) $-$ (misses so far). The game starts with $d = 0$, each kick changes $d$ by $+1$ (probability $g$) or $-1$ (probability $1 - g$), and the game ends when $d = 2$ (Kofi wins) or $d = -2$ (Lim wins).\nFrom $d = 0$ one kick gives $d = \\pm 1$, so the game cannot end after an odd number of kicks. Taking the kicks in pairs from $d = 0$: two goals, probability $g^2$ (Kofi wins); two misses, probability $(1 - g)^2$ (Lim wins); one of each in either order, probability $2g(1 - g)$, and $d = 0$ again [M1].\nSo Kofi wins after 2, 4, 6, ... kicks with probabilities $g^2$, $2g(1 - g)g^2$, $[2g(1 - g)]^2 g^2$, ...\n$\\mathrm{P}(\\text{Kofi wins}) = g^2\\sum_{k=0}^{\\infty}[2g(1 - g)]^k$ [M1: geometric series, first term $g^2$, common ratio $2g(1 - g)$], convergent since $0 < 2g(1 - g) \\le \\frac{1}{2} < 1$,\n$= \\frac{g^2}{1 - 2g(1 - g)} = \\frac{g^2}{1 - 2g + 2g^2}$ (shown) [A1].\n(Alternative: with $w$ = P(Kofi wins from $d = 0$), $w = g^2 + 2g(1 - g)w$, giving the same result.)\n\n(e) From part (a), $g = 0.66 - 0.12p$, so $0.54 \\le g \\le 0.66$ [M1: link to part (a)].\nNeed $\\frac{g^2}{1 - 2g + 2g^2} < 0.6$. Since $1 - 2g + 2g^2 = g^2 + (1 - g)^2 > 0$:\n$g^2 < 0.6 - 1.2g + 1.2g^2 \\iff 0.2g^2 - 1.2g + 0.6 > 0 \\iff g^2 - 6g + 3 > 0 \\iff g < 3 - \\sqrt{6}$ or $g > 3 + \\sqrt{6}$.\nAs $0 < g < 1$, reject $g > 3 + \\sqrt{6}$; so $g < 3 - \\sqrt{6} \\approx 0.5505$ [M1].\n$0.66 - 0.12p < 3 - \\sqrt{6} \\iff p > \\frac{\\sqrt{6} - 2.34}{0.12} = \\frac{50\\sqrt{6} - 117}{6} = 0.91241\\ldots$\nWith $p \\le 1$: $0.912 < p \\le 1$ [A1].\n(GC route: graph $y = \\frac{(0.66 - 0.12x)^2}{1 - 2(0.66 - 0.12x) + 2(0.66 - 0.12x)^2}$ for $0 \\le x \\le 1$; it is decreasing and meets $y = 0.6$ at $x = 0.912$.)\nCheck: $p = 1$ gives $g = 0.54$ and $\\frac{0.2916}{0.5032} = 0.579 < 0.6$; $p = 0.9$ gives $g = 0.552$ and probability $0.603 > 0.6$. In context, Lim must dive towards Kofi's favoured (left) side on more than about $91\\%$ of kicks.",
+    "syllabus_check": "9758 Section B Probability only: a tree diagram with an unknown probability, independence of events used as a condition and interpreted in context, conditional probability over two branches, a repeated-trial game summed as a geometric series (sum to infinity with |r| < 1, assumed from 9758 sequences and series), and a quadratic inequality (O-Level assumed knowledge). No DRV table, no binomial, no Poisson, no Markov-chain formalism, no method of differences.",
+    "originality_note": "New situation (a kicker and goalkeeper choosing sides independently; a 'two clear' penalty game). Unlike GCE 2022 P2 Q6 (die game of turns, first to match; then a conditional on the winner), the game here is a single player's run of kicks ended by a lead of two, summed over PAIRS of kicks, and its last part is a parameter range, not a conditional on the winner. Unlike GCE 2022 P2 Q9 / 2018 P2 Q6 (paths on a board), GCE 2024 P2 Q7 (prize in boxes), GCE 2023 P2 Q5 (independence checked on numbered slots), GCE 2017 P2 Q9 (test accuracy) and GCE 2008 P2 Q7 (tennis sets): here independence is IMPOSED to find p and then explained, and the game's probability is linked back to p through part (a). No earlier Set has a probability question; Paper 1's sequence questions (a quadratic recurrence, AP/GP sums with r < 0) share nothing with this geometric series in probabilities."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2019 P2 Q7",
+     "jaccard": 0.023,
+     "nearest_set": "Set 1 P1 Q3",
+     "jaccard_set": 0.008,
+     "repeated_skills": []
+    },
+    "marks": 13,
+    "checked_at": "2026-09-26T15:54:40.651Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown: P(same side) = 0.6p + 0.4(1-p) = 0.4 + 0.2p; P(goal) = 0.3(0.4+0.2p) + 0.9(0.6-0.2p) = 0.66 - 0.12p",
+     "(b)(i)": "p = 0.5 (P(goal | left) = 0.9 - 0.6p = 0.66 - 0.12p)",
+     "(b)(ii)": "Kofi's probability of scoring (0.6) is the same whichever side he kicks to, so his choice of side does not affect his chance of scoring",
+     "(c)": "7/8 = 0.875 (P(same side and miss) = 0.5 x 0.7 = 0.35, P(miss) = 0.4)",
+     "(d)": "shown: over each pair of kicks GG (g^2) Kofi wins, MM Lim wins, GM/MG (2g(1-g)) returns to level, so W = g^2 + 2g(1-g)W, W = g^2/(1 - 2g + 2g^2)",
+     "(e)": "0.912 < p <= 1 (g = 0.66 - 0.12p < 3 - sqrt(6), i.e. p > (sqrt(6) - 2.34)/0.12 = 0.9124)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both reach 0.66 - 0.12p. Checked: P(same side) = 0.6p + 0.4(1-p) = 0.4 + 0.2p; P(G) = 0.3(0.4 + 0.2p) + 0.9(0.6 - 0.2p) = 0.66 - 0.12p."
+     },
+     {
+      "label": "(b)(i)",
+      "agree": true,
+      "note": "Both give p = 0.5. Checked: P(G | L) = 0.9 - 0.6p = P(G) = 0.66 - 0.12p gives 0.48p = 0.24."
+     },
+     {
+      "label": "(b)(ii)",
+      "agree": true,
+      "note": "Same interpretation: with p = 0.5 Kofi scores with probability 0.6 whichever side he kicks towards, so his choice of side cannot improve his chance."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 7/8 = 0.875. Checked over all four miss branches: 0.21 + 0.03 + 0.02 + 0.14 = 0.40 = P(miss); same-side misses 0.21 + 0.14 = 0.35."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both show it; the setter by the geometric series with ratio 2g(1-g), the examiner by W = g^2 + 2g(1-g)W. Checked by first-step analysis from d = +1 and d = -1."
+     },
+     {
+      "label": "(e)",
+      "agree": true,
+      "note": "Both give 0.912 < p <= 1. Checked: g^2 - 6g + 3 > 0 with 0 < g < 1 gives g < 3 - sqrt(6) = 0.5505; W is increasing in g (dW/dg = 2g(1-g)/(...)^2 > 0) and g decreases in p, so W < 0.6 iff p > (sqrt(6) - 2.34)/0.12 = 0.91241; p = 1 gives W = 0.5795 < 0.6 so the range is non-empty."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I confirm each; the key is exactly right, both show-that targets are true, and the range in (e) is non-empty inside 0 <= p <= 1.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Formatting: part (b) is printed as an empty parent line carrying '[3]'; SEAB puts the marks on (i) [2] and (ii) [1] only. Either drop the parent's mark tag or give (b) a one-line lead-in (e.g. 'Kofi wonders whether the side he kicks towards affects his chance of scoring.') and leave the marks on the subparts.",
+     "Register: 'In this part, p takes the value found in part (b)(i).' is not SEAB's phrasing; write 'For the value of p found in part (b)(i), find the probability that, given that Kofi does not score a goal with a particular penalty kick, Lim dived towards the side to which the ball was kicked.' (cf. GCE 2018 P2 Q8(ii) 'For the case where n = 1').",
+     "Variety inside this paper: (c) is the third conditional probability in Section B (after Q5(c) P(not adjacent | same table) and Q6 P(X = 181 | X >= 181)). It is the reverse direction (given the outcome, the cause) so it is not a repeat, but if the session wants the paper wider, replace (c) with the numerical independence test the slot plan lists: 'Determine whether the events \"Lim dives towards the side to which the ball is kicked\" and \"a goal is scored\" are independent' (P(S and G) = 0.15, P(S)P(G) = 0.30, not independent) [2]."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A tree with an unknown p built from words, independence used as an equation and then explained in context, a reverse conditional, a win-by-two game summed as a geometric series (the idea part, paid [3] as GCE 2022 P2 Q6(a) pays its game of turns), and a range of p carried back through the printed line of (a) (the unfamiliar last part, [3] as GCE 2024 P2 Q7(a)(iii)); two idea parts in a 13-mark question, each finishable in six minutes, numbers clean (0.5, 7/8, 0.912). Not a re-skin of GCE 2022 P2 Q9 (board, same-route conditional, P(B) = P(C)) and nothing in Paper 1 shares its situation or skills; two light wording/format edits keep it from a 5."
+   },
+   "exemplars": [
+    {
+     "id": "7b54c12b-c661-445f-ab29-b9dda97b675d",
+     "ref": "GCE 2017 P2 Q9"
+    },
+    {
+     "id": "5769402e-9fad-47d8-a24c-205407b27fb2",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "61af0052-0808-4104-8e3c-1370fa35b2a9",
+     "ref": "GCE 2023 P2 Q10"
+    },
+    {
+     "id": "d10e876a-80db-489e-be38-b73b25cf9ef0",
+     "ref": "GCE 2018 P2 Q8"
+    },
+    {
+     "id": "afd1709c-6568-439b-bd56-e0883781a02f",
+     "ref": "GCE 2022 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Distributions (Normal)",
+   "target": 14,
+   "accepted": true,
+   "question": {
+    "stem": "In this question you should state the parameters of any distributions you use.\nA doctor at a clinic sees her patients one after another, with no gaps between consultations. The duration, in minutes, of a routine consultation follows the distribution $\\mathrm{N}(8, 2^2)$. You should assume that the durations of all consultations are independent.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the probability that a randomly chosen routine consultation lasts more than 11 minutes.",
+      "marks": 1,
+      "answer": "$0.0668$"
+     },
+     {
+      "label": "(b)",
+      "text": "The doctor's morning session lasts 2 hours. Find the largest value of $n$ for which the probability that the total duration of $n$ routine consultations is more than 2 hours is less than $0.01$.",
+      "marks": 3,
+      "answer": "$n = 12$"
+     },
+     {
+      "label": "(c)",
+      "text": "Explain, in the context of the question, why the assumption that the durations of the consultations in one session are independent may not be valid.",
+      "marks": 1,
+      "answer": "For example: if the doctor falls behind after a long consultation, she may shorten the later consultations to catch up, so the duration of one consultation can affect the durations of the consultations after it."
+     },
+     {
+      "label": "(d)",
+      "text": "The duration, in minutes, of a new-patient consultation follows the distribution $\\mathrm{N}(\\mu, 3^2)$. The probability that a randomly chosen new-patient consultation lasts more than twice as long as a randomly chosen routine consultation is $0.8$. Find $\\mu$.",
+      "marks": 4,
+      "answer": "$\\mu = 20.2$ (20.208)"
+     },
+     {
+      "label": "(e)",
+      "text": "Without doing any detailed calculation, explain whether the probability that a randomly chosen new-patient consultation lasts longer than the total duration of two randomly chosen routine consultations is greater than $0.8$ or less than $0.8$.",
+      "marks": 2,
+      "answer": "Greater than $0.8$: $N - (R_1 + R_2) \\sim \\mathrm{N}(\\mu - 16, 17)$ has the same mean $\\mu - 16$ as $N - 2R \\sim \\mathrm{N}(\\mu - 16, 25)$, and this mean is positive (since $0.8 > 0.5$), but its variance is smaller ($17 < 25$), so a greater proportion of its distribution lies above 0."
+     },
+     {
+      "label": "(f)",
+      "text": "On a certain morning the doctor sees her first patient at 9 a.m., and she has 4 new-patient consultations and 5 routine consultations booked. Find, in whole minutes after 9 a.m., the earliest time at which the probability that she has finished all 9 consultations is at least $0.95$.",
+      "marks": 3,
+      "answer": "11.14 a.m. (134 minutes after 9 a.m.)"
+     }
+    ],
+    "answer": "(a) $0.0668$; (b) $n = 12$; (c) the doctor may shorten later consultations when running late, so durations in a session may depend on each other; (d) $\\mu = 20.2$; (e) greater than $0.8$ (same positive mean $\\mu - 16$, smaller variance $17 < 25$); (f) 11.14 a.m.",
+    "total_marks": 14,
+    "topics": [
+     "Distributions (Normal)"
+    ],
+    "skills": [
+     "largest integer n for which the total of n independent normal durations exceeds a fixed 2-hour session with probability below 0.01: variance 4n (a sum, not nR) with n in both mean and variance, found from a calculator table",
+     "unknown mean found from P(N > 2R) = 0.8, where 'twice as long' is the multiple 2R with variance 4Var(R), reversed through the inverse normal; then 2R against R_1 + R_2 compared by variance alone (same positive mean) to judge a probability without calculating it",
+     "earliest whole-minute time for which a mixed total of 4 + 5 independent normal durations is complete with probability at least 0.95: inverse normal rounded UP, not to the nearest minute"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Let $R$ minutes be the duration of a routine consultation, $R \\sim \\mathrm{N}(8, 2^2)$, and $N$ minutes that of a new-patient consultation.\n(a) $\\mathrm{P}(R > 11) = 0.066807 = 0.0668$ (3 s.f.). [B1]\n(b) Let $T_n = R_1 + R_2 + \\cdots + R_n$, the total duration of $n$ independent routine consultations. $\\mathrm{E}(T_n) = 8n$ and $\\mathrm{Var}(T_n) = n \\times 2^2 = 4n$ (a sum of $n$ independent durations, not $nR$, whose variance would be $4n^2$), so $T_n \\sim \\mathrm{N}(8n, 4n)$. [B1]\nRequire $\\mathrm{P}(T_n > 120) < 0.01$. From a table of values on the calculator: [M1]\n$n = 12$: $T_{12} \\sim \\mathrm{N}(96, 48)$, $\\mathrm{P}(T_{12} > 120) = 0.000266 < 0.01$;\n$n = 13$: $T_{13} \\sim \\mathrm{N}(104, 52)$, $\\mathrm{P}(T_{13} > 120) = 0.0133 > 0.01$;\n$n = 14$: $\\mathrm{P}(T_{14} > 120) = 0.143$, and the probability increases with $n$.\nSo the largest $n$ is $n = 12$. [A1]\n(Common errors: using the mean alone gives $n = 14$ or $15$; using $\\mathrm{Var} = 4n^2$ gives $n = 9$.)\n(c) The durations may depend on each other: for example, if the doctor falls behind schedule after a long consultation, she may hurry the later consultations to catch up, so a long consultation tends to be followed by shorter ones. (Also acceptable: a doctor who is ahead of time may spend longer with later patients.) [B1]\n(d) $N \\sim \\mathrm{N}(\\mu, 3^2)$. 'More than twice as long' is $N > 2R$, a multiple of ONE routine consultation. $\\mathrm{E}(N - 2R) = \\mu - 2(8) = \\mu - 16$ [B1] and $\\mathrm{Var}(N - 2R) = 3^2 + 2^2 \\times 2^2 = 9 + 16 = 25$ [B1], so $N - 2R \\sim \\mathrm{N}(\\mu - 16, 25)$.\n$\\mathrm{P}(N - 2R > 0) = 0.8 \\Rightarrow \\mathrm{P}\\left(Z > \\frac{0 - (\\mu - 16)}{5}\\right) = 0.8 \\Rightarrow \\frac{16 - \\mu}{5} = -0.841621$ [M1]\n$\\mu = 16 + 5(0.841621) = 20.208 = 20.2$ (3 s.f.). [A1]\n(Using $R_1 + R_2$ in place of $2R$, variance $17$, gives the wrong value $19.5$.)\n(e) $N - (R_1 + R_2) \\sim \\mathrm{N}(\\mu - 16, 3^2 + 2^2 + 2^2) = \\mathrm{N}(\\mu - 16, 17)$, which has the same mean as $N - 2R \\sim \\mathrm{N}(\\mu - 16, 25)$ but a smaller variance, $17 < 25$. [B1]\nThe common mean $\\mu - 16 \\approx 4.21$ is positive (because $\\mathrm{P}(N - 2R > 0) = 0.8 > 0.5$), so the less spread-out distribution has a greater proportion of its area above 0. Hence the probability is greater than $0.8$. [B1]\n(Check, not required: $\\mathrm{P}(N - R_1 - R_2 > 0) = 0.846$.)\n(f) Let $T = N_1 + N_2 + N_3 + N_4 + R_1 + \\cdots + R_5$. $\\mathrm{E}(T) = 4\\mu + 5(8) = 4(20.208) + 40 = 120.83$ and $\\mathrm{Var}(T) = 4(3^2) + 5(2^2) = 56$, so $T \\sim \\mathrm{N}(120.83, 56)$. [B1]\nShe has finished by $t$ minutes after 9 a.m. when $T \\le t$. $\\mathrm{P}(T \\le t) \\geqslant 0.95 \\Rightarrow t \\geqslant 120.83 + 1.64485\\sqrt{56} = 133.14$. [M1]\nThe earliest whole number of minutes is $t = 134$, rounding UP: $\\mathrm{P}(T \\le 133) = 0.948 < 0.95$ but $\\mathrm{P}(T \\le 134) = 0.961 \\geqslant 0.95$. So the earliest time is 134 minutes after 9 a.m., i.e. 11.14 a.m. [A1]\n(With $\\mu = 20.2$: $T \\sim \\mathrm{N}(120.8, 56)$, $t \\geqslant 133.11$, the same answer 11.14 a.m.; rounding to the nearest minute, 11.13 a.m., is wrong.)",
+    "syllabus_check": "9758 Normal distribution only: probabilities and inverse probabilities from the graphing calculator; E and Var of aX + bY for independent normals; the sum of n independent copies X_1 + ... + X_n against the multiple 2X (listed in the syllabus); an unknown mean found from a given probability; an explanation of the independence assumption in context. No normal approximation, no Poisson, no t-test, no covariance (part (e) needs only that two normals with the same positive mean differ in variance).",
+    "originality_note": "A clinic doctor's consultation durations: no 2022-2024 GCE question, and no earlier question in the corpus, uses this situation. It avoids the exemplars' structures: 2023 P2 Q9 (planks: a total of 8, an expected number, 'differs by less than', L/3 > R/2 then a wastage remark), 2024 P2 Q10 (plates: 5% reduction, binomial of a normal, a Value pack exceeded by 5%), 2021 P2 Q10 and 2017 P2 Q10 (mean and sd from two percentages, a component total), 2018 P2 Q10 (bulb, box and padding), 2020 P2 Q6 (a commute and lateness), 2025 P2 Q10 (two machines and a test). Here the unknown is n in both mean and variance (b), the mean is found BACKWARDS from a condition on N - 2R (d), the sum-versus-multiple distinction is asked as reasoning about variance (e), and the inverse normal must be rounded UP to a whole minute (f). No earlier Set has a Distributions (Normal) question (Set 1 Paper 1 is pure mathematics)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q9",
+     "jaccard": 0.062,
+     "nearest_set": "Set 1 P1 Q2",
+     "jaccard_set": 0.013,
+     "repeated_skills": []
+    },
+    "marks": 14,
+    "checked_at": "2026-09-26T15:54:18.343Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "X ~ N(8, 2^2): P(X > 11) = 1 - Φ(1.5) = 0.0668",
+     "(b)": "T ~ N(8n, 4n); need (120 - 8n)/(2√n) > 2.3263. n = 12 gives P(T > 120) = 0.000266 < 0.01, n = 13 gives P(T > 120) = 0.0133 > 0.01, so n = 12",
+     "(c)": "Durations in one session may be related: e.g. if the doctor is running late after a long consultation she may hurry (shorten) the later ones, or tiredness later in the session may make later consultations longer, so one duration affects the next",
+     "(d)": "Y ~ N(μ, 3^2), Y - 2X ~ N(μ - 16, 25); P(Y - 2X > 0) = 0.8 gives (16 - μ)/5 = -0.8416, so μ = 20.2 (20.208)",
+     "(e)": "Greater than 0.8. Y - (X1 + X2) ~ N(μ - 16, 17): same mean μ - 16 (> 0, about 4.21) as Y - 2X but smaller variance (17 < 25), so (μ - 16)/√17 > (μ - 16)/5 and P(Y - (X1 + X2) > 0) > 0.8",
+     "(f)": "S = Y1+...+Y4 + X1+...+X5 ~ N(120.83, 56); P(S ≤ t) ≥ 0.95 needs t ≥ 120.83 + 1.6449√56 = 133.14, so t = 134 minutes: earliest time 11:14 a.m."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 0.0668. Checked: P(Z > 1.5) = 0.066807."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both n = 12 with T_n ~ N(8n, 4n). Checked: P(T_12 > 120) = 0.000266 < 0.01, P(T_13 > 120) = 0.0133 > 0.01, and the probability rises with n, so 12 is the largest. (Var = 4n^2 would give 9; the mean alone gives 14 or 15.)"
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give a dependence-in-context reason (a long consultation makes the doctor hurry the later ones; the examiner adds tiredness lengthening later ones). Either is a valid B1."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both mu = 20.208 = 20.2 (3 s.f.) from N - 2R ~ N(mu - 16, 25). Checked: invNorm(0.2) = -0.84162, mu = 16 + 5(0.84162) = 20.208. Using R_1 + R_2 (variance 17) gives 19.5, wrong."
+     },
+     {
+      "label": "(e)",
+      "agree": true,
+      "note": "Both 'greater than 0.8': N - (R_1 + R_2) ~ N(mu - 16, 17) has the same positive mean as N - 2R ~ N(mu - 16, 25) and a smaller variance, so more of it lies above 0. Checked: the actual value is 0.846."
+     },
+     {
+      "label": "(f)",
+      "agree": true,
+      "note": "Both 134 minutes after 9 a.m. = 11.14 a.m. Checked: T ~ N(120.83, 56), t >= 120.83 + 1.6449 sqrt(56) = 133.14; P(T <= 133) = 0.948 < 0.95, P(T <= 134) = 0.961. With mu rounded to 20.2, t >= 133.11, the same 134; rounding to the nearest minute (11.13 a.m.) is wrong."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere: the setter's key and the blind examiner match on every part and every value re-derives (0.0668; n = 12; mu = 20.2; greater than 0.8; 11.14 a.m.).",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Same skill already in this paper: Q6(b) finds the greatest n by tabulating a cumulative probability on the calculator (binomial overbooking); Q10(b) repeats that method for the normal sum. The distinct content of (b) is the variance 4n with n in both parameters, which Q6 does not test, so the session may accept the overlap; otherwise replace (b) with a normal skill not yet in the paper, e.g. the probability that the 12 consultations booked for the morning session take more than 10 minutes longer in total than the 10 booked for the afternoon session [3] (a difference of two independent sums, variance 4(12) + 4(10) = 88, the GCE 2023 P2 Q9(d) skill), keeping 'largest n by table' for Q6 alone.",
+     "Light wording edits to SEAB's register: (b) 'Find the largest value of n for which the probability that the total duration of n routine consultations is more than 2 hours is less than 0.01.'; (f) 'Find, in whole minutes after 9 a.m., the earliest time at which the probability that she has finished all 9 consultations is at least 0.95.' (keep 'whole minutes', never 'to the nearest minute', since rounding UP is the point)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A clean 14-mark Section B closer at the 2022-2024 standard: the candidate must decide that 'twice as long as a randomly chosen consultation' is 2R (variance 16) and not R_1 + R_2, argue (e) from the variance alone without calculating, and round UP to a whole minute in (f) because the context says 'at least 0.95' - three reasons in context, every number examination-clean, no part needing two ideas, about 24 minutes of work. Shares only the boilerplate opener and a 1-mark read with GCE 2023 P2 Q9 (Jaccard 0.055) and no situation or part sequence; nothing in this Set's Paper 1 is statistics. Held at 4 because (b) re-uses Q6's 'largest n by calculator table' method inside the same paper and two parts read a shade wordier than SEAB."
+   },
+   "exemplars": [
+    {
+     "id": "00339c8c-47f8-4b89-a72f-5aecb13c935f",
+     "ref": "GCE 2023 P2 Q9"
+    },
+    {
+     "id": "454ebc1e-7537-4713-9499-d4873f125c9d",
+     "ref": "GCE 2022 P2 Q11"
+    },
+    {
+     "id": "22f23ec6-58fa-41c3-823f-4169e063a1ae",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "22ba66f5-5c0c-446b-ba69-a6f90a76ac28",
+     "ref": "GCE 2018 P2 Q10"
+    },
+    {
+     "id": "867d16fa-7651-49ea-a71c-89c1ac380ec5",
+     "ref": "GCE 2024 P2 Q10"
+    }
+   ]
+  }
+ ]
+}

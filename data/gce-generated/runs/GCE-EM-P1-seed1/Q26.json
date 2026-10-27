@@ -1,0 +1,27 @@
+{
+ "stem": "The diagram shows a solid wooden ornament.\nIt is made from a cylinder of radius 6 cm and height 10 cm.\nA hemisphere of radius 4 cm is removed from the top face of the cylinder, as shown.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Calculate the volume of the ornament.",
+   "marks": 2,
+   "answer": "$997$ cm$^3$ (exact value $\\frac{952\\pi}{3}$ cm$^3$)"
+  },
+  {
+   "label": "(b)",
+   "text": "Calculate the total surface area of the ornament.\nGive your answer in terms of $\\pi$.",
+   "marks": 3,
+   "answer": "$208\\pi$ cm$^2$"
+  }
+ ],
+ "answer": "",
+ "total_marks": 5,
+ "topics": [
+  "Mensuration"
+ ],
+ "needs_figure": true,
+ "figure_description": "A three-dimensional line drawing of an upright solid cylinder (circular faces drawn as ellipses, the hidden half of the bottom ellipse dashed). On the top face a smaller concentric ellipse marks the rim of a hemispherical hollow, with the lower curve of the hollow drawn dashed below the top face to show it is scooped out of the solid. Labels printed: a radius line from the centre of the top face to its rim labelled '6 cm'; a vertical line beside the cylinder labelled '10 cm' for its height; a radius line from the centre of the top face to the rim of the hollow labelled '4 cm'. Nothing else is printed — no volume, no surface area, no other lengths.",
+ "solution": "(a) Volume of cylinder $= \\pi \\times 6^2 \\times 10 = 360\\pi$ cm$^3$.\nVolume of hemisphere removed $= \\frac{2}{3}\\pi \\times 4^3 = \\frac{128\\pi}{3}$ cm$^3$.\nVolume of ornament $= 360\\pi - \\frac{128\\pi}{3} = \\frac{952\\pi}{3} = 996.9\\ldots \\approx 997$ cm$^3$.\n\n(b) The surface of the ornament has four pieces.\nCurved surface of cylinder $= 2\\pi \\times 6 \\times 10 = 120\\pi$ cm$^2$.\nBottom face $= \\pi \\times 6^2 = 36\\pi$ cm$^2$.\nTop face, which is a circle of radius 6 cm with a circle of radius 4 cm removed $= \\pi \\times 6^2 - \\pi \\times 4^2 = 20\\pi$ cm$^2$.\nCurved surface of the hollow hemisphere $= 2\\pi \\times 4^2 = 32\\pi$ cm$^2$.\nTotal surface area $= 120\\pi + 36\\pi + 20\\pi + 32\\pi = 208\\pi$ cm$^2$.",
+ "syllabus_check": "4052 Mensuration: volume of a cylinder and of a sphere/hemisphere, curved surface area of a cylinder and of a hemisphere, area of a circle and of an annulus, composite solid formed by removal; answer left in terms of pi as the question instructs. No content outside 4052.",
+ "originality_note": "A new configuration: a solid cylinder with a hemispherical hollow scooped from its top face, asking for the remaining volume and then the exact surface area (which must include the annulus left on the top face and the inside of the hollow). The exemplars are partly filled cylinder/cone containers, a frustum of a square pyramid, a cylinder joined to a cone half full of water, and a hemisphere and cylinder with equal surface areas; none removes a hemisphere from a cylinder or asks for a surface area in terms of pi with an annulus. Distinct from the sector in Q2 and from every context in paper-so-far.md."
+}

@@ -1,0 +1,12 @@
+{
+ "pos": 19,
+ "pass": true,
+ "problems": [],
+ "novelty": {
+  "nearest": "GCE 2009 P1 Q18",
+  "jaccard": 0.022
+ },
+ "marks": 3,
+ "checked_at": "2026-09-11T06:51:43.774Z",
+ "rounds": 4
+}

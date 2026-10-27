@@ -1,0 +1,23 @@
+{
+  "family": "function-graph",
+  "version": 1,
+
+  "xAxis": { "min": -2.5, "max": 4.5, "step": 20, "label": "x" },
+  "yAxis": { "min": -6, "max": 6, "step": 20, "label": "y" },
+  "grid": false,
+
+  "curves": [
+    {
+      "expr": "-x^2 + 2x + 3",
+      "label": "y = ax² + bx + c",
+      "labelAt": 2.2,
+      "style": "solid"
+    }
+  ],
+
+  "features": [
+    { "type": "x-intercept", "x": -1, "curve": 0, "label": "(−1, 0)" },
+    { "type": "x-intercept", "x": 3, "curve": 0, "label": "(3, 0)" },
+    { "type": "y-intercept", "y": 3, "curve": 0, "label": "(0, 3)" }
+  ]
+}

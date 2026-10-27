@@ -1,0 +1,20 @@
+{
+  "parts": [
+    {"label": "(a)(i)", "agree": true, "note": "Both 58°. Checked: angle ABC = 90° (angle in a semicircle, AOC a diameter), 180 − 90 − 32 = 58°. Both 4052 properties."},
+    {"label": "(a)(ii)", "agree": true, "note": "Both 32°. The examiner's first route is the alternate-segment theorem, which is NOT in 4052, but they also give the 4052 route the key uses: tangent ⊥ radius OC so angle ACT = 90°, then 90 − 58 = 32°. (Also reachable via triangle BCT: angle CBT = 90°, angle BTC = 90 − 32 = 58°, so BCT = 32°.) Checked by coordinates: B(6cos64°, 6sin64°), CB·CT gives 32.0°."},
+    {"label": "(a)(iii)", "agree": true, "note": "Both 37° (angles in the same segment on chord CD; A and B are both on the major arc CD, so the property applies). Checked: D at −74° gives angle CBD = 37.0°."},
+    {"label": "(b)", "agree": true, "note": "Same argument: AD ∥ BC would force angle CAD = angle ACB (alternate angles), but 37° ≠ 58°. Valid 1-mark explanation."},
+    {"label": "(c)(i)", "agree": true, "note": "Both AA with angle ABC = angle CBT = 90° and angle BAC = angle BCT = 32°. Vertex order ABC ↔ CBT is correct (A↔C, B↔B, C↔T; the third pair ACB = CTB = 58°). The examiner again cites the alternate segment for BCT = 32°, but it is already established in (a)(ii) by 4052 means, so the key's proof stands."},
+    {"label": "(c)(ii)", "agree": true, "note": "Both 3.97 cm. Checked: BC = 12 sin 32° = 6.359, BT = BC tan 32° = 3.9736 (= BC²/AB). T = (6, 12 tan 32°) = (6, 7.50), above B, so A–B–T is a straight line with B between A and T; diagram description is consistent."}
+  ],
+  "all_agree": true,
+  "key_verdict": "Setter and blind examiner agree on every part; the key is correct and every angle is reached by 4052 properties (semicircle, tangent ⊥ radius, same segment, angle sum, straight line) — the alternate-segment route the examiner mentions is not needed anywhere.",
+  "score": 4,
+  "fixes": [
+    "The paper prints a bare '(c)  [4]' line with no text. Give (c) a stem: '(c) The radius of the circle is 6 cm.' then '(i) Show that triangle ABC is similar to triangle CBT. Give a reason for each statement you make. [2]' and '(ii) Calculate BT. [2]' — a real paper never carries an empty part header.",
+    "(b) 'Explain why AD is not parallel to BC' is the same move as 2024 P1 Q13(b) ('Explain why DC is not a tangent') on the same diameter-plus-chord-produced skeleton. A fresher 1-marker that also uses (a)(iii): 'Explain why BD is not a diameter of the circle.' (If it were, angle BAD = 90° by the angle in a semicircle, but angle BAD = 32° + 37° = 69°.)",
+    "The demand profile is P1-flavoured (five 1–2 mark angle steps then one trig line); a real P2 Q8 (2024 P2 Q8) ends with a 3-mark calculation. If (b) is dropped, make (c)(ii) 3 marks: 'Calculate the area of triangle BCT.' (BC = 12 sin 32°, BT = BC tan 32°, area = ½ × 6.359 × 3.974 = 12.6 cm²) — total stays 10."
+  ],
+  "too_close_to": null,
+  "why": "Geometrically consistent, exam-clean (32° and 37° give 58°, 32°, 37° exactly; radius 6 gives a tidy 3.97), correct register and mark discipline, and the diameter–tangent–altitude similarity is a configuration none of the exemplars use; it loses the 5 for the empty (c) header, the borrowed 'explain why … not' move from 2024 P1 Q13, and a closer that is a shade light for Q8 of a P2."
+}

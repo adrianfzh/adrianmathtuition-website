@@ -1,0 +1,124 @@
+{
+  "invoice": {
+    "id": "rectnuB1y5mxx0Ws9",
+    "createdTime": "2026-09-15T04:50:23.000Z",
+    "fields": {
+      "Paid (ledger)": 0,
+      "Rate Per Lesson": 80,
+      "Status": "Sent",
+      "Invoice ID": "Cara Tay Yu Qian – October 2026",
+      "Auto Notes": "Students may bring forward their October lessons to before their End-of-Year exams if they wish, for extra prep — just tell me, or schedule through the WhatsApp assistant.\n\nNovember and December are billed in advance like any other month. To skip a month, use the button in the email or just tell me — by 13 October for November, by 13 November for December — and that month is simply not invoiced. One-off lessons in a skipped month are billed on the next invoice.",
+      "Invoice Type": "Regular",
+      "Base Amount": 400,
+      "Line Items": "[{\"date\":\"2026-10-02\",\"day\":\"Fri 3-5pm\",\"type\":\"Regular\",\"description\":\"Sec 1 Math — October 2026\",\"rate\":80},{\"date\":\"2026-10-09\",\"day\":\"Fri 3-5pm\",\"type\":\"Regular\",\"description\":\"Sec 1 Math — October 2026\",\"rate\":80},{\"date\":\"2026-10-16\",\"day\":\"Fri 3-5pm\",\"type\":\"Regular\",\"description\":\"Sec 1 Math — October 2026\",\"rate\":80},{\"date\":\"2026-10-23\",\"day\":\"Fri 3-5pm\",\"type\":\"Regular\",\"description\":\"Sec 1 Math — October 2026\",\"rate\":80},{\"date\":\"2026-10-30\",\"day\":\"Fri 3-5pm\",\"type\":\"Regular\",\"description\":\"Sec 1 Math — October 2026\",\"rate\":80}]",
+      "Adjustment Amount": 0,
+      "PDF URL": "https://c7hgmz1ji3tevske.public.blob.vercel-storage.com/invoices/AdrianMathTuition-Invoice-Cara-Tay-Yu-Qian-October-2026.pdf",
+      "Final Amount": 400,
+      "Sent At": "2026-09-15T06:45:03.118Z",
+      "Due Date": "2026-10-15",
+      "Student": [
+        "recMo2t8rpc4lw1Dc"
+      ],
+      "Month": "October 2026",
+      "Issue Date": "2026-09-15",
+      "EmailLog": [
+        "rec5T8V5iADlf9QCo"
+      ],
+      "Lessons Count": 5
+    }
+  },
+  "lessons": [
+    {
+      "id": "recab9Ckw5WDmz13h",
+      "createdTime": "2026-07-31T14:20:18.000Z",
+      "fields": {
+        "Day of Week": 5,
+        "Slot": [
+          "rec7GqE7cSWYTaA6m"
+        ],
+        "Outcome": "✅ Completed",
+        "Status": "Completed",
+        "Level": [
+          "Sec 1"
+        ],
+        "Dupe Key": "Cara Tay Yu Qian | 2026-10-02 | Friday 3-5pm Secondary",
+        "Type": "Regular",
+        "Student": [
+          "recMo2t8rpc4lw1Dc"
+        ],
+        "Date": "2026-10-02",
+        "Lesson ID": "recab9Ckw5WDmz13h",
+        "Student Level": [
+          "Sec 1"
+        ]
+      }
+    },
+    {
+      "id": "recilLzNFOrcAqWXT",
+      "createdTime": "2026-10-02T11:43:58.000Z",
+      "fields": {
+        "Day of Week": 6,
+        "Notes": "Rescheduled from Fri, 9 Oct 2026",
+        "Slot": [
+          "recchuH6IOhDeQqrM"
+        ],
+        "Outcome": "✅ Completed",
+        "Status": "Completed",
+        "Level": [
+          "Sec 1"
+        ],
+        "Dupe Key": "Cara Tay Yu Qian | 2026-10-10 | Saturday 11am-1pm Secondary",
+        "Type": "Rescheduled",
+        "Makeup For": [
+          "recx4U36sSfzrhOBU"
+        ],
+        "Student": [
+          "recMo2t8rpc4lw1Dc"
+        ],
+        "Date": "2026-10-10",
+        "Billing Month": "October 2026",
+        "Lesson ID": "recilLzNFOrcAqWXT",
+        "Student Level": [
+          "Sec 1"
+        ],
+        "Booked Via": "Web admin"
+      }
+    },
+    {
+      "id": "recx4U36sSfzrhOBU",
+      "createdTime": "2026-08-07T14:57:01.000Z",
+      "fields": {
+        "Day of Week": 5,
+        "Slot": [
+          "rec7GqE7cSWYTaA6m"
+        ],
+        "Outcome": "✅ → 10 Oct · done",
+        "Status": "Rescheduled",
+        "Level": [
+          "Sec 1"
+        ],
+        "Type": "Regular",
+        "Rescheduled Lesson ID": [
+          "recilLzNFOrcAqWXT"
+        ],
+        "Replacement Status": [
+          "Completed"
+        ],
+        "Student": [
+          "recMo2t8rpc4lw1Dc"
+        ],
+        "Date": "2026-10-09",
+        "Lesson ID": "recx4U36sSfzrhOBU",
+        "Rescheduled Slot": [
+          "recchuH6IOhDeQqrM"
+        ],
+        "Student Level": [
+          "Sec 1"
+        ],
+        "Rescheduled To Date": [
+          "2026-10-10"
+        ]
+      }
+    }
+  ]
+}

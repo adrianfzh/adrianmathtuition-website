@@ -1,0 +1,51 @@
+{
+ "stem": "Mr Tan is deciding whether to install a rainwater tank to water the plants in his garden.\nHe finds the following information.\n\nRainwater tank\nThe tank is a cylinder with internal diameter $80$ cm and internal height $120$ cm.\nPrice, including installation: $\\$420$\nExpected lifespan: $10$ years\n\nCollecting rainwater\nRain falling on the roof of the garden shed drains into the tank.\nThe roof is a rectangle $3.6$ m by $2.5$ m.\n$80\\%$ of the rain that falls on the roof reaches the tank.\nAverage rainfall: $175$ mm per month\n\nWatering the garden\nMr Tan waters his garden with a hose for $12$ minutes every day.\nThe hose delivers $9$ litres of water per minute.\n\nMonthly water tariff\n$\\begin{array}{|l|c|} \\hline \\text{First } 40 \\text{ m}^3 & \\$2.74 \\text{ per m}^3 \\\\ \\hline \\text{Each m}^3 \\text{ above } 40 \\text{ m}^3 & \\$3.69 \\text{ per m}^3 \\\\ \\hline \\end{array}$\n\n$1 \\text{ m}^3 = 1000$ litres",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Calculate the capacity of the tank.\nGive your answer in litres.",
+   "marks": 2,
+   "answer": "$603$ litres",
+   "subparts": []
+  },
+  {
+   "label": "(b)",
+   "text": "In a month with $30$ days, calculate",
+   "marks": 3,
+   "answer": "",
+   "subparts": [
+    {
+     "label": "(i)",
+     "text": "the volume of water, in litres, Mr Tan uses to water his garden,",
+     "marks": 1,
+     "answer": "$3240$ litres"
+    },
+    {
+     "label": "(ii)",
+     "text": "the volume of rainwater, in litres, that reaches the tank.",
+     "marks": 2,
+     "answer": "$1260$ litres"
+    }
+   ]
+  },
+  {
+   "label": "(c)",
+   "text": "Before installing the tank, Mr Tan's household uses $43 \\text{ m}^3$ of tap water each month.\nAssume that all the rainwater that reaches the tank is used to water the garden instead of tap water.\nIs it worth Mr Tan installing the rainwater tank?\nJustify your answer with calculations.",
+   "marks": 5,
+   "answer": "Rainwater collected $1260$ litres $= 1.26 \\text{ m}^3$ per month (less than the $3240$ litres used, so all of it replaces tap water). Household use falls from $43 \\text{ m}^3$ to $41.74 \\text{ m}^3$, still above $40 \\text{ m}^3$, so the whole saving is at the higher rate: saving $= 1.26 \\times \\$3.69 = \\$4.65$ per month (\\$4.6494). Over the $10$-year lifespan: $4.6494 \\times 120 = \\$557.93$ (accept $\\$558.00$ from $\\$4.65 \\times 120$), which exceeds the $\\$420$ price, so YES it is worth installing (net saving about $\\$138$; equivalently the tank pays for itself in $420 \\div 4.6494 = 90.3$, i.e. $91$ months, about $7.5$ years, within its $10$-year lifespan). Also accept NO with the same figures and a valid reason (a net saving of only about $\\$138$ over $10$ years, about $\\$14$ a year, is small; rainfall varies and the tank may overflow or run dry). A candidate who prices the saving at $\\$2.74$ per m$^3$ ($\\$3.45$ per month, $\\$414.29$ over $10$ years, giving NO) has used the wrong tier and does not earn the tier or conclusion marks.",
+   "subparts": []
+  }
+ ],
+ "answer": "",
+ "total_marks": 10,
+ "topics": [
+  "Math In Real World Context",
+  "Mensuration",
+  "Numbers (Rate)"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) Radius $= 40$ cm. Capacity $= \\pi \\times 40^2 \\times 120 = 192\\,000\\pi = 603\\,185.8 \\text{ cm}^3$. Since $1000 \\text{ cm}^3 = 1$ litre, capacity $= 603.19 = 603$ litres (3 s.f.). [M1 for $\\pi r^2 h$ with $r = 40$, A1]\n\n(b)(i) Water used per day $= 9 \\times 12 = 108$ litres. In $30$ days: $108 \\times 30 = 3240$ litres. [B1]\n\n(b)(ii) Roof area $= 3.6 \\times 2.5 = 9 \\text{ m}^2$. Rainfall $175$ mm $= 0.175$ m, so volume of rain on the roof in a month $= 9 \\times 0.175 = 1.575 \\text{ m}^3 = 1575$ litres. Volume reaching the tank $= 80\\% \\times 1575 = 1260$ litres. [M1 for $9 \\times 0.175$ (or $1575$), A1]\n\n(c) Rainwater available $= 1260$ litres per month, which is less than the $3240$ litres used, so all $1.26 \\text{ m}^3$ replaces tap water each month. [M1 for $1.26 \\text{ m}^3$ replacing tap water]\nTap water used falls from $43 \\text{ m}^3$ to $43 - 1.26 = 41.74 \\text{ m}^3$, still above $40 \\text{ m}^3$, so the water saved is all charged at the higher rate of $\\$3.69$ per m$^3$. [M1 for recognising the saving is at the $\\$3.69$ tier]\nMonthly saving $= 1.26 \\times 3.69 = \\$4.6494 = \\$4.65$. [A1]\nSaving over the $10$-year lifespan $= 4.6494 \\times 12 \\times 10 = \\$557.93$ (or $4.65 \\times 120 = \\$558.00$). [M1]\n$\\$557.93 > \\$420$, so the tank saves more than it costs: net saving $\\approx \\$138$ over $10$ years, and it pays for itself after $420 \\div 4.6494 = 90.3$, i.e. $91$ months (about $7.5$ years), within its lifespan. Conclusion: YES, it is worth installing. [A1 for a conclusion consistent with correct figures]\nAlternative acceptable conclusion: NO — the net saving of about $\\$138$ over $10$ years (about $\\$14$ a year) is small, and rainfall varies so the tank may overflow in wet months and run dry in dry months; award the final A1 for this if the figures are correct and the reason is valid.\nNote: using $\\$2.74$ per m$^3$ gives $1.26 \\times 2.74 = \\$3.45$ per month and $\\$414.29$ over $10$ years, which is less than $\\$420$; this uses the wrong tier, so award M1 M0 A0 M1 A0 (max 2).",
+ "syllabus_check": "4052 only: volume of a cylinder and unit conversion (cm^3 to litres, mm to m, m^3 to litres) — Mensuration; rate (litres per minute, mm of rainfall over an area) — Numbers (Rate); a tiered utility tariff and a decision justified with calculations — Math In Real World Context / financial mathematics (utilities bills). No calculus, no logarithms, no surds, nothing outside the syllabus. A scientific calculator is assumed; answers to 3 s.f. or to the nearest cent as the rubric requires.",
+ "originality_note": "New situation (a household rainwater tank fed from a shed roof, with a tiered water tariff), new numbers derived here (capacity 192000π cm^3 = 603 litres; roof 9 m^2 × 0.175 m × 80% = 1260 litres; hose 9 L/min × 12 min × 30 = 3240 litres; saving 1.26 m^3 × $3.69 = $4.65 per month, $557.93 over 10 years against a $420 price, payback 90.3 months) and a new structure: capacity, then a monthly use-versus-collection pair, then a lifespan-versus-price decision in which the tariff tier is the discriminating step. It shares no scenario, table, unknown or part sequence with the exercise-routine, electric-car, candle, bridge-cable or London-living-cost exemplars, and does not repeat the café, exchange-rate or percentage work of Question 2 in this paper."
+}

@@ -1,0 +1,13 @@
+{
+  "parts": [
+    {"label": "(a)(i)", "agree": true, "note": "Both read Q1 = 47, Q3 = 62 off the 2-minute grid and give IQR = 15 minutes."},
+    {"label": "(a)(ii)", "agree": true, "note": "62 is the upper quartile, so a quarter of 80 = 20 runners took longer. Both give 20."},
+    {"label": "(b)", "agree": true, "note": "Both make the two expected comments in context: first-race median 53 < 58 so first-race runners were faster on average; first-race IQR 15 > 9 so first-race times were more spread out / second race more consistent. Same substance, opposite phrasing direction only."}
+  ],
+  "all_agree": true,
+  "key_verdict": "No disagreement — the setter's key is correct in every part and the blind examiner matches it exactly.",
+  "score": 5,
+  "fixes": [],
+  "too_close_to": null,
+  "why": "Register, mark discipline and difficulty match a late-P1 4052 statistics item exactly (a 1-mark IQR read, a 1-mark quartile-to-count step at exactly Q3, two contextual comparison comments for 2), the plot as described reads cleanly on a 2-minute grid with all five values on gridlines, and although the shape (read two statistics, then compare with a second data set given in words) is the standard SEAB pattern seen in 2025 P1 Q25, this uses a box plot with median/IQR rather than a grouped table with mean/SD, so it is the genre, not a re-skin."
+}

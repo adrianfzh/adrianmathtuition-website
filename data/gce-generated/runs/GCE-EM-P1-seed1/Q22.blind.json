@@ -1,0 +1,1 @@
+{"answers": {"(a)": "Area = (3x + 2)^2 - (x - 1)^2 = (9x^2 + 12x + 4) - (x^2 - 2x + 1) = 8x^2 + 14x + 3 cm^2 — shown", "(b)": "8x^2 + 14x + 3 = 63 gives 8x^2 + 14x - 60 = 0, i.e. 4x^2 + 7x - 30 = 0, (x - 2)(4x + 15) = 0, so x = 2 or x = -15/4; since x > 1, x = 2. Side of tile = 3(2) + 2 = 8 cm"}, "solvable": true, "issues": []}

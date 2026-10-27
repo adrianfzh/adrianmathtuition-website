@@ -1,0 +1,87 @@
+{
+ "oct": {
+  "id": "rec5sQrSTeSNI2f6J",
+  "createdTime": "2026-09-13T23:01:16.000Z",
+  "fields": {
+   "Paid (ledger)": 0,
+   "Rate Per Lesson": 82.5,
+   "Status": "Sent",
+   "Invoice ID": "Abel Tan Zhi Yi – October 2026",
+   "Invoice Type": "Regular",
+   "Base Amount": 330,
+   "Line Items": "[{\"date\":\"2026-10-04\",\"day\":\"Sun 5-7pm\",\"type\":\"Regular\",\"description\":\"JC2 H2 Math — October 2026\",\"rate\":82.5},{\"date\":\"2026-10-11\",\"day\":\"Sun 5-7pm\",\"type\":\"Regular\",\"description\":\"JC2 H2 Math — October 2026\",\"rate\":82.5},{\"date\":\"2026-10-18\",\"day\":\"Sun 5-7pm\",\"type\":\"Regular\",\"description\":\"JC2 H2 Math — October 2026\",\"rate\":82.5},{\"date\":\"2026-10-25\",\"day\":\"Sun 5-7pm\",\"type\":\"Regular\",\"description\":\"JC2 H2 Math — October 2026\",\"rate\":82.5}]",
+   "Adjustment Amount": 0,
+   "PDF URL": "https://c7hgmz1ji3tevske.public.blob.vercel-storage.com/invoices/AdrianMathTuition-Invoice-Abel-Tan-Zhi-Yi-October-2026.pdf",
+   "Final Amount": 330,
+   "Sent At": "2026-09-15T06:40:28.088Z",
+   "Due Date": "2026-10-15",
+   "Student": [
+    "reccfVCBndPrL9e7y"
+   ],
+   "Month": "October 2026",
+   "Issue Date": "2026-09-15",
+   "EmailLog": [
+    "recAk2PDo0zqHKe9x"
+   ],
+   "Lessons Count": 4
+  }
+ },
+ "nov": {
+  "id": "rec3K2dAFmIq0yg82",
+  "createdTime": "2026-10-13T23:01:22.000Z",
+  "fields": {
+   "Paid (ledger)": 0,
+   "Rate Per Lesson": 82.5,
+   "Status": "Sent",
+   "Invoice ID": "Abel Tan Zhi Yi – November 2026",
+   "Auto Notes": "Lessons run all the way up to the exams. The last paper is the A-Level H2 Math Paper 2 on Fri, 6 Nov 2026, so the last lesson is on Sun, 1 Nov 2026. No lessons are scheduled after the exams.",
+   "Invoice Type": "Regular",
+   "Base Amount": 82.5,
+   "Line Items Extra": "[]",
+   "Line Items": "[{\"date\":\"2026-11-01\",\"day\":\"Sun 9-11am\",\"type\":\"Regular\",\"description\":\"JC2 H2 Math — November 2026\"}]",
+   "Adjustment Amount": 0,
+   "PDF URL": "https://c7hgmz1ji3tevske.public.blob.vercel-storage.com/invoices/AdrianMathTuition-Invoice-Abel-Tan-Zhi-Yi-November-2026.pdf",
+   "Final Amount": 82.5,
+   "Sent At": "2026-10-15T03:08:17.385Z",
+   "Due Date": "2026-11-15",
+   "Student": [
+    "reccfVCBndPrL9e7y"
+   ],
+   "Month": "November 2026",
+   "Issue Date": "2026-10-15",
+   "EmailLog": [
+    "recKkhoJ5UYjJmA2B",
+    "recy9ndUwgG9z4CBD"
+   ],
+   "Lessons Count": 1
+  }
+ },
+ "pay": {
+  "id": "recgc9BMoTOk7jtFG",
+  "createdTime": "2026-10-15T12:55:14.000Z",
+  "fields": {
+   "Amount": 412.5,
+   "Status": "Received",
+   "Label": "OH GEOK TENG HAZEL (HU YUTING) · $412.5 · 15 Oct 2026",
+   "Date": "2026-10-15",
+   "Unallocated": 412.5,
+   "Notes": "awaiting manual assignment (shown to Adrian)",
+   "Method": "PayNow",
+   "Source Email ID": "imap-adrianmathtuition@gmail.com-13330",
+   "Payer Name": "OH GEOK TENG HAZEL (HU YUTING)",
+   "Allocated": 0
+  }
+ },
+ "pe": [
+  {
+   "id": "recdU82oGJrZHX9Sd",
+   "createdTime": "2026-10-15T12:55:13.000Z",
+   "fields": {
+    "Notes": "OH GEOK TENG HAZEL (HU YUTING)",
+    "Status": "shown",
+    "Email ID": "imap-adrianmathtuition@gmail.com-13330",
+    "Processed At": "2026-10-15T12:55:12.357Z"
+   }
+  }
+ ]
+}

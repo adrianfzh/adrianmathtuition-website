@@ -1,0 +1,12 @@
+{
+ "pos": 8,
+ "pass": true,
+ "problems": [],
+ "novelty": {
+  "nearest": "GCE 2002 P1 Q3",
+  "jaccard": 0.069
+ },
+ "marks": 3,
+ "checked_at": "2026-09-11T06:51:43.761Z",
+ "rounds": 3
+}

@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "(a)": "AB = 6.0 cm on the drawing, so actual AB = 6.0 x 5 = 30 m",
+    "(b)": "Perpendicular bisector of AB constructed: arcs of equal radius (more than half AB) drawn from A and from B on both sides of AB, the two intersections joined with a straight line. It is the line perpendicular to AB through its midpoint, i.e. the horizontal line 3.0 cm above B, and it must cut AB at the midpoint. Construction arcs left showing.",
+    "(c)": "Bisector of angle ABC constructed: an arc centred at B cutting BA at P and BC at Q, then equal arcs centred at P and at Q meeting at a point R, with BR drawn. Since angle ABC = 90 degrees the bisector is the straight line from B at 45 degrees to BC (through points with equal distance from AB and BC). Construction arcs left showing.",
+    "(d)": "T is the intersection of the perpendicular bisector of AB with the bisector of angle ABC, i.e. the point 3.0 cm above B and 3.0 cm along from B. Measured TC = 5.0 cm, so actual TC = 5.0 x 5 = 25 m"
+  },
+  "solvable": true,
+  "issues": []
+}

@@ -1,0 +1,17 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both give a = -1, b = 2, c = 3. Verified: y = a(x + 1)(x - 3), at (0, 3): 3 = -3a so a = -1; expanding gives -x^2 + 2x + 3."},
+    {"label": "(b)(i)", "agree": true, "note": "Both give 4 - (x - 1)^2. Verified: -(x^2 - 2x) + 3 = -[(x - 1)^2 - 1] + 3 = 4 - (x - 1)^2."},
+    {"label": "(b)(ii)", "agree": true, "note": "Both give (1, 4). Verified: greatest value 4 at x = 1."},
+    {"label": "(c)", "agree": true, "note": "Both give y = -3x + 7. Verified: P = (4, -5); gradient (4 - (-5))/(1 - 4) = -3; through (1, 4): y = -3x + 7, and -3(4) + 7 = -5 checks."}
+  ],
+  "all_agree": true,
+  "key_verdict": "The setter's key is correct in every part and the blind examiner matches it exactly; nothing is in dispute.",
+  "score": 4,
+  "fixes": [
+    "(b)(i) prints '-x^2 + 2x + 3', which is the answer to (a) (a = -1, b = 2, c = 3) handed to the candidate on the same page. Either make (a) 'Show that the equation of the curve is y = -x^2 + 2x + 3. [3]' so the printed expansion is legitimate, or keep (a) as 'Find' and word (b)(i) as 'Write the equation of the curve in the form y = k - (x - h)^2. [2]' with follow-through marks.",
+    "Scope note (no edit needed if the form is printed): 4052 lists completing the square for x^2 + px + q; the question is safe because the target form k - (x - h)^2 is given and the -1 factors out to x^2 - 2x - 3, but the 'in the form' wording must stay -- do not reduce it to a bare 'complete the square'."
+  ],
+  "too_close_to": null,
+  "why": "The repair fixed the scope fault (leading coefficient now -1 with the form k - (x - h)^2 stated, matching the syllabus's y = -(x - p)^2 + q sketch form) and the parts run in a sensible chain with clean numbers (roots -1 and 3, vertex (1, 4), P(4, -5), gradient -3); the remaining flaw is that (b)(i) prints the expansion that (a) asks the candidate to find. Not a re-skin: none of the exemplars is a sketch-with-labelled-intercepts quadratic question."
+}
