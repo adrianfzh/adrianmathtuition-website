@@ -697,3 +697,40 @@ mark edits only, exactly the case nothing kept.
 tried with a Pencil on the iPad in Airplane mode — that is the check. "Start fresh" still clears
 pen ink only, not restored mark edits.
 
+## 21. The question paper and the solutions beside the page (27 Oct 2026)
+
+Adrian: "Able to have the question paper or the solution side by side when annotating? Used to have
+this in the marking desk, then marking desk was gone." → "Yes" to the side panel, and "But I find the
+solutions hard to read - readability needs to be improved on. And if there should be diagrams in the
+solutions or helpful to have, it should be generated".
+
+- **Where.** Two buttons in the pen's toolbar, admin only: **📄 Paper** and **✅ Solutions** (tap
+  again, or ✕, to close; the panel's own tabs switch between them). On a landscape screen ≥ 900 px
+  the panel takes the right half and the page the left (the canvas re-fits); otherwise it is a sheet
+  over the bottom 72 % that closes with ✕. A Pencil touch on the sheet never inks the page.
+  `components/AnnotateSidePanel.tsx`.
+- **It follows the page.** The page being annotated (the toolbar's page number) picks its questions —
+  `results[].photo_index` (`lib/annotate/side-panel questionsByPage`), settled 350 ms after a scroll.
+- **Paper** = the run's question paper (`result_json.source.paper_pdf_url`), drawn with pdf.js on
+  CANVAS (the pen hides every `<img>` — the Live Text guard), only the pages near the view, and
+  scrolled to the page where the first question starts (`findQuestionPage`: the number in the left
+  20 % of the page's text; a scanned paper has no text, so it stays put with a one-line note). No
+  paper sent (a self-contained worksheet) → the printed questions as the marker read them.
+- **Solutions** = the bank's own row when the marking matched the paper to the bank
+  (`bankQuestionsForRun`), else the marker's worked solution (`marking_output.correct
+  .full_solution_latex`), split at its "(a)" lines with each part's own **Answer** from
+  `final_answer` and the part's scheme codes as a small grey tag after it (`markerSolutionItem`).
+  Rendered by `lib/render-solutions-pdf buildSolutionsHTML` (one step a line, aligned on "=",
+  asides grey, KaTeX) with screen sizes for a half-width panel — the same layout as the solutions
+  PDFs, no second formatter. `GET /api/admin/annotate-side/solutions?runId=&page=`, in a frame.
+- **Diagrams.** The question's own figure shows under its stem (bank rows). A question with none gets
+  an empty slot the frame fills WITHOUT waiting: `POST /api/admin/annotate-side/diagram {runId, q}` →
+  `lib/annotate-side-store sideDiagram`: Opus (`SIDE_DIAGRAM_MODEL`, default claude-opus-5-5) says
+  whether one picture would clearly help and picks a family from the bot's figure library, then writes
+  the typed spec from that family's own doc; the bot's `/api/figure-render` verifies and draws, or
+  refuses (one repair try) — **no diagram beats a wrong one**. The PNG or "none + why" is kept at
+  `runs/<id>/side-diagrams/q-<n>.{png,json}`, so each question is decided once; a model or network
+  failure is not kept (tried again next open). Caption: "Diagram drawn for this solution".
+- **Not done.** Science papers use the same panel unchanged (marker solutions); the figure library's
+  science families are offered too. Not yet looked at on a real iPad.
+

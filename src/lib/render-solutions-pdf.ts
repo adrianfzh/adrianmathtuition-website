@@ -29,6 +29,8 @@ export interface SolutionsPart {
   /** The part's worked solution, when the row keeps its solutions per part. */
   solution?: string | null;
   subparts?: SolutionsPart[] | null;
+  /** The marker's scheme codes for this part ("B1 M1 A1") — a small grey tag, never in the working. */
+  codes?: string | null;
 }
 
 export interface SolutionsItem {
@@ -45,6 +47,12 @@ export interface SolutionsItem {
   parts: SolutionsPart[] | null;
   /** Absolute/proxied image URLs of solution scans, already vetted. */
   solutionImages: string[];
+  /** The question's own figure(s), shown under its stem (the ✏️ Annotate side panel, 27 Oct 2026). */
+  figureImages?: string[];
+  /** A one-block solution's scheme codes — a small grey tag. */
+  codes?: string | null;
+  /** Leave an empty slot a page script can fill with a drawn diagram (`data-gen="<qnum>"`). */
+  diagramSlot?: boolean;
 }
 
 export interface SolutionsInput {
@@ -53,6 +61,12 @@ export interface SolutionsInput {
   items: SolutionsItem[];
   /** false = solutions only (no grey question stems). Default true. */
   includeStems?: boolean;
+  /** Extra CSS after the house styles — the screen panel's sizing (27 Oct 2026). */
+  screenCss?: string;
+  /** Extra markup before </body> (the panel's diagram loader). */
+  extraBody?: string;
+  /** The small line under the title; default "N questions". */
+  meta?: string;
 }
 
 function esc(s: string): string {
@@ -181,6 +195,7 @@ function partsHtml(parts: SolutionsPart[] | null, includeStems: boolean): string
         ${text ? `<div class="sol-pstem">${esc(text)}</div>` : ''}
         ${solutionLinesHtml(sol)}
         ${ans ? `<div class="sol-final"><span class="sol-final-k">Answer:</span> ${esc(displayFractions(ans))}</div>` : ''}
+        ${part.codes ? `<div class="sol-mk sol-pcodes">${esc(part.codes)}</div>` : ''}
       </div>`;
     })
     .join('');
@@ -214,10 +229,13 @@ function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): stri
   const stem = includeStems && stemText(it.questionText)
     ? `<div class="sol-stem">${esc(stemText(it.questionText))}</div>`
     : '';
+  const figs = (it.figureImages ?? []).map((u) => `<img class="sol-fig" src="${esc(u)}" alt="figure">`).join('');
+  const codes = it.codes ? `<div class="sol-mk sol-qcodes">${esc(it.codes)}</div>` : '';
+  const slot = it.diagramSlot ? `<div class="sol-gen" data-gen="${esc(num)}"></div>` : '';
   return `
-    <li class="sol-q">
+    <li class="sol-q" data-q="${esc(num)}">
       <span class="sol-qnum">${esc(num)}.</span>
-      ${stem}${body}${images}
+      ${stem}${figs}${codes}${slot}${body}${images}
     </li>`;
 }
 
@@ -272,6 +290,10 @@ ${katexInlineHead()}
   .sol-inlabel{font-weight:700;color:${NAVY}}
   .sol-alt{margin-top:6pt;padding:4pt 9pt 5pt;border-left:2pt solid #d6dbe2;background:#f6f7f9;font-size:10pt;break-inside:avoid}
   .sol-alt-h{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;font-weight:700;color:#7a8594;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5pt}
+  .sol-fig{display:block;max-width:100%;max-height:260pt;margin:4pt 0 6pt}
+  .sol-pcodes{margin:1pt 0 0 0}
+  .sol-qcodes{margin:0 0 3pt 0}
+${input.screenCss ?? ''}
 
 </style>
 </head>
@@ -279,7 +301,7 @@ ${katexInlineHead()}
   <div class="sol-header">
     <span class="sol-type">WORKED SOLUTIONS</span>
     <div class="sol-title">${esc(input.title)}</div>
-    <div class="sol-meta">${input.items.length} question${input.items.length === 1 ? '' : 's'}</div>
+    <div class="sol-meta">${esc(input.meta ?? `${input.items.length} question${input.items.length === 1 ? '' : 's'}`)}</div>
   </div>
 
   <ol class="sol-list">
@@ -287,6 +309,7 @@ ${input.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join
   </ol>
 
 ${katexAutoRenderScript()}
+${input.extraBody ?? ''}
 </body>
 </html>`;
 }

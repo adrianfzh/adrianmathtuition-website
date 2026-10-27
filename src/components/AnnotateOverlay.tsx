@@ -47,6 +47,7 @@ import {
   isNetworkFailure, isGatewayStatus, networkError, type RestorePlan,
 } from '@/lib/annotate/offline-sync';
 import { pagesSignature } from '@/lib/annotate/pages-key';
+import AnnotateSidePanel, { type SideKind } from '@/components/AnnotateSidePanel';
 
 export type AnnotatePageInput = {
   photoIndex: number;
@@ -502,6 +503,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine !== false));
   const [hasUnsaved, setHasUnsaved] = useState(false);
   const [mergedNote, setMergedNote] = useState<number[]>([]);   // pages opened as "both"
+  // 📄 Paper / ✅ Solutions beside the page (27 Oct 2026, SPEC-ANNOTATE §21): admin only.
+  // Beside the page on a wide landscape screen; a sheet from the bottom otherwise.
+  const [side, setSide] = useState<SideKind | null>(null);
+  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 900 && window.innerWidth > window.innerHeight);
+  useEffect(() => {
+    const on = () => setWide(window.innerWidth >= 900 && window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
   const [allLoaded, setAllLoaded] = useState(() => !pages.some((p) => !!(p.layerUrl && p.layer && p.originalUrl)));
   // "this iPad" on an iPad (a desktop-class iPad reports Macintosh + touch), else "this device".
   const deviceWord = useMemo(() => (typeof navigator !== 'undefined' && (/iPad/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) ? 'iPad' : 'device'), []);
@@ -2352,6 +2362,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const t = e.changedTouches[i] as Touch & { touchType?: string };
         if (t.touchType !== 'stylus') continue;
         const tgt = e.target as HTMLElement | null;
+        // The 📄 / ✅ panel (a sheet over the stage in portrait) is read, not written on.
+        if (tgt && tgt.closest && tgt.closest('[data-side-panel]')) continue;
         const inEl = !!(tgt && el.contains(tgt));
         if (!inEl) {
           const target = tgt ? `${tgt.tagName}${tgt.id ? '#' + tgt.id : ''}` : 'null';
@@ -3213,6 +3225,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             title="Type text: tap where it should start, type, and it becomes a movable note in the marker's hand"><span style={{ fontWeight: 800, fontSize: 17, fontFamily: 'Georgia, serif' }}>T</span></button>
         )}
         <button style={tool === 'lasso' ? activeBtn : btn} onClick={() => setToolRemember('lasso')} aria-label="Lasso select" title="Lasso: circle strokes to select, then drag to move"><IconLasso /></button>
+        {!isStudent && (
+          <>
+            <button style={{ ...(side === 'paper' ? activeBtn : btn), fontSize: 13, fontWeight: 700, padding: '0 10px' }} onClick={() => setSide((k) => (k === 'paper' ? null : 'paper'))}
+              aria-pressed={side === 'paper'} title="The question paper beside this page — tap again to close">📄 Paper</button>
+            <button style={{ ...(side === 'solutions' ? activeBtn : btn), fontSize: 13, fontWeight: 700, padding: '0 10px' }} onClick={() => setSide((k) => (k === 'solutions' ? null : 'solutions'))}
+              aria-pressed={side === 'solutions'} title="The worked solutions for this page's questions — tap again to close">✅ Solutions</button>
+          </>
+        )}
         {isStudent && (
           <button style={{ ...(fingerDraw ? activeBtn : btn), fontSize: 12, fontWeight: 700, padding: '0 10px' }} onClick={() => setFingerDraw(f => !f)} aria-pressed={fingerDraw}
             title={fingerDraw ? 'Finger draws — tap to make fingers scroll and zoom again' : 'Fingers scroll and zoom — tap to draw with a finger (phones, tablets with no pen)'}>
@@ -3316,7 +3336,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         </div>
       )}
 
-      {/* canvas viewport */}
+      {/* canvas viewport (+ the side panel beside it, or over it as a sheet) */}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', position: 'relative' }}>
       <div
         ref={wrapRef}
         style={{
@@ -3391,6 +3412,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             )}
           </div>
         )}
+      </div>
+      {side && !isStudent && (
+        <AnnotateSidePanel runId={runId} photoIndex={pages[currentPageIdx]?.photoIndex ?? 0} kind={side} beside={wide}
+          onKind={setSide} onClose={() => setSide(null)} />
+      )}
       </div>
 
       {/* cancel confirm */}

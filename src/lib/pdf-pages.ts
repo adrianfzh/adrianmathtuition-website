@@ -11,7 +11,7 @@
 
 // The worker is served from /public rather than bundled: its version must match the
 // installed pdfjs-dist exactly or pdf.js throws, and pdf-worker-asset.test.ts pins that.
-async function loadPdfjs() {
+export async function loadPdfjs() {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const pdfjs = (await import('pdfjs-dist/build/pdf.mjs' as string)) as any;
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
