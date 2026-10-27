@@ -37,7 +37,7 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
   function next(){
     if (i >= slots.length) return;
     var el = slots[i++], q = el.getAttribute('data-gen');
-    var t = setTimeout(function(){ el.innerHTML = '<div class="drawing">drawing a diagram…</div>'; }, 900);
+    var t = setTimeout(function(){ el.innerHTML = '<div class="drawing">drawing a diagram…</div>'; }, 3000);
     fetch('/api/admin/annotate-side/diagram', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ runId: ${JSON.stringify(runId)}, q: q }) })
       .then(function(r){ return r.json(); })
       .then(function(d){

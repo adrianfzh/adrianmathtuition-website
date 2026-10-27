@@ -193,3 +193,13 @@ describe('the row after an "or" row — the finished case left, the worked case 
     expect(block.rows[2]).toMatchObject({ lhs: '', rhs: '9.594^\\circ', note: 'sin positive: first and second quadrants' });
   });
 });
+
+describe('a "← reason" note holding an "=" (27 Oct 2026)', () => {
+  it('stays on its row instead of starting a new one', async () => {
+    const { stepRows } = await import('./solution-readability');
+    const rows = stepRows('$\\tan\\theta = \\frac{BC}{800} \\quad \\leftarrow \\angle ABC = 90°$')!;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].rhs).toBe('\\frac{BC}{800} \\quad \\leftarrow \\angle ABC = 90°');
+    expect(stepRows('$x = 2 = 3$')!).toHaveLength(2);
+  });
+});

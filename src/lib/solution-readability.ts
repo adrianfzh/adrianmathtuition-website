@@ -317,7 +317,15 @@ export function stepRows(text: string): AlignRow[] | null {
       tex = `\\text{${orLabel}} ${tex}`;
       orLabel = '';
     }
+    // A "← reason" note at the end of the maths ("\quad \leftarrow \angle ABC = 90°") is not
+    // part of the chain: an "=" inside it must not start a new row (27 Oct 2026, the ✏️
+    // Annotate solutions panel). The chain is split without it; the note rides on its last row.
+    let tail = '';
+    const arrow = tex.match(/\s*(?:\\q?quad\s*)?\\leftarrow(?![a-zA-Z])/);
+    if (arrow && arrow.index !== undefined && arrow.index > 0) { tail = tex.slice(arrow.index); tex = tex.slice(0, arrow.index).trim(); }
     const eq = splitRelations(tex);
+    const before = rows.length;
+    const addTail = () => { if (tail && rows.length > before) rows[rows.length - 1].rhs += tail; };
     if (or) {
       if (!eq && HAS_INEQ.test(tex)) return null;
       const prev = rows.slice(eqStart), prevChain = prev.length >= 2, newChain = !!eq && eq.rels.length >= 2;
@@ -334,6 +342,7 @@ export function stepRows(text: string): AlignRow[] | null {
       } else {
         rows[rows.length - 1].rhs += ` \\quad\\text{or}\\quad ${tex}`;
       }
+      addTail();
       or = false; continue;
     }
     eqStart = rows.length;
@@ -343,6 +352,7 @@ export function stepRows(text: string): AlignRow[] | null {
     } else {
       eq.rels.forEach((rel, k) => rows.push({ ...(k === 0 && lead ? { lead } : {}), lhs: k === 0 ? eq.terms[0] : '', rel, rhs: eq.terms[k + 1] }));
     }
+    addTail();
     lead = '';
   }
   if (or || orLabel || !rows.length) return null;

@@ -107,7 +107,7 @@ async function readCached(runId: string, q: string): Promise<SideDiagram | null>
 
 async function remember(runId: string, q: string, d: SideDiagram): Promise<SideDiagram> {
   try {
-    await putStudentFile({ key: `${sideDiagramKey(runId, q)}.json`, body: Buffer.from(JSON.stringify({ ...d, at: new Date().toISOString() })), contentType: 'application/json' });
+    await putStudentFile({ key: `${sideDiagramKey(runId, q)}.json`, body: Buffer.from(JSON.stringify({ ...d, at: new Date().toISOString() })), contentType: 'application/octet-stream' });   // the bucket takes no application/json (the bot stores its ink JSON the same way)
   } catch { /* a cache miss next time is fine */ }
   return d;
 }
