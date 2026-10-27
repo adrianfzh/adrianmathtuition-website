@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { uploadPage } from './submit-client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { splitFileIfSpread } from '@/lib/spread-split';
+import { heicFilesToJpeg } from '@/lib/heic-browser';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -46,7 +47,8 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref, after
       if (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) files.push(f);
     }
     const added: Page[] = [];
-    for (const f of files) {
+    // iPhone HEIC → JPEG before upload (27 Oct 2026, lib/heic-browser.ts).
+    for (const f of await heicFilesToJpeg(files)) {
       const r = await splitFileIfSpread(f);
       for (const half of r.files) {
         let preview: string | null = null;

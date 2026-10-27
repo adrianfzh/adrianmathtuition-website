@@ -24,6 +24,7 @@ import { fileHref } from '@/lib/student-files';
 import { RUNS_PAGE, refreshLimit, mergeRunsPage, withInMotion } from '@/lib/runs-list';
 import { tickPlan, tickPlanLine } from '@/lib/desk-state';
 import { loginHealths, rowStallNote, type LoginHealth } from '@/lib/marking-stall';
+import { heicFilesToJpeg } from '@/lib/heic-browser';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -675,9 +676,11 @@ export default function MarkPaperPage() {
   // Two-page spreads are split into two full-res portrait pages FIRST — before the 1280px
   // marking copy and the 2600px hi-res original are cut from them — so each page keeps the
   // whole pixel budget and prints at full A4 instead of half-size (Adrian, 2026-08-12).
-  async function onPickImages(arr: File[]) {
-    if (!arr.length) return;
+  async function onPickImages(picked: File[]) {
+    if (!picked.length) return;
     setError('');
+    // iPhone HEIC → JPEG before anything else (27 Oct 2026, lib/heic-browser.ts).
+    const arr = await heicFilesToJpeg(picked, setRasterizing);
     const expanded: File[] = [];
     let splits = 0, sideways = 0;
     for (const f of arr) {

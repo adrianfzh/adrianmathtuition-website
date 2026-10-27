@@ -3,7 +3,10 @@
 // imported by the practice flow's working editor, the question-finder's
 // "Snap a question" door, and My Notebook's "➕ Add a photo" door, which all
 // send the same kind of photo.
-export async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
+import { heicToJpegFile } from '@/lib/heic-browser';
+export async function fileToJpegDataUrl(picked: File, maxDim = 1600): Promise<string> {
+  // iPhone HEIC on Chrome/Firefox cannot load into an <img> — convert first (27 Oct 2026).
+  const file = await heicToJpegFile(picked);
   const url = URL.createObjectURL(file);
   try {
     const img = await new Promise<HTMLImageElement>((res, rej) => {

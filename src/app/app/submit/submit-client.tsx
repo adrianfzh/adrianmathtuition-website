@@ -19,6 +19,7 @@ import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
 import { SUBMIT_FAILED_KIND, type SubmitFailure } from '@/lib/submit-failure';
 import { startsPhrase } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
+import { heicFilesToJpeg } from '@/lib/heic-browser';
 
 // Tell Adrian a hand-in failed after every retry (7 Sep 2026: "monitor failures
 // on students' end"). Fire-and-forget with keepalive, so it survives the student
@@ -219,7 +220,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     }
     const added: Page[] = [];
     let splits = 0;
-    for (const f of files) {
+    // iPhone HEIC → JPEG before upload (27 Oct 2026, lib/heic-browser.ts).
+    for (const f of await heicFilesToJpeg(files, setConverting)) {
       const r = await splitFileIfSpread(f);
       if (r.split) splits += 1;
       for (const half of r.files) {

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { uploadPage } from '../submit-client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { TUTOR_MARKED_MAX_PAGES } from '@/lib/tutor-marked';
+import { heicFilesToJpeg } from '@/lib/heic-browser';
 
 const CARD = 'bg-white rounded-3xl border border-black/5 shadow-sm';
 
@@ -43,7 +44,9 @@ export default function TutorMarkedClient({ subjects }: { subjects: string[] }) 
       }
       if (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) add.push(f);
     }
-    setFiles(prev => [...prev, ...add].slice(0, TUTOR_MARKED_MAX_PAGES));
+    // iPhone HEIC → JPEG before upload (27 Oct 2026, lib/heic-browser.ts).
+    const jpegs = await heicFilesToJpeg(add, setConverting);
+    setFiles(prev => [...prev, ...jpegs].slice(0, TUTOR_MARKED_MAX_PAGES));
   }
 
   function clearPages() { setFiles([]); uploaded.current.clear(); setAskScore(false); }
