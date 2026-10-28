@@ -400,6 +400,9 @@ the history.
   bracket is a tall ")" whose top meets the bar over the dividend; the quotient sits over its term
   (4 over 4x), the product row's terms sit under the dividend's (4x under 4x, the "−(" hanging to the
   left), the remainder under its term. Copy the `ld` token of `data/clip-plans/line-misses-curve-am.json`.
+  **APPROVED — the reference long division** (28 Oct 2026, after "doesn't look natural, can it look more
+  natural?" → the bracket redrawn as one smooth curve flowing into the bar, an SVG behind the dividend:
+  "Looks good"). Every clip that divides a polynomial copies that token's tex, changing only the terms.
 - **Label the graph with its equation** (26 Oct 2026: "put the equation y=(4x+2)/(x+1) beside the graph
   drawn (label the graph)"): the curve's equation is written beside the curve on the sketch (`label`).
 - **Scrolling back while it plays reaches the very top** (26 Oct 2026: "when i try to scroll up while

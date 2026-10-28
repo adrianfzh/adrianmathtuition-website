@@ -638,7 +638,10 @@ its own beat with both lit while the division is whole, and y = 4 − 2/(x+1) is
 the dashed line labelled "asymptote y = 4". Two voice lines added (20/20 heard). Also fixed on the way:
 every preview build had failed for 12 hours (`/api/admin/questions` 261 MB > 250 MB after 340
 generated paper files landed in `data/gce-generated`) → `outputFileTracingExcludes` in `next.config.ts`.
-Waiting for more notes.
+Then "doesn't look natural" → the bracket redrawn as one smooth curve flowing into the bar (an SVG
+behind the dividend), the product row underlined as thick as the bar; gate green on the test site.
+**Long division APPROVED 28 Oct 2026 ("Looks good")** — the reference for every clip that divides a
+polynomial (`_house.md` §2). Waiting for more notes.
 
 ### The player layout for clips (Adrian, 15 Oct 2026)
 
