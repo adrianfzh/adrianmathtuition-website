@@ -34,7 +34,7 @@ export default function PcCoachPage() {
   const [pw, setPw] = useState('');
   const [question, setQuestion] = useState(SAMPLES[0]);
   const [specText, setSpecText] = useState('');
-  const [typed, setTyped] = useState('120');
+  const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
   const [bank, setBank] = useState<BankRow[] | null>(null);
@@ -71,91 +71,126 @@ export default function PcCoachPage() {
     );
   }
 
+  const wrong = res?.where && res.where.kind !== 'right';
+  const chip = 'text-sm border border-neutral-300 rounded-full px-3 py-1 bg-white active:bg-neutral-100';
+
   return (
-    <main className="max-w-2xl mx-auto p-4 space-y-4 bg-neutral-50 min-h-screen">
-      <header>
-        <h1 className="text-xl font-bold">🎲 P&amp;C coach — try it</h1>
-        <p className="text-sm text-neutral-600">Paste a question, or pick one from the bank. You get the exact count, the method with its picture, and for a wrong number, what was counted twice or missed.</p>
-        <p className="text-xs text-neutral-500 mt-1">Reading the words into a set-up is one model call (Sonnet 5.5, about US$0.01 a question). Everything after it — counting, the method, the help — uses no model. The learn steps never call a model. Learn steps: <a className="underline" href="/app/learn-step/pc-boxes">/app/learn-step/pc-boxes</a></p>
-      </header>
+    <main className="min-h-screen bg-neutral-50">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">🎲 P&amp;C coach</h1>
+          <p className="text-sm text-neutral-600">Put in a P&amp;C question. You get the answer, the method with a picture, and where a wrong answer went wrong.</p>
+        </header>
 
-      <section className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-        <div className="flex flex-wrap gap-1.5">
-          {SAMPLES.map((s, i) => <button key={i} type="button" className="text-xs border rounded-full px-2 py-1 bg-neutral-50" onClick={() => { setQuestion(s); setBankAnswer(''); }}>Sample {i + 1}</button>)}
-          <button type="button" className="text-xs border rounded-full px-2 py-1 bg-neutral-50" onClick={loadBank}>Pick from the bank…</button>
-        </div>
-        <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={4} className="w-full border rounded-lg px-3 py-2 text-sm" />
-        {bankAnswer && <div className="text-xs text-neutral-600">Bank answer for this part: <Md text={bankAnswer} /></div>}
-        <label className="block text-sm">A student&apos;s number (to see where it went wrong):
-          <input value={typed} onChange={e => setTyped(e.target.value)} inputMode="numeric" className="ml-2 border rounded-lg px-2 py-1 w-40" />
-        </label>
-        <div className="flex gap-2">
-          <button type="button" disabled={busy} onClick={() => run(false)} className="flex-1 bg-neutral-900 text-white rounded-lg py-2 disabled:opacity-50">{busy ? 'Working…' : 'Read and explain'}</button>
-          <button type="button" disabled={busy || !specText} onClick={() => run(true)} className="flex-1 border rounded-lg py-2 disabled:opacity-50">Use the spec below (no model)</button>
-        </div>
-      </section>
-
-      {bank && (
-        <section className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-h-96 overflow-y-auto">
-          <div className="text-sm font-semibold">JC bank — P&amp;C ({bank.length}) · tap a part</div>
-          {bank.map(b => (
-            <div key={b.id} className="border-t pt-2 text-sm">
-              <div className="text-xs text-neutral-500">{b.where}</div>
-              <div className="text-neutral-800 line-clamp-3"><Md text={b.stem} /></div>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {(b.parts.length ? b.parts : [{ label: 'whole', text: '', answer: b.answer }]).map((p, i) => (
-                  <button key={i} type="button" className="text-xs border rounded px-2 py-0.5 bg-neutral-50"
-                    onClick={() => { setQuestion(`${b.stem}\n\n${p.text}`.trim()); setBankAnswer(p.answer); setBank(null); window.scrollTo({ top: 0 }); }}>
-                    ({p.label})
-                  </button>
-                ))}
-              </div>
+        <section className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-4">
+          <div className="space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Question</div>
+            <div className="flex flex-wrap gap-2">
+              {SAMPLES.map((s, i) => <button key={i} type="button" className={chip} onClick={() => { setQuestion(s); setBankAnswer(''); setRes(null); }}>Example {i + 1}</button>)}
+              <button type="button" className={chip} onClick={loadBank}>📚 From the bank</button>
             </div>
-          ))}
+            <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={4} className="w-full border border-neutral-300 rounded-xl px-3 py-2.5 text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20" />
+            {bankAnswer && <div className="text-sm text-neutral-600">Answer in the bank: <Md text={bankAnswer} /></div>}
+          </div>
+          <div className="space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">A student&apos;s answer <span className="normal-case font-normal">(optional)</span></div>
+            <input value={typed} onChange={e => setTyped(e.target.value)} inputMode="numeric" placeholder="e.g. 120" className="w-full border border-neutral-300 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-neutral-900/20" />
+          </div>
+          <button type="button" disabled={busy || !question.trim()} onClick={() => run(false)} className="w-full bg-neutral-900 text-white font-semibold rounded-xl py-3 disabled:opacity-50">{busy ? 'Working it out…' : 'Explain'}</button>
         </section>
-      )}
 
-      {res && (
-        <section className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-          {res.read && <div className="text-xs text-neutral-500">Read by {res.read.model} · US${res.read.cost.toFixed(3)}</div>}
-          {res.error && <div className="text-sm text-rose-700">{res.error}</div>}
-          {res.exact && (
-            <div className="text-sm">
-              <b>Exact count:</b> {res.exact.ok ? `${res.exact.count?.toLocaleString('en-US')} ways` : res.exact.reason}
-              {res.exact.ok && <span className="text-xs text-neutral-500"> ({res.exact.how === 'positions' ? 'position by position' : 'every outcome listed'})</span>}
+        {bank && (
+          <section className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="font-semibold">From the bank · {bank.length} questions</div>
+              <button type="button" className="text-sm text-neutral-500" onClick={() => setBank(null)}>Close</button>
             </div>
-          )}
-          {res.explained && !res.explained.ok && <div className="text-sm text-amber-800">No method shown: {res.explained.reason}</div>}
-          {res.explained?.ok && (
-            <div className="space-y-2">
-              {res.explained.boxes && (
-                <div className="flex flex-wrap gap-3">
+            <div className="text-sm text-neutral-500">Tap a part to load it.</div>
+            <div className="max-h-[28rem] overflow-y-auto divide-y divide-neutral-100">
+              {bank.map(b => (
+                <div key={b.id} className="py-3 space-y-1.5">
+                  <div className="text-xs text-neutral-500">{b.where}</div>
+                  <div className="text-sm text-neutral-800 line-clamp-3"><Md text={b.stem} /></div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(b.parts.length ? b.parts : [{ label: 'whole', text: '', answer: b.answer }]).map((p, i) => (
+                      <button key={i} type="button" className="text-sm border border-neutral-300 rounded-lg px-3 py-1 bg-white active:bg-neutral-100"
+                        onClick={() => { setQuestion(`${b.stem}\n\n${p.text}`.trim()); setBankAnswer(p.answer); setBank(null); setRes(null); window.scrollTo({ top: 0 }); }}>
+                        Part ({p.label})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {res?.error && <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-4 text-sm">{res.error}</div>}
+
+        {res?.exact && (
+          <section className="bg-white rounded-2xl border border-neutral-200 p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Answer</div>
+            {res.exact.ok ? (
+              <>
+                <div className="text-4xl font-bold tracking-tight mt-1">{res.exact.count?.toLocaleString('en-US')}</div>
+                <div className="text-sm text-neutral-600">ways</div>
+              </>
+            ) : <div className="text-sm text-amber-800 mt-1">Could not count this one: {res.exact.reason}</div>}
+          </section>
+        )}
+
+        {res?.where && (
+          <section className={`rounded-2xl border p-4 space-y-2 ${wrong ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
+            <div className={`font-semibold ${wrong ? 'text-rose-900' : 'text-emerald-900'}`}>{wrong ? `✗ The student's ${typed}` : `✓ The student's ${typed} is right`}</div>
+            {wrong && res.where.lines.map((l, i) => <div key={i} className="text-sm text-neutral-800 leading-relaxed"><Md text={l} /></div>)}
+          </section>
+        )}
+
+        {res?.explained && !res.explained.ok && <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 text-sm">No method for this one yet: {res.explained.reason}</div>}
+
+        {res?.explained?.ok && (
+          <section className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Method</div>
+              {res.explained.checked
+                ? <span className="text-xs text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">✓ checked</span>
+                : <span className="text-xs text-amber-800 bg-amber-50 rounded-full px-2 py-0.5">too big to check</span>}
+            </div>
+            {res.picture
+              ? <div className="rounded-xl border border-neutral-100 bg-white p-2"><img src={res.picture} alt="The method as a picture" className="w-full h-auto" /></div>
+              : res.explained.boxes && (
+                <div className="flex flex-wrap gap-4 justify-center py-2">
                   {res.explained.boxes.map((b, i) => (
-                    <div key={i} className="flex flex-col items-center text-xs"><span className="text-neutral-500">{b.label}</span><span className="w-12 border-b-2 border-neutral-700" /><span>↑</span><b>{b.ways}</b></div>
+                    <div key={i} className="flex flex-col items-center text-sm"><span className="text-neutral-500">{b.label}</span><span className="w-14 border-b-2 border-neutral-700 mt-1" /><b className="mt-1">{b.ways}</b></div>
                   ))}
                 </div>
               )}
-              {res.picture && <img src={res.picture} alt="method picture" className="max-w-full max-h-80" />}
-              {!res.picture && <div className="text-xs text-neutral-500">No picture for this one (the figure library has no drawing for it, or could not be reached).</div>}
+            <ol className="space-y-3">
               {res.explained.lines?.map((l, i) => (
-                <div key={i}><Tex tex={l.tex} />{l.why && <span className="text-xs text-neutral-500 ml-2">← {l.why}</span>}</div>
+                <li key={i} className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-neutral-900 text-white text-xs flex items-center justify-center mt-0.5">{i + 1}</span>
+                  <div className="min-w-0 overflow-x-auto">
+                    {l.why && <div className="text-sm text-neutral-500">{l.why.charAt(0).toUpperCase() + l.why.slice(1)}</div>}
+                    <div className="text-lg"><Tex tex={l.tex} /></div>
+                  </div>
+                </li>
               ))}
-              <div className="text-xs">{res.explained.checked ? '✓ The method agrees with the exact count.' : '⚠ Too big to count one by one: the method is NOT checked.'}</div>
-            </div>
-          )}
-          {res.where && (
-            <div className={`rounded-lg p-3 text-sm space-y-1 ${res.where.kind === 'right' ? 'bg-emerald-50' : 'bg-rose-50'}`}>
-              <div className="font-semibold">For {typed}:</div>
-              {res.where.lines.map((l, i) => <div key={i}><Md text={l} /></div>)}
-            </div>
-          )}
-        </section>
-      )}
+            </ol>
+          </section>
+        )}
 
-      <section className="bg-white rounded-xl shadow-sm p-4 space-y-2">
-        <div className="text-sm font-semibold">The set-up (spec) — edit and press &quot;Use the spec below&quot;</div>
-        <textarea value={specText} onChange={e => setSpecText(e.target.value)} rows={10} className="w-full border rounded-lg px-3 py-2 font-mono text-xs" placeholder='{"mode":"row","items":["A","P","P","L","E"]}' />
-      </section>
+        <details className="bg-white rounded-2xl border border-neutral-200 p-4 group">
+          <summary className="text-sm text-neutral-600 cursor-pointer select-none">For checking (advanced)</summary>
+          <div className="mt-3 space-y-3 text-sm">
+            <p className="text-neutral-600">Reading the words is one model call (about US$0.01 a question). Counting, the method and the help use no model. The student learn steps never call a model.</p>
+            {res?.read && <p className="text-xs text-neutral-500">Last read: {res.read.model} · US${res.read.cost.toFixed(3)}</p>}
+            <p><a className="underline" href="/app/learn-step/pc-boxes">Open the learn steps →</a></p>
+            <div className="font-medium">The set-up the question was read into</div>
+            <textarea value={specText} onChange={e => setSpecText(e.target.value)} rows={10} className="w-full border border-neutral-300 rounded-xl px-3 py-2 font-mono text-xs" placeholder='{"mode":"row","items":["A","P","P","L","E"]}' />
+            <button type="button" disabled={busy || !specText} onClick={() => run(true)} className="w-full border border-neutral-300 rounded-xl py-2.5 disabled:opacity-50">Run with this set-up (no model)</button>
+          </div>
+        </details>
+      </div>
     </main>
   );
 }
