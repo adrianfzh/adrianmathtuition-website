@@ -523,3 +523,9 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   "worked solution continued" sheet, not beside the box. 2025 P2 Q7(b): it sat beside the
   "From your line" box but shrunk, its small labels below pen size. Fix the size before
   switching on.
+- **Made compact (28 Oct 2026, Adrian: "Yes, make compact")** — bot commit d625f7ac. Tight
+  letters and boxes, one picture for "arrange then slot", counts in one column on the right,
+  the total on one line. The pen draws it at full pen size only: beside the box (right, left,
+  under, a narrow layout with the counts underneath, or just above the box), else blank paper
+  near the question, else the extra sheet. Dry runs: both Q7(b) pages now sit beside their box
+  at full size; a full JC page (2025 TJC Q6(a)(iii)) still goes to the extra sheet. Still OFF.
