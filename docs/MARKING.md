@@ -3106,6 +3106,28 @@ auto-release watch-outs carry it). A sweep of every run since 5 Sep found the ru
 wherever green sat against blue (Alexis P1 Q6/Q7/Q10, P2 Q6(c)/Q7(b)(i), Isabelle's
 purple 10(b)(ii)); only the two "green is the main pen / original working" parts slipped.
 
+**28 Oct 2026 — green ink never earns a mark, not even to finish a half-done step.**
+An H2 Maths 2021 P1 hand-in (run `10656d42`), Q6(a) [4] "Sketch C and give the equations
+of any asymptotes": the label "x = 4a" on the sketch was in GREEN; the exam ink only solved
+"4ax − x² = 0, x(4a − x) = 0, x = 0 or x = 4a". The marker gave B1 for x = 4a (its own
+second look had said 2 and was out-voted 3). Adrian, asked keep-or-strict: *"do that"*
+(2/4) *"and make sure future sessions are clear on the green pen"*. The rule, for every
+session and the marker:
+- **(a) Green (purple, red) never earns marks.** Any element the scheme pays for — an
+  equation, a label, a coordinate, a final answer — that appears ONLY in the correction
+  pen earns nothing, even when the same work is half-done in the exam ink. The correction
+  pen never completes half-done exam-ink work.
+- **(b) "Give the equations of any asymptotes"** — the equation must be STATED as an
+  asymptote, written or labelled on the sketch, in the student's original ink. Solving
+  "denominator = 0" alone does not earn the mark (the same for every "state / give /
+  label" mark).
+Where it lives: bot `ai/paper-marker.js` `MARK_SEVERITY_RULES` (the SECOND-PEN bullet —
+both served prompts, so both the paid lane and the plan lane), `worker/plan-marking/
+WORKER_PROMPT.md` §Ink colours ("Only in green = no mark"), pinned by bot
+`test/green-only-no-mark.test.js`. The run was corrected through the desk override
+(`marking_corrections` row, source `desk`, so Loop 1 learns it), page redrawn and the
+copy re-issued: Q6(a) 2/4, paper 52/73.
+
 **10 Sep 2026 — Isabelle's EM 2025 P1 (run `749b45a8`), three pen fixes and one re-ink.**
 Adrian: "Q4 the explanation wasn't marked", "Q19 should show the left arc of the graph as well …
 looks like an exponential graph instead", "Q26 arrow pointed at the wrong inequality". (1) **Two
