@@ -662,6 +662,21 @@ export async function learnStepVisible(): Promise<boolean> {
   return admin && !(await viewingAsStudent());
 }
 
+// 🎲 The P&C coach (SPEC-SELF-LEARNING.md §4c; built 28 Oct 2026, Adrian: "Yes, go"):
+// the JC H2 P&C LEARN steps at /app/learn-step/pc-boxes … (his notes' order, pictures,
+// numbers marked at once with "where did I count wrong") and the admin try-it page
+// /admin/pc-coach. ADMIN ONLY until Adrian has gone through the steps on his phone —
+// flip this to open the P&C steps for every student. Separate from
+// LEARN_STEP_OPEN_TO_STUDENTS (the Sec 2 expansion steps) so each opens on its own.
+export const PC_COACH_OPEN_TO_STUDENTS = false;
+export async function pcCoachVisible(): Promise<boolean> {
+  if (PC_COACH_OPEN_TO_STUDENTS) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // 🪜 "Stuck? Next step" on a practice question (1 Oct 2026, from a student weak
 // at trig identity proofs): the bank working one line per tap, and "next step
 // from my line" on a photo of their working (lib/proof-ladder). ADMIN-ONLY plus
