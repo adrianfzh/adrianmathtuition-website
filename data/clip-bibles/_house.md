@@ -395,6 +395,11 @@ the history.
   bracket, dividend, quotient on top, the product row underlined, the remainder — and built ROW BY ROW
   as it is said (`write` with `inside`, a piece at a time); then "the quotient plus the remainder over
   the divisor" gives the next line.
+  **Drawn like the real symbol, every term in its column** (28 Oct 2026: "4x should be vertically
+  aligned with 4x and the ) seems unnatural, can we do the division horizontal drawing better?"): the
+  bracket is a tall ")" whose top meets the bar over the dividend; the quotient sits over its term
+  (4 over 4x), the product row's terms sit under the dividend's (4x under 4x, the "−(" hanging to the
+  left), the remainder under its term. Copy the `ld` token of `data/clip-plans/line-misses-curve-am.json`.
 - **Label the graph with its equation** (26 Oct 2026: "put the equation y=(4x+2)/(x+1) beside the graph
   drawn (label the graph)"): the curve's equation is written beside the curve on the sketch (`label`).
 - **Scrolling back while it plays reaches the very top** (26 Oct 2026: "when i try to scroll up while

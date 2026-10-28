@@ -120,7 +120,7 @@
       "tokens": [
         {
           "id": "ld",
-          "tex": "\\begin{array}{l} \\phantom{x+1\\,\\big)\\,}\\htmlClass{lsn-pc-q}{4} \\\\[-2pt] x+1\\,\\big)\\overline{\\,4x+2\\,} \\\\[-2pt] \\phantom{x+1\\,\\big)}\\htmlClass{lsn-pc-p}{\\underline{-(4x+4)}} \\\\[-2pt] \\phantom{x+1\\,\\big)\\,-(4x}\\htmlClass{lsn-pc-r}{{-2}} \\end{array}"
+          "tex": "\\begin{array}{l} \\hphantom{x+1\\,\\raisebox{0.12em}{$\\Big)$}\\kern-0.17em}\\htmlStyle{display:inline-block;padding:0.1em 0.15em 0 0.12em;}{\\htmlClass{lsn-pc-q}{4}} \\\\[-3pt] x+1\\,\\raisebox{0.12em}{$\\Big)$}\\kern-0.17em\\htmlStyle{display:inline-block;border-top:0.07em solid;padding:0.1em 0.15em 0 0.12em;}{4x+2} \\\\[0pt] \\hphantom{x+1\\,\\raisebox{0.12em}{$\\Big)$}\\kern-0.17em}\\htmlStyle{display:inline-block;padding:0.1em 0.15em 0 0.12em;}{\\htmlClass{lsn-pc-p}{\\mathllap{\\underline{-(}}\\underline{4x+4)}}} \\\\[0pt] \\hphantom{x+1\\,\\raisebox{0.12em}{$\\Big)$}\\kern-0.17em}\\htmlStyle{display:inline-block;padding:0.1em 0.15em 0 0.12em;}{\\hphantom{4x+{}2}\\htmlClass{lsn-pc-r}{\\mathllap{-2}}} \\end{array}"
         }
       ],
       "checks": [

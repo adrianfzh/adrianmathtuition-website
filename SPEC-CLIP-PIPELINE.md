@@ -628,7 +628,11 @@ remainder over x + 1" gives y = 4 − 2/(x+1), the −2 lit as b; "put the equat
 graph" (new sketch `label`, a stacked fraction beside the curve); "i can't scroll up to the very top" while
 it plays → fixed in the player for every clip (the look-back may go past the faded top strip under the
 corner plan; checked in a browser at beat 13: the first line in full view). Voice re-recorded (19 lines,
-19/19 heard). Not promoted. Waiting for more notes.
+19/19 heard). Not promoted.
+**His next note (28 Oct 2026)**: "4x should be vertically aligned with 4x and the ) seems unnatural, can we
+do the division horizontal drawing better?" → the division redrawn: a tall ")" meeting the bar, the
+quotient 4 over 4x, −(4x + 4) with its 4x under 4x, −2 under the 2 (every row padded the same, so the
+columns line up; `\htmlStyle` boxes). Voice unchanged. Rule in `_house.md` §2. Waiting for more notes.
 
 ### The player layout for clips (Adrian, 15 Oct 2026)
 

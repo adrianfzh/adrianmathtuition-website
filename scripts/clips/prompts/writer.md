@@ -62,6 +62,8 @@ no focus, no clear.
   (Adrian, 26 Oct 2026: "do long division instead"), built row by row as it is said — one token with
   pieces `\htmlClass{lsn-pc-q}{…}` (quotient), `p` (the product row), `r` (the remainder), each
   written with `{"do": "write", "token": "<id>", "inside": "<piece>"}` (copy `line-misses-curve-am`).
+  Drawn like the real symbol (28 Oct 2026): the ")" meets the bar, every term in its column — 4x under
+  4x, the quotient over its term — copy the `ld` token's tex exactly, changing only the terms.
 - **A graph is labelled with its equation** beside the curve (Adrian, 26 Oct 2026: "put the equation
   y=(4x+2)/(x+1) beside the graph drawn (label the graph)") — the side sketch's `label` {text, x, y}.
 - **Each beat: the step, then why** — in its own short sentence. ("Take log on both

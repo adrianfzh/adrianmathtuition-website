@@ -1,6 +1,6 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-26T01:47:15.268Z",
+ "at": "2026-10-28T04:28:26.463Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -20,7 +20,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "27/27 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "28/28 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   },
   "review": {
    "ok": false,

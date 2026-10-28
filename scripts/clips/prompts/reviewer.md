@@ -99,7 +99,9 @@ You get:
    explain what the question is asking"); the voice paraphrasing the question's words ("misses" for
    "does not intersect"); dividing a polynomial any way but long division on the board, built row by
    row as it is said ("do long division instead"); a graph with no equation written beside its curve
-   ("label the graph").
+   ("label the graph"); a long division whose terms are not in their columns (4x under 4x, the quotient
+   over its term) or whose bracket does not meet the bar (28 Oct 2026: "4x should be vertically aligned
+   with 4x and the ) seems unnatural").
 20. **Adrian, 26 Oct 2026 (the oscillating-dot question clip)** — each a must: a question with a diagram
    whose diagram is not the first thing on the board ("include the diagram on the board straight away");
    an opening (the question read aloud, a plan) before "what the question says" ("seems unnecessary"); a
