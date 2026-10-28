@@ -2,7 +2,7 @@
 // (/admin/pc-coach). One model call (Sonnet 5.5, SONNET_55) reads the words; the
 // counter, the method and the picture are then worked out without a model. The
 // learn steps never call this: their specs are written in lib/pc-steps.ts.
-// Cost: about 1,800 tokens in and 300–1,500 out (it thinks first) ≈ US$0.01–0.03 a question.
+// Cost: about 1,800 tokens in and 300–1,500 out (it thinks first) ≈ US$0.01 a question (US$0.006 measured on SCIENCE, 28 Oct 2026).
 import Anthropic from '@anthropic-ai/sdk';
 import { SONNET_55, anthropicText } from './claude-models';
 import { costFor } from './model-pricing';

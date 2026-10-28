@@ -1,6 +1,9 @@
 // The P&C coach engine against Adrian's own notes ("12 Permutations and Combinations
 // 1.pdf", H2) — every number below is printed there (the slips found are noted).
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Listing every outcome (up to ~600,000 for some questions) is slow when the whole suite runs in parallel.
+vi.setConfig({ testTimeout: 60_000 });
 import { count, labelCopies, type PcSpec } from './pc-count';
 import { explain } from './pc-explain';
 import { whereWrong, whereWrongLines } from './pc-wrong';

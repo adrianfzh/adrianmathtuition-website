@@ -1,6 +1,9 @@
 // Every P&C learn-step question: its method agrees with the exact counter, his own
 // written lines end on the counted answer, and his printed answers are the count.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Listing every outcome (up to ~600,000 for some questions) is slow when the whole suite runs in parallel.
+vi.setConfig({ testTimeout: 60_000 });
 import { count } from './pc-count';
 import { explain } from './pc-explain';
 import { markPc, methodLines, pcFiveResult, readNumber, workedOf } from './pc-learn';
