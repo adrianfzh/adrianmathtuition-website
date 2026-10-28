@@ -56,7 +56,7 @@ Admin only (`PC_COACH_OPEN_TO_STUDENTS = false`; nothing links to it). §4c has 
   `lib/pc-explain.ts` writes the method + a `pc_arrange` picture and is never shown unless
   it equals the exact count.
 - Admin try-it page `/admin/pc-coach`: paste or pick a JC bank P&C part → one Sonnet 5.5
-  call reads it into a spec (~US$0.01–0.03) → count, method, picture, help for a wrong number.
+  call reads it into a spec (about US$0.01 (measured US$0.006 on 28 Oct)) → count, method, picture, help for a wrong number.
 - Steps 1–4 of his chapter at `/app/learn-step/pc-boxes` → `pc-arrange-r` → `pc-choose` →
   `pc-identical` (his Examples 1a–1l, his Practice first; 3 sets of five each). No clips yet —
   a clip can be added later through the clips pipeline.
@@ -327,7 +327,7 @@ The step list is his chapter's order (`PC1_CHAPTER`, 9 ideas); topics not in his
 are his step 8, not an extra.
 
 **Model use:** only the admin page's "Read and explain" (Sonnet 5.5, `lib/pc-read.ts`,
-~US$0.01–0.03 a question). No model on a student screen.
+about US$0.01 (measured US$0.006 on 28 Oct) a question). No model on a student screen.
 
 ## 5. The topic map — the flow of learning
 

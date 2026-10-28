@@ -195,7 +195,7 @@ export function whereWrong(spec: PcSpec, theirs: number, theirSpec?: PcSpec): Wh
   const right = truth.count;
   if (theirs === right) return { kind: 'right' };
   if (theirSpec) {
-    const ex = compareSpecs(spec, theirSpec);
+    const ex = compareSpecs(spec, theirSpec, 1);
     if (ex) return { kind: 'found', key: 'their-method', say: 'Comparing your method with the one that counts each once:', theirs, right, examples: ex };
   }
   for (const m of wrongModels(spec)) {
@@ -203,7 +203,7 @@ export function whereWrong(spec: PcSpec, theirs: number, theirSpec?: PcSpec): Wh
     if (c !== theirs) continue;
     let examples: Comparison | null;
     if (m.key.startsWith('or-overlap-')) examples = overlapExamples(spec, Number(m.key.slice('or-overlap-'.length)));
-    else examples = compareSpecs(spec, m.spec);
+    else examples = compareSpecs(spec, m.spec, 1);
     if (examples && (examples.doubles.length || examples.extras.length || examples.missing.length)) {
       return { kind: 'found', key: m.key, say: m.say, theirs, right, examples };
     }

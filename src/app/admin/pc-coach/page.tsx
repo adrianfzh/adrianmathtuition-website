@@ -76,7 +76,7 @@ export default function PcCoachPage() {
       <header>
         <h1 className="text-xl font-bold">🎲 P&amp;C coach — try it</h1>
         <p className="text-sm text-neutral-600">Paste a question, or pick one from the bank. You get the exact count, the method with its picture, and for a wrong number, what was counted twice or missed.</p>
-        <p className="text-xs text-neutral-500 mt-1">Reading the words into a set-up is one model call (Sonnet 5.5, about US$0.01–0.03 a question). Everything after it — counting, the method, the help — uses no model. The learn steps never call a model. Learn steps: <a className="underline" href="/app/learn-step/pc-boxes">/app/learn-step/pc-boxes</a></p>
+        <p className="text-xs text-neutral-500 mt-1">Reading the words into a set-up is one model call (Sonnet 5.5, about US$0.01 a question). Everything after it — counting, the method, the help — uses no model. The learn steps never call a model. Learn steps: <a className="underline" href="/app/learn-step/pc-boxes">/app/learn-step/pc-boxes</a></p>
       </header>
 
       <section className="bg-white rounded-xl shadow-sm p-4 space-y-3">
