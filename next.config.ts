@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
       { source: '/app/pass', destination: '/pass' },
     ];
   },
+  // Files no route reads at runtime: generated exam papers (DOCX/PDF/JSON drafts, 18 MB) and the
+  // backups. The tracer swept them into every route that reads from data/, and on 28 Oct 2026
+  // (commit 9c1ee5ae added 340 of them) /api/admin/questions reached 261 MB, over Vercel's 250 MB
+  // limit — every preview build failed for 12 hours.
+  outputFileTracingExcludes: {
+    '/api/**/*': ['./data/gce-generated/**', './_backups/**'],
+  },
   outputFileTracingIncludes: {
     // The bundled Chromium's brotli-packed binary (5 Sep 2026, replaces the
     // runtime-downloaded chromium-min) must ride along with every API route that
