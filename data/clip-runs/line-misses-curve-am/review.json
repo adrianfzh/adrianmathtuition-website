@@ -1,19 +1,19 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-26T02:16:28.370Z",
+ "at": "2026-10-28T04:51:39.591Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 56154,
+  "input_tokens": 61009,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 2205,
+  "output_tokens": 2495,
   "output_tokens_details": {
-   "thinking_tokens": 1790
+   "thinking_tokens": 1985
   },
   "service_tier": "standard",
   "inference_geo": "global",
@@ -22,18 +22,25 @@
  "verdict": "fix",
  "findings": [
   {
-   "beat": 19,
-   "rule": "layout",
+   "beat": 7,
+   "rule": "nothing talked about hidden",
    "severity": "must",
-   "problem": "On the phone frame the moving line's label \"c = 5\" runs into the \"x = −1\" label at the top of the sketch, so neither label can be read while the voice says \"Above four, it does not intersect either\".",
-   "fix": "Place the y = c label where it cannot meet the x = −1 label at every height it slides to, for example at the right end of the line, so both labels stay clear and readable at phone size."
+   "problem": "When the voice says \"So Y is four, plus the remainder\", the quotient 4 of the long division has scrolled half off the top and is faded (frames b6–b7), so the student cannot see where the four in the new line comes from.",
+   "fix": "Keep the whole long division in view through beat 7, quotient 4 included, for example by scrolling less or starting the scroll after line 4 is written. Check it at phone size and at 1280 × 640."
   },
   {
-   "beat": 17,
+   "beat": 7,
+   "rule": "the part talked about is lit",
+   "severity": "should",
+   "problem": "The voice builds y = 4 − 2/(x+1) from the quotient and the remainder, but neither is lit on the division as it is named, so the link between the division and the new line is not pointed out.",
+   "fix": "Light the quotient 4 (piece q) on \"Y is four\" and the remainder −2 (piece r) on \"the remainder\", in the same colours later used for a and b."
+  },
+  {
+   "beat": 15,
    "rule": "said = shown",
    "severity": "should",
-   "problem": "The deciding step of the explanation is only spoken: \"every line below four intersects it\" (beat 17) and \"C equals four is allowed\" (beat 18). The board goes straight from y < 4 to the boxed c ≥ 4, so a student does not see why c < 4 is ruled out.",
-   "fix": "Write a short line as each is said, for example \"c < 4: intersects\" on \"every line below four intersects it\" and \"c ≥ 4: does not intersect\" on \"C equals four is allowed\", then box c ≥ 4 as now."
+   "problem": "The voice names y = 4 as the asymptote and says the curve never touches it, but the board only shows the label \"y = 4\" and never says it is the asymptote.",
+   "fix": "Label the dashed line \"asymptote y = 4\" on the sketch on the word \"asymptote\"."
   }
  ]
 }

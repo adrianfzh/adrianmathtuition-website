@@ -17,7 +17,7 @@
         "yMin": -4,
         "yMax": 6,
         "shape": "4 - 2/(x + 1) + 0*sqrt(x + 1)",
-        "asymptote": { "y": 4, "label": "y = 4" },
+        "asymptote": { "y": 4, "label": "asymptote y = 4" },
         "hline": { "label": "y = c", "at": [5, 1, 4, 5], "labels": ["y = c", "c = 1", "c = 4", "c = 5"] },
         "edge": { "x": -1, "label": "x = −1" },
         "label": { "text": "y = (4x + 2)/(x + 1)", "x": 1.3, "y": 1.9 }
@@ -143,13 +143,23 @@
           "timing": "/lessons/line-misses-curve-am/scene-01-b6.timing.json"
         },
         {
-          "say": "So Y is four, plus the remainder over X plus one: Y equals four minus two over X plus one.",
+          "say": "So Y is the quotient, four, plus the remainder, negative two, over X plus one.",
           "asks": ["Why is the remainder over x + 1?"],
           "do": [
-            { "do": "write", "step": 4, "on": "Y equals four" }
+            { "do": "highlight", "token": "ld", "inside": "q", "tone": "orange", "on": "the quotient, four" },
+            { "do": "highlight", "token": "ld", "inside": "r", "tone": "sky", "on": "the remainder, negative" }
           ],
           "audio": "/lessons/line-misses-curve-am/scene-01-b7.mp3",
           "timing": "/lessons/line-misses-curve-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "That is, Y equals four minus two over X plus one.",
+          "asks": ["Where does the minus come from?"],
+          "do": [
+            { "do": "write", "step": 4, "on": "Y equals four" }
+          ],
+          "audio": "/lessons/line-misses-curve-am/scene-01-b8.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b8.timing.json"
         },
         {
           "say": "Comparing with the form, A is four, and B is negative two.",
@@ -159,8 +169,8 @@
             { "do": "highlight", "token": "d2", "inside": "a", "tone": "orange", "on": "A is four" },
             { "do": "highlight", "token": "d2", "inside": "b", "tone": "sky", "on": "B is negative" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b8.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b8.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b9.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b9.timing.json"
         },
         {
           "say": "Whether Y is above or below four depends on the sign of this fraction.",
@@ -168,8 +178,8 @@
           "do": [
             { "do": "highlight", "token": "d2", "inside": "f", "tone": "orange", "on": "sign of this" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b9.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b9.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b10.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b10.timing.json"
         },
         {
           "say": "Since X is greater than negative one, X plus one is greater than zero.",
@@ -177,8 +187,8 @@
           "do": [
             { "do": "write", "step": 5, "on": "X plus one" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b10.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b10.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b11.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b11.timing.json"
         },
         {
           "say": "Two over a positive number is positive, so two over X plus one is greater than zero.",
@@ -186,8 +196,8 @@
           "do": [
             { "do": "write", "step": 6, "on": "so two over" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b11.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b11.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b12.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b12.timing.json"
         },
         {
           "say": "Times by negative one, and the sign flips: negative two over X plus one is less than zero.",
@@ -195,8 +205,8 @@
           "do": [
             { "do": "write", "step": 7, "on": "negative two over" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b12.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b12.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b13.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b13.timing.json"
         },
         {
           "say": "So Y equals four minus two over X plus one: four take away a positive number, so less than four.",
@@ -205,8 +215,8 @@
             { "do": "write", "step": 8 },
             { "do": "highlight", "token": "s4", "inside": "l", "tone": "orange", "on": "so less than" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b13.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b13.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b14.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b14.timing.json"
         },
         {
           "say": "Think of the graph: the curve is always below the line Y equals four.",
@@ -214,15 +224,15 @@
           "do": [
             { "do": "sketch", "show": "asymptote", "on": "below the line" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b14.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b14.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b15.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b15.timing.json"
         },
         {
           "say": "Y equals four is the asymptote: the curve gets close to it, but never touches it.",
           "asks": ["Why does it never reach 4?"],
           "do": [],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b15.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b15.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b16.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b16.timing.json"
         },
         {
           "say": "Now slide the line Y equals C down below four, say C equals one. Now it intersects the curve.",
@@ -230,8 +240,8 @@
           "do": [
             { "do": "sketch", "line": 1, "on": "say C equals" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b16.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b16.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b17.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b17.timing.json"
         },
         {
           "say": "It goes down forever near X equals negative one, and rises close to four. So every line below four intersects it.",
@@ -239,8 +249,8 @@
           "do": [
             { "do": "sketch", "show": "edge", "on": "near X equals" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b17.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b17.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b18.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b18.timing.json"
         },
         {
           "say": "At C equals four, it still does not intersect: the curve never touches four. So C equals four is allowed.",
@@ -248,8 +258,8 @@
           "do": [
             { "do": "sketch", "line": 2 }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b18.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b18.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b19.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b19.timing.json"
         },
         {
           "say": "Above four, it does not intersect either. So the line must be at four or above: C is greater than or equal to four.",
@@ -259,8 +269,8 @@
             { "do": "write", "step": 9, "on": "C is greater" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "or equal to" }
           ],
-          "audio": "/lessons/line-misses-curve-am/scene-01-b19.mp3",
-          "timing": "/lessons/line-misses-curve-am/scene-01-b19.timing.json"
+          "audio": "/lessons/line-misses-curve-am/scene-01-b20.mp3",
+          "timing": "/lessons/line-misses-curve-am/scene-01-b20.timing.json"
         }
       ]
     }

@@ -114,9 +114,31 @@
    ]
   },
   {
-   "say": "So Y is four, plus the remainder over X plus one: Y equals four minus two over X plus one.",
+   "say": "So Y is the quotient, four, plus the remainder, negative two, over X plus one.",
    "asks": [
     "Why is the remainder over x + 1?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "ld",
+     "inside": "q",
+     "tone": "orange",
+     "on": "the quotient, four"
+    },
+    {
+     "do": "highlight",
+     "token": "ld",
+     "inside": "r",
+     "tone": "sky",
+     "on": "the remainder, negative"
+    }
+   ]
+  },
+  {
+   "say": "That is, Y equals four minus two over X plus one.",
+   "asks": [
+    "Where does the minus come from?"
    ],
    "do": [
     {

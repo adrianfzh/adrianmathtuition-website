@@ -632,7 +632,13 @@ corner plan; checked in a browser at beat 13: the first line in full view). Voic
 **His next note (28 Oct 2026)**: "4x should be vertically aligned with 4x and the ) seems unnatural, can we
 do the division horizontal drawing better?" → the division redrawn: a tall ")" meeting the bar, the
 quotient 4 over 4x, −(4x + 4) with its 4x under 4x, −2 under the 2 (every row padded the same, so the
-columns line up; `\htmlStyle` boxes). Voice unchanged. Rule in `_house.md` §2. Waiting for more notes.
+columns line up; `\htmlStyle` boxes). Rule in `_house.md` §2. The tall division and the next line do not fit together on a phone board (≈ 320 px, the
+strip under the corner plan kept clear), so "the quotient, four, plus the remainder, negative two" is
+its own beat with both lit while the division is whole, and y = 4 − 2/(x+1) is written in the next;
+the dashed line labelled "asymptote y = 4". Two voice lines added (20/20 heard). Also fixed on the way:
+every preview build had failed for 12 hours (`/api/admin/questions` 261 MB > 250 MB after 340
+generated paper files landed in `data/gce-generated`) → `outputFileTracingExcludes` in `next.config.ts`.
+Waiting for more notes.
 
 ### The player layout for clips (Adrian, 15 Oct 2026)
 

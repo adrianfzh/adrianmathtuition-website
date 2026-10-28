@@ -1,6 +1,6 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-28T04:28:26.463Z",
+ "at": "2026-10-28T04:56:45.248Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -19,8 +19,8 @@
    "detail": "one draft — the stand-in reviewer judges it (see review)"
   },
   "look": {
-   "ok": true,
-   "detail": "28/28 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "ok": false,
+   "detail": "28/28 actions on the voice · cues worst 0.96 s (gate 0.3 s) · look problems 2"
   },
   "review": {
    "ok": false,

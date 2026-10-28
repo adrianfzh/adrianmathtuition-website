@@ -41,7 +41,7 @@
     "shape": "4 - 2/(x + 1) + 0*sqrt(x + 1)",
     "asymptote": {
       "y": 4,
-      "label": "y = 4"
+      "label": "asymptote y = 4"
     },
     "hline": {
       "label": "y = c",
