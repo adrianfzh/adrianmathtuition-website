@@ -4,6 +4,7 @@
 // spec yourself) → the exact count, the method with its picture (checked against the
 // count), and for a wrong number the arrangements counted twice or missed.
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { MathMarkdown } from '@/lib/math-markdown';
 
@@ -184,7 +185,7 @@ export default function PcCoachPage() {
           <div className="mt-3 space-y-3 text-sm">
             <p className="text-neutral-600">Reading the words is one model call (about US$0.01 a question). Counting, the method and the help use no model. The student learn steps never call a model.</p>
             {res?.read && <p className="text-xs text-neutral-500">Last read: {res.read.model} · US${res.read.cost.toFixed(3)}</p>}
-            <p><a className="underline" href="/app/learn-step/pc-boxes">Open the learn steps →</a></p>
+            <p><Link className="underline" href="/app/learn-step/pc-boxes">Open the learn steps →</Link></p>
             <div className="font-medium">The set-up the question was read into</div>
             <textarea value={specText} onChange={e => setSpecText(e.target.value)} rows={10} className="w-full border border-neutral-300 rounded-xl px-3 py-2 font-mono text-xs" placeholder='{"mode":"row","items":["A","P","P","L","E"]}' />
             <button type="button" disabled={busy || !specText} onClick={() => run(true)} className="w-full border border-neutral-300 rounded-xl py-2.5 disabled:opacity-50">Run with this set-up (no model)</button>
