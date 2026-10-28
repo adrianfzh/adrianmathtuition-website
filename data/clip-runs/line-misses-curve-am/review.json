@@ -1,46 +1,32 @@
 {
  "slug": "line-misses-curve-am",
- "at": "2026-10-28T04:51:39.591Z",
+ "at": "2026-10-28T07:30:19.154Z",
  "model": "claude-opus-5-5",
  "frames": 24,
  "usage": {
-  "input_tokens": 61009,
+  "input_tokens": 67470,
   "cache_creation_input_tokens": 0,
   "cache_read_input_tokens": 0,
   "cache_creation": {
    "ephemeral_5m_input_tokens": 0,
    "ephemeral_1h_input_tokens": 0
   },
-  "output_tokens": 2495,
+  "output_tokens": 2771,
   "output_tokens_details": {
-   "thinking_tokens": 1985
+   "thinking_tokens": 2538
   },
   "service_tier": "standard",
   "inference_geo": "global",
   "speed": "standard"
  },
- "verdict": "fix",
+ "verdict": "pass",
  "findings": [
   {
    "beat": 7,
-   "rule": "nothing talked about hidden",
-   "severity": "must",
-   "problem": "When the voice says \"So Y is four, plus the remainder\", the quotient 4 of the long division has scrolled half off the top and is faded (frames b6–b7), so the student cannot see where the four in the new line comes from.",
-   "fix": "Keep the whole long division in view through beat 7, quotient 4 included, for example by scrolling less or starting the scroll after line 4 is written. Check it at phone size and at 1280 × 640."
-  },
-  {
-   "beat": 7,
-   "rule": "the part talked about is lit",
-   "severity": "should",
-   "problem": "The voice builds y = 4 − 2/(x+1) from the quotient and the remainder, but neither is lit on the division as it is named, so the link between the division and the new line is not pointed out.",
-   "fix": "Light the quotient 4 (piece q) on \"Y is four\" and the remainder −2 (piece r) on \"the remainder\", in the same colours later used for a and b."
-  },
-  {
-   "beat": 15,
    "rule": "said = shown",
    "severity": "should",
-   "problem": "The voice names y = 4 as the asymptote and says the curve never touches it, but the board only shows the label \"y = 4\" and never says it is the asymptote.",
-   "fix": "Label the dashed line \"asymptote y = 4\" on the sketch on the word \"asymptote\"."
+   "problem": "The voice builds y as 'four plus negative two over X plus one', but nothing is written until the next beat, and that line already shows it tidied to '4 − 2/(x+1)'. A student does not see how the quotient and the remainder make the line.",
+   "fix": "Write y = 4 + (−2)/(x+1) on 'So Y is the quotient … plus the remainder', with the 4 orange and the −2 sky to match the long division, then write y = 4 − 2/(x+1) on the next line in beat 8."
   }
  ]
 }
