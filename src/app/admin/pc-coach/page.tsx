@@ -170,7 +170,7 @@ export default function PcCoachPage() {
               {res.explained.lines?.map((l, i) => (
                 <li key={i} className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-neutral-900 text-white text-xs flex items-center justify-center mt-0.5">{i + 1}</span>
-                  <div className="min-w-0 overflow-x-auto">
+                  <div className="min-w-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none]">
                     {l.why && <div className="text-sm text-neutral-500">{l.why.charAt(0).toUpperCase() + l.why.slice(1)}</div>}
                     <div className="text-lg"><Tex tex={l.tex} /></div>
                   </div>
