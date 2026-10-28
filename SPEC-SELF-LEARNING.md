@@ -4,7 +4,7 @@
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
-## ▶ Where things stand — read this first (kept current; last updated 10 Oct 2026)
+## ▶ Where things stand — read this first (kept current; last updated 28 Oct 2026)
 
 **The rule for this file (Adrian, 10 Oct 2026: "make sure everything we do here future
 sessions know about it"):** every decision, build and open question on this work is written
@@ -43,6 +43,31 @@ section whenever anything below changes.
   unchanged): recap −2b(3 − 4b + 6c) ends −12bc (printed −12c); Practice 1b (a) is
   2x² − 4xy − 30y² (printed −xy); Example 1a asks (a + b)(2a − b) but works (a + b)(a − 3b);
   Example 5c (b) asks 701² but works 702²; Example 5d calls 301 and 105 prime.
+
+**LEARN, JC H2 "Permutations and Combinations 1" — the P&C coach, FIRST PART BUILT 28 Oct 2026**
+(Adrian, 28 Oct 2026: *"Yes, go"* to "build the engine (exact counter + Explain a question)
+first, then the first P&C 1 learn steps from my notes … and show me 2–3 steps on my phone").
+Admin only (`PC_COACH_OPEN_TO_STUDENTS = false`; nothing links to it). §4c has the detail.
+- Engine (no model): `lib/pc-count.ts` lists every outcome and counts exactly (refuses past
+  4,000,000); `lib/pc-wrong.ts` finds where a wrong number came from (identical letters
+  treated as different, order counted in a choice, a row for a round table, unnamed groups,
+  a rule dropped, the block not arranged inside, "or" overlap, total − together for 3+ apart)
+  and shows the two outcomes counted as two that are one, or the one missed;
+  `lib/pc-explain.ts` writes the method + a `pc_arrange` picture and is never shown unless
+  it equals the exact count.
+- Admin try-it page `/admin/pc-coach`: paste or pick a JC bank P&C part → one Sonnet 5.5
+  call reads it into a spec (~US$0.01–0.03) → count, method, picture, help for a wrong number.
+- Steps 1–4 of his chapter at `/app/learn-step/pc-boxes` → `pc-arrange-r` → `pc-choose` →
+  `pc-identical` (his Examples 1a–1l, his Practice first; 3 sets of five each). No clips yet —
+  a clip can be added later through the clips pipeline.
+- **Slips found in his P&C 1 notes** (told to him; the app uses the right values; his file is
+  unchanged): Ex 1l(a) APPLE 5!/2! printed 40 (is 60); Ex 1m(iii) printed 5575 (is 5775);
+  Ex 2c "the eleven letters of REARRANGE" (nine); Ex 2c(iii) writes ⁶C₃ where it means ⁶C₄
+  (his 1800 is right); Ex 3c numbered (ii) printed 38800 (is 38880); Ex 3c(ii) says "7!" for
+  (7 − 1)!; Ex 1l(b) lists P₃P₃P₁ for P₃P₂P₁.
+- **Not done:** steps 5–9 of his chapter (choosing groups, grouping, slotting, circles, empty
+  seats) then the extra (shortest routes, marked extra); P&C 2 ("Common Techniques");
+  nothing is SAVED; he has not yet been through the four steps on his phone — ask.
 
 **REVISE — talked through, his yes awaited (§4b):** a student uploads a paper → a checked
 worked solution per question + two practice questions each, pulled from the bank. Next step
@@ -270,6 +295,39 @@ at once only when it is an expression or a number (`lib/poly.ts`); a long questi
 photo and the ordinary marking. What the bank holds for Sec 2 (9 Oct 2026): 104 school
 papers from 2022 on, about 12 questions each; about 1 question in 4 has a full worked
 solution, 1 in 5 a twin of ours, 1 in 3 a diagram.
+
+## 4c. The P&C coach — JC H2 Permutations & Combinations (built 28 Oct 2026)
+
+Adrian, 28 Oct 2026: *"Yes, go"* — engine first (exact counter + explain a question), then
+the first P&C 1 learn steps from his notes, using the extracted methods and mistakes.
+
+**Why a counter.** P&C answers are numbers, and a wrong number is nearly always the right
+count of a slightly wrong set-up. So the question is written as a SPEC (objects, how they are
+placed, the rules — `lib/pc-count.ts` `PcSpec`) and the counter LISTS every outcome. Then:
+- **Explain** (`lib/pc-explain.ts`): his method — boxes, ⁿPᵣ, ⁿCᵣ, ÷p!, group, slot, fix the
+  ends, (n − 1)!, cases — with a `pc_arrange` picture (bot figure library, drawn through
+  `/api/figure-render`; the bot recomputes every count). Fail closed: a method whose total is
+  not the exact count is never shown (e.g. (n − 1)!/p! for a circle with identical objects).
+- **Where did I count wrong** (`lib/pc-wrong.ts`): each common slip is a wrong spec; the one
+  whose exact count equals the student's number is the slip, and comparing the outcomes gives
+  concrete examples. APPLE typed as 120: "Counted twice: A P₁ P₂ L E and A P₂ P₁ L E are the
+  same one." ⁴P₃ for "choose 3 of 4": "ABC and ACB are the same one."
+- Boxes with repeats and no rules are counted position by position (exact by independence:
+  10⁸ telephone numbers); everything else is listed, up to 4,000,000.
+
+**The steps** (`lib/pc-steps.ts`, served by `/app/learn-step/<slug>`, `pc-flow.tsx`): the same
+shape as §4a — his example a tap at a time (his ↑ boxes or the picture, then one line a tap)
+→ try one, where "Stuck? Next step" shows his extracted METHOD lines first (teaching_knowledge(),
+matched by question_type) and then the working → five on your own on a digit keypad, pass 4
+of 5, three sets of five per step, his Practice first → a wrong number shows the counted help,
+else his extracted PITFALL line as the watch-out. The answer of every question is counted from
+its spec; `pc-steps.test.ts` checks every method against the counter and his printed answers.
+The step list is his chapter's order (`PC1_CHAPTER`, 9 ideas); topics not in his notes
+(shortest routes) come at the end, marked extra. Circles ARE in his P&C 1 notes (§3), so they
+are his step 8, not an extra.
+
+**Model use:** only the admin page's "Read and explain" (Sonnet 5.5, `lib/pc-read.ts`,
+~US$0.01–0.03 a question). No model on a student screen.
 
 ## 5. The topic map — the flow of learning
 

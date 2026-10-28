@@ -30,6 +30,8 @@ const SWITCHED: Record<string, RegExp> = {
   'src/lib/humanities-photo.ts': /PHOTO_READ_MODEL = process\.env\.HUMANITIES_PHOTO_MODEL \|\| SONNET_55;/,
   // 📝 Humanities: a school question's type when its wording gives no clue (15 Oct 2026).
   'src/lib/humanities-own-points.ts': /OWN_TYPE_MODEL = process\.env\.OWN_TYPE_MODEL \|\| SONNET_55;/,
+  // 🎲 P&C coach: a question in words read into a counter spec, admin page only (28 Oct 2026).
+  'src/lib/pc-read.ts': /PC_READ_MODEL = process\.env\.PC_READ_MODEL \|\| SONNET_55;/,
 };
 
 describe('Sonnet 5.5 setting', () => {
