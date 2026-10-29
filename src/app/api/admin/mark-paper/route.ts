@@ -121,11 +121,19 @@ export async function POST(req: NextRequest) {
     // from Supabase here. Harmless once the bot returns it natively.
     if (r.ok && body.includes('"phase":"stats"') && Array.isArray(data.runs) && data.runs.length) {
       try {
-        const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
+        const ids = [...data.runs, ...(Array.isArray(data.inMotion) ? data.inMotion : [])].map((x: { id?: string }) => x.id).filter(Boolean);
         const { data: rows } = await getSupabaseAdmin()
-          .from('paper_marking_runs').select('id, checked_at, paper_subject, queue_status, queue_failed_reason, released_via, student_id, paper_kind:result_json->source->>paper_kind').in('id', ids);
+          .from('paper_marking_runs').select('id, checked_at, paper_subject, queue_status, queue_failed_reason, released_via, student_id, paper_kind:result_json->source->>paper_kind, handed_back_at:result_json->queue->external_claim->>handed_back_at').in('id', ids);
         type R = { id: string; checked_at: string | null; paper_subject: string | null; paper_kind: string | null; queue_status: string | null; queue_failed_reason: string | null; released_via: string | null; student_id: string | null };
         const byId = new Map(((rows ?? []) as R[]).map((row) => [row.id, row]));
+        // 📥 All pages read and handed back (29 Oct 2026, Adrian: "shouldn't mark papers be showing
+        // the progress then? instead of saying they are queued?"): the bot's list has no
+        // handed_back_at, so a marked paper waiting for its red pen said "queued — waiting for
+        // the cloud worker" for an hour (Rainie, TYS parts 1–2). Merged here, like checked_at.
+        const handedBack = new Map(((rows ?? []) as (R & { handed_back_at?: string | null })[]).map((row) => [row.id, row.handed_back_at ?? null]));
+        for (const run of [...data.runs, ...(Array.isArray(data.inMotion) ? data.inMotion : [])]) {
+          if (!run.handed_back_at && handedBack.get(run.id)) run.handed_back_at = handedBack.get(run.id);
+        }
         // 📭 Released to nobody (27 Oct 2026): released with no Telegram to ring
         // AND no app account to find it in — the paper reached no one, so the
         // row says to hand it over by hand. A student with an app account but

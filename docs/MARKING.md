@@ -1306,6 +1306,8 @@ worker holds it), `stuck` (last attempt failed, the error shows, the queue retri
 and the unfiltered list; `counts.auto` includes them). The row becomes a normal desk row the
 moment its marking is stored.
 
+**`/admin/mark-paper` shows "marked — drawing the red pen" (29 Oct 2026, Adrian: "shouldn't mark papers be showing the progress then? instead of saying they are queued?").** The list comes from the bot, whose columns have no `handed_back_at`, so a paper whose pages were all read and handed back still said "🌙 queued — waiting for the cloud worker" while the bot drew it (Rainie's TYS parts 1–2, about an hour). The website route now merges `result_json.queue.external_claim.handed_back_at` into every row (runs + inMotion), and the label reads "📥 marked — now drawing the red pen and building the PDF … then Telegram + Dropbox" without the old "about a minute each".
+
 ### Compartmentalised marking and sheet edits (8 Sep 2026)
 
 Adrian: "sometimes there is no need to remark an entire pdf because of a small
