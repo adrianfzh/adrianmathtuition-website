@@ -1055,6 +1055,10 @@ FRACTION"); the pen's net in `ai/pen-math.js` (`texSlashFractions`, `texChoose`)
   it) - highlight that to student (because it is a vector)"* — notes and solutions write 0 with
   a tilde; a student's plain 0 for a vector gets a note, no mark lost. A slip label says "you
   wrote b × c; it should be b + c", never both in one run.
+- **Show HOW her result becomes the form the conclusion needs.** *"it doesn't explain to student
+  HOW that vector is a straight line > and that's why students are stuck"* — from v = ((2 − z)/3,
+  0, z): split into the part without z + z × the part with z, put λ = −z/3, then "this is
+  r = a + λd: the line through (2/3, 0, 0) parallel to i − 3k".
 - **Never "your own".** *"what's with the your own?"* — "sub λ into OP".
 - **A copying slip the next line did not use is "copied wrongly", never a calculation error.**
   *"this is not calculation error, it is just written wrongly"*; *"unnecessary, this is just a
