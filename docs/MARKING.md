@@ -1051,6 +1051,10 @@ FRACTION"); the pen's net in `ai/pen-math.js` (`texSlashFractions`, `texChoose`)
 - **Two different expressions: say they are not equal.** *"emphasize that (lnx)^3 and ln(x^3)
   is not the same (not equals)"* — first line "(ln x)³ ≠ ln(x³)", then "write (ln x)³ here".
   Same for sin²x ≠ sin x², (a+b)² ≠ a²+b², √(a+b) ≠ √a+√b.
+- **The zero vector has its tilde.** *"0 should be written as a 0 vector (0 with tilde beneath
+  it) - highlight that to student (because it is a vector)"* — notes and solutions write 0 with
+  a tilde; a student's plain 0 for a vector gets a note, no mark lost. A slip label says "you
+  wrote b × c; it should be b + c", never both in one run.
 - **Never "your own".** *"what's with the your own?"* — "sub λ into OP".
 - **A copying slip the next line did not use is "copied wrongly", never a calculation error.**
   *"this is not calculation error, it is just written wrongly"*; *"unnecessary, this is just a
