@@ -21,6 +21,14 @@ without removed content**.
 - Plain `|z|` and `arg z` of a cartesian number are **in**.
 - A part with a **cartesian route** (find `x + iy` first, then the argument) is **in**.
   RI 2024 Prelim P1 Q8 (b)(i) is in for that reason, and that question needs nothing hidden.
+- **Products of sines and cosines are OUT (Adrian, 29 Oct 2026).** Integrals such as
+  `∫ sin 2x sin 3x dx`, `∫ sin mx cos nx dx`, `∫ cos mx cos nx dx`, done by turning the product
+  into a sum with the factor formula. His words, on Nicole's H2 TYS 2021 P2 Q5(b) "Find
+  ∫₀ᵇ sin 2x sin 3x dx [3]", which the marker gave 0/3: *"this is not in the h2 math syllabus
+  anymore. does the marker not recognize it?"* → *"Yes, do it"*. (This was one of the two
+  revision items the bot's `extraction/canonical_topics.json` note listed but he had not
+  confirmed; `d²y/dx² = f(x)` by successive integration is still unconfirmed.) No 2025 or 2026
+  paper in the bank has one; 2017–2024 school prelims have about 15.
 - **Owed:** 24 questions marked old syllabus on 9 Oct were judged partly on "needs
   adding/subtracting arguments". Each is owed a re-read with the single question *"is there a
   route that avoids the argument rules?"* — ids recoverable from
@@ -29,8 +37,18 @@ without removed content**.
 
 **Built (17 Oct 2026):** on a handed-in paper the bank recognises, a whole question flagged old
 syllabus is taken out of the total and named on the cover ("Not counted: Q1 and Q5 — they are no
-longer in the syllabus … out of 71 instead of 80"). Not yet: one out-of-syllabus PART inside a
-question; a paper marked to Adrian's approved split. `docs/MARKING.md` §📚.
+longer in the syllabus … out of 71 instead of 80"). `docs/MARKING.md` §📚.
+
+**Built (29 Oct 2026): one PART out, on a handed-in paper.** A bank part marked `legacy: true`
+comes off that question's marking (the rest of the question counts), the total drops by its
+marks and the cover names it ("Not counted: Q5(b)"). Bot `lib/out-of-syllabus.js`
+(`{ q, part, marks }` entries); website `front-page-build outOfSyllabusFrontPage`. Not yet: a
+paper marked to Adrian's approved split.
+
+**First real part marked (29 Oct 2026):** GCE 2021 H2 P2 Q5(b) (`7900f64d…`), "product of
+sines/cosines by the factor formula". Both migrations below were found already in place that
+day. The other ~15 such parts (school prelims 2014–2024) are listed in §Factor-formula parts
+below and are NOT marked yet — each needs the "Hence" check first.
 
 **The order he said yes to:**
 
@@ -53,6 +71,17 @@ Steps 3 and 4 are not started until he has seen step 1.
   is left off every printed sheet, and the health check goes red);
 - the bot-side list at the foot of this file — done 9 Oct 2026 (bot 684ede17);
 - the re-read of the 24 above.
+
+## Factor-formula parts still to mark (found 29 Oct 2026)
+
+Integrals of a product of sines/cosines in JC rows not yet flagged (id prefix, paper, part):
+YIJC 2024 P1 Q9(b) `68029617` · TJC 2023 P1 Q1(b) `d3a7661b` · YIJC 2023 P1 Q9(c) `6d5b0bb9` ·
+JPJC 2023 P1 Q7(b) `c5982de9` · DHS 2023 P1 Q8(a) `83f5ef41` · JPJC 2022 P1 Q5(a) `b5e67f8b` ·
+YIJC 2020 P1 Q3(a) `8f711eee` · TJC 2019 P1 Q5(a) `705ace2e` · RI 2018 P1 Q3(b) `28dab7ce` ·
+CJC 2018 P1 Q2(iii) `df22649f` · JJC 2018 P1 Q6(a) `3b246d21` · NYJC 2017 P1 Q3(b) `f7a1545b` ·
+PJC 2015 P1 Q12(a) `cacfc640` · TJC 2014 P1 Q9(a) `24ab110a`. HCI 2021 P2 Q1(ii) is a
+parametric-area "show that", out on another ground. Found with a pattern search on `parts[].text`;
+it misses spellings like `\sin(2x)\sin(3x)`.
 
 ## The problem
 
@@ -233,8 +262,8 @@ It still never decides. But a mark can no longer be saved, or served, with one u
   5 − 4 = 71 there), is not marked down when blank, and the **cover page says so plainly** —
   which questions, and that they are no longer examined. An attempt at one may still get its
   red-pen notes, but no marks either way. **Built 17 Oct 2026 for whole questions** (bot
-  `lib/out-of-syllabus.js`, the cover's "Not counted" box — `docs/MARKING.md` §📚). A single
-  out-of-syllabus PART inside a question is not taken out yet.
+  `lib/out-of-syllabus.js`, the cover's "Not counted" box — `docs/MARKING.md` §📚), and
+  **29 Oct 2026 for a single part** (Nicole's Q5(b) — "Not counted: Q5(b)").
 - Rows with no `parts` list (the parts live only inside `question_text`) cannot be marked.
   `applyPartMark` refuses with a plain message; mark the whole question instead.
 

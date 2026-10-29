@@ -1,6 +1,5 @@
 -- Part-level out-of-syllabus marks: keep them when `parts` is re-written.
--- SPEC-PART-SYLLABUS.md, 9 Oct 2026.   *** WRITTEN, NOT APPLIED. ***
--- Apply before the first part is marked on the live bank.
+-- SPEC-PART-SYLLABUS.md, 9 Oct 2026.   APPLIED (found in place on 29 Oct 2026, when the first part was marked).
 --
 -- A mark lives on the part itself: questions.parts[..] carries
 --   "legacy": true, "legacy_reason": "…"      and, on a dependent part,  "needs": ["b.ii"].

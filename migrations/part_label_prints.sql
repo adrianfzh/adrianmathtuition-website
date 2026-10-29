@@ -1,5 +1,5 @@
 -- part_label_prints — what a PRINTED sheet called each part (SPEC-PART-SYLLABUS.md §Re-lettering).
--- NOT APPLIED (9 Oct 2026). Apply BEFORE the first part is marked on the live bank.
+-- APPLIED (found in place on 29 Oct 2026, when the first part was marked: GCE 2021 P2 Q5(b)).
 --
 -- A student's page re-letters the parts left after a part is hidden: the bank's (b)(iii)
 -- prints as "(b)(ii)". A sheet is handed in days later and must be marked against the
@@ -21,3 +21,4 @@ create index if not exists part_label_prints_question on public.part_label_print
 create index if not exists part_label_prints_sheet on public.part_label_prints (surface, ref);
 alter table public.part_label_prints enable row level security;   -- no policies: the service role only
 comment on table public.part_label_prints is 'Append-only: the letters a printed sheet showed for a question with a hidden part. Read by the marker of a sheet WE printed.';
+grant select, insert, update, delete on table public.part_label_prints to service_role;   -- in place (checked 29 Oct 2026)

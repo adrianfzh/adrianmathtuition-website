@@ -212,21 +212,22 @@ export function selectedFrontPage(resultJson: unknown): { questions: string[] } 
 
 /**
  * The cover's `outOfSyllabus` input, read off a run's `result_json` (the bot's
- * lib/out-of-syllabus.js writes `out_of_syllabus: [{ q, marks, attempted }]` and
+ * lib/out-of-syllabus.js writes `out_of_syllabus: [{ q, part?, marks, attempted }]` and
  * `totals.paper_max`), or null. Pure.
  */
 export function outOfSyllabusFrontPage(resultJson: unknown): { questions: string[]; marks: number; paperMax: number | null } | null {
   const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as {
     out_of_syllabus?: unknown; totals?: { paper_max?: unknown } | null;
   };
-  const list = Array.isArray(rj.out_of_syllabus) ? rj.out_of_syllabus as Array<{ q?: unknown; marks?: unknown }> : [];
+  const list = Array.isArray(rj.out_of_syllabus) ? rj.out_of_syllabus as Array<{ q?: unknown; part?: unknown; marks?: unknown }> : [];
+  // A single PART out of syllabus (29 Oct 2026) carries `part: "(b)"` → named "Q5(b)".
   const items = list
-    .map(x => ({ q: String(x?.q ?? '').trim(), marks: Number(x?.marks) || 0 }))
-    .filter(x => /^\d+$/.test(x.q) && x.marks > 0)
-    .sort((a, b) => Number(a.q) - Number(b.q));
+    .map(x => ({ q: String(x?.q ?? '').trim(), part: String(x?.part ?? '').trim(), marks: Number(x?.marks) || 0 }))
+    .filter(x => /^\d+$/.test(x.q) && x.marks > 0 && /^[()a-z0-9]*$/i.test(x.part))
+    .sort((a, b) => Number(a.q) - Number(b.q) || a.part.localeCompare(b.part));
   if (!items.length) return null;
   const paperMax = Number(rj.totals?.paper_max);
-  return { questions: items.map(x => x.q), marks: items.reduce((s, x) => s + x.marks, 0), paperMax: paperMax > 0 ? paperMax : null };
+  return { questions: items.map(x => x.q + x.part), marks: items.reduce((s, x) => s + x.marks, 0), paperMax: paperMax > 0 ? paperMax : null };
 }
 
 /**

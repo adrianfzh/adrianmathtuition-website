@@ -716,6 +716,12 @@ describe('the cover names questions left out for the syllabus', () => {
     expect(outOfSyllabusFrontPage(null)).toBeNull();
   });
 
+  it('a single part out of syllabus is named with its letter (Nicole, H2 2021 P2 Q5(b), 29 Oct 2026)', () => {
+    const one = outOfSyllabusFrontPage({ out_of_syllabus: [{ q: '5', part: '(b)', marks: 3, attempted: false }], totals: { max: 97, paper_max: 100 } });
+    expect(one).toEqual({ questions: ['5(b)'], marks: 3, paperMax: 100 });
+    expect(outOfSyllabusLine({ max: 97, outOfSyllabus: one })).toContain('<b>Not counted: Q5(b)</b> — it is no longer in the syllabus');
+  });
+
   it('one boxed line: which questions, why, and the new total', () => {
     const line = outOfSyllabusLine({ max: 71, outOfSyllabus: outOfSyllabusFrontPage(rj) });
     expect(line).toContain('<b>Not counted: Q1 and Q5</b>');
