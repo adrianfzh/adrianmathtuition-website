@@ -585,3 +585,17 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   ×i arrow per turn, and w₁* mirrored in the real axis. The words stay; the picture sits under
   them, just above the conclusion. Bot `argand_turn`; switch `PEN_ARGAND_PICTURE`.
 - Samples sent to Adrian 29 Oct 2026; each switch goes on only on his yes.
+
+## Addendum — the standing rule, and y = 1/f(x) (29 Oct 2026)
+
+- **The rule** — Adrian: *"always include sketches if a sketch is required in the solution (should
+  this already be in the rules?) or when sketch itself is helpful for explanation? (this should also
+  be in the rules as well?)"* — yes to both. A question that asks for a sketch gets the drawn answer;
+  a picture that explains better is added; every picture is checked and a failed one is dropped, the
+  words staying. Bot marker rule 25; full text in [`docs/MARKING.md`](docs/MARKING.md) §Pictures in
+  the worked solution. The kinds in the 29 Oct addenda are its first worked examples.
+- **y = 1/f(x)** — Lakshanya's Mock Set 1 P2 Q2(b). Adrian: *"also include a sketch to show the
+  correct answer (whether you take from the question bank or generate on your own - make sure the
+  sketch is correct)"*. The marker reads f off the printed graph; the pen works out 1/f by fixed rules
+  and checks both curves. The printed f has a MINIMUM at (−4, −1/3), so 1/f has a MAXIMUM at (−4, −3).
+  Bot `reciprocal_sketch`; switch `PEN_RECIPROCAL_PICTURE`.

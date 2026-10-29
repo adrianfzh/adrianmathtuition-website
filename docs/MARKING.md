@@ -1069,6 +1069,43 @@ FRACTION"); the pen's net in `ai/pen-math.js` (`texSlashFractions`, `texChoose`)
 - **The worked solution keeps only the parts that lost marks** also when the model writes the
   label at the start of a step ("(a)(i) GC: r = …") — Lakshanya's P2 Q7/Q8 continued sheet.
 
+## 🖼 Pictures in the worked solution — the standing rule (29 Oct 2026)
+
+Adrian, 29 Oct 2026: *"always include sketches if a sketch is required in the solution (should this
+already be in the rules?) or when sketch itself is helpful for explanation? (this should also be in the
+rules as well?)"* — yes to both.
+
+1. **A question that asks for a sketch, graph or diagram** (sketch, draw, illustrate, show on an Argand
+   diagram, solve using a graph) gets the **drawn answer** in its worked solution, never only a
+   description in words.
+2. **A picture that explains better** (an inequality read from a graph, a sign test, a transformation
+   such as 1/f or |f|, a rotation on an Argand diagram, a P&C arrangement, a region) is added beside
+   the words.
+3. **Every picture is checked before it is drawn.** One that fails its check is dropped and the words
+   stay, so a student never sees a wrong picture.
+
+What was there before: the marker's "DIAGRAM RULES" (a margin figure is optional, "null is the usual
+case"; a part the student could not do is the strongest reason to draw) and the GRAPH SKETCH kind
+(lines and parabolas). Nothing made the worked solution draw a sketch it described in words — Nicole's
+H2 2021 P1 Q6(a) box said "U shape above the x-axis …". Where it lives now: bot `ai/paper-marker.js`
+rule 25 (`PICTURE_STANDING_RULE`, served with the picture kinds), the solution-box mechanism
+`SOLUTION_PICTURES` in `ai/annotate.js`, and bot `docs/FIGURES.md`. The marker writes the worked
+solution (`full_solution_latex`), so it is also the solution writer this rule binds.
+
+First worked examples (all built 29 Oct 2026, each behind its own switch until Adrian says yes):
+the correct sketch of a curve (`function_sketch`, Nicole Q6(a)); "hence solve from the graph" with the
+wanted parts highlighted (same kind, Lakshanya specimen P1 Q3(b)); the sign test as his H2 notes draw
+it (`sign_line`, Lakshanya TYS 2023 Q1(b)); ×i turns on an Argand diagram (`argand_turn`, specimen P1
+Q7(b)(iii)); y = 1/f(x) from the printed y = f(x) (`reciprocal_sketch`, Mock Set 1 P2 Q2(b)).
+Detail and samples: [`SPEC-MARGIN-DIAGRAMS.md`](../SPEC-MARGIN-DIAGRAMS.md) (the 29 Oct addenda).
+
+**A transformation is said one fact a line** (Adrian, same day, on the y = 1/f note "min of f gives max
+of 1/f: an ∩ with maximum (−4, −3), falling to −∞ …": *"very hard to follow what marker is trying to
+say. Just say it as …"*): "the minimum point (−4, −1/3) of y = f(x) becomes the maximum point
+(−4, −3) of y = 1/f(x)", then at most one line for each other fact. Always on (bot
+`MARK_SEVERITY_RULES`). On that paper the printed f has its MINIMUM at (−4, −1/3), so 1/f has its
+MAXIMUM at (−4, −3); the sentence first suggested had max and min the other way round.
+
 ## 🖊 Adrian says a marked page is wrong → `pen_reports` (6 Oct 2026)
 
 Adrian, 6 Oct 2026, on being told the page fixer had not reached the six things in his
