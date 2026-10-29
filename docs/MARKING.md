@@ -1048,6 +1048,9 @@ FRACTION"); the pen's net in `ai/pen-math.js` (`texSlashFractions`, `texChoose`)
 - **Explain the numbers behind a probability.** *"EXPLAIN the numbers behind the probability,
   not just present it"* — "There are now 35 outcomes. 18 of them are …, so P(A) = 18/35." No
   bare fractions, no capitals for emphasis.
+- **Two different expressions: say they are not equal.** *"emphasize that (lnx)^3 and ln(x^3)
+  is not the same (not equals)"* — first line "(ln x)³ ≠ ln(x³)", then "write (ln x)³ here".
+  Same for sin²x ≠ sin x², (a+b)² ≠ a²+b², √(a+b) ≠ √a+√b.
 - **Never "your own".** *"what's with the your own?"* — "sub λ into OP".
 - **A copying slip the next line did not use is "copied wrongly", never a calculation error.**
   *"this is not calculation error, it is just written wrongly"*; *"unnecessary, this is just a
