@@ -58,6 +58,19 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
   be −15", never "should be −15, calculation error" (Adrian, 22 Oct 2026, Abel's H2 2023 P1:
   *"it is clearer to put as calculation error: should be -15 instead"*). Bot `ai/annotate.js`
   builds the label this way; science notes keep their own order.
+- **Right answer, not in the form asked = unfinished, not wrong** (Adrian, 29 Oct 2026, Abel's H2
+  TYS 2021 P1 Q8(a): *"r.(1 0 -2)=3 is correct, perhaps should put double caret sign to say that
+  question wasn't answered, or answer was incomplete"*). The marker flags the line `pen_label:
+  "not_finished"` (error_type `incomplete`, never `misread`; fix_short = the answer in the form
+  asked). The pen draws **^^ where the ✗ would go**, keeps the code (A0 if the scheme withholds
+  it), no underline, and writes "not finished: write x − 2z = 3" beside it. `PEN_UNFINISHED_CARET=0`
+  = the old ✗.
+- **On lined paper a note may sit over the printed rules** (same page: *"there are so much spaces
+  at the sides, the annotation could have been written there instead of in the right column"*).
+  The placement grid counted every notebook rule as ink, so no gap was a line tall and every note
+  on a ruled page went to the side strip. On a ruled page (`whitespace.js ruledPage`) the labels
+  are seated on `overRulesGrid` — blocked only by writing, print, marks and notes already placed.
+  `PEN_LABEL_OVER_RULES=0` = old.
 - **A missing geometric reason is labelled "missing reason"**, not "incomplete answer" (Chloe's
   EM 2020 P1 Q21: *"for not writing reasons for angle properties > say 'missing reason'"*).
 
