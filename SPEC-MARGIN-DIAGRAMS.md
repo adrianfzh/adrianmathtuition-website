@@ -534,3 +534,23 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   under, a narrow layout with the counts underneath, or just above the box), else blank paper
   near the question, else the extra sheet. Dry runs: both Q7(b) pages now sit beside their box
   at full size; a full JC page (2025 TJC Q6(a)(iii)) still goes to the extra sheet. Still OFF.
+
+## Addendum — `function_sketch`: the correct sketch in the solution box (29 Oct 2026) — BUILT, switched OFF
+
+- **Asked** — Adrian, 29 Oct 2026: *"do it"* to "when a sketch question loses marks, draw the
+  correct sketch in the solution box". The case: Nicole's H2 TYS 2021 P1 Q6(a), sketch
+  y = 1/√(4ax − x²), a > 0, and give the asymptotes [4]. She lost 2 (a false horizontal asymptote
+  y = a/2, the minimum not labelled), and the "Correct solution — Q6" box said the graph in words.
+- **What it draws** — the curve, the asymptotes dashed and labelled with their equations
+  (x = 0, x = 4a), the key points dotted and labelled ((2a, 1/(2a))), constants kept as letters.
+  It replaces the box's "Sketch: …" line; at most one short words line sits under it
+  ("no horizontal asymptote"). Only in the solution box — the copy without solutions is unchanged.
+- **Checked before it is drawn** — at several values of a. A point off the curve, a wrong minimum,
+  an asymptote that is not one, or anything the curve has that the drawing leaves out (another
+  asymptote, a turning point, an axis crossing, an end point) ⇒ nothing is drawn and the words stay.
+- **Where** — bot `lib/figures/margin/function_sketch.js` (the 21st margin kind), marker rule 21
+  (`SKETCH_PICTURE_RULE` in `ai/paper-marker.js`), `ai/annotate.js` `swapSketchIn`. Bot
+  `docs/FIGURES.md` has the detail; bench `nicole-h2tys21p1-p4-sketch-in-solution`.
+- **Switch** — `PEN_SKETCH_PICTURE` (not set = off). Sample of Nicole's Q6(a) sent to Adrian
+  29 Oct 2026; switched on for students only on his yes. Papers marked before the switch-on keep
+  their words (the marker must emit the sketch; nothing is re-marked).
