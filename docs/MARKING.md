@@ -1059,6 +1059,9 @@ FRACTION"); the pen's net in `ai/pen-math.js` (`texSlashFractions`, `texChoose`)
   HOW that vector is a straight line > and that's why students are stuck"* — from v = ((2 − z)/3,
   0, z): split into the part without z + z × the part with z, put λ = −z/3, then "this is
   r = a + λd: the line through (2/3, 0, 0) parallel to i − 3k".
+- **A "should be" value says what it is.** *"what does the red annotation mean? … should explain
+  clearly"* (Lakshanya's mock P2 Q6(c)) — "at N = 15 the chance the game is still going is
+  (5/6)⁸(4/6)⁷ = 0.01361, not 0.01264". dy/dx, y/x stack as fractions on the page.
 - **Never "your own".** *"what's with the your own?"* — "sub λ into OP".
 - **A copying slip the next line did not use is "copied wrongly", never a calculation error.**
   *"this is not calculation error, it is just written wrongly"*; *"unnecessary, this is just a
