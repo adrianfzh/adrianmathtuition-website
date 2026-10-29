@@ -554,3 +554,19 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
 - **Switch** — `PEN_SKETCH_PICTURE` (not set = off). Sample of Nicole's Q6(a) sent to Adrian
   29 Oct 2026; switched on for students only on his yes. Papers marked before the switch-on keep
   their words (the marker must emit the sketch; nothing is re-marked).
+
+## Addendum — `sign_line`: the sign test drawn as the H2 notes draw it (29 Oct 2026) — BUILT, switched OFF
+
+- **Asked** — Adrian, 29 Oct 2026, on Lakshanya's H2 TYS 2023 Q1(b), (x+25)/(x²−4x−5) > −3: the
+  worked solution wrote "sign test: + | − | + | − | +" as text. *"can the sign test be better drawn?
+  you have my h2 inequalities notes right? look at that"*.
+- **What it draws** — copied from his notes (Dropbox `2 MATH/MATH class 5 JC/302 Inequalities`,
+  Examples 1a–1d): a number line with an arrow, a tick at each critical value with the value under
+  it, + or − above each region, evenly spaced. It replaces the solution's "sign test:" line.
+- **Checked before it is drawn** — each critical value must make the expression 0 or undefined, and
+  each region's sign is tested; a wrong sign or a missing critical value ⇒ nothing is drawn, the
+  words stay.
+- **Where** — bot `lib/figures/margin/sign_line.js` (the 22nd kind), marker rule 22, the same
+  solution-box mechanism as `function_sketch`. Bench `lakshanya-h2tys23-p1-sign-line-in-solution`.
+- **Switch** — `PEN_SIGN_PICTURE` (not set = off). Sample beside his notes page sent 29 Oct 2026;
+  on for students only on his yes.
