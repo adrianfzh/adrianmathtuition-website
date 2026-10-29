@@ -585,7 +585,13 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   teal, dark orange and slate grey, 17 Oct 2026): "Total marks reduced — some questions are not in the syllabus" (Adrian, 17 Oct 2026:
   *"beside the marks > put in another colour > total marks reduced due to some questions not in
   syllabus"*; then *"put BESIDE the total marks … on the right"*). EITHER/OR: out only when every alternative is. A returned Practice Again sheet is
-  never cut. **Not covered yet:** a single PART marked out of syllabus inside `parts`; a paper whose
+  never cut. **One PART out (29 Oct 2026, built)** — Adrian on Nicole's H2 TYS 2021 P2 Q5(b)
+  "Find ∫₀ᵇ sin 2x sin 3x dx" [3], marked 0/3: *"this is not in the h2 math syllabus anymore. does
+  the marker not recognize it?"* → *"Yes, do it"*. A bank part marked `legacy: true` inside `parts`
+  (SPEC-PART-SYLLABUS.md) becomes an entry `{ q: '5', part: '(b)', marks: 3 }`: only that part leaves
+  the question's marking (`splitOutOfSyllabus` → `cutParts`), the pen leaves it unmarked
+  (`partIsOut`), the allocation audit never adds it back, Q5 is not called skipped, the total drops
+  by 3 (81/97 instead of 81/100) and the cover says "Not counted: Q5(b)". **Not covered yet:** a paper whose
   allocation is Adrian's APPROVED split (the bank is not asked then); papers already released
   (nothing was re-marked — a 🔁 Re-mark applies it).
 - **☑️ Selected questions only (19 Oct 2026, BUILT):** Adrian, 19 Oct 2026: *"i am letting
@@ -980,6 +986,29 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      box-heights of the part's top; a spot that doesn't exist there diverts to the side
      strip (still level) instead of sagging down the page.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
+
+## 📊 H2 statistics written answers — Adrian's rulings (29 Oct 2026)
+
+Adrian, on Nicole's H2 TYS 2021 P2: *"make sure key points are right, especially for
+explanation questions for statistics, we need to ensure students answer accurately, and
+their meaning is accurate … this is important."* Asked whether a missing key point costs
+the mark: **"yes"**. Every paper, every student. Rules live in bot `ai/paper-marker.js`
+(search "29 Oct 2026, Nicole"); defects F233–F235.
+
+- **A missing key point costs its mark.** A 1-mark statistics reason with one of its two
+  points is B0 (overrides the general "−1 for one omitted condition").
+  Small sample → test inappropriate = population not known to be normal **and** n small,
+  so no CLT. Large sample → CLT, sample mean **approximately** normal. How to sample =
+  at random (say how) + so the sample is representative / unbiased ("equal chance" is
+  what random means, not the reason).
+- **A point that means something else is not the point.**
+- **Grammar slips are a note, never a deduction** ("too few tyres", not "too little").
+- **Curved scatter diagram, in the schools' words:** "as t increases, x increases at an
+  increasing rate, so the relationship is not linear" — never "curves upwards".
+- **Every random variable is defined in words and with its distribution.** Not defined
+  → a note, marks kept. Defined wrongly → that line's mark is lost.
+- **The "Correct solution" box shows only parts that lost marks**, even when the
+  question runs over two pages (F233).
 
 ## 🖊 Adrian says a marked page is wrong → `pen_reports` (6 Oct 2026)
 
