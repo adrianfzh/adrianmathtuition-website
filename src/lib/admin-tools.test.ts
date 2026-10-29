@@ -7,12 +7,12 @@ describe('the dashboard tools row learns from what is opened', () => {
     expect(topTools({}).map((t) => t.href)).toEqual([...PINNED_TOOLS, ...DEFAULT_TOOLS]);
   });
   // 8 Oct 2026, Adrian: "can you put bot analytics and switch on the admin hub?"
-  it('Bot analytics, Switches and the rulebook are always there, first, and never twice', () => {
+  it('Bot analytics and Switches are always there, first, and never twice', () => {
     let c = {};
     for (let i = 0; i < 9; i++) c = bumpTap(c, '/admin/switches');
     for (let i = 0; i < 50; i++) c = bumpTap(c, '/admin/costs');
     const row = topTools(c).map((t) => t.href);
-    expect(row.slice(0, 4)).toEqual(['/admin/bot-analytics', '/admin/switches', '/admin/rulebook', '/admin/costs']);
+    expect(row.slice(0, 3)).toEqual(['/admin/bot-analytics', '/admin/switches', '/admin/costs']);
     expect(new Set(row).size).toBe(row.length);
     expect(row).toHaveLength(PINNED_TOOLS.length + 7);
     expect(ALL_ADMIN_TOOLS.find((t) => t.href === '/admin/bot-analytics')?.label).toBe('Bot analytics');

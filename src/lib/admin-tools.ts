@@ -50,8 +50,8 @@ export const ALL_ADMIN_TOOLS: AdminTool[] = ADMIN_TOOLS.flatMap((g) => g.links);
 /** What the row shows before it has learnt anything, in this order. */
 export const DEFAULT_TOOLS = ['/admin/schedule', '/admin/log', '/admin/students', '/admin/mark-paper', '/admin/invoices', '/admin/questions', '/admin/notes'];
 
-/** Always in the row, first, whatever the tally says (Adrian, 8 Oct 2026: "can you put bot analytics and switch on the admin hub?"; the rulebook 15 Oct 2026: "allow me to access in admin hub"). */
-export const PINNED_TOOLS = ['/admin/bot-analytics', '/admin/switches', '/admin/rulebook'];
+/** Always in the row, first, whatever the tally says (Adrian, 8 Oct 2026: "can you put bot analytics and switch on the admin hub?"; the rulebook was pinned 15 Oct 2026 and unpinned 29 Oct 2026: "don't have to put staff rulebook as a card" — it stays in All tools). */
+export const PINNED_TOOLS = ['/admin/bot-analytics', '/admin/switches'];
 
 export const TAPS_KEY = 'admin_dash_taps_v1';
 /** Set once a device has handed its old private tally to the shared one. */

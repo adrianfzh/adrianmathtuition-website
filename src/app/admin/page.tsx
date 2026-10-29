@@ -190,13 +190,6 @@ export default function AdminDashboard() {
           {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} />)}
         </section>
 
-        <Link href="/admin/overnight" className="gl-night">
-          <span className="gl-night-e" aria-hidden>🌙</span>
-          <span className="gl-night-t">Overnight</span>
-          <span className="gl-night-n">{ships == null ? '' : ships.ok && ships.open.length === 0 ? 'nothing waiting' : 'what ran last night'}</span>
-          <span className="gl-night-go" aria-hidden>›</span>
-        </Link>
-
         <nav className="gl-row-tools" aria-label="Most used tools">
           {row.map(t => (
             <Link key={t.href} href={t.href} className="gl-tool" onClick={() => tap(t.href)}>
@@ -359,12 +352,6 @@ const CSS = `
   .gl-num-bars { height: 56px; max-width: 360px; gap: 6px; }
   .gl-num-w { font-size: 12.5px; }
 }
-.gl-night { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 12px 16px; margin-bottom: 14px; text-decoration: none; color: #111827; }
-.gl-night-e { font-size: 22px; line-height: 1; }
-.gl-night-t { font-size: 15px; font-weight: 700; }
-.gl-night-n { margin-left: auto; font-size: 13.5px; color: #4b5563; white-space: nowrap; }
-.gl-night-n b { font-size: 20px; font-weight: 800; color: #1c64b0; margin-right: 2px; }
-.gl-night-go { font-size: 20px; color: #9ca3af; }
 .gl-ships { margin-top: 18px; }
 .gl-ships-h { font-size: 16px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
 .gl-ships-h span { background: #1c64b0; color: #fff; border-radius: 999px; font-size: 13px; padding: 1px 9px; }
