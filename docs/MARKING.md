@@ -1028,6 +1028,33 @@ the mark: **"yes"**. Every paper, every student. Rules live in bot `ai/paper-mar
 - **The "Correct solution" box shows only parts that lost marks**, even when the
   question runs over two pages (F233).
 
+## ✍️ How a note is written — Adrian's rulings on Lakshanya's H2 TYS 2023 P1/P2 (29 Oct 2026)
+
+Rules in bot `ai/paper-marker.js` ("HOW A NOTE IS WRITTEN", "A FRACTION IN A NOTE IS A
+FRACTION"); the pen's net in `ai/pen-math.js` (`texSlashFractions`, `texChoose`). Defects F236–F237.
+
+- **Fractions are stacked.** *"able to write 10/(3-x) using latex or something?"* The marker
+  writes `\frac`; the pen stacks any typed fraction with a bracketed side ("10/(3−x)").
+  Dates, km/h, mixed numbers and a bare 1/2 keep their slash.
+- **³⁵C₁₁, not "35C11".** *"possible to write 35C11 in latex or something?"* The pen sets
+  "35C11", "10P3", "nCr" as H2 papers print them; mark codes ("M1") are never caught.
+- **Unit vector = the vector over its length.** *"instead of using n hat, we can write as n
+  vector / |n|"* — never n̂.
+- **A reason names what it talks about** ("the normal is the direction of l₂, (3, 2, 1)"), and
+  a working column never ends on a row repeating the value above.
+- **A note never asks a question.** *"where does 1000 come from seems cryptic"* — say what is
+  missing and write the step. A "show" part with the right result: "your answer is right; the
+  step that gets the mark is missing".
+- **Explain the numbers behind a probability.** *"EXPLAIN the numbers behind the probability,
+  not just present it"* — "There are now 35 outcomes. 18 of them are …, so P(A) = 18/35." No
+  bare fractions, no capitals for emphasis.
+- **Never "your own".** *"what's with the your own?"* — "sub λ into OP".
+- **A copying slip the next line did not use is "copied wrongly", never a calculation error.**
+  *"this is not calculation error, it is just written wrongly"*; *"unnecessary, this is just a
+  copying slip"* — on a full-mark part, the note is "copied wrongly: should be …" and nothing more.
+- **The worked solution keeps only the parts that lost marks** also when the model writes the
+  label at the start of a step ("(a)(i) GC: r = …") — Lakshanya's P2 Q7/Q8 continued sheet.
+
 ## 🖊 Adrian says a marked page is wrong → `pen_reports` (6 Oct 2026)
 
 Adrian, 6 Oct 2026, on being told the page fixer had not reached the six things in his
