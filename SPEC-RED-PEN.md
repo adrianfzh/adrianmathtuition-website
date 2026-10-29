@@ -18,6 +18,17 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
 - Then **continue from the student's own working** to show how they could have finished,
   instead of a full solution from scratch.
 - Strong advice is allowed and wanted: *"must know how to solve trig equations!"*
+- **Red = symbols only, brown = every word** (Adrian, 29 Oct 2026: *"i can't tell when an
+  annotation is teaching (and hence brown) and when it is marking wrong (and hence red),
+  sometimes red does the teaching too"* → *"Yes, that rule"*). **Red:** ✓, ✗, the ring, mark
+  codes (M1, A0, B1…), the ^^ carets, and a bare correct value written where it belongs ("24",
+  "+1321.54"). **Brown** (the teaching ink, bot `TEACH_BLUE` #5b4636): every word — every label
+  that is a phrase or sentence, every side-column note, the error-kind phrase, the boxes and the
+  worked solutions. "should be 24" = "should be" brown, "24" red. Replaces the 3 Sep 2026 "red is
+  the verdict, brown is the teaching" wording. Bot `ai/annotate.js` `wordInk` / `drawWordsLine`,
+  `lib/pen-labels.js isBareValue` / `valueSplit`; page check `no-red-sentence` (`lib/ink-checks.js`,
+  every live page + every bench page). The red-ink mode (`MARK_RED_INK=1`) stays all red. Forward
+  only: papers already marked keep their ink.
 - Missing brackets: draw them in and say "missing brackets" — no mark lost.
 - "Careless" is a real category and very common.
 - Green-pen (second-colour) work is the student's own later correction — not marked. The
