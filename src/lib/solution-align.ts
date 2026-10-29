@@ -36,7 +36,10 @@ type Rel = '=' | '\\approx' | '\\le' | '\\ge' | '<' | '>';
 /** First top-level relation (`=`, `\approx`/`≈`, `\le`/`\ge`/`≤`/`≥`, bare `<`/`>`;
  *  not `<=`/`>=`/`!=`/`:=`/`==`/`->`), split there. */
 export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: Rel } | null {
-  let depth = 0;
+  // `pd` = round-bracket depth: a relation INSIDE P( … ) or |( … )| is not where a step
+  // splits — "P(−0.65 < L_T − R_T < 0.65)" broke at its < (Adrian, 29 Oct 2026: "why are
+  // P(-0.65< L_T-R_t ...) split across lines? there are enough space for one line"). Mirrored.
+  let depth = 0, pd = 0;
   for (let i = 0; i < src.length; i++) {
     const c = src[i];
     if (c === '\\') {
@@ -46,27 +49,29 @@ export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: R
       // ai/pen-math.js — change both or neither. The lookahead keeps `\left`
       // and `\geqslant` safe: a longer command name never matches.
       const m = /^\\(approx|leq?|geq?)(?![a-zA-Z])/.exec(src.slice(i));
-      if (m && depth === 0) {
+      if (m && depth === 0 && pd === 0) {
         const rel: Rel = m[1] === 'approx' ? '\\approx' : m[1][0] === 'l' ? '\\le' : '\\ge';
         return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + m[0].length).trim(), rel };
       }
       i += 1; continue;
     }
+    if (c === '(') { pd++; continue; }
+    if (c === ')') { pd = Math.max(0, pd - 1); continue; }
     if (c === '{') { depth++; continue; }
     if (c === '}') { depth--; continue; }
-    if (c === '≈' && depth === 0) {
+    if (c === '≈' && depth === 0 && pd === 0) {
       return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: '\\approx' };
     }
-    if ((c === '≤' || c === '≥') && depth === 0) {
+    if ((c === '≤' || c === '≥') && depth === 0 && pd === 0) {
       return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: c === '≤' ? '\\le' : '\\ge' };
     }
-    if ((c === '<' || c === '>') && depth === 0) {
+    if ((c === '<' || c === '>') && depth === 0 && pd === 0) {
       // `<=`, `>=`, `<<`, `>>`, `->`, `=>` are not this relation.
       if (src[i + 1] === '=' || src[i + 1] === c) return null;
       if (i > 0 && '<>-='.includes(src[i - 1])) return null;
       return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: c };
     }
-    if (c === '=' && depth === 0) {
+    if (c === '=' && depth === 0 && pd === 0) {
       if (i > 0 && '<>!:='.includes(src[i - 1])) return null;
       return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: '=' };
     }

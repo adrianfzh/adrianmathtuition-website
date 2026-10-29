@@ -166,3 +166,14 @@ describe('pure \\text{…} label LHS (mirrors bot pen-math, 30 Aug 2026)', () =>
     expect(groupAlignedSteps(longLabel)).toBe(longLabel);
   });
 });
+
+describe('a relation inside round brackets is not where a step splits (29 Oct 2026)', () => {
+  it('P(−0.65 < L_T − R_T < 0.65) stays whole; the split is at the top-level =', () => {
+    const s = splitAtRelation('P(|L_T - R_T| < 0.65) = P(-0.65 < L_T - R_T < 0.65)');
+    expect(s?.rel).toBe('=');
+    expect(s?.lhs).toBe('P(|L_T - R_T| < 0.65)');
+  });
+  it('a top-level inequality still splits', () => {
+    expect(splitAtRelation('|x - 1| < 2')?.rel).toBe('<');
+  });
+});
