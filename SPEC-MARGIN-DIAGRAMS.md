@@ -523,6 +523,11 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   "worked solution continued" sheet, not beside the box. 2025 P2 Q7(b): it sat beside the
   "From your line" box but shrunk, its small labels below pen size. Fix the size before
   switching on.
+- **Picture only (29 Oct 2026, Adrian: "Yes, picture only")** — the same working was said three
+  times at one mistake (the picture, the "From your line" box beside it, the strip verdict). Now
+  the picture is drawn IN PLACE of the box and the verdict is dropped; the ring and its "should
+  be" label stay. No room ⇒ the box as before. `PEN_PC_PICTURE_ONLY=0` = picture beside the box.
+  (The switch itself has been ON since 28 Oct — bot `docs/FIGURES.md`.)
 - **Made compact (28 Oct 2026, Adrian: "Yes, make compact")** — bot commit d625f7ac. Tight
   letters and boxes, one picture for "arrange then slot", counts in one column on the right,
   the total on one line. The pen draws it at full pen size only: beside the box (right, left,
