@@ -71,6 +71,15 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
   on a ruled page went to the side strip. On a ruled page (`whitespace.js ruledPage`) the labels
   are seated on `overRulesGrid` — blocked only by writing, print, marks and notes already placed.
   `PEN_LABEL_OVER_RULES=0` = old.
+- **A ring goes only where the text puts the wrong token** (Adrian, 29 Oct 2026: *"able to circle exactly the
+  incorrect part?"*). The marker names the SHORTEST wrong piece that occurs once in the line ("4x − 15", the
+  whole unit vector "OA/|OA|"); the free reader's ring is refused on the far side of a fraction bar from where
+  the text puts it. No ring is better than a ring on the right-looking wrong thing.
+- **One home per mistake, beside the line**: a part's note or verdict that says what a seated label already
+  says is not drawn (*"just say 792.1875 is exact"*). An underline never runs through her writing or crossed-out
+  work (*"the horizontal red line cuts through the student's writing?"*) — then the ✗ and its note stand alone.
+- **Two marks on one row each sit by their own words**: a short answer before a sentence begun on its row ends
+  at the gap after it; the sentence's ✓ goes after its last word (*"can these ticks be more properly placed?"*).
 - **A missing geometric reason is labelled "missing reason"**, not "incomplete answer" (Chloe's
   EM 2020 P1 Q21: *"for not writing reasons for angle properties > say 'missing reason'"*).
 
