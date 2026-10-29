@@ -195,3 +195,12 @@ describe('repairSolution — ⇒-chained lines become separate steps', () => {
       .toEqual(['$a = 1$', '$b = 2$', '$c = 3$']);
   });
 });
+
+// 29 Oct 2026, Abel's H2 2021 P1 Q8(a): `x\\y\\z` in a pmatrix lost its row breaks to `\y`, `\z`.
+describe('repairLatex — matrix row breaks', () => {
+  it('keeps a row break before a one-letter entry', () => {
+    const m = '\\begin{pmatrix}x\\\\y\\\\z\\end{pmatrix}\\cdot\\begin{pmatrix}1\\\\0\\\\-2\\end{pmatrix}= 3';
+    expect(repairLatex(`$${m}$`)).toBe(`$${m}$`);
+    expect(repairLatex('$\\\\frac{1}{2} + \\\\sqrt{x}$')).toBe('$\\frac{1}{2} + \\sqrt{x}$');
+  });
+});
