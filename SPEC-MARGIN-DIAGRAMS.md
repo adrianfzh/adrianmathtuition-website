@@ -570,3 +570,18 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   solution-box mechanism as `function_sketch`. Bench `lakshanya-h2tys23-p1-sign-line-in-solution`.
 - **Switch** — `PEN_SIGN_PICTURE` (not set = off). Sample beside his notes page sent 29 Oct 2026;
   on for students only on his yes.
+
+## Addendum — two more solution pictures (29 Oct 2026) — BUILT, switched OFF
+
+- **Hence solve from the graph** — Lakshanya's H2 specimen P1 Q3(b), x − 12/x < 1. Adrian: *"this
+  will also be hard to students to understand. perhaps a graph drawn with the correct parts of the
+  graph highlighted and arrows pointing to them with annotation explaining will be much better"*.
+  The curve, y = 1 dotted, the parts below it in thick green, an arrow from each to its range
+  ("below y = 1 here: x < −3"), the answer in bold, "x = 0 is the asymptote, so 0 is not included".
+  It replaces the "From your line" box and the cryptic side note. The ranges are worked out from
+  the curve itself. Bot `function_sketch` with `inequality`; switch `PEN_SKETCH_PICTURE`.
+- **×i turns on an Argand diagram** — Lakshanya's specimen P1 Q7(b)(iii), is A″ the conjugate of
+  w₁? Adrian: *"able to also show a diagram to illustrate?"*. A, A′ = iw₁, A″ = −w₁ with a curved
+  ×i arrow per turn, and w₁* mirrored in the real axis. The words stay; the picture sits under
+  them, just above the conclusion. Bot `argand_turn`; switch `PEN_ARGAND_PICTURE`.
+- Samples sent to Adrian 29 Oct 2026; each switch goes on only on his yes.
