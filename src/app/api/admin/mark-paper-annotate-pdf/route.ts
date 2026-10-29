@@ -67,13 +67,15 @@ export async function POST(req: NextRequest) {
   let ungroundedTotal = false;
   try {
     const { data } = await getSupabaseAdmin().from('paper_marking_runs')
-      .select('grounding:result_json->grounding').eq('id', runId).maybeSingle();
+      .select('grounding:result_json->grounding, paper:result_json->source->>paper_pdf_url').eq('id', runId).maybeSingle();
     const g = (data as { grounding?: { source?: unknown } | null } | null)?.grounding;
+    const paper = (data as { paper?: unknown } | null)?.paper;
     ungroundedTotal = isUngroundedTotal({
       groundingSource: typeof g?.source === 'string' ? g.source : null,
       maxSource: body.totals?.max_source ?? null,
       countedMax: body.totals?.counted_max ?? null,
       max: body.totals?.max ?? null,
+      paperAttached: typeof paper === 'string' && !!paper,
     });
   } catch (e) { console.warn('[mark-paper-annotate-pdf] grounding lookup skipped:', (e as Error).message); }
 

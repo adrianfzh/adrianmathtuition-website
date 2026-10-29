@@ -49,6 +49,11 @@ describe('isUngroundedTotal — was this marked with no paper to check it agains
     expect(isUngroundedTotal({ ...isabelle, groundingSource: 'stored-approved' })).toBe(false);
   });
 
+  it('never fires when a question paper came with the run (Lakshanya, 29 Oct 2026: 80/99 "without the question paper" with the paper attached)', () => {
+    expect(isUngroundedTotal({ groundingSource: null, maxSource: 'registry', countedMax: 99, max: 100, paperAttached: true })).toBe(false);
+    expect(isUngroundedTotal({ groundingSource: null, maxSource: 'registry', countedMax: 99, max: 100, paperAttached: false })).toBe(true);
+  });
+
   it('never fires when the denominator IS the counted sum — that total is honest', () => {
     expect(isUngroundedTotal({ ...isabelle, maxSource: 'counted' })).toBe(false);
     // …nor when the printed brackets were re-read and became the denominator.

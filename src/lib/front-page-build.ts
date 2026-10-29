@@ -182,6 +182,7 @@ export function ungroundedFrontPage(resultJson: unknown): { countedMax: number }
     selected_only?: unknown;
     grounding?: { source?: unknown } | null;
     totals?: { max?: unknown; counted_max?: unknown; max_source?: unknown } | null;
+    source?: { paper_pdf_url?: unknown } | null;
   };
   // A selected-questions hand-in is out of what was done by design — no "official total" is coming.
   if (rj.selected_only === true) return null;
@@ -192,6 +193,7 @@ export function ungroundedFrontPage(resultJson: unknown): { countedMax: number }
     maxSource: typeof t.max_source === 'string' ? t.max_source : null,
     countedMax,
     max: Number(t.max),
+    paperAttached: typeof rj.source?.paper_pdf_url === 'string' && !!rj.source.paper_pdf_url,
   });
   return ok ? { countedMax } : null;
 }

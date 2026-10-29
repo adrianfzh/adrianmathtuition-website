@@ -55,8 +55,17 @@ export function isUngroundedTotal(p: {
   maxSource?: string | null;
   countedMax?: number | null;
   max?: number | null;
+  /** A question paper PDF came with the run (`result_json.source.paper_pdf_url`). */
+  paperAttached?: boolean;
 }): boolean {
   if (p.groundingSource) return false;
+  // A question paper with no mark scheme leaves `grounding.source` null (the bot
+  // sets it only for a scheme/answer key), but the marker DID read the printed
+  // questions and marks. "Marked without the question paper" is then false —
+  // Adrian, 29 Oct 2026, Lakshanya's H2 mock P2 at 80/99: "why is this upon 99?
+  // i have sent in the question paper as well". A short count there is a part
+  // the marker dropped, which the review note already flags.
+  if (p.paperAttached) return false;
   // 'override' is a person stating the paper's official total (the admin page's
   // "out of ___", or a corrected total — 5 Oct 2026, six E Math papers fixed
   // from /90 to /80 and /100). That total IS confirmed, so "not the official

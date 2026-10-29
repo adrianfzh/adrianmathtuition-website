@@ -35,7 +35,7 @@ type RunRow = {
   results?: unknown;
   annotated_photos?: unknown;
   grounding?: { source?: unknown } | null;
-  source?: { photos?: unknown } | null;
+  source?: { photos?: unknown; paper_pdf_url?: unknown } | null;
 };
 
 /** Put the finished URL on the run HERE, server-side, before answering the browser.
@@ -156,6 +156,7 @@ export async function POST(req: NextRequest) {
     maxSource: body.totals?.max_source ?? null,
     countedMax: body.totals?.counted_max ?? null,
     max: body.totals?.max ?? null,
+    paperAttached: !!runRow?.source?.paper_pdf_url,
   });
 
   // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.

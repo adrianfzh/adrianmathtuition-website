@@ -860,6 +860,24 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      over `68 / 73`. Shared by `front-page-build.ts ungroundedFrontPage`, `mark-paper-pdf` and the
      ✏️ Annotate flatten, so the cover and page 1 can never disagree. Every ordinary cover is
      byte-identical to yesterday's.
+     **A question paper attached counts as the paper (29 Oct 2026, F236).** `grounding.source`
+     is set only for a mark scheme, so a run with a question paper and no scheme used to fall
+     into this branch when one part was dropped (Lakshanya 80/99, paper attached). The check
+     takes `paperAttached` (`result_json.source.paper_pdf_url`) and answers false.
+- **📄 A printed part with no answer is 0/n, never dropped (29 Oct 2026, F236 — Adrian: "make
+  sure future sessions don't count total marks wrongly").** A page read leaves a part it cannot
+  see for another page; when no page has it, the part used to vanish and the paper counted
+  short (99 of 100). Bot `ai/printed-parts.js` reads the attached question paper's text layer
+  (question "1." / part "(a)" / sub-part "(i)" / `[n]` at line end) and `groundStep`
+  (`ai/marker-assemble.js`) adds each missing part as `not_attempted` 0/n on its question's
+  last row, in `marking` AND `marking_output` (the cover reads the latter first). Applied only
+  when the printed brackets sum to the official total AND the fill makes the paper add up
+  exactly; a scanned paper (no text), a question with no row at all, an out-of-syllabus cut,
+  a Practice Again sheet or a selected-only hand-in changes nothing. Log line: `[paper]
+  printed parts with no answer, scored 0: …`; triage note "Left blank, scored 0 against the
+  question paper". A run already released with a dropped part: add the part to both copies,
+  set `totals.counted_max`, fix `error_kinds`, then `mark-triage {action:'reissue',
+  reason:'total-corrected', channel:'app', fromMax:<old>}`.
   5. **When the paper arrives.** `/api/cron/extraction-inbox` files it for the marker and re-marks
      the papers — see below.
   6. **Weekly, for papers nobody has dropped in yet (11 Sep 2026).** `/api/cron/missing-papers`
