@@ -621,3 +621,26 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
 - **Where** — bot `lib/sketch-from-question.js` (hooked in `ai/figure-draw.js` `diagramEntry`),
   `ai/annotate.js` `sketchText`; tests `test/sketch-from-question.test.js`; detail in bot
   `docs/FIGURES.md` §function_sketch.
+
+## Addendum — `normal_curve`: the shaded bell curve (30 Oct 2026) — BUILT, switched OFF
+
+- **Why** — Adrian, 30 Oct 2026: *"Yes"* to building it. In the last 60 days 32 marked parts that
+  lost marks were normal-distribution parts (O-level and H2 statistics), and the pen had no picture
+  for them.
+- **What it draws** — the bell curve with the mean on the axis, the value(s) a (and b), the region
+  asked for shaded — P(X < a), P(X > a), P(a < X < b), and "find a given the probability" — with the
+  probability written in it, and the mirror tail about the mean when the working uses symmetry.
+  Labels typeset, in the pen's ink, at the pen's size. Drawn by the worksheet library's verified
+  `normal-curve` family.
+- **Checked before drawing** — the shaded side agrees with the inequality; the probability agrees with
+  the normal distribution from the stated mean and sd to 3 s.f. (a found value: with the inverse
+  normal); a one-tail value sits on the correct side of the mean. Any mismatch → nothing drawn, the
+  words stay.
+- **Where it goes** — inside the "Correct solution" box when the question's worked solution is drawn on
+  the page; otherwise (the usual case — only a "From your line" box) beside that box, else on blank
+  paper near the question, else on the extra sheet. Never over the student's writing.
+- **Switch** — `PEN_NORMAL_PICTURE` (not set = off), NOT in `fly.toml`: Adrian sees a sample first.
+  Samples: Abel's H2 TYS 2024 P2 Q10(d) (find k) and Lakshanya's H2 TYS 2023 P2 Q9(c) (P(R > 1.25)).
+- **Where** — bot `lib/figures/margin/normal_curve.js`, marker rule 26 in `ai/paper-marker.js`,
+  `ai/annotate.js`; tests `test/margin-diagram-normal-curve.test.js`; bench
+  `abel-h2tys24p2-p10-normal-curve-find-k`; detail in bot `docs/FIGURES.md` §normal_curve.
