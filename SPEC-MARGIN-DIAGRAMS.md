@@ -644,3 +644,44 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
 - **Where** — bot `lib/figures/margin/normal_curve.js`, marker rule 26 in `ai/paper-marker.js`,
   `ai/annotate.js`; tests `test/margin-diagram-normal-curve.test.js`; bench
   `abel-h2tys24p2-p10-normal-curve-find-k`; detail in bot `docs/FIGURES.md` §normal_curve.
+
+## Addendum — the "Build them all" pictures (30 Oct 2026) — BUILT, every one switched OFF
+
+Adrian, 30 Oct 2026: *"Build them all"* — a checked picture for every group of lost marks the pen
+still had none for. Merged into the bot's `main` as **4d9b176c**. Every kind: typed spec → the
+checker re-works every number → draws nothing when one disagrees (the words stay). **Each is BUILT,
+switched OFF — on only after Adrian sees samples.** None of the switches is in `fly.toml` /
+`fly.worker.toml`; with all of them off the marker's prompts are byte for byte what they were.
+
+| Kind | Switch | What it draws | Marker rule |
+|---|---|---|---|
+| `similar_triangles` | `PEN_SIMILAR_PICTURE` | the two similar / congruent triangles side by side, matching sides in matching colours, the ratio | 27a |
+| `parallel_angles` | `PEN_PARALLEL_PICTURE` | two parallel lines and a transversal, the given and found angles, each step with its reason (alt. / corr. / int. ∠s) | 27b |
+| `polygon_angle` | `PEN_POLYGON_PICTURE` | a regular polygon with one interior and one exterior angle and their sizes | 27c |
+| `box_plot` | `PEN_BOXPLOT_PICTURE` | one or two box plots on one scale (five numbers checked against the data) | 28 |
+| `histogram_fd` | `PEN_HISTOGRAM_PICTURE` | the histogram, frequency density worked out for unequal widths | 28 |
+| `cum_freq` | `PEN_CUMFREQ_PICTURE` | the cumulative frequency curve with the readings (median, quartiles, "how many more than") drawn on it | 28 |
+| `regression_line` | `PEN_REGRESSION_PICTURE` | H2 scatter diagram with the least-squares line through (x̄, ȳ) and the estimate | 28 |
+| `solid_angle` | `PEN_SOLID_PICTURE` | the cuboid / wedge / pyramid with the line, its projection and the angle's triangle shaded | 29 |
+| `vector_plane` | `PEN_VECTOR_PICTURE` | H2 vectors in 3-D: foot of the perpendicular to a plane or line, the reflection, the line–plane angle | 30 |
+| `graph_transform` | `PEN_TRANSFORM_PICTURE` | y = af(bx + c) + d, \|f(x)\| or f(\|x\|) drawn over y = f(x) in grey | 31 |
+| `inverse_pair` | `PEN_INVERSE_PICTURE` | f and f⁻¹ mirrored in y = x, with the range = domain line | 32 |
+| `parametric_trace` | `PEN_PARAMETRIC_PICTURE` | the parametric curve with its key points and t labelled, arrows for increasing t | 33 |
+| `conic` | `PEN_CONIC_PICTURE` | the ellipse / hyperbola with vertices, intercepts and asymptotes | 34 |
+| `refraction` | `PEN_REFRACTION_PICTURE` | one ray at a boundary: normal, angles i and r, the critical angle / total internal reflection | physics brain |
+| `moment_sum` | `PEN_MOMENT_SUM_PICTURE` | the beam with its forces and the clockwise = anticlockwise moment sums | physics brain |
+| `dot_cross` | `PEN_DOTCROSS_PICTURE` | the dot-and-cross diagram (ionic or covalent), checked against the formula | chemistry brain |
+| `energy_profile` | `PEN_ENERGY_PICTURE` | the energy profile: reactants, products, ΔH and the activation energy | chemistry brain |
+| `apparatus` | `PEN_APPARATUS_PICTURE` | the lab set-up for the method named (e.g. collecting a gas) | chemistry brain |
+
+- **Numbering** — the maths rules after 25 are one sequence: 26 normal curve, 27 geometry, 28 statistics,
+  29 solid, 30 vectors, 31–34 graphs. Rule 25 names whichever of them are on.
+- **The normal curve, two fixes the same day** — the picture uses the worked solution's own letters
+  (Abel's Q10(d): Z and x, not V and k), and its caption line is no longer cut off.
+- **When there is no "Correct solution" box** (the part's "From your line" correction checked out),
+  every picture that lives in the box — the 29 Oct ones too — now goes beside the "From your line"
+  box, else on blank paper near the question, else on the extra sheet, never over the writing.
+- **Samples** — one sheet of every kind for Adrian to look at (scratchpad `diagram-samples/ALL-SAMPLES.pdf`).
+- **Where** — bot `lib/figures/margin/*.js`, `ai/paper-marker.js` `NEW_PICTURE_RULES`, `ai/subjects/physics.js` /
+  `chemistry.js` `pictureRules()`, `ai/annotate.js` `SOLUTION_PICTURES` / `PART_PICTURES` /
+  `solutionBoxHasPart`; detail in bot `docs/FIGURES.md`.
