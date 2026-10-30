@@ -555,7 +555,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   29 Oct 2026; switched on for students only on his yes. Papers marked before the switch-on keep
   their words (the marker must emit the sketch; nothing is re-marked).
 
-## Addendum — `sign_line`: the sign test drawn as the H2 notes draw it (29 Oct 2026) — BUILT, switched OFF
+## Addendum — `sign_line`: the sign test drawn as the H2 notes draw it (29 Oct 2026) — BUILT, switched ON 30 Oct 2026
 
 - **Asked** — Adrian, 29 Oct 2026, on Lakshanya's H2 TYS 2023 Q1(b), (x+25)/(x²−4x−5) > −3: the
   worked solution wrote "sign test: + | − | + | − | +" as text. *"can the sign test be better drawn?
@@ -571,7 +571,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
 - **Switch** — `PEN_SIGN_PICTURE` (not set = off). Sample beside his notes page sent 29 Oct 2026;
   on for students only on his yes.
 
-## Addendum — two more solution pictures (29 Oct 2026) — BUILT, switched OFF
+## Addendum — two more solution pictures (29 Oct 2026) — BUILT, switched ON 30 Oct 2026
 
 - **Hence solve from the graph** — Lakshanya's H2 specimen P1 Q3(b), x − 12/x < 1. Adrian: *"this
   will also be hard to students to understand. perhaps a graph drawn with the correct parts of the
@@ -584,7 +584,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   w₁? Adrian: *"able to also show a diagram to illustrate?"*. A, A′ = iw₁, A″ = −w₁ with a curved
   ×i arrow per turn, and w₁* mirrored in the real axis. The words stay; the picture sits under
   them, just above the conclusion. Bot `argand_turn`; switch `PEN_ARGAND_PICTURE`.
-- Samples sent to Adrian 29 Oct 2026; each switch goes on only on his yes.
+- Samples sent to Adrian 29 Oct 2026. **Switched ON 30 Oct 2026** (Adrian: "Yes") — `PEN_ARGAND_PICTURE`, `PEN_SIGN_PICTURE` and `PEN_RECIPROCAL_PICTURE` = '1' in the bot's `fly.toml` and `fly.worker.toml` (bot 405c8352); remove the line in both to switch off. New markings only.
 
 ## Addendum — the standing rule, and y = 1/f(x) (29 Oct 2026)
 
