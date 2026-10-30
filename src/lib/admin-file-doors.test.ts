@@ -10,6 +10,11 @@ describe('admin file doors', () => {
     expect(isFileDoor(href, O, { newTab: true, download: false })).toBe(true);
     expect(shareFileName(href, O, 'application/pdf')).toBe('abel h2.pdf');
   });
+  it('drops the date from a name that is sent on', () => {
+    const href = '/api/admin/mark-paper-download/x.pdf?name=' + encodeURIComponent('Abel Tan Zhi Yi — abel h2 math tys 2021 paper 1 — 28 Oct 2026.pdf');
+    expect(shareFileName(href, O, 'application/pdf')).toBe('Abel Tan Zhi Yi — abel h2 math tys 2021 paper 1.pdf');
+    expect(shareFileName('/api/x?name=' + encodeURIComponent('Nicole — full — 3 Sept 2026.pdf'), O, 'application/pdf')).toBe('Nicole — full.pdf');
+  });
   it('plain page links and other sites are left alone', () => {
     expect(isFileDoor('/admin/students', O, { newTab: true, download: false })).toBe(false);
     expect(isFileDoor('/api/admin/x', O, { newTab: false, download: false })).toBe(false);

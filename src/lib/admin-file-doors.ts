@@ -26,6 +26,9 @@ export function shareFileName(href: string, origin: string, contentType: string)
   const ext = EXT[type] ?? '';
   let base = u.searchParams.get('name') || decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || 'file');
   base = base.replace(/[\\/:*?"<>|]/g, '-').trim() || 'file';
+  // No date in a name that is sent on (30 Oct 2026, Adrian: "remove the date when
+  // sending"): "Abel — paper 1 — 28 Oct 2026.pdf" goes out as "Abel — paper 1.pdf".
+  base = base.replace(/\s*—\s*\d{1,2} [A-Z][a-z]{2,8} \d{4}(?=(\.[a-z0-9]{2,4})?$)/i, '').trim() || base;
   if (ext && !base.toLowerCase().endsWith(`.${ext}`)) base = `${base.replace(/\.[a-z0-9]{2,4}$/i, '')}.${ext}`;
   return base;
 }
