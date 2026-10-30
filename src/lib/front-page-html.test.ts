@@ -735,7 +735,7 @@ describe('the cover names questions left out for the syllabus', () => {
   it('a dark-orange note beside the marks says the total was reduced — and only then', () => {
     const html = frontPageHtml({ ...base, awarded: 70, max: 71, outOfSyllabus: outOfSyllabusFrontPage(rj) });
     expect(html).toContain('class="oos-tag">Total marks reduced — some questions are not in the syllabus');
-    expect(html).toMatch(/\.oos-tag\{[^}]*color:#c2410c/);
+    expect(html).toMatch(/\.oos-tag\{[^}]*color:#7c3aed/);
     expect(frontPageHtml({ ...base, awarded: 70, max: 80 })).not.toContain('oos-tag');
   });
 });
