@@ -645,7 +645,9 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   `ai/annotate.js`; tests `test/margin-diagram-normal-curve.test.js`; bench
   `abel-h2tys24p2-p10-normal-curve-find-k`; detail in bot `docs/FIGURES.md` §normal_curve.
 
-## Addendum — the "Build them all" pictures (30 Oct 2026) — BUILT, every one switched OFF
+## Addendum — the "Build them all" pictures (30 Oct 2026) — BUILT, all 19 switched ON 31 Oct 2026
+
+**Switched ON 31 Oct 2026** (Adrian: *"All"*, after the 19-picture sample sheet) — every switch below is `'1'` in the bot's `fly.toml` and `fly.worker.toml` (bot 72027aaa). New markings only; nothing is redrawn. Remove a line in both files to switch that picture off. Where the text below says "OFF", read it as history.
 
 Adrian, 30 Oct 2026: *"Build them all"* — a checked picture for every group of lost marks the pen
 still had none for. Merged into the bot's `main` as **4d9b176c**. Every kind: typed spec → the
