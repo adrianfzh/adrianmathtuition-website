@@ -80,9 +80,9 @@ function Viewer() {
 
   // Safari-style bar (Adrian, 30 Oct 2026: "when you scroll up and down, then the apple
   // buttons to save … or go back automatically appears"): a home-screen app cannot show
-  // Safari's own toolbar, so this is a look-alike — small ‹ and share icons at the
-  // bottom that slide away while you scroll down to read, and come back when you scroll
-  // up, reach the end, or tap the page.
+  // Safari's own toolbar, so this is a look-alike — small ‹ and share icons that slide
+  // away while you scroll down to read, and come back when you scroll up, reach the end,
+  // or tap the page. At the TOP since 30 Oct 2026 (Adrian: "Can it be at the top?").
   const [shown, setShown] = useState(true);
   useEffect(() => {
     let last = window.scrollY;
@@ -99,14 +99,14 @@ function Viewer() {
 
   const icon: React.CSSProperties = { border: 'none', background: 'none', padding: '6px 14px', cursor: 'pointer', color: '#2563eb', display: 'flex', alignItems: 'center' };
   return (
-    <div style={{ minHeight: '100vh', background: '#e5e7eb', paddingTop: 'env(safe-area-inset-top)' }}
+    <div style={{ minHeight: '100vh', background: '#e5e7eb' }}
       onClick={(e) => { if (!(e.target as Element).closest('button')) setShown(true); }}>
       <div style={{
-        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 10,
+        position: 'fixed', left: 0, right: 0, top: 0, zIndex: 10,
         background: 'rgba(249,250,251,.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        borderTop: '1px solid rgba(0,0,0,.08)',
-        padding: '6px 18px calc(6px + env(safe-area-inset-bottom))', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        transform: shown ? 'none' : 'translateY(110%)', transition: 'transform .25s ease',
+        borderBottom: '1px solid rgba(0,0,0,.08)',
+        padding: 'calc(4px + env(safe-area-inset-top)) 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        transform: shown ? 'none' : 'translateY(-110%)', transition: 'transform .25s ease',
       }}>
         <button type="button" aria-label="Back" onClick={back} style={icon}>
           <svg width="14" height="24" viewBox="0 0 14 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 2 12l10 10" /></svg>
@@ -120,7 +120,7 @@ function Viewer() {
           </svg>
         </button>
       </div>
-      <div style={{ padding: '10px 10px 80px', maxWidth: 1000, margin: '0 auto' }}>
+      <div style={{ padding: 'calc(56px + env(safe-area-inset-top)) 10px 24px', maxWidth: 1000, margin: '0 auto' }}>
         {state === 'loading' && <p style={{ textAlign: 'center', color: '#374151', marginTop: 40 }}>Opening…</p>}
         {state === 'failed' && <p style={{ textAlign: 'center', color: '#b91c1c', marginTop: 40 }}>Could not open this file.</p>}
         {imgUrl && <img src={imgUrl} alt={file?.name || ''} style={{ width: '100%', height: 'auto', background: '#fff' }} />}
