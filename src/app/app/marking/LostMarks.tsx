@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { promptLines, type StudentPaper } from '@/lib/portal-marking';
 import { mathHtml } from '@/lib/math-inline';
 import { canExplain, explainHref } from '@/lib/explain-clip';
-import AnnotatedSolution from './AnnotatedSolution';
+import AnnotatedSolution, { SchemeChips, CodeLegend } from './AnnotatedSolution';
 import ClipDoor from '../clip/q/[id]/clip-door';
 import FixOne from './FixOne';
 // Questions carry inline $…$ TeX — mathHtml KaTeXes only the math spans, and
@@ -29,6 +29,8 @@ export default function LostMarks({ paper, explain = false, clipIds = {}, photoC
       <h2 className="text-sm font-bold text-navy">
         Where you lost marks <span className="font-medium text-gray-400">({paper.dropped.length} question{paper.dropped.length === 1 ? '' : 's'})</span>
       </h2>
+      {/* What the codes under each question mean — once, the same words as the cover (30 Oct 2026). */}
+      {paper.dropped.some(q => q.schemes.length > 0) && <CodeLegend className="mt-1.5" />}
       <ul className="mt-2 space-y-2.5">
         {paper.dropped.map((q, i) => (
           <li key={`${q.questionNumber}-${i}`} className="rounded-xl border border-gray-100 p-3">
@@ -52,10 +54,13 @@ export default function LostMarks({ paper, explain = false, clipIds = {}, photoC
             {q.schemes.length > 0 && (
               // SEAB teacher-margin shorthand, per part — the same codes a
               // school marker writes ("M1 A0" = method earned, accuracy lost).
-              <div className="flex flex-wrap gap-1.5 mt-1.5">
+              // Each code its own chip, lost ones struck through (30 Oct 2026):
+              // one grey "M1 A0" told a student nothing about which mark went.
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-1.5">
                 {q.schemes.map((s, j) => (
-                  <span key={j} className="text-[11px] font-mono bg-gray-100 text-gray-700 rounded px-1.5 py-0.5">
-                    {s.label ? `${s.label} ` : ''}{s.scheme}
+                  <span key={j} className="inline-flex flex-wrap items-center gap-1">
+                    {s.label && <span className="text-[11px] font-semibold text-gray-500 mr-0.5">{s.label}</span>}
+                    <SchemeChips scheme={s.scheme} />
                   </span>
                 ))}
               </div>

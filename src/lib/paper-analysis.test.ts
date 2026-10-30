@@ -102,6 +102,16 @@ describe('worstQuestions', () => {
     expect(w[1]).toMatchObject({ question: 'Q5', lost: 5 });
     expect(w.find(x => x.question === 'Q9')).toBeUndefined();
   });
+  it('carries each lost part’s codes in part order, and none when the marker wrote none (30 Oct 2026)', () => {
+    const parts = [
+      part({ question: '5', label: '(a)', lost: 1, max: 3, scheme: 'M1 M1 A0' }),
+      part({ question: '5', label: '(b)', lost: 1, max: 1, scheme: 'B0' }),
+      part({ question: '7', label: '(a)', lost: 2, max: 2 }),
+    ];
+    const w = worstQuestions(parts, NEW);
+    expect(w.find(x => x.question === 'Q5')?.codes).toEqual([{ label: '(a)', scheme: 'M1 M1 A0' }, { label: '(b)', scheme: 'B0' }]);
+    expect(w.find(x => x.question === 'Q7')?.codes).toEqual([]);
+  });
 });
 
 describe('topicLabel — the marker\'s topic, cut to fit beside a bar', () => {

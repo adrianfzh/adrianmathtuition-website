@@ -41,6 +41,26 @@ function chip(code: string, key: number) {
   );
 }
 
+/** One part's codes as chips, lost ones struck through — the same chips the folded solution uses. */
+export function SchemeChips({ scheme }: { scheme: string }) {
+  return <>{scheme.split(/\s+/).filter(Boolean).map((code, j) => chip(code, j))}</>;
+}
+
+/**
+ * What the codes mean, in the student's words (Adrian, 30 Oct 2026: "put in the cover page
+ * what the code means" — the app says it too, once per list, the same words as the cover).
+ */
+export function CodeLegend({ className = '' }: { className?: string }) {
+  return (
+    <p className={`text-[11px] leading-snug text-gray-500 ${className}`}>
+      <b className="text-gray-700">M</b> = method mark (the right working) · <b className="text-gray-700">A</b> = answer mark (the right value) ·{' '}
+      <b className="text-gray-700">B</b> = a correct fact on its own · <b className="text-gray-700">1</b> = earned, <b className="text-gray-700">0</b> = lost
+      (<span className="line-through decoration-rose-400">struck through</span>) · <b className="text-gray-700">ft</b> = right method on a number carried from an earlier slip.
+      The same codes sit beside the ticks on your pages.
+    </p>
+  );
+}
+
 function Math({ text, className }: { text: string; className?: string }) {
   return <span className={className} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }

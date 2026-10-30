@@ -244,6 +244,48 @@ const labelled = () => {
   return t;
 };
 
+describe('frontPageHtml — the mark codes under each question (Adrian, 30 Oct 2026: "put in the cover page what the code means")', () => {
+  const withCodes: FrontPageInput = {
+    ...base,
+    worstQuestions: [
+      { question: 'Q5', lost: 2, max: 4, codes: [{ label: '(a)', scheme: 'M1 A0' }, { label: '(b)', scheme: 'B0' }] },
+      { question: 'Q9', lost: 1, max: 3, codes: [{ label: '', scheme: 'M1 A1ft A0' }] },
+    ],
+  };
+  it('prints each lost part’s codes under its row — earned green, lost red, in the marker’s order', () => {
+    const h = frontPageHtml(withCodes);
+    expect(h).toContain('<i>(a)</i> <span class="c1">M1</span> <span class="c0">A0</span>');
+    expect(h).toContain('<i>(b)</i> <span class="c0">B0</span>');
+    // an unlabelled part prints its codes with no label; ft on an earned mark is still earned
+    expect(h).toContain('<span class="q-codes"><span class="c1">M1</span> <span class="c1">A1ft</span> <span class="c0">A0</span></span>');
+  });
+  it('says what the codes mean, once, under the list', () => {
+    const h = frontPageHtml(withCodes);
+    expect(h.match(/Reading the codes/g)?.length).toBe(1);
+    expect(h).toContain('<b>M</b> = method mark');
+    expect(h).toContain('<b>A</b> = answer mark');
+    expect(h).toContain('<b>0</b> = you lost it');
+    expect(h.indexOf('Reading the codes')).toBeGreaterThan(h.indexOf('class="q-codes"'));
+    expect(h.indexOf('Reading the codes')).toBeLessThan(h.indexOf('Your next move'));
+  });
+  it('renders a run whose parts carry no codes BYTE-IDENTICAL to one from before the field', () => {
+    const before = frontPageHtml(base);
+    const after = frontPageHtml({ ...base, worstQuestions: [{ question: 'Q5', lost: 7, max: 7, codes: [] }] });
+    expect(after).toBe(before);
+    expect(before).not.toContain('q-codes');
+    expect(before).not.toContain('Reading the codes');
+  });
+  it('escapes a code or label that came from the marker', () => {
+    const h = frontPageHtml({ ...base, worstQuestions: [{ question: 'Q5', lost: 1, max: 2, codes: [{ label: '<b>', scheme: 'M1 <A0>' }] }] });
+    expect(h).toContain('&lt;b&gt;');
+    expect(h).toContain('&lt;A0&gt;');
+    expect(h).not.toContain('<b></i>');
+  });
+  it('still uses no emoji with the codes in place', () => {
+    expect(frontPageHtml(withCodes)).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+  });
+});
+
 describe('frontPageHtml — marks lost by kind', () => {
   it('prints one compact row: the buckets, with the careless slips itemised', () => {
     const h = frontPageHtml({ ...base, errorKinds: labelled() });

@@ -159,6 +159,8 @@ export function lostPartsFromRun(run: RunRow): LostPart[] {
         label: String(p.label ?? ''), lost: mx - aw, max: mx,
         blank: p.not_attempted === true, why: String(p.error_summary ?? ''), topic,
         gap: typeof p.gap === 'string' && p.gap.trim() ? p.gap.trim() : null,
+        // The part's SEAB codes ("M1 A0"), for the cover's per-question code line (30 Oct 2026).
+        scheme: typeof p.scheme === 'string' && p.scheme.trim() ? p.scheme.trim() : null,
       });
     }
   }

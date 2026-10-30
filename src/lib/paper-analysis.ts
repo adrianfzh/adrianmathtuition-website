@@ -39,6 +39,9 @@ export type LostPart = {
   /** The marker's part-level `gap` — the rule or habit the error revealed
    *  (7 Sep 2026). A theme with one outranks a bigger one without. */
   gap?: string | null;
+  /** The part's SEAB codes as the marker wrote them ("M1 A0"), for the cover's
+   *  per-question code line (30 Oct 2026). Absent on older callers. */
+  scheme?: string | null;
 };
 
 export type Theme = {
@@ -231,18 +234,21 @@ export function topicLabel(raw: unknown): string {
 
 /** Which questions bled most on THIS paper — the "where in the paper" half. */
 export function worstQuestions(parts: LostPart[], paperId: string, limit = 5) {
-  const byQ = new Map<string, { question: string; lost: number; max: number; why: string; topic: string }>();
+  const byQ = new Map<string, { question: string; lost: number; max: number; why: string; topic: string; codes: { label: string; scheme: string }[] }>();
   for (const p of (parts || []).filter(x => x.paperId === paperId)) {
     // The marker's question_number is not always a number — it comes back as
     // "(b)", "c" or "?" when a page carried no printed question number. Prefixing
     // those with Q produced "Q(b)" and "Qc" on the first live run. A label with no
     // digit in it is not a question number, so it is shown as the marker wrote it.
     const k = /\d/.test(p.question) ? `Q${p.question}` : (p.question || '?');
-    const cur = byQ.get(k) || { question: k, lost: 0, max: 0, why: p.why, topic: '' };
+    const cur = byQ.get(k) || { question: k, lost: 0, max: 0, why: p.why, topic: '', codes: [] };
     cur.lost += p.lost; cur.max += p.max;
     // The first part that carries a topic names the question; parts of one
     // question share the marker's meta, so this is the only one there is.
     if (!cur.topic) cur.topic = topicLabel(p.topic);
+    // Each lost part's codes, in the order the parts came (30 Oct 2026) — the
+    // cover prints them under the row: "(a) M1 A0 · (b) B0".
+    if (p.scheme && p.scheme.trim()) cur.codes.push({ label: p.label || '', scheme: p.scheme.trim() });
     byQ.set(k, cur);
   }
   return [...byQ.values()].sort((a, b) => b.lost - a.lost).slice(0, limit);

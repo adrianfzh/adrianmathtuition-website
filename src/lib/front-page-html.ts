@@ -78,7 +78,7 @@ export type FrontPageInput = {
   themes: Theme[];
   /** `topic` = the marker's topic for the question, already cut to size by
    *  paper-analysis `topicLabel`; absent on runs from before the field. */
-  worstQuestions: { question: string; lost: number; max: number; topic?: string }[];
+  worstQuestions: { question: string; lost: number; max: number; topic?: string; codes?: QuestionCodes[] }[];
   /**
    * Where the themes came from. `sheet` = the self-study sheet's own diagnosis,
    * written back onto the run (lib/sheet-diagnosis.ts), in the sheet's section
@@ -225,14 +225,72 @@ function themeRow(t: Theme, i: number): string {
 // show absolute marks lost"). Scaled to the worst question on the page, so the
 // top row is always full width; the label says the loss first and the question's
 // worth second.
-function questionRow(q: { question: string; lost: number; max: number; topic?: string }, withTopics: boolean, maxLost: number): string {
+function questionRow(q: { question: string; lost: number; max: number; topic?: string; codes?: QuestionCodes[] }, withTopics: boolean, maxLost: number, withCodes = false): string {
   const pct = maxLost > 0 ? Math.round((q.lost / maxLost) * 100) : 0;
-  const topic = withTopics ? `<span class="q-topic">${esc(q.topic || '')}</span>` : '';
+  // The codes share the topic's cell (30 Oct 2026) — one line per question, as before: a
+  // sub-row per question pushed a full cover past the sheet.
+  const codes = withCodes ? codesLine(q.codes) : '';
+  const topicText = withTopics ? esc(q.topic || '') : '';
+  const cell = (withTopics || withCodes)
+    ? `<span class="q-topic">${topicText}${topicText && codes ? '<span class="q-dot">&middot;</span>' : ''}${codes}</span>`
+    : '';
   return `<div class="q">
-    <span class="q-label">${esc(q.question)}</span>${topic}
+    <span class="q-label">${esc(q.question)}</span>${cell}
     <span class="bar"><span style="width:${pct}%"></span></span>
     <span class="q-marks"><b>&minus;${q.lost}</b> mark${q.lost === 1 ? '' : 's'} <span class="q-of">of ${q.max}</span></span>
   </div>`;
+}
+
+/** True when any listed question carries a part with codes — the switch for the code column and the legend. */
+export function anyCodes(worst: { codes?: QuestionCodes[] }[]): boolean {
+  return worst.some(q => (q.codes || []).some(c => c && c.scheme && c.scheme.trim()));
+}
+
+/** One lost part's SEAB codes, as the marker wrote them: `label` "(a)" (may be ''), `scheme` "M1 A0". */
+export type QuestionCodes = { label: string; scheme: string };
+
+/** A code that was lost: the trailing 0 — "A0", "M0", "B0ft". */
+const lostCode = (code: string) => /0(ft)?$/i.test(code.trim());
+
+/**
+ * The codes under a question's row (Adrian, 30 Oct 2026: "put in the cover page what the
+ * code means" — after a check of 150 October papers found 1 question in 4 with codes on the
+ * score box only, not beside the ticks). Every lost part's codes in the marker's own order,
+ * earned ones green and lost ones red, beside the question's topic on its own row, so the row
+ * reads "Q5  Binomial theorem · (a) M1 A0 · (b) B0  ▬▬  −2 of 3" and the legend under the list
+ * says what that means. One line, clipped — the one-A4 rule holds (a sub-row per question was
+ * tried first and pushed a full cover 12% past the sheet). Nothing when no part carries codes:
+ * a run from before the field renders exactly as it did.
+ */
+function codesLine(codes: QuestionCodes[] | undefined): string {
+  const live = (codes || []).filter(c => c && c.scheme && c.scheme.trim());
+  if (!live.length) return '';
+  const part = (c: QuestionCodes) => `${c.label && c.label.trim() ? `<i>${esc(c.label.trim())}</i> ` : ''}${
+    c.scheme.trim().split(/\s+/).map(code => `<span class="${lostCode(code) ? 'c0' : 'c1'}">${esc(code)}</span>`).join(' ')}`;
+  return `<span class="q-codes">${live.map(part).join('<span class="q-dot">&middot;</span>')}</span>`;
+}
+
+/**
+ * What the codes mean, in the student's words, once under the list — and the styles for the
+ * code column ride inside it, so a cover with no codes is byte-identical to yesterday's.
+ */
+export function codesLegend(worst: { codes?: QuestionCodes[] }[]): string {
+  if (!anyCodes(worst)) return '';
+  return `<style>
+.questions.with-codes .q{grid-template-columns:2.7rem 1fr 7.5rem 6.2rem}
+.q-codes{font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--ink-soft)}
+.q-codes i{font-style:normal;color:var(--ink-faint)}
+.q-codes .c1{color:var(--earned);font-weight:600}
+.q-codes .c0{color:var(--verdict);font-weight:600}
+.q-topic .q-dot{color:var(--ink-faint);margin:0 .35rem}
+.q-legend{font-size:.68rem;color:var(--ink-soft);margin:-.55rem 0 .5rem;line-height:1.3}
+.q-legend b{color:var(--ink);font-weight:600}
+.q-legend .c0{color:var(--verdict);font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:.66rem}
+.q-legend .c1{color:var(--earned);font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:.66rem}
+</style>
+<p class="q-legend"><b>Reading the codes</b> (also beside the ticks on your pages): <b>M</b> = method mark, <b>A</b> = answer mark,
+<b>B</b> = a fact stated on its own &middot; <b>1</b> = you earned it, <b>0</b> = you lost it &middot; <b>ft</b> = right method on a number carried from an earlier slip
+&middot; <span class="c1">M1</span> <span class="c0">A0</span> = method right, answer lost.</p>`;
 }
 
 /**
@@ -576,6 +634,7 @@ export function frontPageHtml(input: FrontPageInput): string {
   const themes = chooseThemes(input.themes || []);
   const worst = (input.worstQuestions || []).slice(0, MAX_QUESTIONS);
   const withTopics = worst.some(q => !!(q.topic || '').trim());
+  const withCodes = anyCodes(worst);
   const maxLost = worst.reduce((m, q) => Math.max(m, q.lost), 0);
   const pbar = worst.length ? paperBar(input) : null;
   const rest = pbar ? Math.round((pbar.lost - worst.reduce((a, q) => a + q.lost, 0)) * 10) / 10 : 0;
@@ -724,8 +783,8 @@ ${kindsRow(input.errorKinds, kindsScore(input), input.paperName)}<div class="sec
 <h2>Where the marks went</h2>
 ${pbar ? pbar.html : ''}<div class="${pbar ? 'zoomed' : ''}">
 <p class="sub">${pbar ? `The ${pbar.lost} mark${pbar.lost === 1 ? '' : 's'} you lost, question by question.` : 'The questions that cost you most.'}</p>
-<div class="questions${withTopics ? ' with-topics' : ''}">${worst.map(q => questionRow(q, withTopics, maxLost)).join('')}${pbar && rest > 0 ? restRow(rest) : ''}</div>
-</div>
+<div class="questions${withTopics || withCodes ? ' with-topics' : ''}${withCodes ? ' with-codes' : ''}">${worst.map(q => questionRow(q, withTopics, maxLost, withCodes)).join('')}${pbar && rest > 0 ? restRow(rest) : ''}</div>
+</div>${codesLegend(worst)}
 </div>
 ${closingLine(input)}
 </div>
