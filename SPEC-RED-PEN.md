@@ -582,6 +582,30 @@ a side note printed `\begin{pmatrix} -3 \\ 4 …` as raw code (*"rendering issue
   drawn past the student's name); a question left out for the syllabus shows "out of syllabus" with
   no score and no solution; half ticks follow a wrong line even when no single value was ringed.
 
+## 30 Oct 2026 — review of the H2 re-marks (bot 24a6fecc + 781e2a1f)
+
+Adrian, looking at the 8 re-marked H2 papers. Each rule has an off switch (env, no deploy).
+
+- **A column vector is ringed whole, never with the sign before it** ("circled part should be at the
+  vector itself, not at the sign", Abel 2021 P1 Q8(c)). The letter reader (`lib/slip-free.js`) does not look
+  for a bracketed tuple along a row on a line with a matrix — her vector is stacked, and its match took the
+  "1) − (" before it (`PEN_SLIP_FREE_VECTOR=0`). `_ringToToken` keeps a vector's ring on the stretch nearest
+  the box's middle and counts no operator of its own (`PEN_RING_VECTOR=0`).
+- **|vector| bars match the brackets top and bottom** ("the top lines stretched out unnecessarily").
+  `ai/figure-tex.js hugMatrixBars`, every TeX surface.
+- **A note is ONE ink — the teaching brown, value included** ("annotations is both brown and red? should
+  just be one colour"). Red stays for ✓ ✗ rings carets codes (`MARK_NOTE_VALUE_RED=1` = the 29 Oct split).
+- **No orphan ①** ("two lines were both labelled 1? but not used"): a label on its own line's row by its ✗
+  needs no number (`PEN_LABEL_ROW_TIED=0`); a badge copy sits on the words' row (`PEN_BADGE_COPY_ON_ROW=0`).
+- **One correction per slip, brackets ignored** ("this too": "(100 ln3 − d)" and "100 ln3 − d" are one slip).
+- **A note's value is typeset when its TeX says as much** ("not written in latex again", ʳC₄)
+  (`PEN_NOTE_TEX_FIRST=0`).
+- **Never broken English** ("should say x is the number of faulty elements, watch the english"): the marker
+  defines a random variable in a full sentence and writes the same words in text_plain and text_latex; a
+  long note is cut at a clause or kept whole, never mid-sentence (`PEN_NOTE_CUT_AT_CLAUSE=0`). Wording is
+  forward-only: stored notes change only on a re-mark.
+- **Cover**: "Total marks reduced — some questions are not in the syllabus" is purple (website, 30 Oct).
+
 ## Page check before release (6 Oct 2026)
 
 Adrian: *"so we have to have all scenarios? can't model understand the idea?"*
