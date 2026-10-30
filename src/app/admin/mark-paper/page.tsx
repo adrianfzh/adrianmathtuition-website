@@ -1871,7 +1871,10 @@ export default function MarkPaperPage() {
                     style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }} />
                 ) : <span style={{ width: 16, flexShrink: 0 }} />}
                 <span style={{ color: '#6b7280', minWidth: 120, whiteSpace: 'nowrap' }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {/* Name and paper wrap onto a second line instead of being cut off — a long
+                    student name left no room for the paper on a phone (Adrian, 30 Oct 2026:
+                    "can't read the paper if the name is too long"). */}
+                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 6, rowGap: 2 }}>
                   {editTagId === run.id ? (
                     <StudentPicker
                       autoFocus
@@ -1920,7 +1923,7 @@ export default function MarkPaperPage() {
                     <button
                       title="Rename this paper"
                       onClick={() => { setEditNameDraft(run.paper_name || ''); setEditNameId(run.id); }}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textAlign: 'left', whiteSpace: 'normal', overflowWrap: 'anywhere' }}
                     >
                       {run.paper_name || 'Paper'} <span style={{ color: '#9ca3af', fontWeight: 400 }}>✎</span>
                     </button>
