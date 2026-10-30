@@ -2045,7 +2045,7 @@ export default function MarkPaperPage() {
                       {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
                     </span>
                   )}
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                     {canMark && (
                       <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
                         style={{ ...btn, background: '#b45309', padding: '4px 12px', fontSize: 12, opacity: busy ? 0.6 : 1 }}>
