@@ -599,3 +599,25 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   sketch is correct)"*. The marker reads f off the printed graph; the pen works out 1/f by fixed rules
   and checks both curves. The printed f has a MINIMUM at (−4, −1/3), so 1/f has a MAXIMUM at (−4, −3).
   Bot `reciprocal_sketch`; switch `PEN_RECIPROCAL_PICTURE`.
+
+## Addendum — the sketch graph worked out from the question (30 Oct 2026) — BUILT, same switch (`PEN_SKETCH_PICTURE`, still off)
+
+- **Asked** — Adrian, 30 Oct 2026, looking at Nicole's marked Q6(a) (y = 1/√(4ax − x²), a > 0):
+  *"no graph was generated for this?"* — then yes to building it. Her paper was marked on 28 Oct,
+  a day before the marker could offer a sketch, so its box said the graph in words only.
+- **What changed** — when a marking carries no sketch of its own (or the marker's sketch fails its
+  checks), the pen works the graph out itself from the question that was stored with the marking:
+  the formula, and each letter's sign ("a > 0"). Every asymptote, turning point, axis crossing and
+  end point is computed at a = 1, 2 and 3; a coordinate gets a label like "4a" or "1/(2a)" only when
+  that one form gives the right number at all three; then the same checks as 29 Oct. Anything unsure
+  ⇒ no graph, the words stay: no sign stated for the letter, two letters, x restricted ("for x > 0"),
+  the shape changing with a, a label that is not one term (a + 2).
+- **Where it goes** — in place of the box's "Sketch: …" line; when the solution has no such line, at
+  the end of that part's working (the part comes from the question: "(a) Sketch C").
+- **Which papers** — a first marking, the desk's redraw and the bot's dry run all pick it up once the
+  switch is on. Stored runs today: Nicole's H2 TYS 2021 P1 (run 10656d42, Q6(a)) gets the graph;
+  Abel's (run 1db9455c) does not (its stored question has no "a > 0" and names two curves — he had
+  full marks, so no box). Nothing is re-marked or redrawn by this change.
+- **Where** — bot `lib/sketch-from-question.js` (hooked in `ai/figure-draw.js` `diagramEntry`),
+  `ai/annotate.js` `sketchText`; tests `test/sketch-from-question.test.js`; detail in bot
+  `docs/FIGURES.md` §function_sketch.
