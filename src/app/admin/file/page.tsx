@@ -78,28 +78,53 @@ function Viewer() {
   };
   const canSave = !!file && typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-  const btn: React.CSSProperties = { border: 'none', borderRadius: 10, padding: '9px 14px', fontSize: 15, fontWeight: 600, cursor: 'pointer' };
+  // Safari-style bar (Adrian, 30 Oct 2026: "when you scroll up and down, then the apple
+  // buttons to save … or go back automatically appears"): a home-screen app cannot show
+  // Safari's own toolbar, so this is a look-alike — small ‹ and share icons at the
+  // bottom that slide away while you scroll down to read, and come back when you scroll
+  // up, reach the end, or tap the page.
+  const [shown, setShown] = useState(true);
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const atEnd = window.innerHeight + y >= document.documentElement.scrollHeight - 40;
+      if (y < 40 || atEnd || y < last - 6) setShown(true);
+      else if (y > last + 6) setShown(false);
+      last = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const icon: React.CSSProperties = { border: 'none', background: 'none', padding: '6px 14px', cursor: 'pointer', color: '#2563eb', display: 'flex', alignItems: 'center' };
   return (
-    <div style={{ minHeight: '100vh', background: '#e5e7eb' }}>
+    <div style={{ minHeight: '100vh', background: '#e5e7eb', paddingTop: 'env(safe-area-inset-top)' }}
+      onClick={(e) => { if (!(e.target as Element).closest('button')) setShown(true); }}>
       <div style={{
-        position: 'sticky', top: 0, zIndex: 10, background: '#111827', color: '#fff',
-        padding: 'calc(8px + env(safe-area-inset-top)) 12px 8px', display: 'flex', alignItems: 'center', gap: 10,
+        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 10,
+        background: 'rgba(249,250,251,.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '1px solid rgba(0,0,0,.08)',
+        padding: '6px 18px calc(6px + env(safe-area-inset-bottom))', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        transform: shown ? 'none' : 'translateY(110%)', transition: 'transform .25s ease',
       }}>
-        <button type="button" onClick={back} style={{ ...btn, background: '#374151', color: '#fff' }}>← Back</button>
-        <span style={{ flex: 1, minWidth: 0, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.85 }}>
-          {file?.name || ''}
+        <button type="button" aria-label="Back" onClick={back} style={icon}>
+          <svg width="14" height="24" viewBox="0 0 14 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 2 12l10 10" /></svg>
+        </button>
+        <span style={{ flex: 1, minWidth: 0, textAlign: 'center', fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {pages.total > 0 && pages.done < pages.total ? `Page ${pages.done + 1} of ${pages.total}…` : ''}
         </span>
-        <button type="button" onClick={save} disabled={!canSave}
-          style={{ ...btn, background: '#2563eb', color: '#fff', opacity: canSave ? 1 : 0.5 }}>📤 Save / Send</button>
+        <button type="button" aria-label="Save or send" onClick={save} disabled={!canSave} style={{ ...icon, opacity: canSave ? 1 : 0.35 }}>
+          <svg width="22" height="28" viewBox="0 0 22 28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 2v15M6 7l5-5 5 5" /><path d="M7 11H3.5A1.5 1.5 0 0 0 2 12.5v12A1.5 1.5 0 0 0 3.5 26h15a1.5 1.5 0 0 0 1.5-1.5v-12a1.5 1.5 0 0 0-1.5-1.5H15" />
+          </svg>
+        </button>
       </div>
-      <div style={{ padding: 10, maxWidth: 1000, margin: '0 auto' }}>
+      <div style={{ padding: '10px 10px 80px', maxWidth: 1000, margin: '0 auto' }}>
         {state === 'loading' && <p style={{ textAlign: 'center', color: '#374151', marginTop: 40 }}>Opening…</p>}
         {state === 'failed' && <p style={{ textAlign: 'center', color: '#b91c1c', marginTop: 40 }}>Could not open this file.</p>}
         {imgUrl && <img src={imgUrl} alt={file?.name || ''} style={{ width: '100%', height: 'auto', background: '#fff' }} />}
         <div ref={holder} />
-        {pages.total > 0 && pages.done < pages.total && (
-          <p style={{ textAlign: 'center', color: '#374151' }}>Page {pages.done + 1} of {pages.total}…</p>
-        )}
       </div>
     </div>
   );
