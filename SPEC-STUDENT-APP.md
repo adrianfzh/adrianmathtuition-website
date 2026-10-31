@@ -8,6 +8,29 @@ PencilKit reads the Pencil ~240 times a second, predicts the stroke, rejects the
 hardware, and none of that is available to a web page. The web version (18 Sep,
 `docs/MARKING.md` §The paper opens on its pages) stays for everyone without the app.
 
+## 0. Direction, 31 Oct 2026 — a learning app with notes that get marked
+
+Adrian, 31 Oct 2026: *"We need a mobile app … well designed app that students can use. For starters
+we can put marking capabilities in it first, and also note taking"* … *"Just write on our app
+(interface like notability and goodnotes) and get it marked immediately"* … *"Their interface should
+be like most Apple apps - sleek and modern."* Also: a monthly subscription plus some free services.
+
+- **The idea:** "GoodNotes that marks your maths". Students write notes and working with the Pencil in
+  OUR app; **Check this page** marks that page straight away (red pen, what went wrong, the checked
+  picture), and every mistake goes into a spaced review ("today's review").
+- **Look:** sleek and modern, like Apple's own apps — plain white/grey grounds, one accent colour,
+  large clear type, rounded cards. Mock-up (iPad home, writing page, checked page, iPhone today,
+  iPhone marked paper): https://claude.ai/artifact/Rd39fpZqFs2QK6f2NEyafJ
+- **First version:** hand in + marked papers, notes with Check this page, a push when a paper is
+  marked. iPad + iPhone first.
+- **Free vs paid (a proposal, not decided):** free = notes, ready-made topic notes, a few Asks a day,
+  1 marked paper a month; paid monthly = marked papers + page checks, Practice Again, review, parent
+  view. Price and credits follow `SPEC-COMPANY.md` §7 / §7.1.
+- **Check before building on it:** every Singapore secondary student gets a school device (the PLD),
+  but schools choose iPads OR Chromebooks, and the Apple Pencil is in some schools' bundles, not all.
+  School devices are managed by the school and may not allow our app — students may use it on their
+  own phone or iPad. Android/Chromebook matters for that reason.
+
 ## 1. What it is
 
 One iPad + iPhone app, "AdrianMath", for enrolled students only.
