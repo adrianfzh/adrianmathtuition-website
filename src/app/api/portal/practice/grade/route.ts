@@ -30,7 +30,9 @@ import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 import { bankLevelSubject } from '@/lib/portal-find';
 import { hasRenames, partLabelsOf, studentRow } from '@/lib/part-syllabus';
 import { gradableRow, readFixCache } from '@/lib/fix-one';
-import { fixOneOpenFor } from '@/lib/portal-beta';
+import { fixOneOpenFor, learnLoopOpenFor } from '@/lib/portal-beta';
+import { loopTopic, LOOP_DAILY_CAP, type LoopMeta } from '@/lib/learn-loop';
+import { loopTypes, studentLoopLevel } from '@/lib/learn-loop-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -227,6 +229,33 @@ export async function POST(req: NextRequest) {
     fixRunId = run.id as string;
   }
 
+  // 🔁 The learning loop (SPEC-LEARN-LOOP.md): a question of one type in a loop topic.
+  // It must be filed under that type, answered once, and is stored as 'portal-loop' —
+  // outside Practice's 20 a day, under the loop's own cap (LOOP_DAILY_CAP).
+  let loopMeta: LoopMeta | null = null;
+  const loopRaw = (body as { loop?: { topic?: unknown; subgroupId?: unknown } }).loop;
+  if (loopRaw && typeof loopRaw === 'object') {
+    const topic = loopTopic(loopRaw.topic);
+    const sg = Number(loopRaw.subgroupId);
+    const level = topic ? studentLoopLevel(topic, account) : null;
+    if (assignment || fixRunId || !topic || !level || !Number.isInteger(sg) || !learnLoopOpenFor(identity)) {
+      return NextResponse.json({ error: 'That question isn’t available' }, { status: 404 });
+    }
+    const [types, { count: filed }, { count: done }, { count: today }] = await Promise.all([
+      loopTypes(topic, level),
+      admin.from('question_subgroups').select('question_id', { count: 'exact', head: true }).eq('subgroup_id', sg).eq('question_id', questionId),
+      admin.from('student_attempts').select('id', { count: 'exact', head: true })
+        .eq('user_id', account.id).eq('attempted_via', 'portal-loop').eq('question_id', questionId),
+      admin.from('student_attempts').select('id', { count: 'exact', head: true })
+        .eq('user_id', account.id).eq('attempted_via', 'portal-loop')
+        .gte('attempted_at', new Date(Date.now() - 24 * 3600_000).toISOString()),
+    ]);
+    if (!types.some(t => t.id === sg) || !filed) return NextResponse.json({ error: 'That question isn’t available' }, { status: 404 });
+    if ((done ?? 0) > 0) return NextResponse.json({ error: 'Already answered — tap Another one' }, { status: 409 });
+    if ((today ?? 0) >= LOOP_DAILY_CAP) return NextResponse.json({ error: `That’s ${LOOP_DAILY_CAP} marked answers today. Back tomorrow!` }, { status: 429 });
+    loopMeta = { topic: topic.key, subgroupId: sg };
+  }
+
   // Daily caps (lib/grade-limit.ts, re-done 5 Oct 2026): Adrian-sent work not yet
   // marked is exempt from the 20 a day; self-made practice (find, practice-photo)
   // and re-grades are not; nothing passes the hard ceiling of 60 a day.
@@ -238,7 +267,7 @@ export async function POST(req: NextRequest) {
     .eq('attempted_via', 'portal')
     .gte('attempted_at', dayStart.toISOString());
   const limit = gradeLimit({ assignment, countToday: count || 0 });
-  if (!limit.ok && !fixRunId) return NextResponse.json({ error: limit.message }, { status: 429 });
+  if (!limit.ok && !fixRunId && !loopMeta) return NextResponse.json({ error: limit.message }, { status: 429 });
 
   // Question WITH mark scheme (service role; never sent to the client)
   type GradeQuestion = {
@@ -286,7 +315,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Fix one, MCQ: the option letter is marked by rule — no model call.
-  const fixMcq = fixRunId ? mcqKey(q.answer) : null;
+  const fixMcq = fixRunId || loopMeta ? mcqKey(q.answer) : null;
   let result: GradeResult | undefined;
   if (fixMcq) {
     if (attemptImage) return NextResponse.json({ error: 'Pick an option (A–D) for this question' }, { status: 400 });
@@ -315,7 +344,7 @@ export async function POST(req: NextRequest) {
   // Persist attempt (feedback JSON includes the lines so history can replay it).
   // Photo attempts store the transcription, not the image — no student photos at rest.
   const storedLines = result.transcribedLines || cleanLines || [];
-  const { data: inserted } = await admin
+  const { data: inserted, error: insertError } = await admin
     .from('student_attempts')
     .insert({
       user_id: account.id,
@@ -324,13 +353,15 @@ export async function POST(req: NextRequest) {
       // marking_json.generated names the assignment instead.
       question_id: generated ? null : q.id,
       // 'portal-fix' = Fix one on a marked paper: outside the daily cap (which counts 'portal').
-      attempted_via: fixRunId ? 'portal-fix' : 'portal',
+      // 'portal-loop' = the learning loop: under its own cap (LOOP_DAILY_CAP).
+      attempted_via: fixRunId ? 'portal-fix' : loopMeta ? 'portal-loop' : 'portal',
       answer_text: storedLines.join('\n'),
       marking_verdict: result.verdict,
       duration_seconds: timedMeta?.elapsedSec ?? null,
       marking_json: {
         ...result, model: fixMcq ? 'rule:mcq' : GRADING_MODEL, lines: storedLines,
-        ...(fixRunId ? { fix: { runId: fixRunId } } : {}), source: attemptImage ? 'photo' : 'typed', topics: q.topics,
+        ...(fixRunId ? { fix: { runId: fixRunId } } : {}), ...(loopMeta ? { loop: loopMeta } : {}),
+        source: attemptImage ? ((body as { inked?: unknown }).inked === true ? 'ink' : 'photo') : 'typed', topics: q.topics,
         ...(timedMeta ? { timed: timedMeta } : {}),
         ...(ladderMeta ? { ladder: ladderMeta } : {}),
         // Re-lettered parts: partBreakdown labels are the ones the student saw. This is the
@@ -342,6 +373,9 @@ export async function POST(req: NextRequest) {
     })
     .select('id')
     .single();
+  // A refused insert (e.g. a new attempted_via the check constraint does not list yet) used
+  // to vanish silently — the student saw their mark and nothing was kept (31 Oct 2026).
+  if (insertError) console.error('[practice/grade] attempt not saved:', insertError.message);
 
   const newTags = result.lineComments.filter(c => !c.ok && c.tag).map(c => c.tag!) ;
   await upsertWeaknessTags(account.id, identity, newTags);

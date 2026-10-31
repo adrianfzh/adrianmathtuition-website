@@ -451,6 +451,19 @@ export const IP_TOPICS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_I
 export const FIX_ONE_OPEN_TO_STUDENTS = false;
 export const FIX_ONE_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
+// 🔁 The learning loop (SPEC-LEARN-LOOP.md, 31 Oct 2026, Adrian: "Yes, build stage 1"):
+// clip → a question of one type → write on the iPad or a photo → marked at once → wrong:
+// see why + another one → right: the next type. Stage 1 = A Math Binomial Theorem.
+// CLOSED until Adrian has tried it as the preview student.
+export const LEARN_LOOP_OPEN_TO_STUDENTS = false;
+export const LEARN_LOOP_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+/** May this portal identity use the learning loop? (The page, its API and the grader all ask.) */
+export function learnLoopOpenFor(identity: string | null | undefined): boolean {
+  if (LEARN_LOOP_OPEN_TO_STUDENTS) return true;
+  return !!identity && LEARN_LOOP_PREVIEW_IDENTITIES.includes(identity);
+}
+
 /** May this portal identity see Fix one? (The page and the two API doors all ask.) */
 export function fixOneOpenFor(identity: string | null | undefined): boolean {
   if (FIX_ONE_OPEN_TO_STUDENTS) return true;

@@ -11,7 +11,8 @@
 // gate (and the matching `lessonsVisible` prop on the practice page) to
 // release. The /app layout still gates anonymous visitors to /login.
 import { notFound, redirect } from 'next/navigation';
-import { clipAskVisible, fullPortalVisible, learnStepVisible, lessonVideoExtrasVisible } from '@/lib/portal-beta';
+import { clipAskVisible, fullPortalVisible, learnLoopOpenFor, learnStepVisible, lessonVideoExtrasVisible } from '@/lib/portal-beta';
+import { LOOP_TOPICS } from '@/lib/learn-loop';
 import { parseResumeStop } from '@/lib/clip-ask';
 import { currentAccount, portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { lessonExtras } from '@/lib/lesson-extras';
@@ -41,9 +42,12 @@ export default async function LessonPage({ params, searchParams }: {
   if (await fullPortalVisible()) {
     extrasOn = !!extras && (await lessonVideoExtrasVisible());
   } else {
-    if (!extras) redirect('/app');
-    extrasOn = await lessonVideoExtrasVisible(portalIdentity(await currentAccount()));
-    if (!extrasOn) redirect('/app');
+    const identity = portalIdentity(await currentAccount());
+    // 🔁 A learning-loop topic's clip opens for whoever has the loop (SPEC-LEARN-LOOP.md).
+    const loopClip = LOOP_TOPICS.some(t => t.clipSlug === slug) && learnLoopOpenFor(identity);
+    if (!extras && !loopClip) redirect('/app');
+    extrasOn = !!extras && (await lessonVideoExtrasVisible(identity));
+    if (!extrasOn && !loopClip) redirect('/app');
   }
   const entry = lessonBySlug(slug);
   const script = entry ? loadLessonScript(slug) : null;
@@ -73,7 +77,10 @@ export default async function LessonPage({ params, searchParams }: {
   // Opened from another clip's side link (Beat.aside): back goes to that clip, at the same step.
   const fromSlug = typeof sp.from === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sp.from) ? sp.from : null;
   const fromAt = typeof sp.fromAt === 'string' && /^\d{1,3}$/.test(sp.fromAt) ? sp.fromAt : '0';
-  const toFrom = fromSlug ? { backHref: `/app/lesson/${fromSlug}?at=${fromAt}`, practiceHref: `/app/lesson/${fromSlug}?at=${fromAt}`, practiceLabel: 'Back to the clip' } : {};
+  // Opened from the learning loop (?loop=<topic key>): back and "Now try one" go to its questions.
+  const loopKey = typeof sp.loop === 'string' && LOOP_TOPICS.some(t => t.key === sp.loop && t.clipSlug === slug) ? sp.loop : null;
+  const toLoop = loopKey ? { backHref: `/app/learn-loop/${loopKey}?watched=1`, practiceHref: `/app/learn-loop/${loopKey}?watched=1`, practiceLabel: 'Start the questions' } : {};
+  const toFrom = fromSlug ?{ backHref: `/app/lesson/${fromSlug}?at=${fromAt}`, practiceHref: `/app/lesson/${fromSlug}?at=${fromAt}`, practiceLabel: 'Back to the clip' } : {};
 
   // 💬 "Ask about this step" (lib/clip-ask): a clip shows the button while its switch allows,
   // and ?at=<stop> (the way back from Ask) resumes the clip at that step.
@@ -102,6 +109,7 @@ export default async function LessonPage({ params, searchParams }: {
     ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes), question: script.question ?? clipIntro(script.scenes), askLevel: ['EM', 'AM', 'JC', 'S1', 'S2'].includes(script.level) ? script.level : null, asides } : {}),
     ...toStep,
     ...toFrom,
+    ...toLoop,
   };
   return extras && extrasOn
     ? <LessonWithIntro intro={extras.intro} cheer={extras.cheer} {...player} />

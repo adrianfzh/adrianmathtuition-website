@@ -319,6 +319,16 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return `page ${r.status}`;
     }),
+    // 🔁 The learning loop (31 Oct 2026, SPEC-LEARN-LOOP.md): the page must not 404
+    // (anonymous → the login redirect), and the API must refuse an anonymous caller.
+    timed('portal-learn-loop', async () => {
+      const r = await fetch(`${base}/app/learn-loop/am-binomial`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/learn-loop is missing');
+      if (r.status >= 500) throw new Error(`page HTTP ${r.status}`);
+      const a = await fetch(`${base}/api/portal/loop`, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' }, signal: T(10000) });
+      if (a.status !== 401) throw new Error(`api HTTP ${a.status} (expected 401)`);
+      return `page ${r.status}`;
+    }),
     // The qualitative-analysis flashcards (24 Sep 2026): the Chemistry tab's
     // door must not 404. Anonymous → the login redirect, which is fine.
     // The Science Practise tab (1 Oct 2026): its door must not 404. Anonymous → the login redirect.
