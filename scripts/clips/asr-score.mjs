@@ -23,7 +23,11 @@ const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy:
 
 /** "fifteen point eight" → "15.8", "one hundred" → "100"; everything else unchanged. */
 export function numberWordsToDigits(text) {
-  const toks = text.toLowerCase().replace(/[-–]/g, ' minus ').split(/\s+/).filter(Boolean);
+  // "seventy-two" is ONE number, not "seventy minus two" (31 Oct 2026: a Binomial clip saying "two
+  // thousand and seventy-two" scored 63 % against the transcript's "2072").
+  const toks = text.toLowerCase()
+    .replace(/\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[-–](one|two|three|four|five|six|seven|eight|nine)\b/g, '$1 $2')
+    .replace(/[-–]/g, ' minus ').split(/\s+/).filter(Boolean);
   const out = [];
   const val = (w) => { const c = w.replace(/[^a-z]/g, ''); const u = UNITS.indexOf(c); return u >= 0 ? u : (TENS[c] ?? null); };
   for (let i = 0; i < toks.length;) {
@@ -32,17 +36,21 @@ export function numberWordsToDigits(text) {
     while (j < toks.length) {
       const c = toks[j].replace(/[^a-z]/g, '');
       const v = val(toks[j]);
-      if (v !== null) { cur += v; j += 1; continue; }
+      // A number never runs across a sentence or clause break ("… two eight. Three hundred …",
+      // 31 Oct 2026: read as 0.283 then "hundred").
+      if (v !== null) { cur += v; j += 1; if (/[.,;:!?]$/.test(toks[j - 1])) break; continue; }
       if (c === 'hundred') { cur *= 100; j += 1; continue; }
       // "one hundred and twenty" is one number (25 Oct 2026); "negative one and one" stays two.
       if (c === 'and' && cur >= 100 && cur % 100 === 0 && j + 1 < toks.length && val(toks[j + 1]) !== null) { j += 1; continue; }
+      // "two thousand and seventy-two" is one number too (31 Oct 2026).
+      if (c === 'and' && cur === 0 && n >= 1000 && j + 1 < toks.length && val(toks[j + 1]) !== null) { j += 1; continue; }
       if (c === 'thousand') { n += cur * 1000; cur = 0; j += 1; continue; }
       break;
     }
     let s = String(n + cur);
     if (j < toks.length && toks[j].replace(/[^a-z]/g, '') === 'point') {
       let d = '', k = j + 1;
-      while (k < toks.length && UNITS.indexOf(toks[k].replace(/[^a-z]/g, '')) >= 0 && UNITS.indexOf(toks[k].replace(/[^a-z]/g, '')) <= 9) { d += UNITS.indexOf(toks[k].replace(/[^a-z]/g, '')); k += 1; }
+      while (k < toks.length && UNITS.indexOf(toks[k].replace(/[^a-z]/g, '')) >= 0 && UNITS.indexOf(toks[k].replace(/[^a-z]/g, '')) <= 9) { d += UNITS.indexOf(toks[k].replace(/[^a-z]/g, '')); k += 1; if (/[.,;:!?]$/.test(toks[k - 1])) break; }
       if (d) { s += '.' + d; j = k; }
     }
     out.push(s);
