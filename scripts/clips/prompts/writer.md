@@ -53,6 +53,9 @@ no focus, no clear.
 
 ## Rules (each one is checked)
 
+- **Never light or point at a line that has scrolled away** (31 Oct 2026, two Binomial looks failed
+  "talked about but hidden"): on a scrolling board, only highlight/circle tokens within about 4 lines
+  of the line being written. To use an earlier result, the new line already shows it — light THAT.
 - **Beats ≤ 24 words each, ≤ 460 words in all** — as many beats as the explanation needs (house rules §2).
 - **House rules §2 is Adrian's standard** — every point in it is something he asked for after watching
   a clip. Read all of it before writing; a draft that breaks one is sent back.

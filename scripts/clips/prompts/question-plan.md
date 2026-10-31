@@ -51,6 +51,11 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   words + maths — cut story words: "A cylinder: volume $(6+2\sqrt3)\pi$, radius $1+\sqrt3$. Find its
   height."). A line wider than the phone (about 22 characters of maths) is cut off — split it. The
   same holds for maths inside an `intro`: a long identity goes on the board as a line, not in the intro.
+- **A result used later is written again where it is used** (31 Oct 2026: two Binomial clips failed
+  the look — "talked about but hidden" — because `−224x³` and the long expansion line had scrolled
+  off by the time the voice came back to them). On a scrolling board, a later line that uses an
+  earlier result shows it IN that line (`10(-224) + k(448) = 0`, not "this term times ten"), and the
+  voice never lights or points at a line more than about 4 lines above the one being written.
 - `lines[0]` is the first line of WORKING (the question sits in `intro`).
 - Token ids are short, unique, lower-case. `hl`: `amber` for the line a key move makes, `emerald`
   for the answer token. A long line is one token.
