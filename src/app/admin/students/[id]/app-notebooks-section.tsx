@@ -75,7 +75,7 @@ export default function AppNotebooksSection({ studentId }: { studentId: string }
       {big && (
         <div onClick={() => setBig(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.75)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, cursor: 'zoom-out' }}>
-          <div style={{ maxWidth: 900, maxHeight: '100%', overflow: 'auto', background: '#fff', borderRadius: 10 }}>
+          <div style={{ width: 'min(900px, 100%)', maxHeight: '100%', overflow: 'auto', background: '#fff', borderRadius: 10 }}>
             <div style={{ padding: '10px 14px', fontSize: 14, fontWeight: 600, color: '#0f172a', borderBottom: '1px solid #e5e7eb' }}>
               Page {big.n}{big.summary ? ` · ${big.summary}` : ''}
             </div>

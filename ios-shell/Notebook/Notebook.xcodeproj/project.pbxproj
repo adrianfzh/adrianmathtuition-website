@@ -21,6 +21,7 @@
 		82D83BF6C0DDE099734CCA9C /* HandwritingLines.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7484A79A7B1F0DAC3C401B46 /* HandwritingLines.swift */; };
 		8817EEC5AC55DDBEFBC17F1A /* PageGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F192735BFF66FD3D78787D1 /* PageGeometry.swift */; };
 		88A96ACA66050C055F425F8F /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AB0300AFFB6AC789A09508 /* PDFExporter.swift */; };
+		8B34D65A93BDFC648A0BC4D1 /* PagePicture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 186F3CBF087E84AC82C4A563 /* PagePicture.swift */; };
 		8DEAC3001130597485F8AF3A /* WalkthroughUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1C21E243A67A93138516B9 /* WalkthroughUITests.swift */; };
 		9356ABAD1EED0B27EFE12CBA /* CheckPageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D680A91022D06626AEE5A6D8 /* CheckPageTests.swift */; };
 		A179104B4C4AEFAD377CA21B /* NotebookAppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201C8936F8E775BAA9749200 /* NotebookAppMain.swift */; };
@@ -56,6 +57,7 @@
 
 /* Begin PBXFileReference section */
 		180A49E7A607737E47E24637 /* PageOverviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageOverviewSheet.swift; sourceTree = "<group>"; };
+		186F3CBF087E84AC82C4A563 /* PagePicture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagePicture.swift; sourceTree = "<group>"; };
 		18B30D4E446485E2D079298D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		1B203BB802FBD3B464B75FB9 /* LibraryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryModel.swift; sourceTree = "<group>"; };
 		201C8936F8E775BAA9749200 /* NotebookAppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookAppMain.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 			children = (
 				4F568582C0159AD2497864A5 /* NotebookBackup.swift */,
 				3985AFA474751543E0DE9CFF /* NotebookStore.swift */,
+				186F3CBF087E84AC82C4A563 /* PagePicture.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -372,6 +375,7 @@
 				D2B89E5587F01BC3AE02B02B /* PageCheck.swift in Sources */,
 				8817EEC5AC55DDBEFBC17F1A /* PageGeometry.swift in Sources */,
 				EAEFFEB515BFD2249E849389 /* PageOverviewSheet.swift in Sources */,
+				8B34D65A93BDFC648A0BC4D1 /* PagePicture.swift in Sources */,
 				084C55B725DE13876DC774C0 /* PaperCanvasView.swift in Sources */,
 				FA1C6B3A921B786C938280C4 /* PaperPattern.swift in Sources */,
 				ED1F64D14987C7C9A727DBB9 /* StudentAccount.swift in Sources */,

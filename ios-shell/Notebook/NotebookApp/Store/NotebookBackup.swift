@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import PencilKit
 import os
 
 /// Keeps the student's notebooks on our server, under their website account
@@ -164,17 +165,49 @@ final class NotebookBackup {
 
     private struct FileEntry { var path: String; var url: URL; var size: Int; var sha256: String }
 
-    /// The files that make up a notebook now: its details, each page's writing, each PDF it uses.
+    /// The files that make up a notebook now: its details, each page's writing, each PDF it uses,
+    /// and a picture of each written page for the website (made again when the page changed).
     private func files(of nb: Notebook) throws -> [FileEntry] {
         let dir = store.folderURL(notebookID: nb.id)
+        try refreshPictures(nb, dir: dir)
         var paths = ["notebook.json"]
-        paths += nb.pages.map { "pages/\($0.id.uuidString).drawing" }
+        for page in nb.pages {
+            paths.append("pages/\(page.id.uuidString).drawing")
+            paths.append("previews/\(page.id.uuidString).jpg")
+        }
         paths += nb.documentIDs.map { "documents/\($0.uuidString).pdf" }
         return try paths.compactMap { path in
             let url = dir.appendingPathComponent(path)
             guard FileManager.default.fileExists(atPath: url.path) else { return nil } // a page never written on
             let data = try Data(contentsOf: url)
             return FileEntry(path: path, url: url, size: data.count, sha256: Self.sha256(data))
+        }
+    }
+
+    /// previews/<page>.jpg for every page with writing, redrawn when the writing (or, for a checked
+    /// page, the notebook's details, which hold the red pen) is newer than the picture.
+    private func refreshPictures(_ nb: Notebook, dir: URL) throws {
+        let fm = FileManager.default
+        let previews = dir.appendingPathComponent("previews", isDirectory: true)
+        try fm.createDirectory(at: previews, withIntermediateDirectories: true)
+        func modified(_ url: URL) -> Date? { (try? fm.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date }
+        let detailsChanged = modified(dir.appendingPathComponent("notebook.json")) ?? .distantPast
+        let documents = PDFDocuments(notebookID: nb.id, store: store)
+        var keep = Set<String>()
+        for page in nb.pages {
+            let ink = dir.appendingPathComponent("pages/\(page.id.uuidString).drawing")
+            let pic = previews.appendingPathComponent("\(page.id.uuidString).jpg")
+            guard let inkChanged = modified(ink) else { continue }
+            keep.insert(pic.lastPathComponent)
+            let picMade = modified(pic) ?? .distantPast
+            guard picMade < inkChanged || (page.check != nil && picMade < detailsChanged) else { continue }
+            let drawing = (try? PKDrawing(data: Data(contentsOf: ink))) ?? PKDrawing()
+            let jpeg = PagePicture.jpeg(drawing: drawing, paper: nb.paper,
+                                        pdfPage: page.background.flatMap(documents.page), check: page.check)
+            try jpeg?.write(to: pic, options: .atomic)
+        }
+        for file in (try? fm.contentsOfDirectory(atPath: previews.path)) ?? [] where !keep.contains(file) {
+            try? fm.removeItem(at: previews.appendingPathComponent(file))
         }
     }
 
@@ -194,7 +227,8 @@ final class NotebookBackup {
             var req = URLRequest(url: url)
             req.httpMethod = "PUT"
             req.timeoutInterval = 300
-            req.setValue(entry.path.hasSuffix(".pdf") ? "application/pdf" : "application/octet-stream", forHTTPHeaderField: "Content-Type")
+            let type = entry.path.hasSuffix(".pdf") ? "application/pdf" : entry.path.hasSuffix(".jpg") ? "image/jpeg" : "application/octet-stream"
+            req.setValue(type, forHTTPHeaderField: "Content-Type")
             req.setValue("true", forHTTPHeaderField: "x-upsert")
             let (_, response) = try await Self.network { try await URLSession.shared.upload(for: req, fromFile: entry.url) }
             let status = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -219,7 +253,7 @@ final class NotebookBackup {
         let dir = store.folderURL(notebookID: id)
         let incoming = store.root.appendingPathComponent(".incoming/\(id.uuidString)", isDirectory: true)
         try? fm.removeItem(at: incoming)
-        for sub in ["pages", "documents"] {
+        for sub in ["pages", "documents", "previews"] {
             try fm.createDirectory(at: incoming.appendingPathComponent(sub), withIntermediateDirectories: true)
         }
         var fetched = 0

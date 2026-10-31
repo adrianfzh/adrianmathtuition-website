@@ -157,8 +157,22 @@ student only). Erased by Delete my account (`lib/erasure.ts`). Health check `app
 app wiped like a new iPad, signed in → the notebook came back with its writing (3 files, 0.5 MB).
 Not yet checked: deleting on one device removing it on another (built, untested), a real iPad.
 
-**Next (not built):** show the app's notebooks inside the website's My Notebook; a storage cap per
-student (today 400 MB per notebook, none per student).
+**Next (not built):** the student seeing the app's notebooks in the website's My Notebook (Adrian's view
+is built — §0e); a storage cap per student (today 400 MB per notebook, none per student).
+
+## 0e. Seeing a student's iPad notebook — BUILT 31 Oct 2026 (Adrian: "yes")
+
+Adrian, 31 Oct 2026: yes to seeing what a student wrote in the app, starting with him (before a lesson).
+- **Where:** his student page → **📬 Work** tab → **📓 iPad notebooks** (top of the tab). Each notebook
+  opens to its written pages as pictures, with any Check this page result under the page; a tap opens
+  the page large in place. Read-only.
+- **How:** the website can't read Apple's pen format, so the app sends a picture of each written page with
+  its backup (`previews/<page>.jpg`, 1200 px wide, made again only when that page's writing or red pen
+  changed — `NotebookApp/Store/PagePicture.swift`, `NotebookBackup.refreshPictures`). Server:
+  `/api/admin/student-notebooks` (admin), `writtenPages` in `lib/app-notebooks.ts`;
+  section `src/app/admin/students/[id]/app-notebooks-section.tsx`.
+- Only students whose account is linked to their tuition record show here (the page is keyed by it).
+- **Not built:** the student seeing these on the website (My Notebook).
 
 ## 1. What it is
 

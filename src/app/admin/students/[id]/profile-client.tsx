@@ -856,6 +856,12 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             {/* "On the shelf" left the profile on 17 Sep 2026 (SPEC-STUDENT-FIRST §3): the
                 gaps a sheet kept back are a property of that sheet and show under it. */}
 
+        {/* 📓 iPad notebooks (SPEC-STUDENT-APP.md §0e, 31 Oct 2026): what they wrote in the
+                Notebook app, read-only, page pictures from its backup. */}
+        <Section title="📓 iPad notebooks" show={tab === 'work'}>
+          <AppNotebooksSection studentId={studentId} />
+        </Section>
+
         <Section title="📬 From Adrian" show={tab === 'work'}>
               <SendWorkCard
                 prefillTopics={sendTopics}
@@ -883,12 +889,6 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                   </p>
                 );
               })()}
-            </Section>
-
-            {/* 📓 iPad notebooks (SPEC-STUDENT-APP.md §0e, 31 Oct 2026): what they wrote in the
-                Notebook app, read-only, page pictures from its backup. */}
-            <Section title="📓 iPad notebooks" show={tab === 'work'}>
-              <AppNotebooksSection studentId={studentId} />
             </Section>
 
             {/* Portal activity visibility (2026-09-03) — one compact line, no
