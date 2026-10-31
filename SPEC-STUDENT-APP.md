@@ -2,7 +2,7 @@
 
 > **23 Sep 2026: [`SPEC-COMPANY.md`](SPEC-COMPANY.md) proposes the public version** — both stores, in-app purchase, self-serve sign-up (§4, §10 step 6). The unlisted iOS app below is its first step, unchanged.
 
-Agreed 18 Sep 2026 (Adrian: "let's do unlisted app store app"). Nothing built yet.
+Agreed 18 Sep 2026 (Adrian: "let's do unlisted app store app"). **31 Oct 2026: v1 of the native note-taking app is built — §0b.** The web-shell plan in §1–§4 is not built.
 Why: writing on a marked paper only feels like GoodNotes in a **native** app — Apple's
 PencilKit reads the Pencil ~240 times a second, predicts the stroke, rejects the palm in
 hardware, and none of that is available to a web page. The web version (18 Sep,
@@ -30,6 +30,65 @@ be like most Apple apps - sleek and modern."* Also: a monthly subscription plus 
   but schools choose iPads OR Chromebooks, and the Apple Pencil is in some schools' bundles, not all.
   School devices are managed by the school and may not allow our app — students may use it on their
   own phone or iPad. Android/Chromebook matters for that reason.
+
+## 0b. Version 1 BUILT, 31 Oct 2026 — the note-taking app (blank canvas first)
+
+Adrian, 31 Oct 2026: *"Let's build the app like notability first. Blank canvas primarily"* and
+*"Build for Apple Store"*. So v1 is a **native** iPad + iPhone note-taking app — no web shell,
+no login, no marking yet. Everything stays on the device.
+
+**What v1 does (tested in the iPad Pro 11" and iPhone 17 Pro simulators):**
+- **Library** — a grid of notebooks (cover colour, title, page count, "edited 2 minutes ago");
+  "+" to make one (title, cover colour, paper); long-press to rename, change cover/paper, move
+  to a subject, or delete (asks first). Sort by last edited, title or date created. Optional
+  **subjects** (e.g. "A Math", "Physics") as chips across the top.
+- **Writing** — Apple's own PencilKit: pen, pencil, marker, eraser, lasso, ruler, colours (the
+  system tool bar), undo/redo, pinch zoom. Pages run top to bottom like Notability; a new page
+  appears by itself when you write near the end of the last one, or "Add Page" in the ⋯ menu.
+  Paper: Blank (default), Lined, Grid, Dotted — A4-shaped, always white (ink keeps its true
+  colours in dark mode). On iPad only the Pencil draws and a finger scrolls; ⋯ → "Draw with
+  Finger" changes that (on iPhone the finger draws by default). Tap the title to rename.
+- **Pages** — the grid button (iPhone: ⋯ → Pages) shows every page small: tap to jump, drag
+  to reorder, long-press to insert, move or delete.
+- **Saving** — automatic, a moment after each stroke and when the app is left. Each notebook is
+  a folder: `notebook.json` + one ink file per page. Survives closing the app (checked).
+- **Export** — ⋯ → "Export This Page / Notebook as PDF" → the share sheet (AirDrop, Files, Mail…).
+
+**Where the code is:** `ios-shell/Notebook/` (inside `ios-shell/` so a push builds nothing on the
+website). SwiftUI + PencilKit, Swift 6, iOS 17+, no outside libraries. The Xcode project is
+generated from `project.yml`. Storage sits behind a `NotebookStore` protocol so a syncing store
+can be added later without touching the screens. The future **Check this page** button exists
+in code behind `FeatureFlags.checkPage = false` — users see nothing.
+
+**Build and run (on the Mac):**
+1. `cd ios-shell/Notebook && xcodegen generate`
+2. Open `Notebook.xcodeproj` in Xcode → scheme **NotebookApp** → pick an iPad or iPhone
+   simulator → ▶ Run. (The simulator needs no signing.)
+3. Tests: `xcodebuild -project Notebook.xcodeproj -scheme NotebookApp -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5)' test`
+   — `NotebookTests` (saving, loading, page add/delete/reorder, ink split across pages) and
+   `NotebookUITests` (a walkthrough that creates notebooks, draws, adds a page, switches paper,
+   exports, relaunches; screenshots go to `$TEST_RUNNER_SHOTS_DIR` when set).
+
+**The name** is not decided: the home-screen name "Notebook" is set in ONE place,
+`INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`. Bundle id `com.adrianmath.notebook` is a
+placeholder until the name is chosen. The icon is a placeholder (white page + blue tick on blue,
+`scripts/make-icon.py`).
+
+**NOT built yet:** marking (Check this page), sync to our server, accounts/login, subscriptions or
+in-app purchase, the hand-in camera scanner, push notifications, typed text / images / PDFs
+inside a notebook, search, iCloud backup of notes.
+
+**What Adrian must do for the App Store (in order):**
+1. **The company enrols in the Apple Developer Program as an organisation** (US$99 a year) — needs
+   the company's **D-U-N-S number** (free, takes one to two weeks). See §3.
+2. Tell us the **app name** — then the bundle id and the home-screen name are set to match.
+3. In Xcode, add the company's **signing team** (one setting in `project.yml`: `DEVELOPMENT_TEAM`).
+4. Create the **App Store Connect listing**: name, description, category (Education), age rating,
+   price (free for v1), and a **privacy page** link (v1 collects nothing; the app's privacy file
+   already says no tracking, no data collected).
+5. **Screenshots** for the listing (iPad 13" and iPhone 6.9") — we can produce them from the
+   simulator once the name and icon are final.
+6. TestFlight with 2–3 students, then submit for review.
 
 ## 1. What it is
 

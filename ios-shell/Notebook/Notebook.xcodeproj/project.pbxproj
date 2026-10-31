@@ -1,0 +1,640 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		084C55B725DE13876DC774C0 /* PaperCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D799337B4EF6F19AD2488D8A /* PaperCanvasView.swift */; };
+		16859B77FC3D94F9C76A67A4 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B30D4E446485E2D079298D /* Models.swift */; };
+		241ED4D2B6CBC698D4D2AB70 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 97718BA88A5E7B56DB4AABAB /* PrivacyInfo.xcprivacy */; };
+		265AA75F4EB200F29F40CC5B /* EditorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DF8AA6B0BBDCD3927B5226 /* EditorController.swift */; };
+		2E8BAE82BC2CEEDEFC096250 /* StoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FF6BC23CC587AD43090FFD /* StoreTests.swift */; };
+		7F3C89036A335A414B298440 /* NotebookCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 315ABB3131DFB6AF6A42C74D /* NotebookCard.swift */; };
+		7FA24E27AA7017D9F4744483 /* LibraryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B203BB802FBD3B464B75FB9 /* LibraryModel.swift */; };
+		8817EEC5AC55DDBEFBC17F1A /* PageGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F192735BFF66FD3D78787D1 /* PageGeometry.swift */; };
+		88A96ACA66050C055F425F8F /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3AB0300AFFB6AC789A09508 /* PDFExporter.swift */; };
+		8DEAC3001130597485F8AF3A /* WalkthroughUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1C21E243A67A93138516B9 /* WalkthroughUITests.swift */; };
+		A179104B4C4AEFAD377CA21B /* NotebookAppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201C8936F8E775BAA9749200 /* NotebookAppMain.swift */; };
+		AF9F8B4FD364BA3B0E21DEAE /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA8DF73822776574FAAFE75 /* EditorView.swift */; };
+		BEFCD7FF98CBAB5E31270377 /* AppBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C96749C462281DFBAE209D /* AppBrand.swift */; };
+		C046D96846567F74EEB27407 /* NotebookFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E44D10ABE19332E83942CD /* NotebookFormSheet.swift */; };
+		E0F58AFC3578E5E1DCA1B7C5 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D7CB2204AF2EB68D6F0C36 /* LibraryView.swift */; };
+		E698D7D999E3E0CF30DBFC51 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C057A7035A3901D0B8EA907 /* Assets.xcassets */; };
+		EAEFFEB515BFD2249E849389 /* PageOverviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180A49E7A607737E47E24637 /* PageOverviewSheet.swift */; };
+		EB11DB0C6F8A6F5A10C5CBA6 /* NotebookStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3985AFA474751543E0DE9CFF /* NotebookStore.swift */; };
+		FA1C6B3A921B786C938280C4 /* PaperPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733CC345F3E72E7A79685B03 /* PaperPattern.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3E75F5C33E6A3F4F29D3BCF0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E47435CD3F3CAF3662E8B2A3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75C7FE90AA41ADBA05197779;
+			remoteInfo = NotebookApp;
+		};
+		C3766331D96C90AF2E09FFA5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E47435CD3F3CAF3662E8B2A3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75C7FE90AA41ADBA05197779;
+			remoteInfo = NotebookApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		180A49E7A607737E47E24637 /* PageOverviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageOverviewSheet.swift; sourceTree = "<group>"; };
+		18B30D4E446485E2D079298D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		1B203BB802FBD3B464B75FB9 /* LibraryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryModel.swift; sourceTree = "<group>"; };
+		201C8936F8E775BAA9749200 /* NotebookAppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookAppMain.swift; sourceTree = "<group>"; };
+		2DF4FCBB09278C27FF375F37 /* NotebookUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NotebookUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		315ABB3131DFB6AF6A42C74D /* NotebookCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookCard.swift; sourceTree = "<group>"; };
+		3985AFA474751543E0DE9CFF /* NotebookStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookStore.swift; sourceTree = "<group>"; };
+		3CA8DF73822776574FAAFE75 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
+		49D7CB2204AF2EB68D6F0C36 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		5BE2020027CD1B1CA22A2283 /* NotebookApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NotebookApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		62E44D10ABE19332E83942CD /* NotebookFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookFormSheet.swift; sourceTree = "<group>"; };
+		6C057A7035A3901D0B8EA907 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6F192735BFF66FD3D78787D1 /* PageGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageGeometry.swift; sourceTree = "<group>"; };
+		733CC345F3E72E7A79685B03 /* PaperPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPattern.swift; sourceTree = "<group>"; };
+		84FF6BC23CC587AD43090FFD /* StoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTests.swift; sourceTree = "<group>"; };
+		96C96749C462281DFBAE209D /* AppBrand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBrand.swift; sourceTree = "<group>"; };
+		97718BA88A5E7B56DB4AABAB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D3AB0300AFFB6AC789A09508 /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
+		D799337B4EF6F19AD2488D8A /* PaperCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperCanvasView.swift; sourceTree = "<group>"; };
+		E6DF8AA6B0BBDCD3927B5226 /* EditorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorController.swift; sourceTree = "<group>"; };
+		FB377366DB6FDB12D42A95BE /* NotebookTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NotebookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC1C21E243A67A93138516B9 /* WalkthroughUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkthroughUITests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		15259E9631CBB7826B77EE01 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				E6DF8AA6B0BBDCD3927B5226 /* EditorController.swift */,
+				3CA8DF73822776574FAAFE75 /* EditorView.swift */,
+				180A49E7A607737E47E24637 /* PageOverviewSheet.swift */,
+				D799337B4EF6F19AD2488D8A /* PaperCanvasView.swift */,
+				D3AB0300AFFB6AC789A09508 /* PDFExporter.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		337D3822AEEC349ADD4EC3F4 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				18B30D4E446485E2D079298D /* Models.swift */,
+				6F192735BFF66FD3D78787D1 /* PageGeometry.swift */,
+				733CC345F3E72E7A79685B03 /* PaperPattern.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		508E736B0F941F3ABF531F6F = {
+			isa = PBXGroup;
+			children = (
+				8131FB6EB4A30B6057CB1075 /* NotebookApp */,
+				C215252292CEFBD06E70134C /* NotebookTests */,
+				BDC351FAD8024059867FA142 /* NotebookUITests */,
+				8142B9FD5A9304D5C9EF9751 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8131FB6EB4A30B6057CB1075 /* NotebookApp */ = {
+			isa = PBXGroup;
+			children = (
+				C640C4C94E4EE0EBDB780CF5 /* App */,
+				15259E9631CBB7826B77EE01 /* Editor */,
+				B1905F839EBC392D9AB5F626 /* Library */,
+				337D3822AEEC349ADD4EC3F4 /* Model */,
+				F54D2F74591B1F80730C8917 /* Resources */,
+				976C9A0043A23C4879617AC7 /* Store */,
+			);
+			path = NotebookApp;
+			sourceTree = "<group>";
+		};
+		8142B9FD5A9304D5C9EF9751 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5BE2020027CD1B1CA22A2283 /* NotebookApp.app */,
+				FB377366DB6FDB12D42A95BE /* NotebookTests.xctest */,
+				2DF4FCBB09278C27FF375F37 /* NotebookUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		976C9A0043A23C4879617AC7 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				3985AFA474751543E0DE9CFF /* NotebookStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		B1905F839EBC392D9AB5F626 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				1B203BB802FBD3B464B75FB9 /* LibraryModel.swift */,
+				49D7CB2204AF2EB68D6F0C36 /* LibraryView.swift */,
+				315ABB3131DFB6AF6A42C74D /* NotebookCard.swift */,
+				62E44D10ABE19332E83942CD /* NotebookFormSheet.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		BDC351FAD8024059867FA142 /* NotebookUITests */ = {
+			isa = PBXGroup;
+			children = (
+				FC1C21E243A67A93138516B9 /* WalkthroughUITests.swift */,
+			);
+			path = NotebookUITests;
+			sourceTree = "<group>";
+		};
+		C215252292CEFBD06E70134C /* NotebookTests */ = {
+			isa = PBXGroup;
+			children = (
+				84FF6BC23CC587AD43090FFD /* StoreTests.swift */,
+			);
+			path = NotebookTests;
+			sourceTree = "<group>";
+		};
+		C640C4C94E4EE0EBDB780CF5 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				96C96749C462281DFBAE209D /* AppBrand.swift */,
+				201C8936F8E775BAA9749200 /* NotebookAppMain.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F54D2F74591B1F80730C8917 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6C057A7035A3901D0B8EA907 /* Assets.xcassets */,
+				97718BA88A5E7B56DB4AABAB /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		75C7FE90AA41ADBA05197779 /* NotebookApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 99F9877A52CA4CF3667DE528 /* Build configuration list for PBXNativeTarget "NotebookApp" */;
+			buildPhases = (
+				929533F57B99EDF146C18414 /* Sources */,
+				83A3F8F30790B89358ED2E55 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotebookApp;
+			packageProductDependencies = (
+			);
+			productName = NotebookApp;
+			productReference = 5BE2020027CD1B1CA22A2283 /* NotebookApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		84831774638BC6F8FE71283A /* NotebookTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D48E34FCDD52C3CB915F391D /* Build configuration list for PBXNativeTarget "NotebookTests" */;
+			buildPhases = (
+				7EE23B74D7C6A8E51CFECF61 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E93F50F0D4DB502E833FD541 /* PBXTargetDependency */,
+			);
+			name = NotebookTests;
+			packageProductDependencies = (
+			);
+			productName = NotebookTests;
+			productReference = FB377366DB6FDB12D42A95BE /* NotebookTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		FA78C6460B297AB170586869 /* NotebookUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 871F1C98CF712288FFC3F989 /* Build configuration list for PBXNativeTarget "NotebookUITests" */;
+			buildPhases = (
+				8FCE041E1308BC4EA3BC96A4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CFB7938CEB7F9CB25F88AADA /* PBXTargetDependency */,
+			);
+			name = NotebookUITests;
+			packageProductDependencies = (
+			);
+			productName = NotebookUITests;
+			productReference = 2DF4FCBB09278C27FF375F37 /* NotebookUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E47435CD3F3CAF3662E8B2A3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					75C7FE90AA41ADBA05197779 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					84831774638BC6F8FE71283A = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					FA78C6460B297AB170586869 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+						TestTargetID = 75C7FE90AA41ADBA05197779;
+					};
+				};
+			};
+			buildConfigurationList = 4BD09D5233558458703BE65E /* Build configuration list for PBXProject "Notebook" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 508E736B0F941F3ABF531F6F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 8142B9FD5A9304D5C9EF9751 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				75C7FE90AA41ADBA05197779 /* NotebookApp */,
+				84831774638BC6F8FE71283A /* NotebookTests */,
+				FA78C6460B297AB170586869 /* NotebookUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		83A3F8F30790B89358ED2E55 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E698D7D999E3E0CF30DBFC51 /* Assets.xcassets in Resources */,
+				241ED4D2B6CBC698D4D2AB70 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7EE23B74D7C6A8E51CFECF61 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2E8BAE82BC2CEEDEFC096250 /* StoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8FCE041E1308BC4EA3BC96A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DEAC3001130597485F8AF3A /* WalkthroughUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		929533F57B99EDF146C18414 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BEFCD7FF98CBAB5E31270377 /* AppBrand.swift in Sources */,
+				265AA75F4EB200F29F40CC5B /* EditorController.swift in Sources */,
+				AF9F8B4FD364BA3B0E21DEAE /* EditorView.swift in Sources */,
+				7FA24E27AA7017D9F4744483 /* LibraryModel.swift in Sources */,
+				E0F58AFC3578E5E1DCA1B7C5 /* LibraryView.swift in Sources */,
+				16859B77FC3D94F9C76A67A4 /* Models.swift in Sources */,
+				A179104B4C4AEFAD377CA21B /* NotebookAppMain.swift in Sources */,
+				7F3C89036A335A414B298440 /* NotebookCard.swift in Sources */,
+				C046D96846567F74EEB27407 /* NotebookFormSheet.swift in Sources */,
+				EB11DB0C6F8A6F5A10C5CBA6 /* NotebookStore.swift in Sources */,
+				88A96ACA66050C055F425F8F /* PDFExporter.swift in Sources */,
+				8817EEC5AC55DDBEFBC17F1A /* PageGeometry.swift in Sources */,
+				EAEFFEB515BFD2249E849389 /* PageOverviewSheet.swift in Sources */,
+				084C55B725DE13876DC774C0 /* PaperCanvasView.swift in Sources */,
+				FA1C6B3A921B786C938280C4 /* PaperPattern.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CFB7938CEB7F9CB25F88AADA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75C7FE90AA41ADBA05197779 /* NotebookApp */;
+			targetProxy = C3766331D96C90AF2E09FFA5 /* PBXContainerItemProxy */;
+		};
+		E93F50F0D4DB502E833FD541 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75C7FE90AA41ADBA05197779 /* NotebookApp */;
+			targetProxy = 3E75F5C33E6A3F4F29D3BCF0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0D9F4FE1FF0613F3FF6B3811 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrianmath.notebook.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NotebookApp.app/NotebookApp";
+			};
+			name = Release;
+		};
+		0EEB69DD5D78D949F832D054 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Notebook;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrianmath.notebook;
+				PRODUCT_NAME = NotebookApp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1A4D0B4FC87FD52B992674FD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrianmath.notebook.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = NotebookApp;
+			};
+			name = Release;
+		};
+		3E4F7B5113BB6998A01AAE11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		661BF93060B357995850B2CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrianmath.notebook.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NotebookApp.app/NotebookApp";
+			};
+			name = Debug;
+		};
+		6CAFEF3D1501DBFD41F11542 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		8601DE8F32B78E4CC244C03E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrianmath.notebook.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = NotebookApp;
+			};
+			name = Debug;
+		};
+		DFEFD9B2A326C70735FA3F20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Notebook;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrianmath.notebook;
+				PRODUCT_NAME = NotebookApp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4BD09D5233558458703BE65E /* Build configuration list for PBXProject "Notebook" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6CAFEF3D1501DBFD41F11542 /* Debug */,
+				3E4F7B5113BB6998A01AAE11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		871F1C98CF712288FFC3F989 /* Build configuration list for PBXNativeTarget "NotebookUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8601DE8F32B78E4CC244C03E /* Debug */,
+				1A4D0B4FC87FD52B992674FD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		99F9877A52CA4CF3667DE528 /* Build configuration list for PBXNativeTarget "NotebookApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFEFD9B2A326C70735FA3F20 /* Debug */,
+				0EEB69DD5D78D949F832D054 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D48E34FCDD52C3CB915F391D /* Build configuration list for PBXNativeTarget "NotebookTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				661BF93060B357995850B2CC /* Debug */,
+				0D9F4FE1FF0613F3FF6B3811 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E47435CD3F3CAF3662E8B2A3 /* Project object */;
+}
