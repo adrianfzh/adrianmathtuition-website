@@ -49,7 +49,7 @@ re-skin, ~50% → same-skills, "harder/stretch" → harder.
 4. **Generate candidates.** Write each question completely: stem, parts with marks
    (mirror the source's mark allocation at levels 1–2), and an INTENDED answer +
    worked solution. Vary contexts sensibly (Singapore school-appropriate). If the
-   question needs a diagram, draw it with `teaching_style/diagram_helpers.py` per
+   question needs a diagram, draw it with the figure library (bot `lib/figures/`, CLAUDE.md rule 11 — `teaching_style/diagram_helpers.py` does not exist) per
    DIAGRAMS.md and view it before use.
 5. **VERIFY — the gate that cannot be skipped.** For each candidate:
    a. Re-solve the question from scratch in a fresh pass, deliberately NOT looking
@@ -90,7 +90,7 @@ re-derived independently before presenting. Use that document
 ## Hard rules
 
 - NEVER present or insert a question whose answer failed independent verification.
-- Respect every rule in `teaching_style/FEEDBACK.md` — those are Adrian's corrections.
+- Respect every rule in `docs/teaching-style/FEEDBACK.md` — those are Adrian's corrections.
 - Generated questions must be solvable with only the level's syllabus (check
   canonical_topics.json for the level's subset).
 - At Sec level: no source citations, no De Morgan by name, no set-algebra

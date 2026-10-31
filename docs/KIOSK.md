@@ -24,7 +24,7 @@ to their own level.** No anonymous browsing.
    5-min idle reset ("Done ✓" button ends session).
 3b. **Three-button home screen (2026-08-11)** — a signed-in student lands on 📘 **Learn** /
    📝 **Revise** / ✏️ **Practice**, one big tile each (`KioskClient.tsx`, `HOME_TILES`), with a
-   `← Back` on every sub-screen. Learn → `Notes/<LEVEL>` PDFs, Revise → `Revision/<LEVEL>` PDFs,
+   `← Back` on every sub-screen. Learn → `Notes/<LEVEL>` PDFs, Revise → `Revision/<LEVEL>` PDFs (new sheets go to `Practice/<LEVEL>` since 26 Oct 2026, below),
    Practice → a two-tile choice: 🖨️ **Printed sheets** (`Practice/<LEVEL>` PDFs) or ⚡ **Make me
    one** (the seeded question-bank generator, 5–5d below). The PDF browser is one shared component
    — the button only picks the `kind` passed to `/api/kiosk/notes`. Tiles self-hide when a student
@@ -199,7 +199,7 @@ unit-tested). Never re-derive a folder path in a route:**
 | Kind | Dropbox path | Surfaces | Legacy Airtable/Blob merge |
 |---|---|---|---|
 | `notes` | `/Notes/<LEVEL>` e.g. `/Notes/AM` | `/admin/notes/<level>` + kiosk 📘 **Learn** | yes (`PrintNotes` table) |
-| `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` | `/admin/notes/<level>` + kiosk 📝 **Revise** (opened to students 2026-08-11) — worksheets WITH worked examples | no — Dropbox only |
+| `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` — `Practice/<LEVEL>` since 26 Oct 2026 (`src/lib/notes-list.ts dropboxFolderFor`) | `/admin/notes/<level>` + kiosk 📝 **Revise** (opened to students 2026-08-11) — worksheets WITH worked examples | no — Dropbox only |
 | `practice` | `/Practice/<LEVEL>` e.g. `/Practice/AM` | `/admin/notes/<level>` + kiosk ✏️ **Practice → Printed sheets** (both new 2026-08-11) — summary/formula page + questions, no worked solutions | no — Dropbox only |
 | `prelim` | `/Prelim/<LEVEL>` e.g. `/Prelim/AM` | `/admin/notes/<level>` only (2026-07-30) — 🎯 Prelim segment; O-Level EM/AM + JC prelim practice sets (S1/S2 valid but unused) | no — Dropbox only |
 
@@ -219,7 +219,7 @@ student kinds (`entitlements.practice` separately gates the question-bank genera
 - The site NEVER writes to Dropbox (`lib/dropbox.ts` = `listFolder` + `getTemporaryLink`
   only), so it can't create these folders — they're made by hand in Dropbox.
 - **The `copy-revision-worksheet-with-different-practice` skill writes into these same folders**, and its `kind` decides
-  the kiosk button: `worked` → `Revision/<folder>` (Revise), `notes` → `Practice/<folder>`
+  the kiosk button: `worked` → `Revision/<folder>` (Revise; `Practice/<folder>` since 26 Oct 2026), `notes` → `Practice/<folder>`
   (Practice, S3/S4 collapsed onto the subject folder). Both kinds landed in `Revision/`
   until 2026-08-11, which filed summary+questions sheets in the worked-examples pile —
   routing now lives in `out_folder()` (`.claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py`).

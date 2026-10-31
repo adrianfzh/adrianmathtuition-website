@@ -54,7 +54,7 @@ It **checks first** (every [Ans] fits one line, no `para()` inside a numbered qu
 glued run taller than a page, no maths typed as text) and stops with the list; then builds
 **both** copies (write-on + "(no working space)"), makes **both PDFs through Word**, starts any
 question whose number lands in the bottom 30 % of a page on a new page, and **files all four
-files on the kiosk shelf** `Dropbox/Apps/AdrianMathNotes/<Practice|Revision>/<level>/`
+files on the kiosk shelf** `Dropbox/Apps/AdrianMathNotes/Practice/<level>/` (both kinds since 26 Oct 2026 — `make_sheet.py`)
 (never over an existing file). Run the script with plain `python3`: `worksheet_lib`
 re-runs itself under `/usr/bin/python3` when python-docx is missing (the Homebrew python has
 none). Still LOOK at one page of each PDF before handing it over.

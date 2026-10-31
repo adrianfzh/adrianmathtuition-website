@@ -103,7 +103,7 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   written level (559/559). Its limit: within a question each higher answer contains the one below, so a
 >   reader can partly rank by length. **The real bench (the live reader, about US$30–43) has NOT been run
 >   on s12–s40 — it is owed before the switch opens.** Only s11 has been through it.
-> - **Held: s23** (mixing races in each block) — `data/humanities/social-studies/held/s23.json`, not loaded.
+> - **Held: s23** (mixing races in each block) — `data/humanities/social-studies/held/s23.json`, not loaded. (Listed since 7 Oct 2026 — `2eb9928e` moved it into `case-studies.json`; the `held/` file is gone.)
 >   It sits on the real housing rule and its start year with "the housing authority" speaking made-up
 >   figures. Adrian decides. Also his call: "a ministry spokesperson" with made-up figures on a real kind
 >   of policy (s12 water price, s15 e-scooters, s17 retirement age, s20 fines, s36 scam calls).
@@ -448,7 +448,7 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   (closed): those pages send a student back to `/app`, and the bank hand-in answers 403. Checked 15 Oct as a
 >   student with the full switch forced shut.
 > - **The elective.** The form shows Social Studies and ONE elective — "Geography Elective" or "History Elective" —
->   chosen once and saved as `portal_accounts.prefs.humanities_elective` (`lib/portal-prefs studentElective`);
+>   chosen once and saved as `portal_accounts.prefs.humanities_elective` (`lib/portal-prefs studentElective` — gone since 17 Oct 2026: students tick their subjects, `studentHumanities` / `humanities_subjects`, an older single `humanities_elective` still counts, d57c724a);
 >   "Change elective" under the tabs. The page says "Combined Humanities: Social Studies and your elective."
 >   The reader is told "Geography Elective (Combined Humanities)". Pure Geography / Pure History are not offered.
 > - **Tracking the marker — superseded the same day by J below.** A "Got it back from your teacher?" box was built

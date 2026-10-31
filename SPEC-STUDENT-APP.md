@@ -35,7 +35,7 @@ be like most Apple apps - sleek and modern."* Also: a monthly subscription plus 
 
 Adrian, 31 Oct 2026: *"Let's build the app like notability first. Blank canvas primarily"* and
 *"Build for Apple Store"*. So v1 is a **native** iPad + iPhone note-taking app — no web shell,
-no login, no marking yet. Everything stays on the device.
+no login, no marking yet (since 31 Oct 2026 both are built — §0c, §0d). Everything stays on the device.
 
 **What v1 does (tested in the iPad Pro 11" and iPhone 17 Pro simulators):**
 - **Library** — a grid of notebooks (cover colour, title, page count, "edited 2 minutes ago");
@@ -58,7 +58,7 @@ no login, no marking yet. Everything stays on the device.
 website). SwiftUI + PencilKit, Swift 6, iOS 17+, no outside libraries. The Xcode project is
 generated from `project.yml`. Storage sits behind a `NotebookStore` protocol so a syncing store
 can be added later without touching the screens. The future **Check this page** button exists
-in code behind `FeatureFlags.checkPage = false` — users see nothing.
+in code behind `FeatureFlags.checkPage = false` — users see nothing. (`true` since 31 Oct 2026, `AppBrand.swift`; built, §0c.)
 
 **Build and run (on the Mac):**
 1. `cd ios-shell/Notebook && xcodegen generate`
@@ -74,7 +74,7 @@ in code behind `FeatureFlags.checkPage = false` — users see nothing.
 placeholder until the name is chosen. The icon is a placeholder (white page + blue tick on blue,
 `scripts/make-icon.py`).
 
-**NOT built yet:** marking (Check this page), sync to our server, accounts/login, subscriptions or
+**NOT built yet:** marking (Check this page), sync to our server, accounts/login (these three built 31 Oct 2026 — §0c, §0d), subscriptions or
 in-app purchase, the hand-in camera scanner, push notifications, typed text / images / PDFs
 inside a notebook, search, iCloud backup of notes.
 
@@ -84,7 +84,7 @@ inside a notebook, search, iCloud backup of notes.
 2. Tell us the **app name** — then the bundle id and the home-screen name are set to match.
 3. In Xcode, add the company's **signing team** (one setting in `project.yml`: `DEVELOPMENT_TEAM`).
 4. Create the **App Store Connect listing**: name, description, category (Education), age rating,
-   price (free for v1), and a **privacy page** link (v1 collects nothing; the app's privacy file
+   price (free for v1), and a **privacy page** link (v1 collects nothing — no longer true since 31 Oct 2026: email sign-in and the notebook backup, §0c/§0d, so this answer and `PrivacyInfo.xcprivacy` need updating before submission; the app's privacy file
    already says no tracking, no data collected).
 5. **Screenshots** for the listing (iPad 13" and iPhone 6.9") — we can produce them from the
    simulator once the name and icon are final.

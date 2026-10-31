@@ -504,7 +504,7 @@ only; Rainie's page stays as first sent.
 **Not yet.** Graph-paper curves and ray diagrams
 use the same `line` stroke but have no bench case yet.
 
-## Addendum — `pc_arrange`: P&C pictures like the H2 notes (28 Oct 2026) — BUILT, switched OFF
+## Addendum — `pc_arrange`: P&C pictures like the H2 notes (28 Oct 2026) — BUILT, switched OFF (ON since 28 Oct 2026, bot fly.toml)
 
 Adrian, 28 Oct 2026: *"are we able to draw images like the p&c notes for explanations of P&C
 questions?"* → *"Yes, build it"* (show samples on real questions first).
@@ -533,9 +533,9 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   the total on one line. The pen draws it at full pen size only: beside the box (right, left,
   under, a narrow layout with the counts underneath, or just above the box), else blank paper
   near the question, else the extra sheet. Dry runs: both Q7(b) pages now sit beside their box
-  at full size; a full JC page (2025 TJC Q6(a)(iii)) still goes to the extra sheet. Still OFF.
+  at full size; a full JC page (2025 TJC Q6(a)(iii)) still goes to the extra sheet. Still OFF. (ON since 28 Oct 2026.)
 
-## Addendum — `function_sketch`: the correct sketch in the solution box (29 Oct 2026) — BUILT, switched OFF
+## Addendum — `function_sketch`: the correct sketch in the solution box (29 Oct 2026) — BUILT, switched OFF (ON since 30 Oct 2026, bot fly.toml)
 
 - **Asked** — Adrian, 29 Oct 2026: *"do it"* to "when a sketch question loses marks, draw the
   correct sketch in the solution box". The case: Nicole's H2 TYS 2021 P1 Q6(a), sketch
@@ -600,7 +600,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   and checks both curves. The printed f has a MINIMUM at (−4, −1/3), so 1/f has a MAXIMUM at (−4, −3).
   Bot `reciprocal_sketch`; switch `PEN_RECIPROCAL_PICTURE`.
 
-## Addendum — the sketch graph worked out from the question (30 Oct 2026) — BUILT, same switch (`PEN_SKETCH_PICTURE`, still off)
+## Addendum — the sketch graph worked out from the question (30 Oct 2026) — BUILT, same switch (`PEN_SKETCH_PICTURE`, still off — ON since 30 Oct 2026, bot fly.toml)
 
 - **Asked** — Adrian, 30 Oct 2026, looking at Nicole's marked Q6(a) (y = 1/√(4ax − x²), a > 0):
   *"no graph was generated for this?"* — then yes to building it. Her paper was marked on 28 Oct,
@@ -622,7 +622,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
   `ai/annotate.js` `sketchText`; tests `test/sketch-from-question.test.js`; detail in bot
   `docs/FIGURES.md` §function_sketch.
 
-## Addendum — `normal_curve`: the shaded bell curve (30 Oct 2026) — BUILT, switched OFF
+## Addendum — `normal_curve`: the shaded bell curve (30 Oct 2026) — BUILT, switched OFF (ON since 31 Oct 2026, bot fly.toml)
 
 - **Why** — Adrian, 30 Oct 2026: *"Yes"* to building it. In the last 60 days 32 marked parts that
   lost marks were normal-distribution parts (O-level and H2 statistics), and the pen had no picture
@@ -639,7 +639,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
 - **Where it goes** — inside the "Correct solution" box when the question's worked solution is drawn on
   the page; otherwise (the usual case — only a "From your line" box) beside that box, else on blank
   paper near the question, else on the extra sheet. Never over the student's writing.
-- **Switch** — `PEN_NORMAL_PICTURE` (not set = off), NOT in `fly.toml`: Adrian sees a sample first.
+- **Switch** — `PEN_NORMAL_PICTURE` (not set = off), NOT in `fly.toml`: Adrian sees a sample first. (In both fly files since 31 Oct 2026 — Adrian: "All".)
   Samples: Abel's H2 TYS 2024 P2 Q10(d) (find k) and Lakshanya's H2 TYS 2023 P2 Q9(c) (P(R > 1.25)).
 - **Where** — bot `lib/figures/margin/normal_curve.js`, marker rule 26 in `ai/paper-marker.js`,
   `ai/annotate.js`; tests `test/margin-diagram-normal-curve.test.js`; bench

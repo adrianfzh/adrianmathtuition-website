@@ -4,7 +4,7 @@
 > (closed — only the preview student `portal-teste@example.com` has it). One topic: A Math
 > Binomial Theorem, at `/app/learn-loop/am-binomial`. Waiting for Adrian to try it as the
 > preview student. The database change `migrations/learn_loop_attempts.sql` (adds `'portal-loop'` to the
-> `student_attempts.attempted_via` check) was APPLIED 31 Oct 2026; a loop answer now saves (checked: row 37). Stage 2 (clips per question type, more topics, opening it) not started.
+> `student_attempts.attempted_via` check) was APPLIED 31 Oct 2026; a loop answer now saves (checked: row 37). Stage 2 (clips per question type, more topics, opening it) not started — except the clip per type, built 31 Oct 2026 (§One worked example before each type).
 
 ## What Adrian asked for
 
@@ -92,7 +92,7 @@ loop does not count towards Practice's cap and Practice does not count towards t
 - `src/lib/portal-beta.ts` — `LEARN_LOOP_OPEN_TO_STUDENTS`, `learnLoopOpenFor`
 - `/api/health-check` — `portal-learn-loop`
 
-## Stage 2 (not started)
+## Stage 2 (not started — the first bullet built 31 Oct 2026, §One worked example before each type)
 
 - A short clip per question TYPE (the clip pipeline, `SPEC-CLIP-PIPELINE.md`), shown before each
   type's first question instead of one clip for the topic.

@@ -861,11 +861,11 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      over `68 / 73`. Shared by `front-page-build.ts ungroundedFrontPage`, `mark-paper-pdf` and the
      ✏️ Annotate flatten, so the cover and page 1 can never disagree. Every ordinary cover is
      byte-identical to yesterday's.
-     **A question paper attached counts as the paper (29 Oct 2026, F236).** `grounding.source`
+     **A question paper attached counts as the paper (29 Oct 2026, F236b).** `grounding.source`
      is set only for a mark scheme, so a run with a question paper and no scheme used to fall
      into this branch when one part was dropped (Lakshanya 80/99, paper attached). The check
      takes `paperAttached` (`result_json.source.paper_pdf_url`) and answers false.
-- **📄 A printed part with no answer is 0/n, never dropped (29 Oct 2026, F236 — Adrian: "make
+- **📄 A printed part with no answer is 0/n, never dropped (29 Oct 2026, F236b — Adrian: "make
   sure future sessions don't count total marks wrongly").** A page read leaves a part it cannot
   see for another page; when no page has it, the part used to vanish and the paper counted
   short (99 of 100). Bot `ai/printed-parts.js` reads the attached question paper's text layer
@@ -1093,7 +1093,7 @@ rule 25 (`PICTURE_STANDING_RULE`, served with the picture kinds), the solution-b
 `SOLUTION_PICTURES` in `ai/annotate.js`, and bot `docs/FIGURES.md`. The marker writes the worked
 solution (`full_solution_latex`), so it is also the solution writer this rule binds.
 
-First worked examples (all built 29 Oct 2026, each behind its own switch until Adrian says yes):
+First worked examples (all built 29 Oct 2026, each behind its own switch until Adrian says yes — all four ON since 30 Oct 2026, Adrian: "Yes"; bot fly.toml + fly.worker.toml, 405c8352):
 the correct sketch of a curve (`function_sketch`, Nicole Q6(a)); "hence solve from the graph" with the
 wanted parts highlighted (same kind, Lakshanya specimen P1 Q3(b)); the sign test as his H2 notes draw
 it (`sign_line`, Lakshanya TYS 2023 Q1(b)); ×i turns on an Argand diagram (`argand_turn`, specimen P1

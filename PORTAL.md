@@ -171,7 +171,7 @@ the same `<InstallSteps>` component — one source of truth for the words.
 - **Notifications: never asked on Home.** The Home push nudge is gone. `components/PushAskCard.tsx` on the marked-paper page asks ONCE: "Get a ping when your next paper is marked?" [Turn on] [Not now]. It shows the first time a student opens a marked paper on a device where the tap can work (`pushAskState` — an iPhone tab waits until the app is installed), and the account remembers the moment it shows (`prefs.push_asked`, whitelisted in `lib/portal-prefs.ts`). "Not now" also marks the device. Same `enablePush()` flow, same `push:nudge-*` event kinds.
 - **The health check is not login trouble**: `/api/health-check` sends `x-am-health-probe: 1` on its logged-out hand-in probes; `recordHandinLoggedOut` skips it (`lib/login-trouble.ts isHealthProbe`).
 
-**Push nudge** (`components/PushNudgeCard.tsx`) — "Turn on notifications ·
+**Push nudge** (gone since 14 Oct 2026, ba313333 — the paragraph is history; the marked-paper page's `PushAskCard` asks instead, above) (`components/PushNudgeCard.tsx`) — "Turn on notifications ·
 We'll tell you when your paper is marked — and when Adrian sends you work."
 The mirror image: shows only **inside the installed app** (standalone), only
 while `Notification.permission === 'default'`, students only, once per load,

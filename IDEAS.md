@@ -7,12 +7,12 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
-## ✏️ Annotate: paper + solutions beside the page — 🔨 on the test site (27 Oct 2026)
+## ✏️ Annotate: paper + solutions beside the page — 🔨 on the test site (27 Oct 2026) — live: c8a68be0 + a8a0bece are on `main`
 
 Adrian, 27 Oct 2026: *"Able to have the question paper or the solution side by side when annotating?
 Used to have this in the marking desk, then marking desk was gone."* → "Yes" to the side panel, and
 *"But I find the solutions hard to read - readability needs to be improved on. And if there should be
-diagrams in the solutions or helpful to have, it should be generated"*. Built on `dev` (not promoted):
+diagrams in the solutions or helpful to have, it should be generated"*. Built on `dev` (promoted since — on `main`):
 📄 Paper / ✅ Solutions buttons in the pen, half the screen in landscape, a sheet in portrait,
 following the page; solutions in the house readable layout; a diagram drawn by the figure library
 when it helps (made once per question). → `SPEC-ANNOTATE.md` §21. Same day: saved changes show after

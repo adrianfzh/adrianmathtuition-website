@@ -64,7 +64,7 @@ guardrails stopped it (probed on the `ablnon@hotmail.com` account, every token p
   ref line means access is there.
 - **A push to the bot's `main` counts as a production deploy** (it auto-deploys to Fly),
   so the permission check denies a bare `git push origin main`. Merging a PR into the
-  bot's `main` on "merge #N" is the allowed route and deploys the same way.
+  bot's `main` is the allowed route and deploys the same way — since 29 Oct 2026 the session merges it itself after the two checks, never asking for "merge #N" (bot CLAUDE.md).
 - **The Fly host is not on the cloud allowlist** — `curl …fly.dev/…` returns nothing.
   Reading the marking queue from a cloud session needs `adrianmath-telegram-math-bot.fly.dev`
   added to the environment's network allowlist; the website API routes (`www.adrianmathtuition.com`)
