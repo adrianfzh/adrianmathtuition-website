@@ -13,6 +13,7 @@ final class EditorController {
     private(set) var canRedo = false
 
     @ObservationIgnored private let store: NotebookStore
+    @ObservationIgnored let documents: PDFDocuments
     @ObservationIgnored private weak var library: LibraryModel?
     @ObservationIgnored private(set) weak var canvasView: PaperCanvasView?
     @ObservationIgnored private var savedData: [UUID: Data] = [:]
@@ -24,6 +25,7 @@ final class EditorController {
         self.notebook = notebook
         self.store = store
         self.library = library
+        documents = PDFDocuments(notebookID: notebook.id, store: store)
         var drawings: [PKDrawing] = []
         for page in notebook.pages {
             let data = (try? store.loadPageData(notebookID: notebook.id, pageID: page.id)) ?? nil
@@ -37,7 +39,9 @@ final class EditorController {
 
     func attach(_ view: PaperCanvasView) {
         canvasView = view
-        view.configure(drawing: PageInk.combine(pageDrawings), pageCount: notebook.pages.count, paper: notebook.paper)
+        view.documents = documents
+        view.configure(drawing: PageInk.combine(pageDrawings), pageCount: notebook.pages.count,
+                       paper: notebook.paper, backgrounds: backgrounds)
         view.onDrawingChanged = { [weak self] drawing in self?.drawingChanged(drawing) }
         view.onNeedsNewPage = { [weak self] in self?.addPage(scroll: false) }
         view.onCurrentPageChanged = { [weak self] page in self?.currentPage = page }
@@ -106,6 +110,26 @@ final class EditorController {
         scheduleSave()
     }
 
+    /// Puts every page of a PDF in after `index` (default: the page on screen) and shows the first.
+    func insertPDF(at url: URL, after index: Int? = nil) throws {
+        let new = try PDFPages.importPDF(at: url, notebookID: notebook.id, store: store)
+        let at = (index ?? currentPage) + 1
+        let wasLoneBlank = notebook.pages.count == 1 && notebook.pages[0].background == nil && !pageHasInk(0)
+        notebook.insertPages(new, at: at, replacingLoneBlank: wasLoneBlank)
+        if wasLoneBlank {
+            pageDrawings = new.map { _ in PKDrawing() }
+        } else {
+            pageDrawings.insert(contentsOf: new.map { _ in PKDrawing() }, at: min(at, pageDrawings.count))
+        }
+        reloadCanvas(keepUndo: false)
+        let first = wasLoneBlank ? 0 : min(at, notebook.pages.count - 1)
+        canvasView?.scrollToPage(first, animated: true)
+        scheduleSave()
+        saveNow()
+    }
+
+    var backgrounds: [PageBackground?] { notebook.pages.map(\.background) }
+
     func goToPage(_ index: Int) {
         canvasView?.scrollToPage(index, animated: false)
         currentPage = index
@@ -117,7 +141,7 @@ final class EditorController {
 
     private func reloadCanvas(keepUndo: Bool) {
         guard let v = canvasView else { return }
-        v.setPageCount(notebook.pages.count)
+        v.setPages(count: notebook.pages.count, backgrounds: backgrounds)
         if !keepUndo {
             v.setDrawing(PageInk.combine(pageDrawings), clearUndo: true)
             refreshUndo()
@@ -131,12 +155,19 @@ final class EditorController {
         let size = CGSize(width: width, height: PageGeometry.height * scale)
         let drawing = pageDrawings.indices.contains(index) ? pageDrawings[index] : PKDrawing()
         let paper = notebook.paper
+        let pdfPage = notebook.pages.indices.contains(index) ? notebook.pages[index].background.flatMap(documents.page) : nil
         var image = UIImage()
         UITraitCollection(userInterfaceStyle: .light).performAsCurrent {
             let ink = drawing.image(from: CGRect(origin: .zero, size: PageGeometry.pageSize), scale: scale * 2)
             image = UIGraphicsImageRenderer(size: size).image { ctx in
                 ctx.cgContext.scaleBy(x: scale, y: scale)
-                PaperPattern.draw(paper, in: ctx.cgContext)
+                if let pdfPage {
+                    UIColor.white.setFill()
+                    ctx.cgContext.fill(CGRect(origin: .zero, size: PageGeometry.pageSize))
+                    PDFPages.draw(pdfPage, in: PDFPages.placement(for: PDFPages.displaySize(pdfPage)), context: ctx.cgContext)
+                } else {
+                    PaperPattern.draw(paper, in: ctx.cgContext)
+                }
                 ink.draw(in: CGRect(origin: .zero, size: PageGeometry.pageSize))
             }
         }
@@ -144,8 +175,9 @@ final class EditorController {
     }
 
     func exportPDF(pages indices: [Int]) -> URL? {
-        PDFExporter.export(title: notebook.title, paper: notebook.paper,
-                           drawings: indices.compactMap { pageDrawings.indices.contains($0) ? pageDrawings[$0] : nil })
+        let valid = indices.filter { pageDrawings.indices.contains($0) }
+        return PDFExporter.export(title: notebook.title, paper: notebook.paper,
+                                  pages: valid.map { (pageDrawings[$0], notebook.pages[$0].background.flatMap(documents.page)) })
     }
 
     // MARK: Saving

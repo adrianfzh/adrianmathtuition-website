@@ -1,10 +1,12 @@
+import PDFKit
 import PencilKit
 import UIKit
 
 enum PDFExporter {
-    /// Writes the pages (paper + ink) to a PDF in the temporary folder and returns its URL.
+    /// Writes the pages (paper or the imported PDF page, then ink) to a PDF in the temporary
+    /// folder and returns its URL. An imported page stays sharp: it is copied as vectors, not a picture.
     @MainActor
-    static func export(title: String, paper: PaperStyle, drawings: [PKDrawing]) -> URL? {
+    static func export(title: String, paper: PaperStyle, pages: [(PKDrawing, PDFPage?)]) -> URL? {
         let pageRect = CGRect(origin: .zero, size: PageGeometry.pageSize)
         let safe = title.components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>")).joined(separator: "-")
         let url = FileManager.default.temporaryDirectory
@@ -16,9 +18,13 @@ enum PDFExporter {
         UITraitCollection(userInterfaceStyle: .light).performAsCurrent {
             do {
                 try renderer.writePDF(to: url) { ctx in
-                    for drawing in drawings {
+                    for (drawing, pdfPage) in pages {
                         ctx.beginPage()
-                        PaperPattern.draw(paper, in: ctx.cgContext)
+                        if let pdfPage {
+                            PDFPages.draw(pdfPage, in: PDFPages.placement(for: PDFPages.displaySize(pdfPage)), context: ctx.cgContext)
+                        } else {
+                            PaperPattern.draw(paper, in: ctx.cgContext)
+                        }
                         let ink = drawing.image(from: pageRect, scale: 3)
                         ink.draw(in: pageRect)
                     }

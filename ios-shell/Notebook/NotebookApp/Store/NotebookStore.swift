@@ -14,6 +14,10 @@ protocol NotebookStore: Sendable {
     func savePageData(_ data: Data, notebookID: UUID, pageID: UUID) throws
     func deletePageData(notebookID: UUID, pageID: UUID) throws
 
+    /// Imported PDFs: kept whole, once per notebook. Removed when no page uses them.
+    func saveDocument(_ data: Data, notebookID: UUID, documentID: UUID) throws
+    func documentURL(notebookID: UUID, documentID: UUID) -> URL
+
     func loadFolders() throws -> [Folder]
     func saveFolders(_ folders: [Folder]) throws
 }
@@ -22,6 +26,7 @@ protocol NotebookStore: Sendable {
 ///   <root>/folders.json
 ///   <root>/Notebooks/<notebook-id>/notebook.json
 ///   <root>/Notebooks/<notebook-id>/pages/<page-id>.drawing   (PKDrawing.dataRepresentation())
+///   <root>/Notebooks/<notebook-id>/documents/<document-id>.pdf   (imported PDFs, as given)
 final class FileNotebookStore: NotebookStore {
     let root: URL
 
@@ -38,6 +43,7 @@ final class FileNotebookStore: NotebookStore {
     private var notebooksDir: URL { root.appendingPathComponent("Notebooks", isDirectory: true) }
     private func dir(_ id: UUID) -> URL { notebooksDir.appendingPathComponent(id.uuidString, isDirectory: true) }
     private func pagesDir(_ id: UUID) -> URL { dir(id).appendingPathComponent("pages", isDirectory: true) }
+    private func documentsDir(_ id: UUID) -> URL { dir(id).appendingPathComponent("documents", isDirectory: true) }
     private func pageURL(_ nb: UUID, _ page: UUID) -> URL {
         pagesDir(nb).appendingPathComponent("\(page.uuidString).drawing")
     }
@@ -75,6 +81,21 @@ final class FileNotebookStore: NotebookStore {
         where !keep.contains(file) {
             try? fm.removeItem(at: pagesDir(notebook.id).appendingPathComponent(file))
         }
+        // …and PDFs no page uses any more.
+        let docs = Set(notebook.documentIDs.map { "\($0.uuidString).pdf" })
+        for file in (try? fm.contentsOfDirectory(atPath: documentsDir(notebook.id).path)) ?? []
+        where !docs.contains(file) {
+            try? fm.removeItem(at: documentsDir(notebook.id).appendingPathComponent(file))
+        }
+    }
+
+    func saveDocument(_ data: Data, notebookID: UUID, documentID: UUID) throws {
+        try fm.createDirectory(at: documentsDir(notebookID), withIntermediateDirectories: true)
+        try data.write(to: documentURL(notebookID: notebookID, documentID: documentID), options: .atomic)
+    }
+
+    func documentURL(notebookID: UUID, documentID: UUID) -> URL {
+        documentsDir(notebookID).appendingPathComponent("\(documentID.uuidString).pdf")
     }
 
     func deleteNotebook(id: UUID) throws {

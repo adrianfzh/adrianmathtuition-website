@@ -1,5 +1,6 @@
 import PencilKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct EditorView: View {
     let notebookID: UUID
@@ -28,6 +29,8 @@ private struct EditorScreen: View {
     @AppStorage("drawWithFinger") private var drawWithFinger = UIDevice.current.userInterfaceIdiom == .phone
     @State private var showingPages = false
     @State private var title = ""
+    @State private var importingPDF = false
+    @State private var importError: String?
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var compact: Bool { sizeClass == .compact }
 
@@ -45,6 +48,15 @@ private struct EditorScreen: View {
             }
             .onChange(of: showingPages) { _, showing in
                 if showing { controller.canvasView?.canvas.resignFirstResponder() }
+            }
+            .fileImporter(isPresented: $importingPDF, allowedContentTypes: [.pdf]) { result in
+                do { try controller.insertPDF(at: result.get()) } catch { importError = error.localizedDescription }
+                controller.canvasView?.showToolPicker()
+            }
+            .alert("Couldn’t Insert PDF", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(importError ?? "")
             }
             .onAppear { title = controller.notebook.title }
             .onChange(of: title) { _, new in controller.rename(new) }
@@ -90,6 +102,7 @@ private struct EditorScreen: View {
                     Button { showingPages = true } label: { Label("Pages", systemImage: "square.grid.2x2") }
                 }
                 Button { controller.addPage() } label: { Label("Add Page", systemImage: "plus.rectangle.portrait") }
+                Button { importingPDF = true } label: { Label("Insert PDF…", systemImage: "doc.badge.plus") }
                 if FeatureFlags.paperStyles {
                 Picker(selection: Binding(get: { controller.notebook.paper }, set: { controller.setPaper($0) })) {
                     ForEach(PaperStyle.allCases) { Label($0.title, systemImage: $0.symbol).tag($0) }

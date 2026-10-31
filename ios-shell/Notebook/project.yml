@@ -20,6 +20,17 @@ targets:
     platform: iOS
     sources:
       - path: NotebookApp
+    # Lets other apps (Files, WhatsApp, Mail) offer "Open in Notebook" for a PDF.
+    # Merged with the keys Xcode generates below.
+    info:
+      path: NotebookApp/Info.plist
+      properties:
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: PDF
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [com.adobe.pdf]
+        LSSupportsOpeningDocumentsInPlace: false
     settings:
       base:
         PRODUCT_NAME: NotebookApp

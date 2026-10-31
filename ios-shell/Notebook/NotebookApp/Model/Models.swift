@@ -4,6 +4,15 @@ import SwiftUI
 /// Later versions add marking state here (e.g. when it was last checked).
 struct Page: Codable, Hashable, Identifiable, Sendable {
     var id: UUID = UUID()
+    /// A page of an imported PDF (a worksheet, a past paper) drawn under the ink. Nil = blank.
+    var background: PageBackground?
+}
+
+/// Which PDF, and which page of it, sits under a notebook page. The PDF is kept once
+/// per notebook (`documents/<documentID>.pdf`) however many pages use it.
+struct PageBackground: Codable, Hashable, Sendable {
+    var documentID: UUID
+    var pageIndex: Int
 }
 
 struct Notebook: Codable, Hashable, Identifiable, Sendable {
@@ -28,6 +37,19 @@ struct Notebook: Codable, Hashable, Identifiable, Sendable {
         pages.insert(page, at: i)
         return page
     }
+
+    /// Puts pages in at `index` (clamped). A notebook that is still one untouched blank
+    /// page has that page replaced, so importing a PDF into a new notebook starts on page 1 of it.
+    mutating func insertPages(_ new: [Page], at index: Int, replacingLoneBlank: Bool) {
+        if replacingLoneBlank, pages.count == 1, pages[0].background == nil {
+            pages = new
+            return
+        }
+        pages.insert(contentsOf: new, at: min(max(index, 0), pages.count))
+    }
+
+    /// The imported PDFs this notebook still uses.
+    var documentIDs: Set<UUID> { Set(pages.compactMap { $0.background?.documentID }) }
 
     /// Removes a page. A notebook always keeps at least one page.
     mutating func removePage(id: UUID) {

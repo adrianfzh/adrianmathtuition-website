@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @Environment(LibraryModel.self) private var library
@@ -11,6 +12,8 @@ struct LibraryView: View {
     @State private var subjectText = ""
     @State private var renamingFolder: Folder?
     @State private var deletingFolder: Folder?
+    @State private var importingPDF = false
+    @State private var importError: String?
 
     private let columns = [GridItem(.adaptive(minimum: 150, maximum: 210), spacing: 22, alignment: .top)]
 
@@ -51,11 +54,30 @@ struct LibraryView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
+                Button { importingPDF = true } label: {
+                    Label("Import PDF", systemImage: "square.and.arrow.down")
+                }
+                .accessibilityIdentifier("importPDF")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button { showingNew = true } label: {
                     Label("New Notebook", systemImage: "plus")
                 }
                 .accessibilityIdentifier("newNotebook")
             }
+        }
+        .fileImporter(isPresented: $importingPDF, allowedContentTypes: [.pdf]) { result in
+            do {
+                let nb = try library.importPDF(at: result.get(), folderID: library.selectedFolderID)
+                library.path.append(nb.id)
+            } catch {
+                importError = error.localizedDescription
+            }
+        }
+        .alert("Couldn’t Import PDF", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(importError ?? "")
         }
         .sheet(isPresented: $showingNew) {
             NotebookFormSheet(mode: .create(folderID: library.selectedFolderID)) { form in
@@ -141,10 +163,12 @@ struct LibraryView: View {
         ContentUnavailableView {
             Label("No Notebooks Yet", systemImage: "book.closed")
         } description: {
-            Text("Make a notebook for each subject and start writing.")
+            Text("Make a notebook for each subject and start writing, or bring in a worksheet to write on.")
         } actions: {
             Button("New Notebook") { showingNew = true }
                 .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+            Button("Import a PDF") { importingPDF = true }
                 .buttonBorderShape(.capsule)
         }
         .frame(maxWidth: .infinity)

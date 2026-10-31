@@ -4,6 +4,8 @@ import UIKit
 /// The writing surface: ONE PKCanvasView holding every page of the notebook, stacked
 /// top to bottom (continuous scroll, like Notability). The paper — white pages with
 /// lines, grid or dots — sits underneath the ink as plain layers and zooms with it.
+/// A page made from an imported PDF shows that PDF page under the ink, drawn only
+/// while it is on screen (nearby pages too) and redrawn sharper after a zoom.
 @MainActor
 final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver {
     let canvas = PKCanvasView()
@@ -17,6 +19,11 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
     private(set) var paper: PaperStyle = .blank
     private let paperLayer = CALayer()
     private var pageLayers: [CALayer] = []
+    /// One per page: the PDF page under the ink, or nil for a blank page.
+    private(set) var backgrounds: [PageBackground?] = []
+    var documents: PDFDocuments?
+    private var pdfLayers: [Int: CALayer] = [:]
+    private var pdfRenderedScale: [Int: CGFloat] = [:]
     private var fitScale: CGFloat = 0
     private var lastWidth: CGFloat = 0
     private var applyingDrawing = false
@@ -55,9 +62,10 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
 
     // MARK: Showing
 
-    func configure(drawing: PKDrawing, pageCount: Int, paper: PaperStyle) {
+    func configure(drawing: PKDrawing, pageCount: Int, paper: PaperStyle, backgrounds: [PageBackground?]) {
         self.pageCount = max(pageCount, 1)
         self.paper = paper
+        self.backgrounds = backgrounds
         rebuildPaper()
         setDrawing(drawing, clearUndo: true)
         updateContentSize()
@@ -70,9 +78,10 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         if clearUndo { canvas.undoManager?.removeAllActions() }
     }
 
-    func setPageCount(_ n: Int) {
-        guard n != pageCount else { return }
+    func setPages(count n: Int, backgrounds: [PageBackground?]) {
+        guard n != pageCount || backgrounds != self.backgrounds else { return }
         pageCount = max(n, 1)
+        self.backgrounds = backgrounds
         rebuildPaper()
         updateContentSize()
     }
@@ -118,6 +127,7 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         if oldFit == 0 {
             canvas.contentOffset = CGPoint(x: -canvas.contentInset.left, y: -canvas.contentInset.top)
         }
+        refreshPDFPictures()
     }
 
     private func updateInsets() {
@@ -153,6 +163,8 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         pageLayers.forEach { $0.removeFromSuperlayer() }
+        pdfLayers = [:]
+        pdfRenderedScale = [:]
         pageLayers = (0..<pageCount).map { i in
             let page = CALayer()
             page.frame = PageGeometry.pageRect(i)
@@ -165,6 +177,16 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
             page.shadowRadius = 6
             page.shadowOffset = CGSize(width: 0, height: 2)
             page.shadowPath = UIBezierPath(rect: page.bounds).cgPath
+            if let bg = background(i), let pdfPage = documents?.page(bg) {
+                // A PDF page replaces the paper pattern; its picture is filled in when it nears the screen.
+                let l = CALayer()
+                l.frame = PDFPages.placement(for: PDFPages.displaySize(pdfPage))
+                l.contentsGravity = .resize
+                page.addSublayer(l)
+                pdfLayers[i] = l
+                paperLayer.addSublayer(page)
+                return page
+            }
             if let lines = PaperPattern.linesPath(paper) {
                 page.addSublayer(shape(lines, stroke: paper == .grid ? PaperPattern.gridColor : PaperPattern.lineColor))
             }
@@ -183,6 +205,39 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         }
         CATransaction.commit()
         layoutPaper()
+        refreshPDFPictures()
+    }
+
+    private func background(_ i: Int) -> PageBackground? {
+        backgrounds.indices.contains(i) ? backgrounds[i] : nil
+    }
+
+    /// Draws the PDF pages on or next to the screen at the current zoom, and lets go of
+    /// the pictures of pages far away (a 40-page paper would otherwise fill the memory).
+    func refreshPDFPictures() {
+        guard !pdfLayers.isEmpty, let documents else { return }
+        let z = max(canvas.zoomScale, 0.01)
+        let top = canvas.contentOffset.y / z
+        let first = PageGeometry.pageIndex(forY: top, pageCount: pageCount)
+        let last = PageGeometry.pageIndex(forY: top + canvas.bounds.height / z, pageCount: pageCount)
+        let near = Set(max(first - 1, 0)...min(last + 1, pageCount - 1))
+        // Sharp at this zoom, capped so one page's picture stays a reasonable size.
+        let want = min((window?.screen.scale ?? 2) * z, 3)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        for (i, layer) in pdfLayers {
+            if near.contains(i) {
+                let have = pdfRenderedScale[i] ?? 0
+                guard have < want * 0.9 || have > want * 1.6,
+                      let bg = background(i), let pdfPage = documents.page(bg) else { continue }
+                layer.contents = PDFPages.image(of: pdfPage, pixelsPerPoint: want).cgImage
+                pdfRenderedScale[i] = want
+            } else if layer.contents != nil {
+                layer.contents = nil
+                pdfRenderedScale[i] = nil
+            }
+        }
+        CATransaction.commit()
     }
 
     private func shape(_ path: CGPath, stroke: UIColor) -> CAShapeLayer {
@@ -227,11 +282,16 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         updateContentSize()
     }
 
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        refreshPDFPictures()
+    }
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let p = currentPage
         if p != reportedPage {
             reportedPage = p
             onCurrentPageChanged?(p)
+            refreshPDFPictures()
         }
     }
 

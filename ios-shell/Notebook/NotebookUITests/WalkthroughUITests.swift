@@ -179,4 +179,27 @@ final class WalkthroughUITests: XCTestCase {
         sleep(2)
         shot("11-editor-zoomed")
     }
+
+    /// Writing on an imported worksheet ($WORKSHEET_PDF), then zoomed in, then the page overview.
+    func test5_WorksheetPDF() throws {
+        guard let pdf = ProcessInfo.processInfo.environment["WORKSHEET_PDF"] else {
+            throw XCTSkip("set WORKSHEET_PDF to a PDF on this Mac")
+        }
+        app.launchArguments = ["-resetStore", "-drawWithFinger", "YES", "-importPDF", pdf]
+        app.launch()
+        fillScreen()
+        sleep(3)
+        shot("20-worksheet-opened")
+        let s: CGFloat = isPad ? 1.0 : 0.6
+        sketch(ox: isPad ? 420 : 160, oy: isPad ? 560 : 420, s: s)
+        stroke([(isPad ? 140 : 40, isPad ? 760 : 560), (isPad ? 520 : 260, isPad ? 760 : 560)])
+        sleep(2)
+        shot("21-worksheet-written")
+        app.scrollViews.firstMatch.pinch(withScale: 2.2, velocity: 2)
+        sleep(3)
+        shot("22-worksheet-zoomed")
+        if isPad { app.buttons["pages"].firstMatch.tap() } else { more("Pages") }
+        sleep(2)
+        shot("23-worksheet-pages")
+    }
 }

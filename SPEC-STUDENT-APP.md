@@ -91,6 +91,7 @@ inside a notebook, search, iCloud backup of notes.
 6. TestFlight with 2–3 students, then submit for review.
 
 - **Blank canvas only (31 Oct 2026, Adrian: "Just have blank canvas, like notability")** — the lined / grid / dotted choice is hidden behind `FeatureFlags.paperStyles = false` (`NotebookApp/App/AppBrand.swift`); every new page is blank. The paper code stays for later.
+- **Write on a PDF (31 Oct 2026, Adrian: "Yes, PDFs next")** — BUILT, simulator-tested. Three ways in: **Import PDF** on the library (a new notebook named after the file), **⋯ → Insert PDF…** in a notebook (pages go in after the page on screen; a brand-new blank notebook is replaced), and **"Open in Notebook"** from Files / WhatsApp / Mail (`CFBundleDocumentTypes` in `project.yml`). One notebook page per PDF page; the PDF is kept once per notebook (`documents/<id>.pdf`, deleted when no page uses it) and each page points at it (`Page.background`). The PDF page is drawn under the ink only near the screen and redrawn sharp after a zoom (`PaperCanvasView.refreshPDFPictures`); export keeps it as vectors. Code: `NotebookApp/Model/PDFPages.swift`; tests `NotebookTests/PDFImportTests.swift` + UI `test5_WorksheetPDF` (`WORKSHEET_PDF=<path>`). Not yet tried on a real iPad with a Pencil.
 
 ## 1. What it is
 

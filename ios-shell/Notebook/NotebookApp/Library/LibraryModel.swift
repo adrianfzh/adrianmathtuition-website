@@ -53,6 +53,18 @@ final class LibraryModel {
         return nb
     }
 
+    /// A new notebook made from a PDF (a worksheet, a past paper): one page per PDF page,
+    /// named after the file. Used by the Import button and by "Open in Notebook" from other apps.
+    @discardableResult
+    func importPDF(at url: URL, folderID: UUID?) throws -> Notebook {
+        let name = url.deletingPathExtension().lastPathComponent
+        var nb = Notebook(title: name.isEmpty ? "Untitled" : name, folderID: folderID)
+        nb.pages = try PDFPages.importPDF(at: url, notebookID: nb.id, store: store)
+        try store.saveNotebook(nb)
+        didSave(nb)
+        return nb
+    }
+
     func update(_ notebook: Notebook, touch: Bool = true) {
         var nb = notebook
         if touch { nb.updatedAt = Date() }
