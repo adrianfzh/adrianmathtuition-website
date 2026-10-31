@@ -355,7 +355,9 @@ async function fitCheck() {
   return j ? { pass: j.pass, detail: j.boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ends ${b.bottom} px, screen ${b.fold} px${b.cut?.length ? `, maths cut off at the side: ${b.cut.join(', ')}` : ''}${b.under?.length ? `, maths under the subtitle strip: ${b.under.join(', ')}` : ''}`).join(' · ') } : { pass: false, detail: r.out.trim().slice(-300) };
 }
 let fit = await step('fit', fitCheck);
-for (let n = 0; !fit.pass && n < 2; n++) {
+// Three repairs (31 Oct 2026): the current player leaves less room than the 16 Oct one, and a
+// Binomial clip ended 4 px short after two.
+for (let n = 0; !fit.pass && n < 3; n++) {
   await step(`fit-repair-${n + 1}`, () => agent('fit-repair', 'opus',
     `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: maths under the subtitle strip → fewer or shorter lines on that board (the strip covers the board's foot); a line cut off at the side → split it into two lines or shorten it; too tall → shorten the intro to the question's numbers and ask (cut story words), and/or move lines to a second board (boards + "board" on each line), never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
   mc = mathsCheck();
