@@ -111,6 +111,32 @@ questions under the last line are not known to the app). What does not fit is le
 says it in full. Code: `RedPen` in `Editor/PaperCanvasView.swift`. Checked on the simulator with
 the seeded slip. **Next (agreed order):** circle the exact wrong part of the line.
 
+**Safety checks — BUILT 1 Nov 2026** (Adrian: "Why not use the safety checks on check this page?" →
+cost measured → "Yes"). Code: `lib/app-check-page-server.ts checkPage` (the route and the bench share it).
+- **Cost, measured 31 Oct:** one page with the main marker ≈ 3 Singapore cents (≈ 4,500 tokens in,
+  ≈ 450 out, about 6 s); the small marker ≈ 0.15 cents. Per page, not per question.
+- **The answer key:** the app sends the worksheet page's own printed text (`printed`, PDFKit
+  `page.string`); the server looks it up in the bank's `search_text` by runs of four plain words
+  (a phrase that hits 25+ rows is boilerplate and dropped; a row needs two phrases). Found rows'
+  answers and worked solutions go into the prompt; the marker is told never to name a source.
+  **Limit:** short questions that are mostly maths have too few plain words, and are not found
+  (6 of the 20 bench questions were found) — then the marker works alone, as before.
+- **The second look:** the small marker reads the same page at the same time. It can only raise a
+  doubt: a line the main marker ticked and the small one crossed gets a red **"?"** ("check this
+  line"). A cross from the main marker always stays. Both looks and the bank rows used are saved
+  in `app_page_checks.result.looks`, so we can see later whether the "?" ever catches anything.
+- **The bench** (`scripts/check-page-bench/run.mts`): 20 pages of real bank questions with working
+  we wrote — 7 all right, 13 with one planted slip — drawn the way the app draws its picture
+  (handwriting font, red circled line numbers), run through `checkPage` three ways. **Result
+  1 Nov:** the main marker alone got **20 of 20** pages right (13/13 slips found, 0 wrong
+  crosses); with the key also 20/20; the small marker alone 19/20. In the first merge rule ("?"
+  wherever the two disagreed) the small marker added 10 "?" and hid one real mistake — every
+  disagreement was it ticking a line the main marker rightly crossed — hence the rule above.
+  **What the bench does not show:** typed handwriting is far neater than a real student's, and
+  each page had one slip. The real test is pages written with a Pencil on an iPad.
+- Found while building it: bank question `f9f29835` (EM, n(A ∩ B)) has answer 8; the right
+  answer is 4 (A ∩ B = {1, 2, 3, 6}). Not changed — waiting for Adrian.
+
 **How the red pen sits on the page** (explained to Adrian 31 Oct): like a clear plastic sheet over
 the page — its own layer above the ink. The student keeps writing on the page through it; the
 eraser never removes red marks; Clear Red Pen lifts the whole sheet. The red pen places ticks,

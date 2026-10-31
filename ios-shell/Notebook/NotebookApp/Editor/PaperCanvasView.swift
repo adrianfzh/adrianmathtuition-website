@@ -375,6 +375,15 @@ enum RedPen {
             path.move(to: CGPoint(x: box.minX + 3, y: box.minY + 3)); path.addLine(to: CGPoint(x: box.maxX - 3, y: box.maxY - 3))
             path.move(to: CGPoint(x: box.maxX - 3, y: box.minY + 3)); path.addLine(to: CGPoint(x: box.minX + 3, y: box.maxY - 3))
         }
+        if m.mark == .unsure {
+            // A red "?" where the tick or cross would be, and the short note beside it.
+            let q = text("?", font: noteFont.withSize(30), maxWidth: 60)
+            page.addSublayer(textLayer(q, at: CGPoint(x: box.midX - q.width / 2, y: r.midY - q.height / 2)))
+            if !m.note.isEmpty, let t = fit(m.note, largest: 20, width: PageGeometry.width - 12 - (box.maxX + 8), height: .infinity) {
+                page.addSublayer(textLayer(t, at: CGPoint(x: box.maxX + 8, y: r.midY - t.height / 2)))
+            }
+            return
+        }
         let shape = CAShapeLayer()
         shape.frame = CGRect(origin: .zero, size: PageGeometry.pageSize)
         shape.path = path.cgPath

@@ -148,7 +148,7 @@ final class EditorController {
         let pageID = notebook.pages[index].id
         checkingPage = index
         defer { checkingPage = nil }
-        let reply = try await account.checkPage(image: jpeg, lines: lines)
+        let reply = try await account.checkPage(image: jpeg, lines: lines, printed: pdfPage?.string ?? "")
         let check = reply.pageCheck(lines: lines)
         setCheck(check, pageID: pageID)
         return check

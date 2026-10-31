@@ -23,9 +23,13 @@ export interface PageLine {
 export interface CheckPageRequest {
   image: string;
   lines: PageLine[];
+  /** The printed text of the worksheet page under the writing (the PDF's own text), when
+   *  there is one. Used only to find the question in our bank and its answer. */
+  printed: string;
 }
 
-export type LineMark = 'tick' | 'cross';
+/** 'unsure' = the two looks disagreed on this line: drawn as a red "?" (Adrian, 1 Nov 2026). */
+export type LineMark = 'tick' | 'cross' | 'unsure';
 
 export interface CheckedLine {
   n: number;
@@ -72,10 +76,26 @@ export function parseCheckPageRequest(body: unknown): { ok: true; req: CheckPage
     lines.push({ n: l.n as number, box: box as PageLine['box'] });
   }
   if (!lines.length) return { ok: false, error: 'Write something on the page first' };
-  return { ok: true, req: { image, lines } };
+  const printed = typeof (b as { printed?: unknown }).printed === 'string' ? (b as { printed: string }).printed.slice(0, 6000) : '';
+  return { ok: true, req: { image, lines, printed } };
 }
 
-export function buildCheckPagePrompt(lines: PageLine[]): string {
+/** A question from our bank that is printed on the page, with its right answer. */
+export interface KeyQuestion { text: string; answer: string; solution: string }
+
+function keyBlock(key: KeyQuestion[]): string {
+  if (!key.length) return '';
+  const qs = key.map((k, i) => `Question ${i + 1}: ${k.text}\nCorrect answer: ${k.answer}${k.solution ? `\nWorked solution: ${k.solution}` : ''}`).join('\n\n');
+  return `
+
+Our records hold the question(s) printed on this page, with the correct answers:
+
+${qs}
+
+Use these answers. A final answer that agrees with them is right, even when written in an equivalent form. If the student's working disagrees with them, find the line where it goes wrong. Never mention these records, a source, a school or a paper to the student.`;
+}
+
+export function buildCheckPagePrompt(lines: PageLine[], key: KeyQuestion[] = []): string {
   const list = lines.map(l => `${l.n}`).join(', ');
   return `You are a Singapore secondary / JC maths and science tutor checking ONE page of a student's notebook.
 
@@ -99,7 +119,7 @@ Rules:
 - Judge only what is written. Do not invent working the student did not write.
 
 Answer with ONLY this JSON, nothing before or after:
-{"verdict":"correct|partial|wrong|unreadable","summary":"one short line","lines":[{"n":1,"mark":"tick|cross","note":"","correct":""}],"questions":[{"label":"Q1(a)","verdict":"correct|partial|wrong","wrong":"","fix":"","answer":""}]}`;
+{"verdict":"correct|partial|wrong|unreadable","summary":"one short line","lines":[{"n":1,"mark":"tick|cross","note":"","correct":""}],"questions":[{"label":"Q1(a)","verdict":"correct|partial|wrong","wrong":"","fix":"","answer":""}]}${keyBlock(key)}`;
 }
 
 const clip = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -147,4 +167,59 @@ export function parseCheckPageReply(text: string, sent: PageLine[]): CheckPageRe
   const summary = questions.length > 1 ? `${right} of ${questions.length} right`
     : clip(raw.summary, 120) || (verdict === 'correct' ? 'All correct' : 'One thing to fix');
   return { verdict, summary, lines, questions };
+}
+
+/**
+ * Two looks at the same page (the main marker and a second, smaller one, run at the same
+ * time; Adrian, 1 Nov 2026: "yes" to the second look). The second look can only RAISE a doubt:
+ * a line the main look ticked and the second crossed gets a red "?" ("check this line"), no
+ * correct line. A cross from the main look stays a cross — on the 20-page bench every
+ * disagreement was the small marker ticking a line the main marker rightly crossed (a slip, or
+ * the wrong final answer after one), and a "?" there hid a real mistake. Lines after the main
+ * look's first cross carry an earlier slip forward and are left alone. The questions,
+ * verdict and summary stay the main look's.
+ */
+export function mergeLooks(main: CheckPageResult, second: CheckPageResult | null): CheckPageResult {
+  if (!second || main.verdict === 'unreadable' || second.verdict === 'unreadable') return main;
+  const other = new Map(second.lines.map(l => [l.n, l.mark]));
+  const firstCross = Math.min(...main.lines.filter(l => l.mark === 'cross').map(l => l.n), Infinity);
+  const lines = main.lines.map(l => {
+    if (l.mark !== 'tick' || l.n > firstCross || other.get(l.n) !== 'cross') return l;
+    return { n: l.n, mark: 'unsure' as const, note: 'check this line', correct: '' };
+  });
+  return { ...main, lines };
+}
+
+/**
+ * Phrases to look the printed page up by in the bank's search_text: runs of four plain words
+ * (no maths), spread over the page. search_text is LaTeX-stripped and lowered, so words match
+ * and symbols would not.
+ */
+export function keyPhrases(printed: string, max = 10): string[] {
+  const chunks = printed.toLowerCase().replace(/[’']/g, '').split(/[^a-z ]+/);
+  const phrases: string[] = [];
+  for (const c of chunks) {
+    const words = c.split(' ').filter(w => w.length >= 2);
+    for (let i = 0; i + 4 <= words.length; i += 3) {
+      const p = words.slice(i, i + 4).join(' ');
+      if (p.length >= 16 && !phrases.includes(p)) phrases.push(p);
+    }
+  }
+  if (phrases.length <= max) return phrases;
+  const step = phrases.length / max;
+  return Array.from({ length: max }, (_, i) => phrases[Math.floor(i * step)]);
+}
+
+/**
+ * Which bank rows the page shows: a row must be hit by at least two phrases (one, when the
+ * page gave only one usable phrase). A phrase that hits many rows is boilerplate and is
+ * dropped before counting. Best first.
+ */
+export function pickKeyRows(hits: string[][], tooMany: number): string[] {
+  let usable = hits.filter(h => h.length > 0 && h.length < tooMany);
+  if (usable.length === 1 && usable[0].length > 3) usable = []; // one phrase alone must be near-unique
+  const count = new Map<string, number>();
+  for (const h of usable) for (const id of new Set(h)) count.set(id, (count.get(id) || 0) + 1);
+  const need = usable.length <= 1 ? 1 : 2;
+  return [...count.entries()].filter(([, c]) => c >= need).sort((a, b) => b[1] - a[1]).map(([id]) => id);
 }

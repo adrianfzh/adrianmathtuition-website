@@ -5,7 +5,8 @@ import Foundation
 /// next time the notebook opens. Positions are page points (the page is 820 × 1160).
 struct PageCheck: Codable, Hashable, Sendable {
     enum Verdict: String, Codable, Sendable { case correct, partial, wrong, unreadable }
-    enum Mark: String, Codable, Sendable { case tick, cross }
+    /// `unsure`: the second look disagreed with a tick — drawn as a red "?" (1 Nov 2026).
+    enum Mark: String, Codable, Sendable { case tick, cross, unsure }
 
     struct LineMark: Codable, Hashable, Sendable {
         /// The handwriting line it belongs to: x, y, width, height.

@@ -3,18 +3,19 @@
 // → CheckPageResult (lib/app-check-page): a tick or cross per line, what went wrong.
 //
 // ✅ Check this page in the Notebook iPad app (SPEC-STUDENT-APP.md §0c, 31 Oct 2026).
-// Same marker as practice grading (GRADING_MODEL), answered while the student waits.
+// Same marker as practice grading (GRADING_MODEL), answered while the student waits, with a
+// second small look and the answer key when the page is ours (lib/app-check-page-server).
 // Behind APP_CHECK_PAGE_OPEN_TO_STUDENTS (demo student only until the app ships);
 // a stranger needs an active pass (requireActiveAccess), tuition rides free; daily cap
 // counted in app_page_checks. Anonymous → 401 (the health check probes this).
 import { NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { bearerAccount, portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { createServiceClient } from '@/lib/supabase-server';
 import { GRADING_MODEL } from '@/lib/practice-grade';
 import { APP_CHECK_PAGE_OPEN_TO_STUDENTS, APP_CHECK_PAGE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
-import { buildCheckPagePrompt, parseCheckPageReply, parseCheckPageRequest, CHECK_PAGE_DAILY_CAP, type CheckPageResult } from '@/lib/app-check-page';
+import { parseCheckPageRequest, CHECK_PAGE_DAILY_CAP } from '@/lib/app-check-page';
+import { checkPage, type PageCheckRun } from '@/lib/app-check-page-server';
 
 export const runtime = 'nodejs';
 export const maxDuration = 90;
@@ -40,37 +41,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `That’s ${CHECK_PAGE_DAILY_CAP} pages today. Checking opens again tomorrow.` }, { status: 429 });
   }
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const prompt = buildCheckPagePrompt(parsed.req.lines);
-  let result: CheckPageResult | null = null;
-  let lastErr = '';
-  for (let attempt = 0; attempt < 2 && !result; attempt++) {
-    try {
-      const msg = await anthropic.messages.create({
-        model: GRADING_MODEL,
-        max_tokens: 4000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: parsed.req.image } },
-            { type: 'text', text: prompt + (attempt ? '\n\nYour last reply was not valid JSON. Reply with the JSON only.' : '') },
-          ],
-        }],
-      });
-      const text = msg.content.map(c => (c.type === 'text' ? c.text : '')).join('');
-      result = parseCheckPageReply(text, parsed.req.lines);
-    } catch (e) {
-      lastErr = (e as Error).message;
-    }
-  }
-  if (!result) {
-    console.error('[app/check-page] failed:', lastErr);
+  let run: PageCheckRun;
+  try {
+    run = await checkPage(db, parsed.req);
+  } catch (e) {
+    console.error('[app/check-page] failed:', (e as Error).message);
     return NextResponse.json({ error: 'Couldn’t check this page. Try again.' }, { status: 502 });
   }
+  const result = run.result;
 
   const { error } = await db.from('app_page_checks').insert({
     user_id: account.id, identity, verdict: result.verdict, model: GRADING_MODEL,
-    line_count: parsed.req.lines.length, result,
+    line_count: parsed.req.lines.length,
+    // What students got, plus each look and the bank rows used, so the two looks can be compared later.
+    result: { ...result, looks: { main: run.main, second: run.second, keyIds: run.keyIds } },
   });
   if (error) console.error('[app/check-page] save failed:', error.message);
   return NextResponse.json(result);

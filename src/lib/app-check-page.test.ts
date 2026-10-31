@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseCheckPageRequest, parseCheckPageReply, buildCheckPagePrompt, type PageLine } from './app-check-page';
+import { parseCheckPageRequest, parseCheckPageReply, buildCheckPagePrompt, mergeLooks, keyPhrases, pickKeyRows, type PageLine } from './app-check-page';
 
 const sent: PageLine[] = [
   { n: 1, box: [100, 200, 300, 40] },
@@ -14,6 +14,7 @@ describe('check this page — request', () => {
     const r = parseCheckPageRequest({ image: 'data:image/jpeg;base64,abc', lines: [{ n: 1, box: [1, 2, 3, 4] }, { n: 'x', box: [] }] });
     expect(r.ok && r.req.image).toBe('abc');
     expect(r.ok && r.req.lines).toEqual([{ n: 1, box: [1, 2, 3, 4] }]);
+    expect(r.ok && r.req.printed).toBe('');
   });
   it('refuses an oversized picture', () => {
     expect(parseCheckPageRequest({ image: 'a'.repeat(4_000_001), lines: [{ n: 1, box: [1, 2, 3, 4] }] }).ok).toBe(false);
@@ -49,5 +50,45 @@ describe('check this page — reading the reply', () => {
   });
   it('no JSON is an error, not an empty result', () => {
     expect(() => parseCheckPageReply('sorry', sent)).toThrow();
+  });
+});
+
+describe('check this page — two looks and the answer key', () => {
+  const main = parseCheckPageReply(JSON.stringify({ verdict: 'wrong', summary: 's', lines: [
+    { n: 1, mark: 'tick' }, { n: 2, mark: 'cross', note: 'sign', correct: '10 > 5x' }, { n: 3, mark: 'tick' }],
+    questions: [{ label: 'Q1', verdict: 'wrong', wrong: 'a', fix: 'b', answer: 'x < 2' }] }), sent);
+  it('the second look only raises a doubt: a tick it crosses becomes "?"; a main cross stays; carried-forward lines are left alone', () => {
+    const second = { ...main, lines: [
+      { n: 1, mark: 'cross' as const, note: '', correct: '' },
+      { n: 2, mark: 'tick' as const, note: '', correct: '' },
+      { n: 3, mark: 'cross' as const, note: '', correct: '' }] };
+    const r = mergeLooks(main, second);
+    expect(r.lines).toEqual([
+      { n: 1, mark: 'unsure', note: 'check this line', correct: '' },
+      { n: 2, mark: 'cross', note: 'sign', correct: '10 > 5x' },
+      { n: 3, mark: 'tick', note: '', correct: '' }]);
+    expect(r.questions).toEqual(main.questions);
+  });
+  it('no second look, or an unreadable one, leaves the main look alone', () => {
+    expect(mergeLooks(main, null)).toBe(main);
+    expect(mergeLooks(main, { verdict: 'unreadable', summary: '', lines: [], questions: [] })).toBe(main);
+  });
+  it('phrases are plain words, no maths, spread over the page', () => {
+    const p = keyPhrases('1 (a) Solve the inequality 5 − 3(x − 2) > 2x + 1. (b) Simplify (9p⁴q⁻²)^½ × 2p⁻³q⁵, giving your answer in positive index form.');
+    expect(p).toContain('giving your answer in');
+    expect(p.every(x => /^[a-z ]+$/.test(x))).toBe(true);
+    expect(keyPhrases('x² + 3x = 10')).toEqual([]);
+  });
+  it('a row needs two phrases; boilerplate phrases are dropped; one phrase alone must be near-unique', () => {
+    const many = Array.from({ length: 25 }, (_, i) => `b${i}`);
+    expect(pickKeyRows([['a', 'b'], ['a'], many], 25)).toEqual(['a']);
+    expect(pickKeyRows([['a', 'b', 'c', 'd']], 25)).toEqual([]);
+    expect(pickKeyRows([['a']], 25)).toEqual(['a']);
+  });
+  it('the answer key goes into the prompt, and the marker is told never to name a source', () => {
+    const p = buildCheckPagePrompt(sent, [{ text: 'Solve 2x > 4.', answer: 'x > 2', solution: '' }]);
+    expect(p).toContain('Correct answer: x > 2');
+    expect(p).toMatch(/Never mention these records/);
+    expect(buildCheckPagePrompt(sent)).not.toContain('Our records');
   });
 });

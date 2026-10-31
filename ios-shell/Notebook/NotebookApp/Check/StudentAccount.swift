@@ -58,10 +58,13 @@ final class StudentAccount {
     }
 
     /// Sends one page; tries a fresh key once if the old one has run out.
-    func checkPage(image: Data, lines: [HandwritingLine]) async throws -> CheckPageReply {
+    /// `printed` is the worksheet page's own text (empty on a blank page): the server finds the
+    /// question in our bank by it and marks against its answer.
+    func checkPage(image: Data, lines: [HandwritingLine], printed: String = "") async throws -> CheckPageReply {
         let body: [String: Any] = [
             "image": image.base64EncodedString(),
             "lines": lines.map { ["n": $0.number, "box": [$0.rect.minX, $0.rect.minY, $0.rect.width, $0.rect.height]] },
+            "printed": String(printed.prefix(6000)),
         ]
         return try await call("POST", "/api/app/check-page", body)
     }
