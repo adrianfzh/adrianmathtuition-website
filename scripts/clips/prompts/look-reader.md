@@ -15,6 +15,12 @@ Fail the clip for any of:
 - a board so crowded that a student could not read it on a phone;
 - an empty or blank board where the clip should be showing something.
 
+Do NOT fail for a board with only its heading while the voice reads or describes the QUESTION
+(pictures named `…-quote.png`). The question sits in its own card above the clip — on a phone it
+is behind a button, so it is not in these pictures — and a quote beat lights the piece in that
+card, not on the board. The question is never copied onto the board (31 Oct 2026: two runs of a
+Binomial clip were failed for this).
+
 Do NOT fail for: style taste, the chalk font, a mark (circle/underline) that is a little loose.
 
 Write `data/clip-runs/<slug>/pictures.json`:
