@@ -175,6 +175,21 @@ constant" → the formula as a board line, then `a = …, b = …`, then substit
 `binomial-theorem-am.md` §3.1 and §3.4. The same holds for any topic with a "general term"
 (the formula only when ONE term is wanted).
 
+**The order on the board, every Binomial clip** (Adrian, 31 Oct 2026, after the remakes:
+*"write down the formula first, then say what is a, b and n, say a is first term etc, then sub in,
+show the simplification"*):
+1. **The formula first**, its own line — expanding: `(a+b)^n = a^n + \binom{n}{1}a^{n-1}b +
+   \binom{n}{2}a^{n-2}b^2 + \cdots`; one term: `T_{r+1} = \binom{n}{r}a^{n-r}b^r`.
+2. **Name a, b and n, each with what it is**, each its own line, lit as the voice says it:
+   `a = \text{first term} = 2` · `b = \text{second term} = -\tfrac12x` · `n = 8` (or `n = ?`
+   when n is the unknown). The voice says "A is the first term, two".
+3. **Substitute** into the formula, as written.
+4. **Show the simplification step by step** — each power worked out on its own
+   (`(-\tfrac12x)^3 = -\tfrac18x^3`, `(px^2)^5 = p^5x^{10}`), then the numbers multiplied, then
+   the term. Never jump from the substituted line to the answer.
+The same four steps hold for any clip that uses a formula: formula, name each letter with what it
+is, substitute, simplify one step a line.
+
 ### Checks and answers
 - **A log equation's check opens "For log equations, always check each answer."**
 - **Show where a checked expression comes from** ("it's from the first line, so students may have

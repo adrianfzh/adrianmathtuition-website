@@ -59,6 +59,18 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
   `(px² + q/x)⁶ = (px²)⁶ + ⁶C₁(px²)⁵(q/x) + ⁶C₂(px²)⁴(q/x)² + ⋯`;
   the next line(s) simplify each term in place: `= p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯`.
   Do not work out each term as a separate sum and assemble them afterwards.
+- **The order on the board, every Binomial clip** (Adrian, 31 Oct 2026, after the remakes:
+  *"write down the formula first, then say what is a, b and n, say a is first term etc, then sub in,
+  show the simplification"*):
+  1. **The formula first**, its own line — expanding: `(a+b)^n = a^n + \binom{n}{1}a^{n-1}b +
+     \binom{n}{2}a^{n-2}b^2 + \cdots`; one term: `T_{r+1} = \binom{n}{r}a^{n-r}b^r`.
+  2. **Name a, b and n, each with what it is**, each its own line, lit as the voice says it:
+     `a = \text{first term} = 2` · `b = \text{second term} = -\tfrac12x` · `n = 8` (or `n = ?`
+     when n is the unknown). The voice says "A is the first term, two".
+  3. **Substitute** into the formula, as written.
+  4. **Show the simplification step by step** — each power worked out on its own
+     (`(-\tfrac12x)^3 = -\tfrac18x^3`, `(px^2)^5 = p^5x^{10}`), then the numbers multiplied, then
+     the term. Never jump from the substituted line to the answer.
 
 ### 3.2 First few terms, and "hence" a coefficient of a product
 - "Expand each factor only up to the power you need, multiply out just the pairs that land on
