@@ -422,7 +422,9 @@ const round = (v: number) => Math.round(v * 100) / 100;
 
 export const MAX_TOKENS_PER_LINE = 6;
 const MAX_STEPS = 7;
-const MAX_SCROLL_STEPS = 18;
+// 24 since 1 Nov 2026: Adrian's order (formula → a, b, n → every term from nC0 → simplify one step a
+// line, binomial-theorem-am.md §6) makes an "expand to the third term" board 22 lines; it scrolls.
+const MAX_SCROLL_STEPS = 24;
 const MAX_NOTE_CHARS = 170;
 const MAX_CAPTION_CHARS = 520;
 const MAX_HEADING_CHARS = 64;
