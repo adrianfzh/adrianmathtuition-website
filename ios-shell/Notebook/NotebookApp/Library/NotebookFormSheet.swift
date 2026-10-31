@@ -57,6 +57,7 @@ struct NotebookFormSheet: View {
                     }
                     .padding(.vertical, 6)
                 }
+                if FeatureFlags.paperStyles {
                 Section("Paper") {
                     HStack(spacing: 12) {
                         ForEach(PaperStyle.allCases) { style in
@@ -75,6 +76,7 @@ struct NotebookFormSheet: View {
                         }
                     }
                     .padding(.vertical, 6)
+                }
                 }
                 if !library.folders.isEmpty {
                     Section("Subject") {

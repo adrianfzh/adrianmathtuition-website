@@ -13,4 +13,7 @@ enum AppBrand {
 enum FeatureFlags {
     /// "Check this page": sends the current page to the marking service (a later version).
     static let checkPage = false
+    /// Lined / grid / dotted paper. Off: every page is a blank canvas, like Notability
+    /// (Adrian, 31 Oct 2026: "Just have blank canvas, like notability").
+    static let paperStyles = false
 }

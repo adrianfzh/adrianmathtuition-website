@@ -154,7 +154,7 @@ struct LibraryView: View {
     @ViewBuilder
     private func menu(for nb: Notebook) -> some View {
         Button { renameText = nb.title; renaming = nb } label: { Label("Rename", systemImage: "pencil") }
-        Button { editing = nb } label: { Label("Cover & Paper…", systemImage: "paintpalette") }
+        Button { editing = nb } label: { Label(FeatureFlags.paperStyles ? "Cover & Paper…" : "Cover…", systemImage: "paintpalette") }
         if !library.folders.isEmpty {
             Menu {
                 Button("None") { var m = nb; m.folderID = nil; library.update(m, touch: false) }

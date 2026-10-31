@@ -53,7 +53,7 @@ final class WalkthroughUITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.typeText(title)
         if let cover { app.buttons[cover].firstMatch.tap() }
-        if let paper { app.buttons[paper].firstMatch.tap() }
+        if let paper, app.buttons[paper].firstMatch.exists { app.buttons[paper].firstMatch.tap() }
         app.buttons["createNotebook"].tap()
     }
 
@@ -111,9 +111,7 @@ final class WalkthroughUITests: XCTestCase {
         sleep(2)
         shot("02-editor-lined")
 
-        more("Paper", sub: "Grid")
-        sleep(1)
-        shot("03-editor-grid")
+        // Paper styles are switched off (FeatureFlags.paperStyles): every page is a blank canvas.
 
         more("Add Page")
         sleep(2)

@@ -90,6 +90,8 @@ inside a notebook, search, iCloud backup of notes.
    simulator once the name and icon are final.
 6. TestFlight with 2–3 students, then submit for review.
 
+- **Blank canvas only (31 Oct 2026, Adrian: "Just have blank canvas, like notability")** — the lined / grid / dotted choice is hidden behind `FeatureFlags.paperStyles = false` (`NotebookApp/App/AppBrand.swift`); every new page is blank. The paper code stays for later.
+
 ## 1. What it is
 
 One iPad + iPhone app, "AdrianMath", for enrolled students only.

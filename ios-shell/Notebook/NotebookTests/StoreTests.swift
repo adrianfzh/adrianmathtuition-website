@@ -34,7 +34,12 @@ final class StoreTests: XCTestCase {
         // A fresh store on the same folder = the app after a restart.
         let reopened = FileNotebookStore(root: root)
         let loaded = try XCTUnwrap(reopened.loadNotebooks().first)
-        XCTAssertEqual(loaded, nb)
+        // Dates go through JSON as seconds (a Double), so compare them to the millisecond, the rest exactly.
+        XCTAssertEqual(loaded.id, nb.id)
+        XCTAssertEqual(loaded.title, nb.title)
+        XCTAssertEqual(loaded.pages, nb.pages)
+        XCTAssertEqual(loaded.createdAt.timeIntervalSince1970, nb.createdAt.timeIntervalSince1970, accuracy: 0.001)
+        XCTAssertEqual(loaded.updatedAt.timeIntervalSince1970, nb.updatedAt.timeIntervalSince1970, accuracy: 0.001)
         XCTAssertEqual(loaded.paper, .grid)
         XCTAssertEqual(loaded.cover, .teal)
         XCTAssertNil(try reopened.loadPageData(notebookID: nb.id, pageID: nb.pages[0].id))

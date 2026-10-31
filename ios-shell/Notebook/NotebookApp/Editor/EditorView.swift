@@ -90,12 +90,14 @@ private struct EditorScreen: View {
                     Button { showingPages = true } label: { Label("Pages", systemImage: "square.grid.2x2") }
                 }
                 Button { controller.addPage() } label: { Label("Add Page", systemImage: "plus.rectangle.portrait") }
+                if FeatureFlags.paperStyles {
                 Picker(selection: Binding(get: { controller.notebook.paper }, set: { controller.setPaper($0) })) {
                     ForEach(PaperStyle.allCases) { Label($0.title, systemImage: $0.symbol).tag($0) }
                 } label: {
                     Label("Paper", systemImage: "doc.plaintext")
                 }
                 .pickerStyle(.menu)
+                }
                 Toggle(isOn: $drawWithFinger) { Label("Draw with Finger", systemImage: "hand.draw") }
                 Divider()
                 Button { share(pages: [controller.currentPage]) } label: {
