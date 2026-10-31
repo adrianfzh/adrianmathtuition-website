@@ -99,6 +99,20 @@ import {
 } from '@/lib/lesson-stage';
 import { useNarration, usePref, useRatePref, writePref, writeRate } from './lesson-narration';
 import BoardLayer, { EASE, MathText, NoteSlotView, offsetRect, useIsoLayoutEffect } from './lesson-board';
+import { splitQuote, quoteOfBeat, quoteIsShort } from '@/lib/question-quote';
+
+/** The question, with the piece the voice is on lit (keyed on the piece, so each new one jumps out). */
+function QuestionText({ text, quote }: { text: string; quote: string | null }) {
+  const cut = splitQuote(text, quote);
+  if (!cut) return <MathText text={text} />;
+  return (
+    <>
+      {cut.before && <MathText text={cut.before} />}
+      <span key={cut.part} className={`lsn-quote${quoteIsShort(cut.part) ? ' lsn-quote-pop' : ''}`} data-lsn-quote><MathText text={cut.part} /></span>
+      {cut.after && <MathText text={cut.after} />}
+    </>
+  );
+}
 import { characterLook } from './lesson-character';
 import { ChalkWriter } from './chalk-writer';
 
@@ -2688,6 +2702,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   });
   const [sceneIdx, setSceneIdx] = useState(startStop.si);
   const [step, setStep] = useState(startStop.k);
+  // 🔦 The beat on screen lights a piece of the question card (a question clip only).
+  const quote = clip && question ? quoteOfBeat((scenes[sceneIdx] as { beats?: { do?: { do: string; text?: unknown }[] }[] } | undefined)?.beats, step) : null;
   const [done, setDone] = useState(false);
   const [auto, setAuto] = useState(startAuto);
   const [paused, setPaused] = useState(false);
@@ -3302,7 +3318,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       {qSide && question && (
         <aside className="lsn-question lg:sticky lg:top-20 rounded-3xl p-5 text-[15px] leading-relaxed" data-lsn-question>
           <p className="lsn-question-kicker text-[11px] font-bold uppercase tracking-wider mb-2">The question</p>
-          <div className="whitespace-pre-line"><MathText text={question} /></div>
+          <div className="whitespace-pre-line"><QuestionText text={question} quote={quote} /></div>
         </aside>
       )}
       <div className="min-w-0">
@@ -3315,7 +3331,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           {/* Design B (Adrian picked it, 17 Oct 2026): an amber tag floats on the card's top edge. */}
           <span className="absolute -top-2.5 left-3 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-semibold text-amber-950 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">Question</span>
           {/* The WHOLE question, always (Adrian, 18 Oct 2026: "the question itself is only partially shown"). */}
-          <span className={`block ${question.length > 140 ? 'text-[13px] leading-[1.3]' : 'text-[15px] leading-snug'} text-navy`}><MathText text={question} /></span>
+          <span className={`block ${question.length > 140 ? 'text-[13px] leading-[1.3]' : 'text-[15px] leading-snug'} text-navy`}><QuestionText text={question} quote={quote} /></span>
         </button>
       )}
       {done ? (
@@ -3486,7 +3502,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               onClick={(e) => { e.stopPropagation(); setQOpen(false); }}
               className="lsn-question absolute inset-x-3 top-3 z-30 max-h-[78%] overflow-auto rounded-2xl p-4 text-[15px] leading-relaxed lsn-rise">
               <p className="lsn-question-kicker text-[11px] font-bold uppercase tracking-wider mb-2">The question <span className="float-right normal-case">✕</span></p>
-              <div className="whitespace-pre-line"><MathText text={question} /></div>
+              <div className="whitespace-pre-line"><QuestionText text={question} quote={quote} /></div>
             </div>
           )}
         </div>
@@ -4005,6 +4021,18 @@ const PLAYER_CSS = `
 /* The whole question beside / above a question clip, on the board's colours. */
 .lsn-question { background: #fff; color: hsl(220, 60%, 20%); box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 6px 16px -4px rgba(15,23,42,0.08); }
 .lsn-question-kicker { color: rgb(148, 163, 184); }
+/* 🔦 The piece of the question the voice is on (lib/question-quote, 31 Oct 2026): lit in amber, and it
+   jumps out for a moment, then settles — lit for the whole beat. */
+.lsn-quote { border-radius: 5px; padding: 1px 2px; background: rgb(253 230 138); color: hsl(220, 60%, 16%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+/* A short piece (one phrase, one expression) jumps out bigger for a moment; a long sentence only lights,
+   so the question never re-flows between beats. */
+.lsn-quote-pop { display: inline-block; transform-origin: center; box-shadow: 0 0 0 2px rgb(251 191 36 / 0.55); }
+@media (prefers-reduced-motion: no-preference) {
+  .lsn-quote { animation: lsnQuoteLight 0.6s ease-out both; }
+  .lsn-quote-pop { animation: lsnQuotePop 0.75s cubic-bezier(.2,.9,.3,1.25) both; }
+}
+@keyframes lsnQuoteLight { 0% { background: rgb(253 230 138 / 0); } 40% { background: rgb(252 211 77); } 100% { background: rgb(253 230 138); } }
+@keyframes lsnQuotePop { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
 [data-lsn-themed] .lsn-question { background-color: var(--lsn-board); background-image: var(--lsn-texture); background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend); color: var(--lsn-ink, #f8fafc); box-shadow: inset 0 0 0 1px var(--lsn-edge); }
 [data-lsn-themed] .lsn-question-kicker { color: var(--lsn-ribbon); }
 .lsn-scrub-range { -webkit-appearance: none; appearance: none; height: 28px; background: transparent; touch-action: none; }

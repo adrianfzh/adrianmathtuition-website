@@ -154,6 +154,16 @@ the history.
   `62 = 10lg(I_d/k)`), say what we want and what stops us (k is unknown), then why the move gets
   round it (subtracting joins the logs and k cancels) — and only then the combined line.
 
+### The question card lights what the voice is reading (Adrian, 31 Oct 2026)
+
+*"why don't we highlight the part (and make it momentarily larger "like jump out") when narrator
+describes the question?"* — a beat that reads or describes a piece of the question carries
+`{"do": "quote", "text": "<the piece, exact, whole $…$ maths>"}`. The card above the board lights that
+piece in amber for the whole beat; a short piece (an expression, a phrase — `quoteIsShort`) also jumps
+out bigger for a moment; a long sentence only lights, so the question never re-flows between beats
+(`lib/question-quote.ts`, the player's `QuestionText`). First used on `qc-2aa7610f` (Binomial, expanding
+the first few terms), beats 1–3.
+
 ### Checks and answers
 - **A log equation's check opens "For log equations, always check each answer."**
 - **Show where a checked expression comes from** ("it's from the first line, so students may have

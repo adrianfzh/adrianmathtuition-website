@@ -352,11 +352,16 @@ export type BeatAction =
   | ({ do: 'pin'; show?: number; lit?: number } & Timed)
   /** Play the swing under line `step` (StepSwing): the dot goes once round its path while the graph
    *  draws out with it (Adrian, 26 Oct 2026). */
-  | ({ do: 'swing'; step: number } & Timed);
+  | ({ do: 'swing'; step: number } & Timed)
+  /** A question clip: light up THIS piece of the question card (copied verbatim from the question,
+   *  whole `$…$` spans) and make it jump out for a moment while the beat is said (Adrian, 31 Oct 2026:
+   *  "why don't we highlight the part (and make it momentarily larger "like jump out") when narrator
+   *  describes the question?"). Lit for the whole beat; at most one per beat. */
+  | ({ do: 'quote'; text: string } & Timed);
 export type SketchStage = 'inset' | 'axes' | 'asymptote' | 'shape' | 'stretch' | 'shift' | 'edge';
 
 export type BeatActionKind = BeatAction['do'];
-export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin', 'swing'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker', 'sketch', 'pin', 'swing', 'quote'];
 export const SKETCH_STAGES: readonly SketchStage[] = ['inset', 'axes', 'asymptote', 'shape', 'stretch', 'shift', 'edge'];
 
 export interface Beat {
@@ -855,6 +860,11 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       break;
     case 'swing':
       if (!Number.isInteger(a.step) || !scope.swings?.has(a.step as number)) errors.push(`${where}: step must be the index of a line that has a swing`);
+      break;
+    case 'quote':
+      // Whole $…$ spans only: a piece cut inside the maths cannot be typeset on its own.
+      if (!nonEmptyString(a.text)) errors.push(`${where}: a quote needs "text" — a piece of the question, copied exactly`);
+      else if (((a.text as string).match(/(?<!\\)\$/g) || []).length % 2 !== 0) errors.push(`${where}: a quote's text must hold whole $…$ maths, never half of one`);
       break;
     case 'pin': {
       const n = scope.pinned ?? 0;

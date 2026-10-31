@@ -173,6 +173,11 @@ no focus, no clear.
   section titles, unless the concept is really complex.
 - **Pieces inside one token** (a fraction's a over a, b over b): wrap each in `\htmlClass{lsn-pc-<name>}{…}`
   in the plan's tex and light it with `{"do": "highlight", "token": "<id>", "inside": "<name>", "tone": "orange"|"sky"}`.
+- **Light the question as the voice describes it** (Adrian, 31 Oct 2026: "highlight the part (and make it
+  momentarily larger "like jump out") when narrator describes the question"): every beat that reads or
+  describes a piece of the QUESTION (what it gives, what it asks: "the first three terms…", "then use them
+  for the coefficient…") carries `{"do": "quote", "text": "<that piece, copied EXACTLY from the question,
+  whole $…$ maths only>"}` — the question card lights it and a short piece jumps out. One per beat.
 - **A law acting on two terms points at their middle**: give its note `"span": ["a", "b"]`; keep
   the law short enough for one line.
 - **A mistake goes LAST, as a "Watch out" step**: after the answer is boxed, one beat opens

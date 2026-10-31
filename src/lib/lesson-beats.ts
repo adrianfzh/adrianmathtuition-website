@@ -345,6 +345,8 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
     case 'swing':
       if (!board.swung.includes(action.step)) board.swung = [...board.swung, action.step];
       break;
+    case 'quote':   // lights the question card, not the board (lesson-player QuestionText)
+      break;
     case 'pin':
       if (action.show !== undefined) board.pinShown = Math.max(board.pinShown, action.show);
       if (action.lit !== undefined) { board.pinLit = action.lit; board.pinShown = Math.max(board.pinShown, action.lit); }
