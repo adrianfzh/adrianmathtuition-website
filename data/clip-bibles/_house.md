@@ -164,6 +164,17 @@ out bigger for a moment; a long sentence only lights, so the question never re-f
 (`lib/question-quote.ts`, the player's `QuestionText`). First used on `qc-2aa7610f` (Binomial, expanding
 the first few terms), beats 1–3.
 
+### Expanding vs finding one term — Binomial (Adrian, 31 Oct 2026)
+
+Watching `qc-2aa7610f`: *"if you need a particular term, just write the formula: T_(r+1) = (n, r)
+a^(n-r) b^r and then sub in (show what is a (first term), and b (2nd term)"* and *"for this
+question, we should expand term by term all the way to the third term (instead of using the general
+term formula), and dot dot dot at the end"*. "Expand as far as the Nth term" → one expansion line
+term by term ending `+ ⋯`, then simplify each term on the next line. "Find the x³ term / the
+constant" → the formula as a board line, then `a = …, b = …`, then substitute. Detail and examples:
+`binomial-theorem-am.md` §3.1 and §3.4. The same holds for any topic with a "general term"
+(the formula only when ONE term is wanted).
+
 ### Checks and answers
 - **A log equation's check opens "For log equations, always check each answer."**
 - **Show where a checked expression comes from** ("it's from the first line, so students may have

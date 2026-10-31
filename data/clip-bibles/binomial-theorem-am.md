@@ -52,6 +52,13 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 - Rule notes: `Pattern: a's power falls, b's power rises`; `odd power keeps the minus, even power kills it`.
 - Traps: (−2x)³ = −8x³, not −2x³ (112.01, pitfall); "The minus sign belongs to b" (112.035);
   a coefficient line that does not match the expansion it produces (112.06 — cross-check).
+- **"Expand as far as the third term" (or "the first N terms") = expand TERM BY TERM, never the
+  general term** (Adrian, 31 Oct 2026: *"for this question, we should expand term by term all the
+  way to the third term (instead of using the general term formula), and dot dot dot at the end"*).
+  One line writes the expansion as the pattern gives it, ending `+ ⋯`:
+  `(px² + q/x)⁶ = (px²)⁶ + ⁶C₁(px²)⁵(q/x) + ⁶C₂(px²)⁴(q/x)² + ⋯`;
+  the next line(s) simplify each term in place: `= p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯`.
+  Do not work out each term as a separate sum and assemble them afterwards.
 
 ### 3.2 First few terms, and "hence" a coefficient of a product
 - "Expand each factor only up to the power you need, multiply out just the pairs that land on
@@ -76,6 +83,13 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
   (−1/(3x³))ʳ = (−1/3)ʳ x⁻³ʳ; then add the exponents.
 - Steps (112.23): formula from the formula sheet → substitute n, a, b (sign included) → "use
   indices to separate the terms" → combine powers of x → equate the power → solve r → substitute.
+- **Needing ONE particular term: write the formula, name a and b, then substitute** (Adrian, 31 Oct
+  2026: *"if you need a particular term, just write the formula: T_(r+1) = (n, r) a^(n-r) b^r and
+  then sub in (show what is a (first term), and b (2nd term)"*). On the board, in this order, each
+  its own line: `T_{r+1} = \binom{n}{r}a^{n-r}b^r` → `a = <first term>, b = <second term, sign
+  included>, n = …` → the substituted line. The formula is a board LINE, not only a side note.
+  This is for a particular term (an x³ coefficient, the constant term, the middle term) — "the
+  first few terms" is expanded term by term (§3.1).
 - Independent term: power = 0 (112.25). Middle term: n + 1 terms, count to the middle (112.26).
 - Explain-why questions: write the general power and show it is always even / a multiple of 3 /
   never 0 for an integer r (112.31, 112.312, 112.522).
