@@ -148,6 +148,26 @@ async function finish(status, reason) {
 }
 const put = (k, ok, detail) => { gate.checks[k] = { ok: !!ok, detail }; log(`  ${ok ? '✓' : '✗'} ${k}: ${detail}`); };
 
+// The look plays the clip on the clip site (launchd com.adrianmath.questionclips-site, a separate
+// checkout + build). If that build is older than the player code this script writes for, every
+// shot fails ("board taller than the screen" on all 22 of 22) while the fit step, measured with the
+// current code, passes — 31 Oct 2026: three Binomial clips failed so; the site was on 16 Oct code.
+// Checked FIRST, before any drafting or voice is paid for. Refuse plainly instead of failing every clip.
+const CLIP_SITE = process.env.CLIP_SITE_DIR || path.join(os.homedir(), 'dev/adrianmath-clip-site');
+if (fs.existsSync(path.join(CLIP_SITE, '.git'))) {
+  const PLAYER = ['src/app/app/lesson', 'src/app/app/clip', 'src/lib'];
+  const last = spawnSync('git', ['-C', ROOT, 'log', '-1', '--format=%H', 'HEAD', '--', ...PLAYER], { encoding: 'utf8' }).stdout.trim();
+  const inSite = last && spawnSync('git', ['-C', CLIP_SITE, 'merge-base', '--is-ancestor', last, 'HEAD']).status === 0;
+  const builtAfter = (() => {
+    try { return fs.statSync(path.join(CLIP_SITE, '.next/BUILD_ID')).mtimeMs >= Number(spawnSync('git', ['-C', CLIP_SITE, 'log', '-1', '--format=%ct'], { encoding: 'utf8' }).stdout.trim()) * 1000; }
+    catch { return false; }
+  })();
+  if (last && (!inSite || !builtAfter)) {
+    await finish('failed', `the clip site (${CLIP_SITE}) is older than the clip player — update it to dev, \`next build\`, restart com.adrianmath.questionclips-site, then retry`);
+  }
+}
+
+
 // ── 1 gather, photo question (§9b) ──────────────────────────────────────────
 // read the printed question off the hand-in photos → check it against the marker's reading →
 // the same question already made? copy it → two blind solves that must agree → a bank-like row.

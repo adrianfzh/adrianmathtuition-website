@@ -481,6 +481,20 @@ the player now plays a spoken line in pieces of ≤ 72 characters (never more th
 f0877f92); qc-225d1e85 re-made by the worker in the new voice, every check passed (11 min). All 15
 ready clips are in voice C.
 
+### The clip site must be as new as the player (31 Oct 2026)
+
+Adrian, after three Binomial clips failed: *"Yes. We need the clip"*. All three failed the look on
+EVERY shot — "board taller than the screen" (bottom 861–1079 px, screen 783 px) — while the fit step
+had measured the same boards as fitting. The look plays the clip on the clip site
+(`~/dev/adrianmath-clip-site`, launchd `com.adrianmath.questionclips-site`, port 3211), a separate
+checkout + `next build` that had stayed on 16 Oct code; the player has changed since (the pinned plan,
+the divide-across move …). Fixed by bringing it to dev, rebuilding and restarting it. Guard:
+`question-clip.mjs` now checks FIRST — before any drafting or voice is paid for — that the clip site
+holds the latest commit touching the player (`src/app/app/lesson`, `src/app/app/clip`, `src/lib`) and
+was built after its last commit; if not, the clip fails at once with "the clip site … is older than
+the clip player — update it to dev, `next build`, restart …". **After a player change: update the
+clip site the same way.**
+
 ### Not done / next
 
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.
