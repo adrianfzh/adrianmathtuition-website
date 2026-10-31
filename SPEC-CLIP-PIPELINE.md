@@ -490,7 +490,7 @@ had measured the same boards as fitting. The look plays the clip on the clip sit
 checkout + `next build` that had stayed on 16 Oct code; the player has changed since (the pinned plan,
 the divide-across move …). Fixed by bringing it to dev, rebuilding and restarting it. Guard:
 `question-clip.mjs` now checks FIRST — before any drafting or voice is paid for — that the clip site
-holds the latest commit touching the player (`src/app/app/lesson`, `src/app/app/clip`, `src/lib`) and
+holds the latest commit touching the player (`src/app/app/lesson`, `src/app/app/clip`, `src/lib/{lesson,chalk,clip,question-clip,katex}*`) and
 was built after its last commit; if not, the clip fails at once with "the clip site … is older than
 the clip player — update it to dev, `next build`, restart …". **After a player change: update the
 clip site the same way.**

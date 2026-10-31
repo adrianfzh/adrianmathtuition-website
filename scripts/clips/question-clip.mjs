@@ -155,7 +155,8 @@ const put = (k, ok, detail) => { gate.checks[k] = { ok: !!ok, detail }; log(`  $
 // Checked FIRST, before any drafting or voice is paid for. Refuse plainly instead of failing every clip.
 const CLIP_SITE = process.env.CLIP_SITE_DIR || path.join(os.homedir(), 'dev/adrianmath-clip-site');
 if (fs.existsSync(path.join(CLIP_SITE, '.git'))) {
-  const PLAYER = ['src/app/app/lesson', 'src/app/app/clip', 'src/lib'];
+  // The player's own code only — any other change (a route, an unrelated lib) must not block clips.
+  const PLAYER = ['src/app/app/lesson', 'src/app/app/clip', ':(glob)src/lib/lesson-*', ':(glob)src/lib/chalk-*', ':(glob)src/lib/clip-*', ':(glob)src/lib/question-clip*', ':(glob)src/lib/katex*'];
   const last = spawnSync('git', ['-C', ROOT, 'log', '-1', '--format=%H', 'HEAD', '--', ...PLAYER], { encoding: 'utf8' }).stdout.trim();
   const inSite = last && spawnSync('git', ['-C', CLIP_SITE, 'merge-base', '--is-ancestor', last, 'HEAD']).status === 0;
   const builtAfter = (() => {
