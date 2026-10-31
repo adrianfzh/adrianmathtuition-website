@@ -28,10 +28,10 @@ describe('check this page — request', () => {
 describe('check this page — reading the reply', () => {
   it('keeps only lines the app sent, once each; a tick has no note', () => {
     const r = parseCheckPageReply(`Here: {"verdict":"partial","summary":"x","lines":[
-      {"n":1,"mark":"tick","note":"nice"},{"n":2,"mark":"cross","note":"should be ≤"},
+      {"n":1,"mark":"tick","note":"nice","correct":"x"},{"n":2,"mark":"cross","note":"should be ≤","correct":"−1 ≤ k ≤ 4"},
       {"n":2,"mark":"tick","note":""},{"n":9,"mark":"cross","note":"ghost"},{"n":3,"mark":"maybe"}],
       "questions":[{"label":"Q3","verdict":"partial","wrong":"Sign kept when dividing by −4.","fix":"Flip the sign.","answer":"−1 ≤ k ≤ 4"}]}`, sent);
-    expect(r.lines).toEqual([{ n: 1, mark: 'tick', note: '' }, { n: 2, mark: 'cross', note: 'should be ≤' }]);
+    expect(r.lines).toEqual([{ n: 1, mark: 'tick', note: '', correct: '' }, { n: 2, mark: 'cross', note: 'should be ≤', correct: '−1 ≤ k ≤ 4' }]);
     expect(r.verdict).toBe('partial');
     expect(r.questions[0].answer).toBe('−1 ≤ k ≤ 4');
   });

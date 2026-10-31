@@ -234,7 +234,7 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
             guard let check else { continue }
             let page = CALayer()
             page.frame = PageGeometry.pageRect(i)
-            for m in check.marks { RedPen.draw(m, into: page) }
+            RedPen.draw(check.marks, into: page)
             marksLayer.addSublayer(page)
         }
         CATransaction.commit()
@@ -337,7 +337,8 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
     }
 }
 
-/// Draws a tick or a cross at the end of a line of writing, and a short note beside a cross.
+/// Draws a tick or a cross at the end of a line of writing, a short note beside a cross,
+/// and the line as it should read in red under a wrong line.
 @MainActor
 enum RedPen {
     static let red = UIColor(red: 0.86, green: 0.13, blue: 0.11, alpha: 1)
@@ -348,13 +349,21 @@ enum RedPen {
         guard let check, !check.marks.isEmpty else { return }
         let page = CALayer()
         page.frame = CGRect(origin: .zero, size: PageGeometry.pageSize)
-        for m in check.marks { draw(m, into: page) }
+        draw(check.marks, into: page)
         page.render(in: ctx)
     }
 
-    static func draw(_ m: PageCheck.LineMark, into page: CALayer) {
+    /// Every mark of one page. The correct line needs to see the other lines, to find the gap
+    /// under the wrong line.
+    static func draw(_ marks: [PageCheck.LineMark], into page: CALayer) {
+        for m in marks { draw(m, others: marks.map(\.rect), into: page) }
+    }
+
+    private static let crossSize: CGFloat = 30
+
+    private static func draw(_ m: PageCheck.LineMark, others: [CGRect], into page: CALayer) {
         let r = m.rect
-        let size: CGFloat = 30
+        let size = crossSize
         let x = min(r.maxX + 12, PageGeometry.width - size - 8)
         let box = CGRect(x: x, y: r.midY - size / 2, width: size, height: size)
         let path = UIBezierPath()
@@ -376,20 +385,63 @@ enum RedPen {
         shape.lineJoin = .round
         page.addSublayer(shape)
 
-        guard m.mark == .cross, !m.note.isEmpty else { return }
-        let attrs: [NSAttributedString.Key: Any] = [.font: noteFont, .foregroundColor: red]
-        let text = NSAttributedString(string: m.note, attributes: attrs)
-        let maxWidth = PageGeometry.width - 40
-        let size2 = text.boundingRect(with: CGSize(width: maxWidth, height: 200), options: [.usesLineFragmentOrigin], context: nil).integral.size
-        // Beside the cross when it fits, otherwise just under the line.
-        var origin = CGPoint(x: box.maxX + 8, y: r.midY - size2.height / 2)
-        if origin.x + size2.width > PageGeometry.width - 12 {
-            origin = CGPoint(x: max(min(r.minX, PageGeometry.width - 12 - size2.width), 12), y: r.maxY + 2)
+        guard m.mark == .cross else { return }
+        let correct = placeCorrect(m, others: others, besideX: box.maxX + 8)
+        if let correct { page.addSublayer(correct.layer) }
+
+        guard !m.note.isEmpty else { return }
+        let note = text(m.note, font: noteFont)
+        // Beside the cross when it fits, otherwise under the line (under the correct line when
+        // that is there).
+        var origin = CGPoint(x: box.maxX + 8, y: r.midY - note.height / 2)
+        if correct?.beside == true || origin.x + note.width > PageGeometry.width - 12 {
+            let below = correct.map { $0.beside ? r.maxY + 2 : $0.layer.frame.maxY } ?? r.maxY + 2
+            origin = CGPoint(x: max(min(r.minX, PageGeometry.width - 12 - note.width), 12), y: below)
         }
-        let t = CATextLayer()
-        t.string = text
-        t.isWrapped = true
-        t.frame = CGRect(origin: origin, size: CGSize(width: size2.width + 4, height: size2.height + 2))
-        page.addSublayer(t)
+        page.addSublayer(textLayer(note, at: origin))
+    }
+
+    /// The correct line, in the gap under the wrong line: as large as the gap allows (never
+    /// smaller than readable). With no room under it, beside the cross; only when neither
+    /// fits does it sit under the line at a readable size.
+    private static func placeCorrect(_ m: PageCheck.LineMark, others: [CGRect], besideX: CGFloat)
+        -> (layer: CATextLayer, beside: Bool)? {
+        guard let s = m.correct?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return nil }
+        let r = m.rect
+        let maxWidth = PageGeometry.width - 24
+        // The next line of writing that sits under this one (overlapping it left to right).
+        let nextTop = others
+            .filter { $0.minY > r.midY && $0.maxX > r.minX && $0.minX < r.maxX + 200 }
+            .map(\.minY).min() ?? (PageGeometry.height - 16)
+        let gap = nextTop - r.maxY
+        let x = max(min(r.minX, PageGeometry.width - 12 - 40), 12)
+        for size in stride(from: CGFloat(24), through: 15, by: -1) {
+            let t = text(s, font: noteFont.withSize(size))
+            if t.height <= gap - 1, x + t.width <= PageGeometry.width - 12 {
+                return (textLayer(t, at: CGPoint(x: x, y: r.maxY + max((gap - t.height) / 2 - 2, 0))), false)
+            }
+        }
+        let beside = text(s, font: noteFont)
+        if besideX + beside.width <= PageGeometry.width - 12 {
+            return (textLayer(beside, at: CGPoint(x: besideX, y: r.midY - beside.height / 2)), true)
+        }
+        let under = text(s, font: noteFont.withSize(18), maxWidth: maxWidth)
+        return (textLayer(under, at: CGPoint(x: max(min(x, PageGeometry.width - 12 - under.width), 12), y: r.maxY + 1)), false)
+    }
+
+    private struct Text { var string: NSAttributedString; var width: CGFloat; var height: CGFloat }
+
+    private static func text(_ s: String, font: UIFont, maxWidth: CGFloat = PageGeometry.width - 40) -> Text {
+        let a = NSAttributedString(string: s, attributes: [.font: font, .foregroundColor: red])
+        let size = a.boundingRect(with: CGSize(width: maxWidth, height: 400), options: [.usesLineFragmentOrigin], context: nil).integral.size
+        return Text(string: a, width: size.width, height: size.height)
+    }
+
+    private static func textLayer(_ t: Text, at origin: CGPoint) -> CATextLayer {
+        let l = CATextLayer()
+        l.string = t.string
+        l.isWrapped = true
+        l.frame = CGRect(origin: origin, size: CGSize(width: t.width + 4, height: t.height + 2))
+        return l
     }
 }

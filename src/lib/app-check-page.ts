@@ -32,6 +32,10 @@ export interface CheckedLine {
   mark: LineMark;
   /** At most a few words, written beside the line. Empty for a tick. */
   note: string;
+  /** A cross only: the line as it should read, written in red under the wrong line
+   *  (Adrian, 31 Oct 2026: "yes" to the red pen writing the correct line). Empty when the
+   *  slip is not one line's worth (a missed step, an unreadable line). */
+  correct: string;
 }
 
 export interface CheckedQuestion {
@@ -85,6 +89,7 @@ Do this:
    - "cross" on the line where a mistake is made, and on a wrong final answer.
    Leave out lines that are not working (a doodle, a heading, a crossed-out line).
 4. A cross gets a note of at most 6 words, said to the student: what is wrong on that line ("should be ≤", "sign of 4 lost"). A tick gets an empty note.
+   A cross also gets "correct": that same line as it should read, written the way the student would write it, carrying on from their own earlier lines (at most 40 characters, e.g. "10 > 5x"). It is written in red under their line, so it must be the corrected line itself — no words like "should be". Leave it empty when no single line fixes it. A tick gets an empty "correct".
 5. For each question: verdict correct / partial / wrong, one short sentence on what went wrong, one short sentence on what to do instead, and the right final answer.
 
 Rules:
@@ -94,7 +99,7 @@ Rules:
 - Judge only what is written. Do not invent working the student did not write.
 
 Answer with ONLY this JSON, nothing before or after:
-{"verdict":"correct|partial|wrong|unreadable","summary":"one short line","lines":[{"n":1,"mark":"tick|cross","note":""}],"questions":[{"label":"Q1(a)","verdict":"correct|partial|wrong","wrong":"","fix":"","answer":""}]}`;
+{"verdict":"correct|partial|wrong|unreadable","summary":"one short line","lines":[{"n":1,"mark":"tick|cross","note":"","correct":""}],"questions":[{"label":"Q1(a)","verdict":"correct|partial|wrong","wrong":"","fix":"","answer":""}]}`;
 }
 
 const clip = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -110,11 +115,12 @@ export function parseCheckPageReply(text: string, sent: PageLine[]): CheckPageRe
   const seen = new Set<number>();
   const lines: CheckedLine[] = [];
   for (const r of Array.isArray(raw.lines) ? raw.lines : []) {
-    const l = r as { n?: unknown; mark?: unknown; note?: unknown };
+    const l = r as { n?: unknown; mark?: unknown; note?: unknown; correct?: unknown };
     const n = Number(l.n);
     if (!known.has(n) || seen.has(n) || (l.mark !== 'tick' && l.mark !== 'cross')) continue;
     seen.add(n);
-    lines.push({ n, mark: l.mark, note: l.mark === 'cross' ? clip(l.note, 60) : '' });
+    const cross = l.mark === 'cross';
+    lines.push({ n, mark: l.mark, note: cross ? clip(l.note, 60) : '', correct: cross ? clip(l.correct, 60) : '' });
   }
   const questions: CheckedQuestion[] = [];
   for (const r of Array.isArray(raw.questions) ? raw.questions.slice(0, 12) : []) {
