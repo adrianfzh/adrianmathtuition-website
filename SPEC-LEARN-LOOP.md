@@ -63,7 +63,7 @@ type's FIRST question, "watch one first".
 - Shown once per type: only while the type has no answers (`tries === 0`).
 
 Clips for Binomial (31 Oct 2026): ready for 3 types (general term · multiplying by another
-bracket · unknowns from coefficients). Queued for 3 more, our own questions: expanding the first
+bracket · unknowns from coefficients). READY 31 Oct 2026 after the clip-maker fixes (SPEC-CLIP-PIPELINE.md §9 "The clip site must be as new as the player"), not yet watched by Adrian — 3 more, our own questions: expanding the first
 few terms `2aa7610f`, estimating a value `d3d3f2c4`, harder mixed `9adc1f35` — Adrian watches each
 before students see it (`QUESTION_CLIPS_OPEN_TO_STUDENTS`, `/admin/question-clips`). **"Explaining
 why a term does or does not exist" has no clip**: every A Math question of that type keeps its
