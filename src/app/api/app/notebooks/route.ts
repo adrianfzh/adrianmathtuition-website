@@ -1,6 +1,6 @@
 // GET /api/app/notebooks  (Authorization: Bearer <app access token>)
 //   → { notebooks: [{ id, title, updatedAt, deleted }], folders, foldersUpdatedAt }
-// PUT /api/app/notebooks  { folders: [{ id, name, createdAt }] }  → the student's subjects
+// PUT /api/app/notebooks  { folders: [{ id, name, createdAt }] }  → { updatedAt }: the student's subjects
 //
 // ☁️ Notebook backup for the Notebook iPad app (SPEC-STUDENT-APP.md §0d, 31 Oct 2026).
 // The list a device compares with its own on opening; lib/app-notebooks.ts has the model.
@@ -37,9 +37,10 @@ export async function PUT(req: Request) {
   if (!who.ok) return who.res;
   const parsed = parseFolders(await req.json().catch(() => null));
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  const now = new Date();
   const { error } = await createServiceClient().from('app_notebook_folders').upsert({
-    user_id: who.account.id, identity: who.identity, folders: parsed.folders, updated_at: new Date().toISOString(),
+    user_id: who.account.id, identity: who.identity, folders: parsed.folders, updated_at: now.toISOString(),
   });
   if (error) return NextResponse.json({ error: 'Couldn’t save your subjects.' }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, updatedAt: now.getTime() / 1000 });
 }
