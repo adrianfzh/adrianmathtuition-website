@@ -78,6 +78,9 @@ const SPOKEN_SYMBOLS = [
   [/\byou\b/g, ' u '], [/\b([a-z])\s?(2|²)(?![0-9.])/g, ' $1 square '], [/\b([a-z])\s?(3|³)(?![0-9.])/g, ' $1 cube '],
   [/\b(four|fif|six|seven|eigh|nin|ten)th\b/g, (m, w) => ` ${({ four: 'four', fif: 'five', six: 'six', seven: 'seven', eigh: 'eight', nin: 'nine', ten: 'ten' })[w]} `],
   [/\bthird\b(?! of)/g, ' three '], [/\bsecond\b/g, ' two '],
+  [/\beleventh\b/g, ' eleven '], [/\btwelfth\b/g, ' twelve '], [/\b(\d+)(st|nd|rd|th)\b/g, ' $1 '],
+  // "three halves" written "3/2" (or "32", the slash lost): both read as "3 / 2".
+  [/\bhalves\b/g, ' / 2 '],
 ];
 const spoken = (t) => SPOKEN_SYMBOLS.reduce((acc, [re, to]) => acc.replace(re, to), t.toLowerCase());
 const canon = (t) => numberWordsToDigits(spoken(t)).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.\/]/g, '').replace(/\.(?![0-9])/g, '');
