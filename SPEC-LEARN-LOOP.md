@@ -3,9 +3,8 @@
 > **Where things stand (31 Oct 2026):** STAGE 1 BUILT, behind `LEARN_LOOP_OPEN_TO_STUDENTS`
 > (closed — only the preview student `portal-teste@example.com` has it). One topic: A Math
 > Binomial Theorem, at `/app/learn-loop/am-binomial`. Waiting for Adrian to try it as the
-> preview student. **Blocked on one database change:** `migrations/learn_loop_attempts.sql` adds
-> `'portal-loop'` to the `student_attempts.attempted_via` check — until it is applied, a loop answer is
-> marked but NOT saved (so progress never moves). Stage 2 (clips per question type, more topics, opening it) not started.
+> preview student. The database change `migrations/learn_loop_attempts.sql` (adds `'portal-loop'` to the
+> `student_attempts.attempted_via` check) was APPLIED 31 Oct 2026; a loop answer now saves (checked: row 37). Stage 2 (clips per question type, more topics, opening it) not started.
 
 ## What Adrian asked for
 
