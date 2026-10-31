@@ -57,6 +57,7 @@ SELECT id, left(question_text,180) AS preview, total_marks, school, year,
 FROM questions
 WHERE deleted_at IS NULL AND level = '<AM|EM>'
   AND exam_type ILIKE '%prelim%'
+  AND legacy_syllabus IS NOT TRUE   -- old syllabus never reaches a student (bot lib/syllabus-gate.js); a part marked legacy inside parts is left out of the printed paper (bot lib/part-view.js)
   AND topics && ARRAY['<topic>']
   AND total_marks BETWEEN <lo> AND <hi>
   AND (<no student> OR school <> '<student school>')
