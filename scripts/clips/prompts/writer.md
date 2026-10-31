@@ -157,8 +157,9 @@ no focus, no clear.
   carries `"aside": {"text": "Why …?", "slug": "<topic>-<point>", "read": ["…", "…", "**takeaway**"]}`
   — up to 10 lines, one idea a line, inline `$…$` maths, the last line bold. No side clip is made.
 - **A value read off the calculator gets the 🧮 card** (Adrian, 1 Nov 2026): when the voice says
-  "six C two is fifteen" or "two to the four is sixteen", `highlight` that piece on those words, add a
-  `note` `use calculator` near it, and give the beat `"calc": ["ncr", "power"]` — keys `ncr`, `power`,
+  "six C two is fifteen" or "two to the four is sixteen", `highlight` the VALUE on the line being
+  written (the `15`, the `16` — make it its own token), never the ⁶C₂ lines above (they have scrolled
+  away: "talked about but hidden"), add a `note` `use calculator` near that value, and give the beat `"calc": ["ncr", "power"]` — keys `ncr`, `power`,
   `negative` (a negative number to a power), `fraction` (a fraction to a power), `term` (a whole term
   typed as one line), `exact` (fraction ↔ decimal). Only the keys this beat really uses. The
   in-between simplification line stays on the board.

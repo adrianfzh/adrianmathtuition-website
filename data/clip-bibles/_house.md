@@ -208,7 +208,8 @@ factorise and reject with the reason; a coefficient is the number only, last lin
 *"When narrator says '⁷C₂ is 21, 2⁵ is 32' you can highlight the words and put a side note use
 calculator to calculate and a popup that students can click: how to use a calculator."* When the
 voice reads a value off the calculator (an nCr, a power, a negative or fraction to a power, a whole
-term), the piece is `highlight`ed on the words that say it, a `note` `use calculator` sits under it,
+term), the VALUE on the line being written is its own token and is `highlight`ed on the words that say
+it (not the ⁶C₂ a few lines up — that has scrolled away by then), a `note` `use calculator` sits under it,
 and the beat carries `"calc": ["ncr", "power", …]` (`lib/calculator-help.ts`: `ncr`, `power`,
 `negative`, `fraction`, `term`, `exact`). The board then shows a **🧮 Calculator** chip beside the
 💡 one; a tap pauses the clip and lays the key presses (Casio fx-97SG X) over the board. The

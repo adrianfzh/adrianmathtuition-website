@@ -206,7 +206,8 @@ all twelve, plus item 13. The quotes are his words as transcribed. Private — n
 calculator ("7 choose 2 is 21, 2 to the power of 5 is 32"). The clips keep the 31 Oct in-between
 simplification line, and when the voice says such a value: *"highlight the words and put a side note
 use calculator to calculate and a popup that students can click: how to use a calculator"*. So: the
-piece is `highlight`ed on the words that say it, a `note` `use calculator` sits under it, and the beat
+value on the line being written (its own token: `15`) is `highlight`ed on the words that say it (not
+the ⁶C₂ lines above, which have scrolled away by then), a `note` `use calculator` sits under it, and the beat
 carries `"calc": [...]` (keys: `ncr`, `power`, `negative`, `fraction`, `term`, `exact` —
 `lib/calculator-help.ts`), which puts a **🧮 Calculator** chip on the board that opens the key presses.
 
