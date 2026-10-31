@@ -31,13 +31,14 @@ export const MAX_NOTEBOOK_BYTES = 400 * 1024 * 1024;
 
 const UUID = '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}';
 const UUID_RE = new RegExp(`^${UUID}$`);
-const PATH_RE = new RegExp(`^(notebook\\.json|pages/${UUID}\\.drawing|documents/${UUID}\\.pdf)$`);
+const PATH_RE = new RegExp(`^(notebook\\.json|pages/${UUID}\\.drawing|documents/${UUID}\\.pdf|previews/${UUID}\\.jpg)$`);
 
 export function isNotebookId(id: unknown): id is string {
   return typeof id === 'string' && UUID_RE.test(id);
 }
 
-/** Only the three kinds of file a notebook holds; nothing else is ever stored. */
+/** Only the kinds of file a notebook holds; nothing else is ever stored. previews/<page>.jpg is
+ *  the app's picture of a written page, so the website can show it (§0e). */
 export function isNotebookPath(path: unknown): path is string {
   return typeof path === 'string' && PATH_RE.test(path);
 }
@@ -117,4 +118,29 @@ export function parseFolders(body: unknown): { ok: true; folders: AppFolder[] } 
     out.push({ id: f.id.toUpperCase(), name: f.name.trim().slice(0, 100) || 'Subject', createdAt: f.createdAt });
   }
   return { ok: true, folders: out };
+}
+
+/** One written page as Adrian's student page shows it: its number in the notebook and its picture. */
+export interface WrittenPage { n: number; pageId: string; picture: string; verdict: string | null; summary: string | null }
+
+/**
+ * The written pages of a notebook, in notebook order, from its notebook.json and manifest.
+ * A page without a picture (never written on) is left out; the numbers stay the notebook's.
+ */
+export function writtenPages(notebookJson: unknown, manifest: Manifest): WrittenPage[] {
+  const pages = (notebookJson as { pages?: unknown } | null)?.pages;
+  if (!Array.isArray(pages)) return [];
+  const out: WrittenPage[] = [];
+  pages.forEach((p, i) => {
+    const id = typeof (p as { id?: unknown })?.id === 'string' ? String((p as { id: string }).id).toUpperCase() : '';
+    const picture = `previews/${id}.jpg`;
+    if (!isNotebookId(id) || !manifest[picture]) return;
+    const check = (p as { check?: { verdict?: unknown; summary?: unknown } }).check;
+    out.push({
+      n: i + 1, pageId: id, picture,
+      verdict: typeof check?.verdict === 'string' ? check.verdict : null,
+      summary: typeof check?.summary === 'string' ? check.summary : null,
+    });
+  });
+  return out;
 }

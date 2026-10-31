@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import SendWorkCard from './send-work';
 import ShelfSection from './shelf-section';
+import AppNotebooksSection from './app-notebooks-section';
 import NextLessonCard from './next-lesson-card';
 import SchoolExams from './school-exams';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
@@ -882,6 +883,12 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                   </p>
                 );
               })()}
+            </Section>
+
+            {/* 📓 iPad notebooks (SPEC-STUDENT-APP.md §0e, 31 Oct 2026): what they wrote in the
+                Notebook app, read-only, page pictures from its backup. */}
+            <Section title="📓 iPad notebooks" show={tab === 'work'}>
+              <AppNotebooksSection studentId={studentId} />
             </Section>
 
             {/* Portal activity visibility (2026-09-03) — one compact line, no

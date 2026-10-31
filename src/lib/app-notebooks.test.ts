@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filesToRemove, filesToSend, isNotebookPath, missingFiles, notebookFileKey, parseCommit, parseFolders, parseManifest, type Manifest } from './app-notebooks';
+import { writtenPages, filesToRemove, filesToSend, isNotebookPath, missingFiles, notebookFileKey, parseCommit, parseFolders, parseManifest, type Manifest } from './app-notebooks';
 import { ownerOf } from './student-files-url';
 import { ERASE_BY_IDENTITY, ERASE_FILE_PREFIXES } from './erasure';
 
@@ -63,5 +63,17 @@ describe('notebook backup', () => {
   it('Delete my account erases the backup', () => {
     expect(ERASE_FILE_PREFIXES).toContain('notebooks');
     expect(ERASE_BY_IDENTITY.map(t => t.table)).toEqual(expect.arrayContaining(['app_notebooks', 'app_notebook_folders']));
+  });
+
+  it('lists written pages in notebook order, keeping the notebook page numbers', () => {
+    const P2 = 'B1B2C3D4-E5F6-4789-8ABC-DEF012345678';
+    const json = { pages: [{ id: PG.toLowerCase() }, { id: NB }, { id: P2, check: { verdict: 'partial', summary: '2 of 3 right' } }] };
+    const m: Manifest = { [`previews/${PG}.jpg`]: { size: 1, sha256: h('a') }, [`previews/${P2}.jpg`]: { size: 1, sha256: h('b') } };
+    expect(writtenPages(json, m)).toEqual([
+      { n: 1, pageId: PG, picture: `previews/${PG}.jpg`, verdict: null, summary: null },
+      { n: 3, pageId: P2, picture: `previews/${P2}.jpg`, verdict: 'partial', summary: '2 of 3 right' },
+    ]);
+    expect(isNotebookPath(`previews/${PG}.jpg`)).toBe(true);
+    expect(writtenPages(null, m)).toEqual([]);
   });
 });
