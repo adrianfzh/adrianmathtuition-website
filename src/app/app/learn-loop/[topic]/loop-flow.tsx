@@ -21,9 +21,11 @@ type Grade = {
 };
 type Mode = 'write' | 'photo' | 'type';
 
-export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initialTypes, missesBeforeHelp }: {
+export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initialTypes, missesBeforeHelp, seenExample }: {
   topicKey: string; title: string; clipHref: string | null; clipFirst: boolean;
   initialTypes: TypeRow[]; missesBeforeHelp: number;
+  /** The type whose example clip the student just came back from (?seen=). */
+  seenExample: number | null;
 }) {
   const [types, setTypes] = useState<TypeRow[]>(initialTypes);
   const [showClip, setShowClip] = useState(clipFirst && !!clipHref);
@@ -34,6 +36,8 @@ export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initial
   const [mcq, setMcq] = useState(false);
   const [noMore, setNoMore] = useState(false);
   const [shown, setShown] = useState<string[]>([]);
+  const shownRef = useRef<string[]>([]);
+  useEffect(() => { shownRef.current = shown; }, [shown]);
   const [mode, setMode] = useState<Mode>('write');
   const [typed, setTyped] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
@@ -43,6 +47,10 @@ export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initial
   const [err, setErr] = useState<string | null>(null);
   const [grade, setGrade] = useState<Grade | null>(null);
   const [solution, setSolution] = useState<string | null>(null);
+  // 📺 One worked example before a type's first question (Adrian, 31 Oct 2026): a clip of a
+  // question of that type when there is one, else a question with its worked solution.
+  const [examplesSeen, setExamplesSeen] = useState<number[]>(seenExample != null ? [seenExample] : []);
+  const [example, setExample] = useState<{ clipId?: string; q?: Question; solution?: string | null } | null>(null);
 
   const loadQuestion = useCallback(async (typeId: number, exclude: string[]) => {
     setBusy('Finding a question…'); setErr(null); setGrade(null); setSolution(null);
@@ -60,11 +68,33 @@ export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initial
     } finally { setBusy(null); }
   }, [topicKey]);
 
-  // A new type on screen → its first question.
+  const loadExample = useCallback(async (typeId: number) => {
+    setBusy('Finding a worked example…'); setErr(null); setExample(null); setQ(null); setGrade(null);
+    try {
+      const d = await portalFetch<{ clipId?: string; question?: Question | null }>('/api/portal/loop', {
+        json: { topic: topicKey, action: 'example', subgroupId: typeId },
+      });
+      if (d.clipId) { setExample({ clipId: d.clipId }); setShown(s => [...s, d.clipId!]); return; }
+      if (!d.question) { setExamplesSeen(s => [...s, typeId]); return; }   // nothing to show → straight to a question
+      const ex = d.question;
+      setShown(s => [...s, ex.id]);
+      setExample({ q: ex, solution: null });
+      portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${ex.id}`)
+        .then(r => setExample(cur => (cur?.q?.id === ex.id ? { ...cur, solution: r.markdown || null } : cur)))
+        .catch(() => setExamplesSeen(s => [...s, typeId]));
+    } catch {
+      setExamplesSeen(s => [...s, typeId]);
+    } finally { setBusy(null); }
+  }, [topicKey]);
+
+  // A new type on screen → its worked example (first time only), then its first question.
   const currentId = current?.id ?? null;
+  const needsExample = !!current && current.tries === 0 && !examplesSeen.includes(current.id);
   useEffect(() => {
-    if (!showClip && currentId != null) void loadQuestion(currentId, []);
-  }, [showClip, currentId, loadQuestion]);
+    if (showClip || currentId == null) return;
+    if (needsExample) void loadExample(currentId);
+    else { setExample(null); void loadQuestion(currentId, shownRef.current); }
+  }, [showClip, currentId, needsExample, loadExample, loadQuestion]);
 
   async function refreshTypes() {
     try {
@@ -158,6 +188,32 @@ export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initial
         <section className="mt-4 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
           <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">Now: {current.name}</p>
 
+          {needsExample && example?.clipId && (
+            <div className="mt-2 rounded-xl border border-sky-100 bg-sky-50/60 p-3">
+              <p className="text-[15px] font-semibold text-sky-900">Watch one worked first</p>
+              <p className="mt-1 text-[13px] text-slate-600">A short clip of one question of this type, step by step. Then you try one.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href={`/app/clip/q/${example.clipId}?back=${encodeURIComponent(`/app/learn-loop/${topicKey}?watched=1&seen=${current.id}`)}`}
+                  className="rounded-xl bg-navy px-4 py-2.5 text-sm font-semibold text-white">▶ Watch the example</Link>
+                <button type="button" onClick={() => setExamplesSeen(s => [...s, current.id])}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700">Skip to my question</button>
+              </div>
+            </div>
+          )}
+
+          {needsExample && example?.q && (
+            <div className="mt-2 space-y-2">
+              <p className="text-[15px] font-semibold text-sky-900">One worked first</p>
+              <div className="rounded-xl bg-slate-50 p-3 text-[15px]"><QuestionView q={example.q} /></div>
+              <div className="rounded-xl border border-slate-100 bg-white p-3">
+                <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">How it goes</p>
+                {example.solution ? <div className="mt-1 text-[15px]"><Md text={example.solution} /></div> : <p className="mt-1 text-[13px] text-slate-500">Loading the worked solution…</p>}
+              </div>
+              <button type="button" onClick={() => setExamplesSeen(s => [...s, current.id])}
+                className="w-full rounded-xl bg-sky-600 px-4 py-3 text-[15px] font-semibold text-white">Now try one ›</button>
+            </div>
+          )}
+
           {noMore && (
             <div className="mt-2 text-[14px] text-slate-700">
               <p>No more questions of this type right now.</p>
@@ -213,7 +269,7 @@ export default function LoopFlow({ topicKey, title, clipHref, clipFirst, initial
             </div>
           )}
 
-          {!q && busy && <p className="mt-3 text-[13px] text-slate-500">{busy}</p>}
+          {!q && !example && busy && <p className="mt-3 text-[13px] text-slate-500">{busy}</p>}
 
           {/* The result */}
           {grade && grade.verdict === 'correct' && (

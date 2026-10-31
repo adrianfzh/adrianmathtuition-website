@@ -66,8 +66,9 @@ export default async function QuestionClipPage({ params, searchParams }: { param
         question={question}
         backHref={back}
         startAt={Math.max(0, Number.parseInt(sp.at ?? '0', 10) || 0)}
-        practiceHref={`/app/practice?qid=${id}`}
-        practiceLabel="Try it yourself →"
+        // Opened from the learning loop (SPEC-LEARN-LOOP.md): "Now try one" goes back to its question.
+        practiceHref={back.startsWith('/app/learn-loop/') ? back : `/app/practice?qid=${id}`}
+        practiceLabel={back.startsWith('/app/learn-loop/') ? 'Now try one →' : 'Try it yourself →'}
         doneTitle="Now try one"
         doneText="Do this question on your own while it is fresh."
       />

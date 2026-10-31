@@ -46,6 +46,27 @@ the loop gives a result every question, in small steps.
 
 "Okay" = one answer with full marks (the grader's `correct`). A partial answer is not okay.
 
+## One worked example before each type (31 Oct 2026)
+
+Adrian: *"What about the video clip to learn one example first?"* → *"Yes"* to: before each
+type's FIRST question, "watch one first".
+- When the student may watch question clips (`questionClipsVisible` — preview student / switch)
+  and a **ready** question clip is filed under the type → "▶ Watch the example" opens
+  `/app/clip/q/<id>?back=/app/learn-loop/<key>?watched=1&seen=<type>`; the clip's "Now try one"
+  returns to the loop, which then serves the first question. "Skip to my question" is beside it.
+- Otherwise → **one worked first**: a question of the type with its full worked solution on the
+  page (`/api/portal/loop {action:'example'}` → practice_next, solution rows only), then
+  "Now try one". The example question is never served as the student's own question.
+- Shown once per type: only while the type has no answers (`tries === 0`).
+
+Clips for Binomial (31 Oct 2026): ready for 3 types (general term · multiplying by another
+bracket · unknowns from coefficients). Queued for 3 more, our own questions: expanding the first
+few terms `2aa7610f`, estimating a value `d3d3f2c4`, harder mixed `9adc1f35` — Adrian watches each
+before students see it (`QUESTION_CLIPS_OPEN_TO_STUDENTS`, `/admin/question-clips`). **"Explaining
+why a term does or does not exist" has no clip**: every A Math question of that type keeps its
+words in the parts only, and the clip maker refuses a question with no stem text (`no-text`); the
+S3_AM one was refused for its level. That type uses the worked example.
+
 ## Where it is stored
 
 Nothing new. Each answer is a `student_attempts` row with `attempted_via = 'portal-loop'` and

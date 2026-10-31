@@ -32,6 +32,7 @@ export default async function LearnLoopPage({ params, searchParams }: {
       clipFirst={showClipFirst(types) && sp.watched !== '1'}
       initialTypes={types}
       missesBeforeHelp={LOOP_MISSES_BEFORE_HELP}
+      seenExample={typeof sp.seen === 'string' && /^\d{1,6}$/.test(sp.seen) ? Number(sp.seen) : null}
     />
   );
 }

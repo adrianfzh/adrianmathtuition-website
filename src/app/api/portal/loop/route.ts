@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience } from '@/lib/practice';
 import { portalIdentity } from '@/lib/portal-auth';
-import { learnLoopOpenFor } from '@/lib/portal-beta';
+import { learnLoopOpenFor, questionClipsVisible } from '@/lib/portal-beta';
 import { loopTopic, LOOP_MISSES_BEFORE_HELP } from '@/lib/learn-loop';
 import { loopState, studentLoopLevel } from '@/lib/learn-loop-store';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
@@ -39,11 +39,28 @@ export async function POST(req: NextRequest) {
   if (body.action === 'state') {
     return NextResponse.json({ level, types: progress, missesBeforeHelp: LOOP_MISSES_BEFORE_HELP });
   }
-  if (body.action !== 'next') return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  if (body.action !== 'next' && body.action !== 'example') return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 
   const sg = Number(body.subgroupId);
   const type = progress.find(p => p.id === sg);
   if (!type) return NextResponse.json({ error: 'Unknown question type' }, { status: 400 });
+
+  // 'example' (Adrian, 31 Oct 2026: "What about the video clip to learn one example first?"):
+  // before a type's first question, one worked example of it — a ready question clip filed
+  // under the type when this student may watch clips, else a question of the type with its
+  // worked solution (the client fetches the solution through the ordinary solution door).
+  if (body.action === 'example') {
+    const sb0 = getSupabaseAdmin();
+    if (await questionClipsVisible(portalIdentity(account))) {
+      const { data: filed } = await sb0.from('question_subgroups').select('question_id').eq('subgroup_id', sg).limit(1000);
+      const ids = (filed ?? []).map(f => f.question_id as string);
+      if (ids.length) {
+        const { data: clip } = await sb0.from('question_clips').select('question_id')
+          .eq('status', 'ready').in('question_id', ids.slice(0, 1000)).limit(1).maybeSingle();
+        if (clip) return NextResponse.json({ clipId: clip.question_id });
+      }
+    }
+  }
 
   const scope = bankScope(level);
   const skip = [
@@ -64,7 +81,8 @@ export async function POST(req: NextRequest) {
     if (!raw) return NextResponse.json({ question: null });
     const { data: meta } = await sb.from('questions').select('ai_generated, solution_source, verified, twin_of, answer').eq('id', raw.id).maybeSingle();
     const q = meta && gradableRow(meta) ? studentRow(raw) : null;
-    if (!q) { skip.push(raw.id); continue; }
+    // A worked example must have its worked solution.
+    if (!q || (body.action === 'example' && !raw.has_solution)) { skip.push(raw.id); continue; }
     const { stem, parts } = questionStructured(q);
     return NextResponse.json({
       question: {
