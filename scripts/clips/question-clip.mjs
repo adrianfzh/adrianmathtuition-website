@@ -340,11 +340,16 @@ if (!mc.pass) await finish('failed', `maths check: ${mc.bad[0] ?? ''}`.slice(0, 
 async function fitCheck() {
   const p = readJson(PLAN);
   const nb = Math.max(1, p.boards?.length ?? 1);
-  if (nb > 2) return { pass: false, detail: `${nb} boards — a clip has at most 2` };
+  // ONE scrolling board since 17 Oct 2026 (lesson-verify clipIssues) — a plan with two boards would
+  // only be refused at the rules step after the drafts and reads are paid for.
+  if (nb > 1) return { pass: false, detail: `${nb} boards — a clip is ONE board; with more than 7 lines set "scroll": true` };
+  // The same test assemble.mjs uses: a long single board scrolls, so only its width and the
+  // subtitle strip are checked, not its height.
+  const scrolls = p.scroll === true || (p.scroll !== false && (p.lines?.length ?? 0) > 7);
   const scenes = Array.from({ length: nb }, (_, k) => {
     const board = p.boards?.[k] ?? { heading: p.heading, intro: p.intro };
     const lines = p.lines.filter(l => (l.board ?? 0) === k);
-    return { type: 'equation-steps', heading: board.heading, ...(board.intro ? { intro: board.intro } : {}),
+    return { type: 'equation-steps', heading: board.heading, ...(board.intro ? { intro: board.intro } : {}), ...(scrolls ? { scroll: true } : {}),
       steps: lines.map(l => ({ tokens: l.tokens })),
       // The worst case: every line with its rule note under it (house rule: the rule beside the step) — notes add height.
       beats: lines.map((l, i) => ({ say: 'This line and its rule stay on the board while the voice explains the step slowly and very clearly for every single student watching here.', do: [{ do: 'write', step: i }, { do: 'note', text: 'Rule: (a + b)(a − b) = a² − b²', near: l.tokens[0].id, on: 'rule' }] })) };
@@ -352,6 +357,7 @@ async function fitCheck() {
   await saveRow({ script: { slug: SLUG, title: p.title, level: p.level, topic: p.topic, minutes: 1, kind: 'clip', theme: 'chalk', scenes } });
   const r = sh('node', ['scripts/clips/fit.mjs', SLUG, '--base', BASE, '--path', `/app/clip/q/${QID}?check=1`], { timeout: 4 * 60_000 });
   const j = readJson(path.join(RUN, 'fit.json'));
+  if (j && scrolls) j.pass = j.boards.every(b => !b.error && !b.cut?.length && !b.under?.length);
   return j ? { pass: j.pass, detail: j.boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ends ${b.bottom} px, screen ${b.fold} px${b.cut?.length ? `, maths cut off at the side: ${b.cut.join(', ')}` : ''}${b.under?.length ? `, maths under the subtitle strip: ${b.under.join(', ')}` : ''}`).join(' · ') } : { pass: false, detail: r.out.trim().slice(-300) };
 }
 let fit = await step('fit', fitCheck);
@@ -359,7 +365,7 @@ let fit = await step('fit', fitCheck);
 // Binomial clip ended 4 px short after two.
 for (let n = 0; !fit.pass && n < 3; n++) {
   await step(`fit-repair-${n + 1}`, () => agent('fit-repair', 'opus',
-    `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: maths under the subtitle strip → fewer or shorter lines on that board (the strip covers the board's foot); a line cut off at the side → split it into two lines or shorten it; too tall → shorten the intro to the question's numbers and ask (cut story words), and/or move lines to a second board (boards + "board" on each line), never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
+    `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: maths under the subtitle strip → fewer or shorter lines on that board (the strip covers the board's foot); a line cut off at the side → split it into two lines or shorten it; too tall → shorten the intro to the question's numbers and ask (cut story words); with more than 7 lines set "scroll": true on the plan (ONE board — never "boards", never "board" on a line: a clip is one scrolling board); never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
   mc = mathsCheck();
   if (!mc.pass) await finish('failed', `maths check after the fit repair: ${mc.bad[0] ?? ''}`.slice(0, 300));
   fit = await step('fit', fitCheck);

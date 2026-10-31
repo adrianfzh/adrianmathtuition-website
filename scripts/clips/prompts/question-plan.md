@@ -15,7 +15,8 @@ narration. You do not write narration.
 4. `scripts/clips/chain-check.py` — the docstring lists every check kind and what it proves.
 5. Two approved plans as models of the format: `data/clip-plans/solving-log-equations-am.json`
    (an equation chain with a rejected root) and `data/clip-plans/linear-form-with-logs-am.json`
-   (two boards, `model` / `identity` / `fact` checks).
+   (`model` / `identity` / `fact` checks). Its two `boards` are from before the one-board rule — copy
+   its checks, NOT its boards.
 
 ## First: can this question be a checked clip?
 
@@ -24,8 +25,8 @@ Refuse (write ONLY `{"refuse": "<kind>", "why": "<one plain sentence>"}` to the 
 - `proof` — "show that" / "prove" with no number to land on;
 - `words` — the answer is mainly an explanation in words;
 - `figure` — the question needs a diagram the board cannot show;
-- `long` — the working cannot fit two phone boards of ≤ 7 lines each (say so — a later build
-  splits questions into part clips);
+- `long` — the working needs more than about 12 lines on one scrolling board (say so — a later
+  build splits questions into part clips);
 - `unchecked` — a line of the working cannot be written as a check below.
 Never refuse because it is hard. Never invent a check that does not prove the line.
 
@@ -41,15 +42,16 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   "outline": [ "Read the question (intro on the board).", "The plan first: …", "…" ] }
 ```
 
-- **Every board fits ONE phone screen** (390 × 844, measured after you finish — a board that runs
-  under the bottom bar is sent back). Budget: the heading, an `intro` of at most about two phone
-  lines (≈ 70 characters of words + maths — cut story words: "A cylinder: volume $(6+2\sqrt3)\pi$,
-  radius $1+\sqrt3$. Find its height."), then at most 5 working lines (4 when lines carry
-  fractions). More → a second board, whose intro is a one-line reminder. **Never more than 2
-  boards.** A line wider than the phone (about 22 characters of maths) is cut off — split it. The same
-  holds for maths inside an `intro`: a long identity goes on the board as a line, not in the intro.
-- `lines[0]` is the first line of WORKING (the question sits in `intro`). A two-board plan has
-  `boards: [{heading, intro}, …]` and `"board": 0|1` on each line.
+- **A clip is ONE board — never `boards`, never `"board"` on a line** (Adrian, 16–17 Oct 2026:
+  "make the lines move up, like scrolling up, then we don't have to change screen"; house rules §1,
+  the lesson verifier refuses two). Up to 7 lines it is one fixed board, which must fit ONE phone
+  screen (390 × 844, measured after you finish). Longer working: set `"scroll": true` and keep every
+  line on the one board — it slides up as lines are written; put a short `heading` on the first line
+  of each step. Budget: the heading, an `intro` of at most about two phone lines (≈ 70 characters of
+  words + maths — cut story words: "A cylinder: volume $(6+2\sqrt3)\pi$, radius $1+\sqrt3$. Find its
+  height."). A line wider than the phone (about 22 characters of maths) is cut off — split it. The
+  same holds for maths inside an `intro`: a long identity goes on the board as a line, not in the intro.
+- `lines[0]` is the first line of WORKING (the question sits in `intro`).
 - Token ids are short, unique, lower-case. `hl`: `amber` for the line a key move makes, `emerald`
   for the answer token. A long line is one token.
 - **No `note` on a line.** The rule beside a step is a `note` ACTION the writer adds on its word
