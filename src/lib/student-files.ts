@@ -106,11 +106,24 @@ export interface UploadUrl { uploadUrl: string; token: string; key: string; url:
 
 /** A signed URL the browser PUTs the file to directly (bypasses the body cap).
  *  Valid for two hours; the key is fixed by the caller, never by the client. */
-export async function createUploadUrl(key: string): Promise<UploadUrl> {
+export async function createUploadUrl(key: string, opts?: { upsert?: boolean }): Promise<UploadUrl> {
   const k = assertKey(key);
-  const { data, error } = await bucket().createSignedUploadUrl(k);
+  const { data, error } = await bucket().createSignedUploadUrl(k, opts?.upsert ? { upsert: true } : undefined);
   if (error || !data) throw new Error(`student-files signed upload failed for ${k}: ${error?.message || 'no data'}`);
   return { uploadUrl: data.signedUrl, token: data.token, key: k, url: fileUrl(k) };
+}
+
+/** Short-lived signed READ addresses (for the Notebook app, which has no website cookie).
+ *  Same order as `keys`; a key with no stored file comes back with url null. */
+export async function createDownloadUrls(keys: string[], seconds = 3600): Promise<{ key: string; url: string | null }[]> {
+  const out: { key: string; url: string | null }[] = [];
+  for (let i = 0; i < keys.length; i += 500) {
+    const chunk = keys.slice(i, i + 500).map(assertKey);
+    const { data, error } = await bucket().createSignedUrls(chunk, seconds);
+    if (error || !data) throw new Error(`student-files signed read failed: ${error?.message || 'no data'}`);
+    chunk.forEach((k, j) => out.push({ key: k, url: data[j]?.error ? null : (data[j]?.signedUrl ?? null) }));
+  }
+  return out;
 }
 
 export async function removeStudentFiles(keys: string[]): Promise<number> {

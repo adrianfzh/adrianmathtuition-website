@@ -15,7 +15,9 @@ export const CANONICAL_ORIGIN = 'https://www.adrianmathtuition.com';
 // 'pages' (11 Sep 2026): a page Adrian pushed to many students at once — ONE
 // copy, readable by ANY logged-in student (his material, not a student's data).
 // 'oral' (8 Oct 2026): a student's own spoken answers — oral/<identity>/<attempt>/<n>.<ext>.
-const ROOTS = ['runs', 'uploads', 'handins', 'clippings', 'assignments', 'inbox', 'pages', 'oral'] as const;
+// 'notebooks' (31 Oct 2026): the Notebook iPad app's backup — notebooks/<identity>/<notebook-id>/<path>
+// (lib/app-notebooks.ts). The app reads it through signed addresses, never /api/files/.
+const ROOTS = ['runs', 'uploads', 'handins', 'clippings', 'assignments', 'inbox', 'pages', 'oral', 'notebooks'] as const;
 type Root = typeof ROOTS[number];
 const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._:()\- ]{0,120}$/;
 
@@ -89,14 +91,15 @@ export function ownerOf(key: string): FileOwner {
     case 'handins':
     case 'clippings':
     case 'assignments':
-    case 'oral': return { kind: 'student', identity: second };
+    case 'oral':
+    case 'notebooks': return { kind: 'student', identity: second };
     case 'pages': return { kind: 'page' };
     default: return { kind: 'admin' };
   }
 }
 
 const TYPES: Record<string, string> = {
-  pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+  pdf: 'application/pdf', json: 'application/json', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
   heic: 'image/heic', heif: 'image/heif', gif: 'image/gif',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   webm: 'audio/webm', m4a: 'audio/mp4', mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav',

@@ -31,10 +31,13 @@ export const ERASE_BY_IDENTITY: readonly { table: string; column: string }[] = [
   // 14 Oct 2026 (My definitions):
   { table: 'student_definitions', column: 'identity' }, // the definitions they saved on the science pages
   { table: 'plan_reads', column: 'identity' }, // answers waiting for, or back from, the plan reader
+  // 31 Oct 2026 (Notebook iPad app backup — the files themselves: ERASE_FILE_PREFIXES 'notebooks'):
+  { table: 'app_notebooks', column: 'identity' }, // which notebooks they backed up, and their file lists
+  { table: 'app_notebook_folders', column: 'identity' }, // their subjects in the app
 ];
 
 /** Private-file folders erased whole: `<root>/<identity>/…` holds nothing but this student's own files. */
-export const ERASE_FILE_PREFIXES: readonly string[] = ['clippings', 'assignments', 'oral'];
+export const ERASE_FILE_PREFIXES: readonly string[] = ['clippings', 'assignments', 'oral', 'notebooks'];
 
 /**
  * Deliberately KEPT: the marked papers and everything on them. `student_ink` is

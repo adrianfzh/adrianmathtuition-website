@@ -743,3 +743,10 @@ export const PRIMARY_OPEN_TO_STUDENTS = false;
 // demo student can use the check. Flip to true when the app ships to students.
 export const APP_CHECK_PAGE_OPEN_TO_STUDENTS = false;
 export const APP_CHECK_PAGE_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+// ☁️ Notebook backup in the Notebook iPad app (SPEC-STUDENT-APP.md §0d, 31 Oct 2026, Adrian:
+// "yes" to saving the app's notebooks on our server under the student's account, so a lost
+// iPad loses nothing and the same notes open on another device). Demo student only until the
+// app ships; flip with APP_CHECK_PAGE_OPEN_TO_STUDENTS.
+export const APP_NOTEBOOK_BACKUP_OPEN_TO_STUDENTS = false;
+export const APP_NOTEBOOK_BACKUP_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
