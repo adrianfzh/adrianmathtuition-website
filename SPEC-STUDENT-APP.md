@@ -135,7 +135,7 @@ cost measured → "Yes"). Code: `lib/app-check-page-server.ts checkPage` (the ro
   **What the bench does not show:** typed handwriting is far neater than a real student's, and
   each page had one slip. The real test is pages written with a Pencil on an iPad.
 - Found while building it: bank question `f9f29835` (EM, n(A ∩ B)) has answer 8; the right
-  answer is 4 (A ∩ B = {1, 2, 3, 6}). Not changed — waiting for Adrian.
+  answer is 4 (A ∩ B = {1, 2, 3, 6}). Corrected 1 Nov 2026 (Adrian: "Yes"): answer 4 and a worked solution.
 
 **How the red pen sits on the page** (explained to Adrian 31 Oct): like a clear plastic sheet over
 the page — its own layer above the ink. The student keeps writing on the page through it; the
