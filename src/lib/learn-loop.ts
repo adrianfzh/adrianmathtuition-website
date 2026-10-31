@@ -18,7 +18,10 @@ export type LoopTopic = {
 };
 
 export const LOOP_TOPICS: readonly LoopTopic[] = [
-  { key: 'am-binomial', title: 'Binomial Theorem', topic: 'Binomial Theorem', levels: ['S3_AM', 'AM'], clipSlug: 'binomial-theorem-am' },
+  // No topic clip: the only one, `binomial-theorem-am`, is the 2 Sep 2026 slide-style pilot Adrian
+  // rejected (31 Oct 2026: "Isn't that the old clip that I previously rejected?"). Each type's
+  // worked example / question clip does the teaching instead.
+  { key: 'am-binomial', title: 'Binomial Theorem', topic: 'Binomial Theorem', levels: ['S3_AM', 'AM'], clipSlug: null },
 ];
 
 export function loopTopic(key: unknown): LoopTopic | null {

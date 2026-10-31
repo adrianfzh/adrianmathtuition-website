@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience } from '@/lib/practice';
 import { portalIdentity } from '@/lib/portal-auth';
-import { learnLoopOpenFor, questionClipsVisible } from '@/lib/portal-beta';
+import { learnLoopOpenFor, questionClipsVisible, SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
 import { loopTopic, LOOP_MISSES_BEFORE_HELP } from '@/lib/learn-loop';
 import { loopState, studentLoopLevel } from '@/lib/learn-loop-store';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
@@ -55,8 +55,12 @@ export async function POST(req: NextRequest) {
       const { data: filed } = await sb0.from('question_subgroups').select('question_id').eq('subgroup_id', sg).limit(1000);
       const ids = (filed ?? []).map(f => f.question_id as string);
       if (ids.length) {
-        const { data: clip } = await sb0.from('question_clips').select('question_id')
-          .eq('status', 'ready').in('question_id', ids.slice(0, 1000)).limit(1).maybeSingle();
+        // A real student only ever sees a clip Adrian marked good (31 Oct 2026, _house.md "Rejected
+        // clips are never reused"); the preview student sees ready ones so he can watch them in place.
+        const previewer = SCIENCE_PREVIEW_IDENTITIES.includes(portalIdentity(account));
+        let qc = sb0.from('question_clips').select('question_id').eq('status', 'ready').in('question_id', ids.slice(0, 1000));
+        qc = previewer ? qc.or('verdict.is.null,verdict.eq.good') : qc.eq('verdict', 'good');
+        const { data: clip } = await qc.limit(1).maybeSingle();
         if (clip) return NextResponse.json({ clipId: clip.question_id });
       }
     }

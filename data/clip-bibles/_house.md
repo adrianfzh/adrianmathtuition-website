@@ -431,6 +431,14 @@ the history.
   ("minus sounds weird").
 - Every beat must make sense on its own (the slider, ⏪ 10 and ← jump to any beat) — no "as we said".
 
+### Rejected clips are never reused (Adrian, 31 Oct 2026)
+
+The 2 Sep 2026 Binomial pilot (`/app/lesson/binomial-theorem-am`, slide style) is REJECTED — Adrian,
+when the learning loop opened with it: *"Isn't that the old clip that I previously rejected?"*. Before
+any surface shows a clip to students, check it is one he approved (a question clip's `verdict =
+'good'`, a skill clip listed as accepted in `SPEC-CLIP-PIPELINE.md` §8); a pilot or an unwatched clip
+is not approved.
+
 ## 3. Words in the voice
 
 - Letters are CAPITALS in `say` ("X", "K", "A") so the voice reads the letter, not the word.

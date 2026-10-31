@@ -19,7 +19,10 @@ the loop gives a result every question, in small steps.
 
 ## The loop
 
-1. **The clip.** Before any question in the topic, a card offers the topic clip
+1. **The clip** — NONE for Binomial since 31 Oct 2026. The only topic clip, `binomial-theorem-am`, is the
+   2 Sep 2026 slide-style pilot Adrian had rejected (*"Isn't that the old clip that I previously
+   rejected?"*); never put it, or any lesson he has not approved, in front of students. A topic with
+   an APPROVED topic clip may set `clipSlug`; then before any question in the topic, a card offers the topic clip
    (`lib/lesson-catalog` slug, `binomial-theorem-am`) with "Skip to the questions". The clip opens
    at `/app/lesson/<slug>?loop=<key>`; its back / "Start the questions" buttons return to the loop.
    The lesson page lets a loop clip through for anyone with the loop (`learnLoopOpenFor`).
