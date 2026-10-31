@@ -73,6 +73,11 @@ const SPOKEN_SYMBOLS = [
   [/\bcentimet(re|er)s?\b|\bcm\b/g, ' cm '], [/\bcent(re|er)\b/g, ' centre '],
   // 26 Oct 2026: "pi" heard as "π", "sine" as "sin" / "sign" (both sides mapped alike).
   [/π/g, ' pi '], [/\b(sine|sin|sign)\b/g, ' sine '],
+  // 31 Oct 2026 (Binomial clips): the letter U heard as "you"; "X squared" written "x2" / "x²";
+  // "to the four" heard as "to the fourth"; "six C two" written "6C2".
+  [/\byou\b/g, ' u '], [/\b([a-z])\s?(2|²)(?![0-9.])/g, ' $1 square '], [/\b([a-z])\s?(3|³)(?![0-9.])/g, ' $1 cube '],
+  [/\b(four|fif|six|seven|eigh|nin|ten)th\b/g, (m, w) => ` ${({ four: 'four', fif: 'five', six: 'six', seven: 'seven', eigh: 'eight', nin: 'nine', ten: 'ten' })[w]} `],
+  [/\bthird\b(?! of)/g, ' three '], [/\bsecond\b/g, ' two '],
 ];
 const spoken = (t) => SPOKEN_SYMBOLS.reduce((acc, [re, to]) => acc.replace(re, to), t.toLowerCase());
 const canon = (t) => numberWordsToDigits(spoken(t)).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.\/]/g, '').replace(/\.(?![0-9])/g, '');
