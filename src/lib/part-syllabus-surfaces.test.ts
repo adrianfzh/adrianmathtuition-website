@@ -17,6 +17,7 @@ const EXEMPT: Record<string, string> = {
   // ── admin views: Adrian sees every part (a marked one is greyed on /admin/questions)
   'app/admin/watch-it/page.tsx': 'admin view',
   'app/api/admin/pc-coach/route.ts': 'admin view (🎲 P&C coach try-it page: Adrian picks a bank part to test the counter; nothing reaches a student)',
+  'lib/app-check-page-server.ts': 'Check this page: the answer key of a question already printed on the student’s own worksheet goes to the marker only, never shown to the student',
   'lib/annotate-side-store.ts': 'admin view (the ✏️ Annotate side panel: the solutions of a paper he is marking, every part)',
   'app/admin/question-clips/page.tsx': 'admin view (question text beside each clip)',
   'lib/my-definitions-store.ts': 'science bank text is background for the definition writer only, never shown to a student',
