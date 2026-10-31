@@ -1205,6 +1205,13 @@ export async function GET(req: NextRequest) {
     // student quota + Student-linked Questions row). 401 anonymously proves
     // the route is deployed with its session gate up — a 404 means every
     // student silently degrades to the anonymous 20/day quota.
+    // ✅ Check this page (Notebook iPad app, SPEC-STUDENT-APP.md §0c): anonymous → 401
+    // proves the route is deployed with its sign-in gate up.
+    timed('app-check-page', async () => {
+      const r = await fetch(`${base}/api/app/check-page`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-ask-token', async () => {
       const r = await fetch(`${base}/api/portal/ask-token`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

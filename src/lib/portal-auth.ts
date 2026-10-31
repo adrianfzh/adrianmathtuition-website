@@ -262,3 +262,24 @@ export const currentStudent = cache(async () => {
 
   return { user, account, airtableRecord };
 });
+
+/**
+ * The student behind an `Authorization: Bearer <access token>` header — how the Notebook
+ * iPad app calls us (SPEC-STUDENT-APP.md §0c). The app has no cookies: it signs in once
+ * with the student's usual email + password (/api/app/session) and sends the access token
+ * it got back. Same checks as the cookie path: a valid, unexpired token for an
+ * `authenticated` user with a portal_accounts row.
+ */
+export async function bearerAccount(req: Request): Promise<PortalAccount | null> {
+  const m = /^Bearer\s+(.+)$/i.exec(req.headers.get('authorization') || '');
+  if (!m) return null;
+  let user: SessionUser | null = null;
+  try {
+    const { payload } = await jwtVerify(m[1].trim(), getJwks(), { issuer: `${jwksUrl()}/auth/v1` });
+    user = claimsToSessionUser(payload);
+  } catch { return null; }
+  if (!user) return null;
+  const { data } = await createServiceClient()
+    .from('portal_accounts').select('*').eq('id', user.id).maybeSingle<PortalAccount>();
+  return data ?? null;
+}

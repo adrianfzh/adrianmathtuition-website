@@ -737,3 +737,9 @@ export async function questionClipsAdmin(): Promise<boolean> {
 // (lib/serve-gate PRIMARY_QLEVELS) even on a student's own list, and no student level maps to P6
 // (lib/qb-levels). National PSLE rows (school 'GCE') stay grounding-only whatever this says.
 export const PRIMARY_OPEN_TO_STUDENTS = false;
+
+// ✅ Check this page in the Notebook iPad app (SPEC-STUDENT-APP.md §0c, 31 Oct 2026,
+// Adrian: "Yes, build it"). The app is not in the App Store yet; until it is, only the
+// demo student can use the check. Flip to true when the app ships to students.
+export const APP_CHECK_PAGE_OPEN_TO_STUDENTS = false;
+export const APP_CHECK_PAGE_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
