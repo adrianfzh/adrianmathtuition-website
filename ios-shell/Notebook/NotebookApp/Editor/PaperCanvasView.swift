@@ -386,47 +386,44 @@ enum RedPen {
         page.addSublayer(shape)
 
         guard m.mark == .cross else { return }
-        let correct = placeCorrect(m, others: others, besideX: box.maxX + 8)
-        if let correct { page.addSublayer(correct.layer) }
-
-        guard !m.note.isEmpty else { return }
-        let note = text(m.note, font: noteFont)
-        // Beside the cross when it fits, otherwise under the line (under the correct line when
-        // that is there).
-        var origin = CGPoint(x: box.maxX + 8, y: r.midY - note.height / 2)
-        if correct?.beside == true || origin.x + note.width > PageGeometry.width - 12 {
-            let below = correct.map { $0.beside ? r.maxY + 2 : $0.layer.frame.maxY } ?? r.maxY + 2
-            origin = CGPoint(x: max(min(r.minX, PageGeometry.width - 12 - note.width), 12), y: below)
-        }
-        page.addSublayer(textLayer(note, at: origin))
-    }
-
-    /// The correct line, in the gap under the wrong line: as large as the gap allows (never
-    /// smaller than readable). With no room under it, beside the cross; only when neither
-    /// fits does it sit under the line at a readable size.
-    private static func placeCorrect(_ m: PageCheck.LineMark, others: [CGRect], besideX: CGFloat)
-        -> (layer: CATextLayer, beside: Bool)? {
-        guard let s = m.correct?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return nil }
-        let r = m.rect
-        let maxWidth = PageGeometry.width - 24
-        // The next line of writing that sits under this one (overlapping it left to right).
+        // Red writing never lands on the student's next line: under the wrong line only in
+        // the gap above the next line (and at most a line's height: printed questions are
+        // not in the gap), otherwise beside the cross. The correct line comes first and
+        // goes under the line when it can; the note goes beside, a little smaller, and gets
+        // what room is left (the sheet says it in full anyway).
         let nextTop = others
             .filter { $0.minY > r.midY && $0.maxX > r.minX && $0.minX < r.maxX + 200 }
             .map(\.minY).min() ?? (PageGeometry.height - 16)
-        let gap = nextTop - r.maxY
-        let x = max(min(r.minX, PageGeometry.width - 12 - 40), 12)
-        for size in stride(from: CGFloat(24), through: 15, by: -1) {
-            let t = text(s, font: noteFont.withSize(size))
-            if t.height <= gap - 1, x + t.width <= PageGeometry.width - 12 {
-                return (textLayer(t, at: CGPoint(x: x, y: r.maxY + max((gap - t.height) / 2 - 2, 0))), false)
-            }
+        let bottom = min(nextTop - 1, r.maxY + 1 + max(r.height, 40))
+        var underY = r.maxY + 1
+        var besideX = box.maxX + 8
+        let leftX = max(min(r.minX, PageGeometry.width - 12 - 40), 12)
+        func under(_ s: String, _ largest: CGFloat) -> Bool {
+            guard let t = fit(s, largest: largest, width: PageGeometry.width - 12 - leftX, height: bottom - underY) else { return false }
+            page.addSublayer(textLayer(t, at: CGPoint(x: leftX, y: underY)))
+            underY += t.height
+            return true
         }
-        let beside = text(s, font: noteFont)
-        if besideX + beside.width <= PageGeometry.width - 12 {
-            return (textLayer(beside, at: CGPoint(x: besideX, y: r.midY - beside.height / 2)), true)
+        func beside(_ s: String, _ largest: CGFloat) -> Bool {
+            guard let t = fit(s, largest: largest, width: PageGeometry.width - 12 - besideX, height: .infinity) else { return false }
+            page.addSublayer(textLayer(t, at: CGPoint(x: besideX, y: r.midY - t.height / 2)))
+            besideX += t.width + 16
+            return true
         }
-        let under = text(s, font: noteFont.withSize(18), maxWidth: maxWidth)
-        return (textLayer(under, at: CGPoint(x: max(min(x, PageGeometry.width - 12 - under.width), 12), y: r.maxY + 1)), false)
+        let correct = (m.correct ?? "").trimmingCharacters(in: .whitespaces)
+        let note = m.note.trimmingCharacters(in: .whitespaces)
+        if !correct.isEmpty, !under(correct, 24) { _ = beside(correct, 24) }
+        if !note.isEmpty, !beside(note, 20) { _ = under(note, 20) }
+    }
+
+    /// The largest size from `largest` down to 15 at which the text fits in one line of the room.
+    private static func fit(_ s: String, largest: CGFloat, width: CGFloat, height: CGFloat) -> Text? {
+        guard width > 20, height > 15 else { return nil }
+        for size in stride(from: largest, through: 15, by: -1) {
+            let t = text(s, font: noteFont.withSize(size), maxWidth: .greatestFiniteMagnitude)
+            if t.width <= width, t.height <= height { return t }
+        }
+        return nil
     }
 
     private struct Text { var string: NSAttributedString; var width: CGFloat; var height: CGFloat }

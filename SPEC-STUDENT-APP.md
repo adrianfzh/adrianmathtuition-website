@@ -102,6 +102,20 @@ then per question what went wrong, what to do, and the answer. The red pen stays
 (saved in `notebook.json`, in thumbnails and in the PDF export); **Clear Red Pen** removes it;
 checking again replaces it.
 
+**The correct line in red — BUILT 31 Oct 2026** (Adrian: "yes" to the red pen writing the correct
+line under a wrong one). Each cross also comes back with `correct`: that line as it should read
+("10 > 5x"). The app writes it in red **under the wrong line**, sized to the gap; with no gap, beside
+the cross. The note goes beside, a little smaller. **Red writing never lands on the student's next
+line** (the gap ends at the next line of writing, and is at most one line deep, because printed
+questions under the last line are not known to the app). What does not fit is left out — the sheet
+says it in full. Code: `RedPen` in `Editor/PaperCanvasView.swift`. Checked on the simulator with
+the seeded slip. **Next (agreed order):** circle the exact wrong part of the line.
+
+**How the red pen sits on the page** (explained to Adrian 31 Oct): like a clear plastic sheet over
+the page — its own layer above the ink. The student keeps writing on the page through it; the
+eraser never removes red marks; Clear Red Pen lifts the whole sheet. The red pen places ticks,
+crosses and text; it does not draw freehand strokes.
+
 **How it works:**
 - The app splits the page's pen strokes into **lines of writing** (`Check/HandwritingLines.swift`:
   strokes sharing a fifth of their height are one line; a fraction bar reaches up and down so a
