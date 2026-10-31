@@ -15,6 +15,7 @@
 		265AA75F4EB200F29F40CC5B /* EditorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DF8AA6B0BBDCD3927B5226 /* EditorController.swift */; };
 		29F241165B6FCD0884457703 /* CheckViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18CD9D38444EBBC78B406C8 /* CheckViews.swift */; };
 		2E8BAE82BC2CEEDEFC096250 /* StoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FF6BC23CC587AD43090FFD /* StoreTests.swift */; };
+		66AFCD4AE43EBC9D1E9B702F /* NotebookBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F568582C0159AD2497864A5 /* NotebookBackup.swift */; };
 		7F3C89036A335A414B298440 /* NotebookCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 315ABB3131DFB6AF6A42C74D /* NotebookCard.swift */; };
 		7FA24E27AA7017D9F4744483 /* LibraryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B203BB802FBD3B464B75FB9 /* LibraryModel.swift */; };
 		82D83BF6C0DDE099734CCA9C /* HandwritingLines.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7484A79A7B1F0DAC3C401B46 /* HandwritingLines.swift */; };
@@ -65,6 +66,7 @@
 		3CA8DF73822776574FAAFE75 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		424BFF1E9D18A2CDF36CCCEF /* DebugHandwriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugHandwriting.swift; sourceTree = "<group>"; };
 		49D7CB2204AF2EB68D6F0C36 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		4F568582C0159AD2497864A5 /* NotebookBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookBackup.swift; sourceTree = "<group>"; };
 		5BE2020027CD1B1CA22A2283 /* NotebookApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NotebookApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62E44D10ABE19332E83942CD /* NotebookFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookFormSheet.swift; sourceTree = "<group>"; };
 		6C057A7035A3901D0B8EA907 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 		976C9A0043A23C4879617AC7 /* Store */ = {
 			isa = PBXGroup;
 			children = (
+				4F568582C0159AD2497864A5 /* NotebookBackup.swift */,
 				3985AFA474751543E0DE9CFF /* NotebookStore.swift */,
 			);
 			path = Store;
@@ -360,6 +363,7 @@
 				E0F58AFC3578E5E1DCA1B7C5 /* LibraryView.swift in Sources */,
 				16859B77FC3D94F9C76A67A4 /* Models.swift in Sources */,
 				A179104B4C4AEFAD377CA21B /* NotebookAppMain.swift in Sources */,
+				66AFCD4AE43EBC9D1E9B702F /* NotebookBackup.swift in Sources */,
 				7F3C89036A335A414B298440 /* NotebookCard.swift in Sources */,
 				C046D96846567F74EEB27407 /* NotebookFormSheet.swift in Sources */,
 				EB11DB0C6F8A6F5A10C5CBA6 /* NotebookStore.swift in Sources */,

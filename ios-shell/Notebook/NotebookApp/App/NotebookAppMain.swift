@@ -3,7 +3,8 @@ import SwiftUI
 @main
 struct NotebookAppMain: App {
     @State private var library: LibraryModel
-    @State private var account = StudentAccount()
+    @State private var account: StudentAccount
+    @State private var backup: NotebookBackup
 
     init() {
         let store = FileNotebookStore.makeDefault()
@@ -28,6 +29,9 @@ struct NotebookAppMain: App {
         }
         #endif
         _library = State(initialValue: library)
+        let account = StudentAccount()
+        _account = State(initialValue: account)
+        _backup = State(initialValue: NotebookBackup(store: store, library: library, account: account))
     }
 
     var body: some Scene {
@@ -35,6 +39,7 @@ struct NotebookAppMain: App {
             RootView()
                 .environment(library)
                 .environment(account)
+                .environment(backup)
                 // "Open in Notebook" from Files, WhatsApp, Mail…: the PDF becomes a new notebook.
                 .onOpenURL { url in
                     guard url.isFileURL, let nb = try? library.importPDF(at: url, folderID: nil) else { return }
@@ -46,6 +51,8 @@ struct NotebookAppMain: App {
 
 struct RootView: View {
     @Environment(LibraryModel.self) private var library
+    @Environment(NotebookBackup.self) private var backup
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         @Bindable var library = library
@@ -55,5 +62,7 @@ struct RootView: View {
                     EditorView(notebookID: id)
                 }
         }
+        // Back to the front: fetch what changed on another device, send what changed here.
+        .onChange(of: scenePhase) { _, phase in if phase == .active { backup.sync() } }
     }
 }

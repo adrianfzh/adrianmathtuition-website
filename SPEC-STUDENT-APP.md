@@ -127,6 +127,39 @@ checking again replaces it.
 **Not done yet:** a real iPad + Pencil try; the company's credit wallet (§ SPEC-COMPANY 7.1 — today
 it is a daily cap, not credits); a wrong check giving the credit back; "Try a similar question".
 
+## 0d. Notebook backup — BUILT 31 Oct 2026 (Adrian: "yes, but is that the best way?" → "yes")
+
+**Why our server, not Apple's iCloud** (agreed 31 Oct 2026): iCloud would keep the notes inside the
+student's own Apple account — Adrian can't see them, the website can't use them, no Android. On our
+server the same notes open on any device the student signs in on, Adrian can see them before a lesson,
+Check this page / the mistakes list / search can use them, and the data belongs to the business
+(`SPEC-COMPANY.md` §14.5). The website's My Notebook already has search, photos and typed notes —
+the app reuses them rather than building them twice (next steps below).
+
+**What it does:**
+- Signed in (the cloud at the top left of the library), every visit to the library and every return
+  to the app compares the iPad's notebooks with the server's, one by one, by when each last changed:
+  newer on the server → fetched; newer here or not on the server → sent; deleted elsewhere and not
+  touched here since → deleted here. Subjects (folders) the same way, as one list.
+- Only changed files travel: each file's SHA-256 is compared. The notebook open in the editor is never
+  replaced underneath it.
+- Files go straight to the private `student-files` bucket through signed addresses (no 4.5 MB cap):
+  `notebooks/<identity>/<notebook-id>/{notebook.json, pages/<id>.drawing, documents/<id>.pdf}`.
+- No live two-device editing (both writing at once): the newer copy wins. Students don't do that.
+
+**Where:** app `NotebookApp/Store/NotebookBackup.swift` (+ the cloud button in `LibraryView`); server
+`src/lib/app-notebooks.ts` (+ tests), `src/app/api/app/notebooks/route.ts` (list, subjects) and
+`[id]/route.ts` (prepare → commit, fetch, delete); tables `app_notebooks`, `app_notebook_folders`
+(`migrations/app_notebooks.sql`). Switch `APP_NOTEBOOK_BACKUP_OPEN_TO_STUDENTS` (closed — demo
+student only). Erased by Delete my account (`lib/erasure.ts`). Health check `app-notebooks` (401).
+
+**Checked 31 Oct 2026:** UI test `test7_BackupAndRestore` — a 23-page worksheet written on, sent, the
+app wiped like a new iPad, signed in → the notebook came back with its writing (3 files, 0.5 MB).
+Not yet checked: deleting on one device removing it on another (built, untested), a real iPad.
+
+**Next (not built):** show the app's notebooks inside the website's My Notebook; a storage cap per
+student (today 400 MB per notebook, none per student).
+
 ## 1. What it is
 
 One iPad + iPhone app, "AdrianMath", for enrolled students only.

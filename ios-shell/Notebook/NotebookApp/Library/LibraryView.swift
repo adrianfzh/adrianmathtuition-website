@@ -3,6 +3,10 @@ import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @Environment(LibraryModel.self) private var library
+    @Environment(StudentAccount.self) private var account
+    @Environment(NotebookBackup.self) private var backup
+    @State private var signingIn = false
+    @State private var backupMessage: String?
     @State private var showingNew = false
     @State private var editing: Notebook?
     @State private var renaming: Notebook?
@@ -44,6 +48,7 @@ struct LibraryView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(library.folder(id: library.selectedFolderID)?.name ?? "Notebooks")
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) { backupButton }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Picker("Sort By", selection: $library.sort) {
@@ -65,6 +70,17 @@ struct LibraryView: View {
                 }
                 .accessibilityIdentifier("newNotebook")
             }
+        }
+        // Coming back from a notebook (or opening the app): back up what changed.
+        .onAppear { backup.sync() }
+        .sheet(isPresented: $signingIn) {
+            SignInSheet(account: account) { backup.sync() }
+        }
+        .alert("Backup", isPresented: Binding(get: { backupMessage != nil }, set: { if !$0 { backupMessage = nil } })) {
+            Button("Try Again") { backup.sync() }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(backupMessage ?? "")
         }
         .fileImporter(isPresented: $importingPDF, allowedContentTypes: [.pdf]) { result in
             do {
@@ -128,6 +144,40 @@ struct LibraryView: View {
     }
 
     // MARK: Pieces
+
+    /// The cloud at the top left: signed out → tap to sign in; otherwise how the backup stands.
+    @ViewBuilder private var backupButton: some View {
+        if !account.isSignedIn {
+            Button { signingIn = true } label: {
+                Label("Back Up", systemImage: "icloud.slash")
+            }
+            .accessibilityIdentifier("backupSignIn")
+        } else {
+            switch backup.state {
+            case .working:
+                HStack(spacing: 6) {
+                    ProgressView()
+                    Text("Backing up…").font(.subheadline).foregroundStyle(.secondary)
+                }
+                .accessibilityIdentifier("backupWorking")
+            case .done:
+                Label("Backed Up", systemImage: "checkmark.icloud")
+                    .labelStyle(.titleAndIcon)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("backupDone")
+            case .failed(let message):
+                Button { backupMessage = message } label: {
+                    Label("Not Backed Up", systemImage: "exclamationmark.icloud")
+                        .labelStyle(.titleAndIcon)
+                }
+                .tint(.orange)
+                .accessibilityIdentifier("backupFailed")
+            case .off:
+                EmptyView()
+            }
+        }
+    }
 
     private var subjectBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {

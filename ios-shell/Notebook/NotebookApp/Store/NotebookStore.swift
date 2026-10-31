@@ -41,6 +41,8 @@ final class FileNotebookStore: NotebookStore {
 
     private var fm: FileManager { .default }
     private var notebooksDir: URL { root.appendingPathComponent("Notebooks", isDirectory: true) }
+    /// A notebook's folder (backup reads and replaces it whole).
+    func folderURL(notebookID: UUID) -> URL { dir(notebookID) }
     private func dir(_ id: UUID) -> URL { notebooksDir.appendingPathComponent(id.uuidString, isDirectory: true) }
     private func pagesDir(_ id: UUID) -> URL { dir(id).appendingPathComponent("pages", isDirectory: true) }
     private func documentsDir(_ id: UUID) -> URL { dir(id).appendingPathComponent("documents", isDirectory: true) }

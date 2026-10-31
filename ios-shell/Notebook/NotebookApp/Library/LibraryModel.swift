@@ -14,6 +14,9 @@ final class LibraryModel {
     }
 
     private let log = Logger(subsystem: "com.adrianmath.notebook", category: "library")
+    /// Backup listens here (NotebookBackup): a deleted notebook, a changed subjects list.
+    @ObservationIgnored var onDeleted: ((UUID) -> Void)?
+    @ObservationIgnored var onFoldersChanged: (() -> Void)?
 
     init(store: NotebookStore) {
         self.store = store
@@ -84,6 +87,7 @@ final class LibraryModel {
         do {
             try store.deleteNotebook(id: notebook.id)
             notebooks.removeAll { $0.id == notebook.id }
+            onDeleted?(notebook.id)
         } catch {
             log.error("delete failed: \(error.localizedDescription)")
         }
@@ -120,14 +124,17 @@ final class LibraryModel {
         for nb in notebooks where nb.folderID == folder.id {
             var moved = nb
             moved.folderID = nil
-            update(moved, touch: false)
+            update(moved) // touched, so backup sends the move
         }
         if selectedFolderID == folder.id { selectedFolderID = nil }
         saveFolders()
     }
 
     private func saveFolders() {
-        do { try store.saveFolders(folders) } catch {
+        do {
+            try store.saveFolders(folders)
+            onFoldersChanged?()
+        } catch {
             log.error("folders save failed: \(error.localizedDescription)")
         }
     }

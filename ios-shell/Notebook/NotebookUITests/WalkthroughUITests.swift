@@ -232,4 +232,42 @@ final class WalkthroughUITests: XCTestCase {
         sleep(2)
         shot("33-check-red-pen")
     }
+
+    /// Backup: write on a notebook on "iPad 1" and go back to the library (it is sent);
+    /// then wipe the app, as a new iPad would be, sign in, and the notebook comes back.
+    func test7_BackupAndRestore() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let pdf = env["WORKSHEET_PDF"], let session = env["APP_SESSION"] else {
+            throw XCTSkip("set WORKSHEET_PDF and APP_SESSION")
+        }
+        var base: [String] = []
+        if let b = env["API_BASE"] { base = ["-apiBase", b] }
+
+        app.launchArguments = ["-resetStore", "-importPDF", pdf, "-appSession", session,
+                               "-seedHandwriting", "x² - 5x + 6 = 0|(x - 2)(x - 3) = 0|x = 2 or x = 3"] + base
+        app.launch()
+        sleep(3)
+        shot("40-backup-written")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let done = app.descendants(matching: .any)["backupDone"].firstMatch
+        let failed = app.descendants(matching: .any)["backupFailed"].firstMatch
+        _ = done.waitForExistence(timeout: 90) || failed.exists
+        shot("41-backup-sent")
+        XCTAssertTrue(done.exists, "first iPad did not finish backing up")
+        app.terminate()
+
+        // A "new iPad": nothing on it, same sign-in.
+        app.launchArguments = ["-resetStore", "-appSession", session] + base
+        app.launch()
+        let back = app.descendants(matching: .any)["backupDone"].firstMatch
+        _ = back.waitForExistence(timeout: 90)
+        sleep(2)
+        shot("42-restored-library")
+        XCTAssertTrue(back.exists, "new iPad did not finish fetching")
+        let card = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'page'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 10), "restored notebook not in the library")
+        card.tap()
+        sleep(4)
+        shot("43-restored-notebook")
+    }
 }

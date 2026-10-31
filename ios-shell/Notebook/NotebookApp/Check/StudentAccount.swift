@@ -16,10 +16,12 @@ final class StudentAccount {
 
     enum CheckError: LocalizedError {
         case signedOut, server(String), network
+        /// The account may not use this yet (a switch on the website).
+        case forbidden(String)
         var errorDescription: String? {
             switch self {
             case .signedOut: "Please sign in again."
-            case .server(let m): m
+            case .server(let m), .forbidden(let m): m
             case .network: "No connection. Check the Wi-Fi and try again."
             }
         }
@@ -46,7 +48,7 @@ final class StudentAccount {
     }
 
     func signIn(email: String, password: String) async throws {
-        let s: Session = try await post("/api/app/session", ["email": email, "password": password], auth: false)
+        let s: Session = try await send("POST", "/api/app/session", ["email": email, "password": password], auth: false)
         store(s)
     }
 
@@ -61,12 +63,17 @@ final class StudentAccount {
             "image": image.base64EncodedString(),
             "lines": lines.map { ["n": $0.number, "box": [$0.rect.minX, $0.rect.minY, $0.rect.width, $0.rect.height]] },
         ]
+        return try await call("POST", "/api/app/check-page", body)
+    }
+
+    /// A signed-in call to the website (backup, checking). Renews the key once if it ran out.
+    func call<T: Decodable>(_ method: String, _ path: String, _ body: Any? = nil) async throws -> T {
         if let exp = session?.expiresAt, exp - 60 < Date().timeIntervalSince1970 { try await refresh() }
         do {
-            return try await post("/api/app/check-page", body, auth: true)
+            return try await send(method, path, body, auth: true)
         } catch CheckError.signedOut {
             try await refresh()
-            return try await post("/api/app/check-page", body, auth: true)
+            return try await send(method, path, body, auth: true)
         }
     }
 
@@ -74,7 +81,7 @@ final class StudentAccount {
         guard let old = session else { throw CheckError.signedOut }
         struct Fresh: Decodable { var accessToken: String; var refreshToken: String; var expiresAt: Double? }
         do {
-            let f: Fresh = try await post("/api/app/session/refresh", ["refreshToken": old.refreshToken], auth: false)
+            let f: Fresh = try await send("POST", "/api/app/session/refresh", ["refreshToken": old.refreshToken], auth: false)
             store(Session(accessToken: f.accessToken, refreshToken: f.refreshToken, expiresAt: f.expiresAt, name: old.name))
         } catch CheckError.signedOut {
             signOut()
@@ -87,16 +94,18 @@ final class StudentAccount {
         if let data = try? JSONEncoder().encode(s) { Keychain.write(Self.keychainKey, data) }
     }
 
-    private func post<T: Decodable>(_ path: String, _ body: [String: Any], auth: Bool) async throws -> T {
+    private func send<T: Decodable>(_ method: String, _ path: String, _ body: Any?, auth: Bool) async throws -> T {
         var req = URLRequest(url: AppBrand.apiBase.appendingPathComponent(path))
-        req.httpMethod = "POST"
+        req.httpMethod = method
         req.timeoutInterval = 120
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if auth {
             guard let token = session?.accessToken else { throw CheckError.signedOut }
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        if let body {
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        }
         let data: Data, response: URLResponse
         do { (data, response) = try await URLSession.shared.data(for: req) } catch {
             log.error("request failed: \(error.localizedDescription)")
@@ -106,7 +115,7 @@ final class StudentAccount {
         if status == 401 && (auth || path.hasSuffix("/refresh")) { throw CheckError.signedOut }
         guard (200..<300).contains(status) else {
             let msg = (try? JSONDecoder().decode(ServerError.self, from: data))?.error ?? "Something went wrong. Try again."
-            throw CheckError.server(msg)
+            throw status == 403 ? CheckError.forbidden(msg) : CheckError.server(msg)
         }
         return try JSONDecoder().decode(T.self, from: data)
     }
