@@ -202,4 +202,34 @@ final class WalkthroughUITests: XCTestCase {
         sleep(2)
         shot("23-worksheet-pages")
     }
+
+    /// Check this page for real: a worksheet with working on it (one deliberate slip), sent to
+    /// the test site as the demo student. Needs WORKSHEET_PDF and APP_SESSION (a JSON session).
+    func test6_CheckThisPage() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let pdf = env["WORKSHEET_PDF"], let session = env["APP_SESSION"] else {
+            throw XCTSkip("set WORKSHEET_PDF and APP_SESSION")
+        }
+        app.launchArguments = ["-resetStore", "-drawWithFinger", "YES", "-importPDF", pdf, "-appSession", session,
+                               "-seedHandwriting", "5 - 3x + 6 > 2x + 1|11 - 3x > 2x + 1|10 > x|x < 10"]
+        if let base = env["API_BASE"] { app.launchArguments += ["-apiBase", base] }
+        app.launch()
+        fillScreen()
+        sleep(3)
+        shot("30-check-before")
+        app.buttons["checkPage"].firstMatch.tap()
+        sleep(1)
+        shot("31-checking")
+        let summary = app.staticTexts["checkSummary"].firstMatch
+        if !summary.waitForExistence(timeout: 150) {
+            shot("32-check-failed")
+            XCTFail("no result: \(app.alerts.firstMatch.debugDescription)")
+            return
+        }
+        sleep(1)
+        shot("32-check-sheet")
+        app.buttons["Done"].firstMatch.tap()
+        sleep(2)
+        shot("33-check-red-pen")
+    }
 }

@@ -24,6 +24,9 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
     var documents: PDFDocuments?
     private var pdfLayers: [Int: CALayer] = [:]
     private var pdfRenderedScale: [Int: CGFloat] = [:]
+    /// The red pen from "Check this page", one per page; drawn ABOVE the ink.
+    private(set) var checks: [PageCheck?] = []
+    private let marksLayer = CALayer()
     private var fitScale: CGFloat = 0
     private var lastWidth: CGFloat = 0
     private var applyingDrawing = false
@@ -51,6 +54,10 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         paperLayer.anchorPoint = .zero
         paperLayer.position = .zero
         canvas.layer.insertSublayer(paperLayer, at: 0)
+
+        marksLayer.anchorPoint = .zero
+        marksLayer.position = .zero
+        canvas.layer.addSublayer(marksLayer)
 
         toolPicker.colorUserInterfaceStyle = .light
         toolPicker.addObserver(canvas)
@@ -151,10 +158,18 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
                                    height: PageGeometry.totalHeight(pageCount: pageCount))
         paperLayer.position = .zero
         paperLayer.setAffineTransform(CGAffineTransform(scaleX: z, y: z))
+        marksLayer.bounds = paperLayer.bounds
+        marksLayer.position = .zero
+        marksLayer.setAffineTransform(CGAffineTransform(scaleX: z, y: z))
+        marksLayer.zPosition = 10
         // Keep the line art sharp at the current zoom.
         let scale = (window?.screen.scale ?? 2) * z
         for page in pageLayers {
             for sub in page.sublayers ?? [] { sub.contentsScale = scale }
+        }
+        for sub in marksLayer.sublayers ?? [] {
+            sub.contentsScale = scale
+            for t in sub.sublayers ?? [] { t.contentsScale = scale }
         }
         CATransaction.commit()
     }
@@ -206,6 +221,24 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
         CATransaction.commit()
         layoutPaper()
         refreshPDFPictures()
+    }
+
+    // MARK: Red pen
+
+    func setChecks(_ checks: [PageCheck?]) {
+        self.checks = checks
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        marksLayer.sublayers?.forEach { $0.removeFromSuperlayer() }
+        for (i, check) in checks.enumerated() {
+            guard let check else { continue }
+            let page = CALayer()
+            page.frame = PageGeometry.pageRect(i)
+            for m in check.marks { RedPen.draw(m, into: page) }
+            marksLayer.addSublayer(page)
+        }
+        CATransaction.commit()
+        layoutPaper()
     }
 
     private func background(_ i: Int) -> PageBackground? {
@@ -301,5 +334,62 @@ final class PaperCanvasView: UIView, PKCanvasViewDelegate, PKToolPickerObserver 
 
     nonisolated func toolPickerVisibilityDidChange(_ toolPicker: PKToolPicker) {
         MainActor.assumeIsolated { self.updateInsets() }
+    }
+}
+
+/// Draws a tick or a cross at the end of a line of writing, and a short note beside a cross.
+@MainActor
+enum RedPen {
+    static let red = UIColor(red: 0.86, green: 0.13, blue: 0.11, alpha: 1)
+    static let noteFont = UIFont(name: "Noteworthy-Bold", size: 21) ?? .systemFont(ofSize: 20, weight: .semibold)
+
+    /// The red pen of one page, drawn into a page-sized context (thumbnails, PDF export).
+    static func render(_ check: PageCheck?, in ctx: CGContext) {
+        guard let check, !check.marks.isEmpty else { return }
+        let page = CALayer()
+        page.frame = CGRect(origin: .zero, size: PageGeometry.pageSize)
+        for m in check.marks { draw(m, into: page) }
+        page.render(in: ctx)
+    }
+
+    static func draw(_ m: PageCheck.LineMark, into page: CALayer) {
+        let r = m.rect
+        let size: CGFloat = 30
+        let x = min(r.maxX + 12, PageGeometry.width - size - 8)
+        let box = CGRect(x: x, y: r.midY - size / 2, width: size, height: size)
+        let path = UIBezierPath()
+        if m.mark == .tick {
+            path.move(to: CGPoint(x: box.minX, y: box.midY + 1))
+            path.addLine(to: CGPoint(x: box.minX + size * 0.36, y: box.maxY))
+            path.addLine(to: CGPoint(x: box.maxX, y: box.minY))
+        } else {
+            path.move(to: CGPoint(x: box.minX + 3, y: box.minY + 3)); path.addLine(to: CGPoint(x: box.maxX - 3, y: box.maxY - 3))
+            path.move(to: CGPoint(x: box.maxX - 3, y: box.minY + 3)); path.addLine(to: CGPoint(x: box.minX + 3, y: box.maxY - 3))
+        }
+        let shape = CAShapeLayer()
+        shape.frame = CGRect(origin: .zero, size: PageGeometry.pageSize)
+        shape.path = path.cgPath
+        shape.strokeColor = red.cgColor
+        shape.fillColor = nil
+        shape.lineWidth = 3.2
+        shape.lineCap = .round
+        shape.lineJoin = .round
+        page.addSublayer(shape)
+
+        guard m.mark == .cross, !m.note.isEmpty else { return }
+        let attrs: [NSAttributedString.Key: Any] = [.font: noteFont, .foregroundColor: red]
+        let text = NSAttributedString(string: m.note, attributes: attrs)
+        let maxWidth = PageGeometry.width - 40
+        let size2 = text.boundingRect(with: CGSize(width: maxWidth, height: 200), options: [.usesLineFragmentOrigin], context: nil).integral.size
+        // Beside the cross when it fits, otherwise just under the line.
+        var origin = CGPoint(x: box.maxX + 8, y: r.midY - size2.height / 2)
+        if origin.x + size2.width > PageGeometry.width - 12 {
+            origin = CGPoint(x: max(min(r.minX, PageGeometry.width - 12 - size2.width), 12), y: r.maxY + 2)
+        }
+        let t = CATextLayer()
+        t.string = text
+        t.isWrapped = true
+        t.frame = CGRect(origin: origin, size: CGSize(width: size2.width + 4, height: size2.height + 2))
+        page.addSublayer(t)
     }
 }

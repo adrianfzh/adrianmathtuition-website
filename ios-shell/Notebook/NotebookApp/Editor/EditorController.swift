@@ -11,6 +11,8 @@ final class EditorController {
     private(set) var currentPage = 0
     private(set) var canUndo = false
     private(set) var canRedo = false
+    /// The page being checked right now (one at a time), or nil.
+    private(set) var checkingPage: Int?
 
     @ObservationIgnored private let store: NotebookStore
     @ObservationIgnored let documents: PDFDocuments
@@ -42,6 +44,7 @@ final class EditorController {
         view.documents = documents
         view.configure(drawing: PageInk.combine(pageDrawings), pageCount: notebook.pages.count,
                        paper: notebook.paper, backgrounds: backgrounds)
+        view.setChecks(notebook.pages.map(\.check))
         view.onDrawingChanged = { [weak self] drawing in self?.drawingChanged(drawing) }
         view.onNeedsNewPage = { [weak self] in self?.addPage(scroll: false) }
         view.onCurrentPageChanged = { [weak self] page in self?.currentPage = page }
@@ -128,6 +131,36 @@ final class EditorController {
         saveNow()
     }
 
+    // MARK: Check this page
+
+    /// Sends page `index` (worksheet + ink) for checking and puts the red pen on it.
+    /// Returns the result so the screen can open "What went wrong".
+    @discardableResult
+    func checkPage(_ index: Int, account: StudentAccount) async throws -> PageCheck {
+        guard notebook.pages.indices.contains(index), checkingPage == nil else { throw StudentAccount.CheckError.server("Already checking a page.") }
+        let drawing = pageDrawings[index]
+        let lines = HandwritingLines.group(drawing)
+        guard !lines.isEmpty else { throw StudentAccount.CheckError.server("Write your working on this page first.") }
+        let pdfPage = notebook.pages[index].background.flatMap(documents.page)
+        guard let jpeg = PageSnapshot.jpeg(drawing: drawing, pdfPage: pdfPage, lines: lines) else {
+            throw StudentAccount.CheckError.server("Couldn’t read this page. Try again.")
+        }
+        let pageID = notebook.pages[index].id
+        checkingPage = index
+        defer { checkingPage = nil }
+        let reply = try await account.checkPage(image: jpeg, lines: lines)
+        let check = reply.pageCheck(lines: lines)
+        setCheck(check, pageID: pageID)
+        return check
+    }
+
+    func setCheck(_ check: PageCheck?, pageID: UUID) {
+        guard let i = notebook.pages.firstIndex(where: { $0.id == pageID }) else { return }
+        notebook.pages[i].check = check
+        canvasView?.setChecks(notebook.pages.map(\.check))
+        scheduleSave()
+    }
+
     var backgrounds: [PageBackground?] { notebook.pages.map(\.background) }
 
     func goToPage(_ index: Int) {
@@ -142,6 +175,7 @@ final class EditorController {
     private func reloadCanvas(keepUndo: Bool) {
         guard let v = canvasView else { return }
         v.setPages(count: notebook.pages.count, backgrounds: backgrounds)
+        v.setChecks(notebook.pages.map(\.check))
         if !keepUndo {
             v.setDrawing(PageInk.combine(pageDrawings), clearUndo: true)
             refreshUndo()
@@ -156,6 +190,7 @@ final class EditorController {
         let drawing = pageDrawings.indices.contains(index) ? pageDrawings[index] : PKDrawing()
         let paper = notebook.paper
         let pdfPage = notebook.pages.indices.contains(index) ? notebook.pages[index].background.flatMap(documents.page) : nil
+        let check = notebook.pages.indices.contains(index) ? notebook.pages[index].check : nil
         var image = UIImage()
         UITraitCollection(userInterfaceStyle: .light).performAsCurrent {
             let ink = drawing.image(from: CGRect(origin: .zero, size: PageGeometry.pageSize), scale: scale * 2)
@@ -169,6 +204,7 @@ final class EditorController {
                     PaperPattern.draw(paper, in: ctx.cgContext)
                 }
                 ink.draw(in: CGRect(origin: .zero, size: PageGeometry.pageSize))
+                RedPen.render(check, in: ctx.cgContext)
             }
         }
         return image
@@ -177,7 +213,7 @@ final class EditorController {
     func exportPDF(pages indices: [Int]) -> URL? {
         let valid = indices.filter { pageDrawings.indices.contains($0) }
         return PDFExporter.export(title: notebook.title, paper: notebook.paper,
-                                  pages: valid.map { (pageDrawings[$0], notebook.pages[$0].background.flatMap(documents.page)) })
+                                  pages: valid.map { (pageDrawings[$0], notebook.pages[$0].background.flatMap(documents.page), notebook.pages[$0].check) })
     }
 
     // MARK: Saving

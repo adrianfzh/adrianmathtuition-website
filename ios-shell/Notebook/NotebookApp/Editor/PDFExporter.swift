@@ -6,7 +6,7 @@ enum PDFExporter {
     /// Writes the pages (paper or the imported PDF page, then ink) to a PDF in the temporary
     /// folder and returns its URL. An imported page stays sharp: it is copied as vectors, not a picture.
     @MainActor
-    static func export(title: String, paper: PaperStyle, pages: [(PKDrawing, PDFPage?)]) -> URL? {
+    static func export(title: String, paper: PaperStyle, pages: [(PKDrawing, PDFPage?, PageCheck?)]) -> URL? {
         let pageRect = CGRect(origin: .zero, size: PageGeometry.pageSize)
         let safe = title.components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>")).joined(separator: "-")
         let url = FileManager.default.temporaryDirectory
@@ -18,7 +18,7 @@ enum PDFExporter {
         UITraitCollection(userInterfaceStyle: .light).performAsCurrent {
             do {
                 try renderer.writePDF(to: url) { ctx in
-                    for (drawing, pdfPage) in pages {
+                    for (drawing, pdfPage, check) in pages {
                         ctx.beginPage()
                         if let pdfPage {
                             PDFPages.draw(pdfPage, in: PDFPages.placement(for: PDFPages.displaySize(pdfPage)), context: ctx.cgContext)
@@ -27,6 +27,7 @@ enum PDFExporter {
                         }
                         let ink = drawing.image(from: pageRect, scale: 3)
                         ink.draw(in: pageRect)
+                        RedPen.render(check, in: ctx.cgContext)
                     }
                 }
                 result = url

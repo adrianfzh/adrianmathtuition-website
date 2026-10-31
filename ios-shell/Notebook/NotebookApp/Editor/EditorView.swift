@@ -31,6 +31,10 @@ private struct EditorScreen: View {
     @State private var title = ""
     @State private var importingPDF = false
     @State private var importError: String?
+    @Environment(StudentAccount.self) private var account
+    @State private var signingIn = false
+    @State private var shownCheck: PageCheck?
+    @State private var checkError: String?
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var compact: Bool { sizeClass == .compact }
 
@@ -43,6 +47,21 @@ private struct EditorScreen: View {
             .toolbarRole(.editor)
             .toolbar { toolbar }
             .overlay(alignment: .topTrailing) { pageBadge }
+            .overlay(alignment: .top) { checkingBanner }
+            .sheet(isPresented: $signingIn, onDismiss: { controller.canvasView?.showToolPicker() }) {
+                SignInSheet(account: account) { Task { await check() } }
+            }
+            .sheet(item: Binding(get: { shownCheck.map(IdentifiedCheck.init) }, set: { shownCheck = $0?.check }),
+                   onDismiss: { controller.canvasView?.showToolPicker() }) { item in
+                CheckResultSheet(check: item.check) {
+                    controller.setCheck(nil, pageID: controller.notebook.pages[controller.currentPage].id)
+                }
+            }
+            .alert("Couldn’t Check This Page", isPresented: Binding(get: { checkError != nil }, set: { if !$0 { checkError = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(checkError ?? "")
+            }
             .sheet(isPresented: $showingPages, onDismiss: { controller.canvasView?.showToolPicker() }) {
                 PageOverviewSheet(controller: controller)
             }
@@ -62,6 +81,38 @@ private struct EditorScreen: View {
             .onChange(of: title) { _, new in controller.rename(new) }
             .onDisappear { controller.saveNow() }
             .onChange(of: scenePhase) { _, phase in if phase != .active { controller.saveNow() } }
+    }
+
+    @ViewBuilder
+    private var checkingBanner: some View {
+        if controller.checkingPage != nil {
+            HStack(spacing: 10) {
+                ProgressView()
+                Text("Checking this page…").font(.subheadline.weight(.medium))
+            }
+            .padding(.horizontal, 16).padding(.vertical, 10)
+            .background(.regularMaterial, in: Capsule())
+            .padding(.top, 10)
+            .accessibilityIdentifier("checking")
+        }
+    }
+
+    private func check() async {
+        guard account.isSignedIn else { signingIn = true; return }
+        controller.saveNow()
+        do {
+            shownCheck = try await controller.checkPage(controller.currentPage, account: account)
+            controller.canvasView?.canvas.resignFirstResponder()
+        } catch StudentAccount.CheckError.signedOut {
+            signingIn = true
+        } catch {
+            checkError = error.localizedDescription
+        }
+    }
+
+    private var currentCheck: PageCheck? {
+        let pages = controller.notebook.pages
+        return pages.indices.contains(controller.currentPage) ? pages[controller.currentPage].check : nil
     }
 
     private var pageBadge: some View {
@@ -87,9 +138,17 @@ private struct EditorScreen: View {
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
             if FeatureFlags.checkPage {
-                // Later version: sends the current page to the marking service.
-                Button {} label: { Label("Check This Page", systemImage: "checkmark.seal") }
-                    .disabled(true)
+                if let currentCheck {
+                    Button { shownCheck = currentCheck } label: {
+                        Label("What Went Wrong", systemImage: "list.bullet.clipboard")
+                    }
+                    .accessibilityIdentifier("checkResult")
+                }
+                Button { Task { await check() } } label: {
+                    Label("Check This Page", systemImage: "checkmark.seal")
+                }
+                .disabled(controller.checkingPage != nil)
+                .accessibilityIdentifier("checkPage")
             }
             if !compact {
                 Button { showingPages = true } label: { Label("Pages", systemImage: "square.grid.2x2") }
@@ -110,6 +169,11 @@ private struct EditorScreen: View {
                     Label("Paper", systemImage: "doc.plaintext")
                 }
                 .pickerStyle(.menu)
+                }
+                if FeatureFlags.checkPage && account.isSignedIn {
+                    Button(role: .destructive) { account.signOut() } label: {
+                        Label("Sign Out\(account.name.isEmpty ? "" : " (\(account.name))")", systemImage: "person.crop.circle.badge.xmark")
+                    }
                 }
                 Toggle(isOn: $drawWithFinger) { Label("Draw with Finger", systemImage: "hand.draw") }
                 Divider()
@@ -147,4 +211,9 @@ private struct CanvasHost: UIViewRepresentable {
     func updateUIView(_ v: PaperCanvasView, context: Context) {
         if v.allowsFingerDrawing != drawWithFinger { v.allowsFingerDrawing = drawWithFinger }
     }
+}
+
+private struct IdentifiedCheck: Identifiable {
+    let check: PageCheck
+    var id: Date { check.checkedAt }
 }

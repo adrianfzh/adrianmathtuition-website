@@ -6,6 +6,8 @@ struct Page: Codable, Hashable, Identifiable, Sendable {
     var id: UUID = UUID()
     /// A page of an imported PDF (a worksheet, a past paper) drawn under the ink. Nil = blank.
     var background: PageBackground?
+    /// The last "Check this page" result: the red pen drawn over the page. Nil = never checked.
+    var check: PageCheck?
 }
 
 /// Which PDF, and which page of it, sits under a notebook page. The PDF is kept once

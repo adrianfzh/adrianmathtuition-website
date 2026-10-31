@@ -93,6 +93,40 @@ inside a notebook, search, iCloud backup of notes.
 - **Blank canvas only (31 Oct 2026, Adrian: "Just have blank canvas, like notability")** — the lined / grid / dotted choice is hidden behind `FeatureFlags.paperStyles = false` (`NotebookApp/App/AppBrand.swift`); every new page is blank. The paper code stays for later.
 - **Write on a PDF (31 Oct 2026, Adrian: "Yes, PDFs next")** — BUILT, simulator-tested. Three ways in: **Import PDF** on the library (a new notebook named after the file), **⋯ → Insert PDF…** in a notebook (pages go in after the page on screen; a brand-new blank notebook is replaced), and **"Open in Notebook"** from Files / WhatsApp / Mail (`CFBundleDocumentTypes` in `project.yml`). One notebook page per PDF page; the PDF is kept once per notebook (`documents/<id>.pdf`, deleted when no page uses it) and each page points at it (`Page.background`). The PDF page is drawn under the ink only near the screen and redrawn sharp after a zoom (`PaperCanvasView.refreshPDFPictures`); export keeps it as vectors. Code: `NotebookApp/Model/PDFPages.swift`; tests `NotebookTests/PDFImportTests.swift` + UI `test5_WorksheetPDF` (`WORKSHEET_PDF=<path>`). Not yet tried on a real iPad with a Pencil.
 
+## 0c. Check this page — BUILT 31 Oct 2026 (Adrian: "Yes, build it")
+
+**What the student does:** writes on a page (blank, or a worksheet PDF) → taps **✓ Check This Page** →
+"Checking this page…" → about a minute later red ticks and crosses sit at the end of each line of
+working, a short red note beside each cross, and a sheet opens: the verdict first ("1 of 2 right"),
+then per question what went wrong, what to do, and the answer. The red pen stays with the page
+(saved in `notebook.json`, in thumbnails and in the PDF export); **Clear Red Pen** removes it;
+checking again replaces it.
+
+**How it works:**
+- The app splits the page's pen strokes into **lines of writing** (`Check/HandwritingLines.swift`:
+  strokes sharing a fifth of their height are one line; a fraction bar reaches up and down so a
+  stacked fraction stays one line; a stroke taller than 150 pt is a drawing of its own) and numbers
+  them top to bottom.
+- It sends ONE picture of the page (worksheet + ink + a small red circled number at the left of each
+  line, `PageSnapshot`) and the list of line boxes.
+- The marker answers **by line number** ("line 3: cross, should be 10 > 5x") — never by coordinates,
+  which models guess badly. The app already knows where line 3 is and draws the cross at its end.
+- Server: `POST /api/app/check-page` (`lib/app-check-page.ts` = request check, prompt, reading the
+  reply; tested). Same marker as practice grading (`GRADING_MODEL`). Rows in `app_page_checks`
+  (kept OUT of `student_attempts`: a free page has no bank question, so it must not feed weakness
+  tags, the Notebook or digests). **30 pages a student a day.** Tuition students free; a stranger
+  needs an active pass (`requireActiveAccess`).
+- **Sign-in:** the same email + password as the website (`POST /api/app/session`, `/refresh`); the
+  two keys live in the iPad keychain; requests carry `Authorization: Bearer` (`lib/portal-auth
+  bearerAccount`). Sign Out is in the ⋯ menu.
+- **Switch:** `APP_CHECK_PAGE_OPEN_TO_STUDENTS = false` — only the demo student until the app ships.
+- Debug builds talk to the test site (adrianmath-dev), release builds to www (`AppBrand.apiBase`).
+- Tests: `NotebookTests/CheckPageTests.swift`; end-to-end UI `test6_CheckThisPage` (needs
+  `WORKSHEET_PDF` + `APP_SESSION`; writes test working with a deliberate slip via `-seedHandwriting`).
+
+**Not done yet:** a real iPad + Pencil try; the company's credit wallet (§ SPEC-COMPANY 7.1 — today
+it is a daily cap, not credits); a wrong check giving the credit back; "Try a similar question".
+
 ## 1. What it is
 
 One iPad + iPhone app, "AdrianMath", for enrolled students only.
