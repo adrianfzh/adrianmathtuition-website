@@ -106,13 +106,16 @@ export function DesktopLinks({ items, scienceItems, languageItems, humanityItems
   const pathname = usePathname();
   const list = listFor(pathname, items, scienceItems, languageItems, humanityItems);
   return (
-    <div className="hidden sm:flex items-center gap-1">
+    // One line, never wrapping (31 Oct 2026, Adrian's screenshot: in the admin view "My Notebook"
+    // broke onto two lines under the settings gear). Too many links for the width → the row
+    // scrolls sideways instead of running under the icons on the right.
+    <div className="hidden sm:flex items-center gap-1 min-w-0 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {list.map(l => {
         const s = surfaceForHref(l.href);
         const active = isActive(pathname, l.href);
         return (
           <Link key={l.href} href={l.href} data-tour={tourKey(l.href)}
-            className={`relative flex items-center gap-1.5 text-sm rounded-full px-3 py-1.5 transition select-none active:scale-95 ${
+            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm rounded-full px-2.5 lg:px-3 py-1.5 transition select-none active:scale-95 ${
               active ? `${s.tint} ${s.text} font-semibold` : 'text-gray-600 hover:text-navy hover:bg-navy/5'}`}>
             <PortalIcon name={s.icon} className="w-4 h-4" />
             {l.label}

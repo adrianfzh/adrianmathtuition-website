@@ -168,7 +168,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // to the portal shell, inherited by everything inside it.
     <div className="min-h-screen bg-[hsl(45,100%,98%)] [-webkit-tap-highlight-color:transparent]">
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
+        {/* max-w-6xl (31 Oct 2026): the admin view's seven links did not fit the old 4xl strip. */}
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center gap-5 min-w-0">
             <Link href="/app" className="font-display font-bold text-navy tracking-tight text-[15px] sm:text-base">AdrianMath</Link>
             <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} languageItems={languageTabs} humanityItems={humanityTabs} pendingWork={pendingWork} />
