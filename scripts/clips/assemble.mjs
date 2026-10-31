@@ -76,7 +76,8 @@ const scenes = sceneBeats.map((list, k) => {
     ...(board.scroll || (nBoards === 1 && plan.scroll === true) || (nBoards === 1 && plan.scroll !== false && plan.lines.length > 7) ? { scroll: true } : {}),
     ...(plan.pinned?.length && k === 0 ? { pinned: plan.pinned } : {}),
     ...(plan.sketch && k === 0 ? { sketch: plan.sketch } : {}),
-    steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ ...(l.heading ? { heading: l.heading } : {}), tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}), ...(l.graph ? { graph: l.graph } : {}), ...(l.swing ? { swing: l.swing } : {}), ...(l.cols ? { cols: true } : {}), ...(l.corner ? { corner: true } : {}) })),
+    // A step title equal to the board's own heading would be drawn twice at the top (31 Oct 2026).
+    steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ ...(l.heading && l.heading.trim() !== String(board.heading ?? '').trim() ? { heading: l.heading } : {}), tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}), ...(l.graph ? { graph: l.graph } : {}), ...(l.swing ? { swing: l.swing } : {}), ...(l.cols ? { cols: true } : {}), ...(l.corner ? { corner: true } : {}) })),
     beats: list,
   };
 });
