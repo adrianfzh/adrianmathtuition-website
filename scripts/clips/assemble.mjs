@@ -39,7 +39,9 @@ const beats = draft.beats.map((b, i) => {
   const asks = fix?.asks ?? b.asks;
   // `aside` (a side link to another clip, Beat.aside) rides with the beat too.
   const aside = fix?.aside ?? b.aside;
-  return { say: fix ? fix.say : b.say, ...(asks?.length ? { asks } : {}), ...(aside ? { aside } : {}), do: fix ? fix.do : b.do };
+  // `calc` (the 🧮 calculator keys the beat reads values off, Beat.calc) rides with the beat too.
+  const calc = fix?.calc ?? b.calc;
+  return { say: fix ? fix.say : b.say, ...(asks?.length ? { asks } : {}), ...(aside ? { aside } : {}), ...(calc?.length ? { calc } : {}), do: fix ? fix.do : b.do };
 });
 
 // Keep audio already made for an unchanged line (a rewrite drops it: it belongs to the old words).

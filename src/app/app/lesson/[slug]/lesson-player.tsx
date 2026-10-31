@@ -100,6 +100,7 @@ import {
 import { useNarration, usePref, useRatePref, writePref, writeRate } from './lesson-narration';
 import BoardLayer, { EASE, MathText, NoteSlotView, offsetRect, useIsoLayoutEffect } from './lesson-board';
 import { splitQuote, quoteOfBeat, quoteIsShort } from '@/lib/question-quote';
+import { calcHelp } from '@/lib/calculator-help';
 
 /** The question, with the piece the voice is on lit (keyed on the piece, so each new one jumps out). */
 function QuestionText({ text, quote }: { text: string; quote: string | null }) {
@@ -3420,37 +3421,66 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           {clip && hasBeats(scene) && (() => {
             const reads = scene.beats.slice(0, step + 1).map((b, i) => ({ a: b.aside, i })).filter((r): r is { a: { text: string; slug: string; read: string[] }; i: number } => !!r.a?.read?.length);
             const a = reads[reads.length - 1]?.a;
-            if (!a) return null;
-            const open = readOpen === a.slug;
-            // Once its step has passed, the chip shrinks to a small 💡 so it does not sit on the maths
+            // 🧮 The calculator steps for the values the voice read off the calculator (Beat.calc,
+            // Adrian, 1 Nov 2026: "a popup that students can click: how to use a calculator").
+            const calcs = scene.beats.slice(0, step + 1).map((b, i) => ({ c: calcHelp(b.calc), i })).filter(r => r.c.length);
+            const calc = calcs[calcs.length - 1];
+            if (!a && !calc) return null;
+            const card = readOpen === 'calc:' && calc ? 'calc' : a && readOpen === a.slug ? 'read' : null;
+            // Once its step has passed, a chip shrinks to a small icon so it does not sit on the maths
             // scrolling past the corner (19 Oct 2026, seen in Compare powers: it hid "y = 10 − 2x").
-            const small = step - reads[reads.length - 1].i > 1;
-            // With steps pinned along the top (graph sketching), the top corner is a step: the chip
-            // goes to the bottom corner instead (20 Oct 2026, Exponential graphs: it hid step 4 "draw").
+            const readSmall = !!a && step - reads[reads.length - 1].i > 1;
+            const calcSmall = !!calc && step - calc.i > 1;
+            const small = (!a || readSmall) && (!calc || calcSmall);
+            // With steps pinned along the top (graph sketching), the top corner is a step: the chips
+            // go to the bottom corner instead (20 Oct 2026, Exponential graphs: it hid step 4 "draw").
             const low = scene.type === 'equation-steps' && (!!scene.pinned?.length || scene.steps.some(st => st.corner));
             const at = low ? (small ? 'bottom-16 right-1.5' : 'bottom-16 right-2.5') : (small ? 'top-1.5 right-1.5' : 'top-2.5 right-2.5');
+            const chip = (isSmall: boolean) => `lsn-read-chip inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy font-bold shadow-md transition-all duration-300 ${isSmall ? 'text-[12px] px-1.5 py-1' : 'text-[13px] px-3 py-1.5'}`;
+            const title = card === 'calc' ? '🧮 Using your calculator' : `💡 ${a?.text ?? ''}`;
+            const close = () => toggleRead(card === 'calc' ? 'calc:' : a!.slug);
             return (<>
-              {!open && (
-                <button key={`chip-${a.slug}`} type="button" data-aside-read-chip aria-expanded={false} aria-label={a.text}
-                  onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
-                  data-small={small || undefined}
-                  className={`lsn-read-chip absolute z-20 inline-flex items-center gap-1 rounded-full bg-amber-100/95 text-navy font-bold shadow-md transition-all duration-300 ${at} ${small ? 'text-[12px] px-1.5 py-1' : 'text-[13px] px-3 py-1.5'}`}>
-                  {small ? '💡' : '💡 Why?'}
-                </button>
+              {!card && (
+                <div className={`absolute z-20 flex flex-row-reverse gap-1.5 ${at}`}>
+                  {a && (
+                    <button key={`chip-${a.slug}`} type="button" data-aside-read-chip aria-expanded={false} aria-label={a.text}
+                      onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
+                      data-small={readSmall || undefined} className={chip(readSmall)}>
+                      {readSmall ? '💡' : '💡 Why?'}
+                    </button>
+                  )}
+                  {calc && (
+                    <button key="chip-calc" type="button" data-calc-chip aria-expanded={false} aria-label="How to use your calculator"
+                      onClick={e => { e.stopPropagation(); toggleRead('calc:'); }}
+                      data-small={calcSmall || undefined} className={chip(calcSmall)}>
+                      {calcSmall ? '🧮' : '🧮 Calculator'}
+                    </button>
+                  )}
+                </div>
               )}
-              {open && (
-                <div data-aside-read onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
+              {card && (
+                <div data-aside-read onClick={e => { e.stopPropagation(); close(); }}
                   className="lsn-read-veil absolute inset-0 z-30 rounded-3xl bg-slate-950/45 flex items-end p-2.5 cursor-default">
-                  <div role="dialog" aria-label={a.text} onClick={e => e.stopPropagation()}
+                  <div role="dialog" aria-label={title} onClick={e => e.stopPropagation()}
                     className="lsn-read-card w-full max-h-full overflow-y-auto rounded-2xl bg-[hsl(45,40%,98%)] px-3.5 pt-2.5 pb-3 text-[14px] leading-snug sm:text-[15px] sm:leading-relaxed text-slate-800 shadow-xl">
                     <div className="flex items-start gap-2 mb-1.5">
-                      <p className="flex-1 text-[14px] font-bold text-navy">💡 {a.text}</p>
-                      <button type="button" aria-label="Close" onClick={() => toggleRead(a.slug)}
+                      <p className="flex-1 text-[14px] font-bold text-navy">{title}</p>
+                      <button type="button" aria-label="Close" onClick={close}
                         className="shrink-0 -mt-0.5 w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-[15px] font-bold">✕</button>
                     </div>
-                    <ul className="space-y-1 sm:space-y-1.5">
-                      {a.read.map((l, i) => <li key={i}><MathText text={l} /></li>)}
-                    </ul>
+                    {card === 'read' && a && (
+                      <ul className="space-y-1 sm:space-y-1.5">
+                        {a.read.map((l, i) => <li key={i}><MathText text={l} /></li>)}
+                      </ul>
+                    )}
+                    {card === 'calc' && calc && calc.c.map(h => (
+                      <div key={h.title} className="mt-2 first:mt-0" data-calc-help>
+                        <p className="font-bold text-navy"><MathText text={h.title} /></p>
+                        <ol className="list-decimal pl-5 space-y-0.5">
+                          {h.lines.map((l, i) => <li key={i}><MathText text={l} /></li>)}
+                        </ol>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -4114,6 +4144,10 @@ const PLAYER_CSS = `
 /* The 💡 Why? chip owns the top corner; the Paused chip steps left of it. */
 .lsn-scene:has([data-aside-read-chip]) .lsn-paused-chip { right: 6rem; }
 .lsn-scene:has([data-aside-read-chip][data-small]) .lsn-paused-chip { right: 3rem; }
+.lsn-scene:has([data-calc-chip]) .lsn-paused-chip { right: 7.5rem; }
+.lsn-scene:has([data-calc-chip][data-small]) .lsn-paused-chip { right: 3rem; }
+.lsn-scene:has([data-calc-chip]):has([data-aside-read-chip]) .lsn-paused-chip { right: 13rem; }
+.lsn-scene:has([data-calc-chip][data-small]):has([data-aside-read-chip][data-small]) .lsn-paused-chip { right: 5rem; }
 .lsn-read-chip[data-small] { opacity: 0.6 !important; }
 .lsn-read-veil { animation: lsnFade 180ms ease both; }
 .lsn-read-card { animation: lsnReadUp 240ms cubic-bezier(.2,.8,.2,1) both; }

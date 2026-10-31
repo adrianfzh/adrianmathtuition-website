@@ -156,6 +156,12 @@ no focus, no clear.
 - **A "why" detour is written, in a drop-down**: one line on the board states the fact, and the beat
   carries `"aside": {"text": "Why …?", "slug": "<topic>-<point>", "read": ["…", "…", "**takeaway**"]}`
   — up to 10 lines, one idea a line, inline `$…$` maths, the last line bold. No side clip is made.
+- **A value read off the calculator gets the 🧮 card** (Adrian, 1 Nov 2026): when the voice says
+  "six C two is fifteen" or "two to the four is sixteen", `highlight` that piece on those words, add a
+  `note` `use calculator` near it, and give the beat `"calc": ["ncr", "power"]` — keys `ncr`, `power`,
+  `negative` (a negative number to a power), `fraction` (a fraction to a power), `term` (a whole term
+  typed as one line), `exact` (fraction ↔ decimal). Only the keys this beat really uses. The
+  in-between simplification line stays on the board.
 - **A term the voice moves is seen moving** (Adrian, 19 Oct 2026): into a fraction's bottom too — the
   next line's token wraps the landing place in `\htmlClass{lsn-pc-<p>}{…}` and carries `"from"` + `"into": "<p>"`;
   write that line first (the bottom stays empty), then `move` on the words that say it. On a scrolling board

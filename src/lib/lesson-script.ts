@@ -46,6 +46,7 @@
 // client player, the server page, API routes and vitest alike.
 
 import { cueWordIndex, splitParagraphs } from './lesson-speech';
+import { CALC_KEYS } from './calculator-help';
 
 /** Highlight / callout tones — the portal's soft tint palette. */
 export const LESSON_TONES = ['amber', 'sky', 'rose', 'emerald'] as const;
@@ -385,6 +386,10 @@ export interface Beat {
      *  under the board beside the clip link, so Adrian can compare the two (18 Oct 2026: "instead
      *  of a popup clip, we have a written explanation (drop down)? put that in too"). */
     read?: string[] };
+  /** 🧮 The calculator key presses this beat reads values off (lib/calculator-help, Adrian, 1 Nov
+   *  2026: "put a side note use calculator to calculate and a popup that students can click: how to
+   *  use a calculator"). A "🧮 Calculator" chip on the board opens the steps for these keys. */
+  calc?: string[];
 }
 
 /** Every scene may carry beats instead of narration. */
@@ -898,6 +903,9 @@ function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, 
     if (b.timing !== undefined) {
       if (b.audio === undefined) errors.push(`${bAt}: timing needs audio`);
       if (!isLessonTimingUrl(b.timing)) errors.push(`${bAt}.timing: must be a /lessons/<slug>/….timing.json path or an https URL`);
+    }
+    if (b.calc !== undefined && (!Array.isArray(b.calc) || b.calc.length === 0 || b.calc.some((c: unknown) => !(CALC_KEYS as readonly unknown[]).includes(c)))) {
+      errors.push(`${bAt}.calc: a list of calculator keys, each one of ${CALC_KEYS.join('/')}`);
     }
     if (!Array.isArray(b.do)) { errors.push(`${bAt}: do must be an array of actions (empty for a beat that only speaks)`); return; }
     if (scope === null) return; // the scene body failed — references cannot be judged

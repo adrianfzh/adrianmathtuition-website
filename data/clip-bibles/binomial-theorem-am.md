@@ -55,8 +55,9 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 - **"Expand as far as the third term" (or "the first N terms") = expand TERM BY TERM, never the
   general term** (Adrian, 31 Oct 2026: *"for this question, we should expand term by term all the
   way to the third term (instead of using the general term formula), and dot dot dot at the end"*).
-  One line writes the expansion as the pattern gives it, ending `+ ⋯`:
-  `(px² + q/x)⁶ = (px²)⁶ + ⁶C₁(px²)⁵(q/x) + ⁶C₂(px²)⁴(q/x)² + ⋯`;
+  One line writes the expansion as the pattern gives it, ending `+ ⋯`, **every term from ⁿC₀ with
+  both powers written, even 0 and 1** (Adrian's own videos, 1 Nov 2026 — §6):
+  `(px² + q/x)⁶ = ⁶C₀(px²)⁶(q/x)⁰ + ⁶C₁(px²)⁵(q/x)¹ + ⁶C₂(px²)⁴(q/x)² + ⋯`;
   the next line(s) simplify each term in place: `= p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯`.
   Do not work out each term as a separate sum and assemble them afterwards.
 - **The order on the board, every Binomial clip** (Adrian, 31 Oct 2026, after the remakes:
@@ -67,10 +68,16 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
   2. **Name a, b and n, each with what it is**, each its own line, lit as the voice says it:
      `a = \text{first term} = 2` · `b = \text{second term} = -\tfrac12x` · `n = 8` (or `n = ?`
      when n is the unknown). The voice says "A is the first term, two".
-  3. **Substitute** into the formula, as written.
+  3. **Substitute** into the formula, as written — for an expansion, every term from ⁿC₀ with both
+     powers shown (`\binom{6}{0}(px^2)^6\left(\tfrac qx\right)^0`), the voice saying the pattern
+     ("first term, maximum power; second term, power zero … first term reduce power, second term
+     increase power").
   4. **Show the simplification step by step** — each power worked out on its own
      (`(-\tfrac12x)^3 = -\tfrac18x^3`, `(px^2)^5 = p^5x^{10}`), then the numbers multiplied, then
-     the term. Never jump from the substituted line to the answer.
+     the term. Never jump from the substituted line to the answer. **A value read off the
+     calculator** ("six C two is fifteen", "two to the four is sixteen") is lit as it is said, a
+     `use calculator` note sits under it, and the beat carries `"calc": ["ncr", "power"]` — the
+     🧮 Calculator card (§6, item 13).
 
 ### 3.2 First few terms, and "hence" a coefficient of a product
 - "Expand each factor only up to the power you need, multiply out just the pairs that land on
@@ -159,3 +166,47 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 - Never teach "memorise the formula" — the pattern first, the formula sheet for T(r+1) only.
 - Never compute a numeric nCr by hand on the board — the calculator value is written straight in.
 - Never mention that any notes contained a misprint; the board simply shows the right working.
+
+## 6. From Adrian's own videos (1 Nov 2026)
+
+Adrian has six Binomial videos of his own (Google Drive, *Amath Online Class Videos*,
+`AdrianMathTuition_AMath_Binomial_Theorem_ExampleSet_1…5` and `…_OLevelRevision_BinomialTheorem`).
+On 1 Nov 2026 they were read (speech + board, in order) and these habits listed; Adrian: **"Yes"** to
+all twelve, plus item 13. The quotes are his words as transcribed. Private — never shown to students.
+
+**Expanding (the first few terms)**
+1. **Every term from ⁿC₀, both powers written**: `⁷C₀ 2⁷(−x)⁰ + ⁷C₁ 2⁶(−x)¹ + ⁷C₂ 2⁵(−x)² + ⋯`.
+2. **The voice says the pattern** on that line: "first term, maximum power; second term, the lowest
+   power is always zero … first term reduce power, second term increase power".
+3. **A negative second term always in brackets**, `(−x)`: "bring the negative with you".
+4. **"+ ⋯" at the end** whenever not every term is written ("plus dot dot dot").
+5. **An early term (3rd, 4th) is found by expanding, not the formula**: "I'll expand it instead. It's
+   just faster" (Example Set 4).
+
+**One particular term**
+6. `T_{r+1} = \binom{n}{r}a^{n-r}b^r`, then n, a, b put in; then **"split the numbers and the x"**:
+   `(-\tfrac13)^r (x^{-3})^r`; "the number I bring in front, the x stuff at the back"; then add the
+   powers: `x^{12-4r}`. Each its own line.
+7. **"For x² term, 8 − 2r = 2"** written as a line → solve r → put it back as `T_{3+1}` ("sub r
+   equals 3 back in"). Term independent of x: "a constant … like 5 … think of it as x power zero"
+   (`5 = 5x^0`), so the power = 0.
+8. **r must be a whole number**: `r = 13/4`, "which is not an int." → `∴ no x^{-1} term`.
+
+**Other habits**
+9. **Ratio → fraction → cross-multiply.** "Ratio, I like to write as a fraction." **Never cancel n**:
+   "you must be careful, because n can be 0. So I would suggest you not to cancel" — expand,
+   factorise `n(n − 7) = 0`, then reject n = 0 with the reason ("you don't have x and x squared").
+10. **A coefficient is the number only** ("don't take the x"); the last line says
+    `∴ coefficient of x² = 5152`.
+11. **Two brackets multiplied: "selective expansion"** — rainbow arcs pair only the terms that give
+    the power needed ("I just need x square, so I don't need x cube"). Use `mark` kind `arc`.
+12. **The final answer is boxed or double-underlined.**
+
+**13. Calculator values (Adrian, 1 Nov 2026)** — in the videos he reads values straight off the
+calculator ("7 choose 2 is 21, 2 to the power of 5 is 32"). The clips keep the 31 Oct in-between
+simplification line, and when the voice says such a value: *"highlight the words and put a side note
+use calculator to calculate and a popup that students can click: how to use a calculator"*. So: the
+piece is `highlight`ed on the words that say it, a `note` `use calculator` sits under it, and the beat
+carries `"calc": [...]` (keys: `ncr`, `power`, `negative`, `fraction`, `term`, `exact` —
+`lib/calculator-help.ts`), which puts a **🧮 Calculator** chip on the board that opens the key presses.
+

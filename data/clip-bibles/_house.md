@@ -190,6 +190,30 @@ show the simplification"*):
 The same four steps hold for any clip that uses a formula: formula, name each letter with what it
 is, substitute, simplify one step a line.
 
+### Adrian's own videos are the reference for his style (1 Nov 2026)
+
+Adrian has his own teaching videos on Google Drive (*Amath Online Class Videos* — 84 A Math, 186
+JC, 9 E Math, 6 lower-sec), synced on this Mac at
+`~/Library/CloudStorage/GoogleDrive-adrianmathtuition@gmail.com/My Drive/`. On 1 Nov 2026 the six
+Binomial ones were read (what he writes, in order, and what he says) and his habits listed; he said
+**"Yes"** to all of them — `binomial-theorem-am.md` §6. **Before the first clips of another topic,
+read his videos on it the same way and show him the list first** (private: never shown to students,
+never copied into a clip). Habits that hold for every topic: a negative in brackets ("bring the
+negative with you"); "+ ⋯" on an unfinished expansion; never cancel a letter that can be 0 —
+factorise and reject with the reason; a coefficient is the number only, last line
+`∴ coefficient of … = …`; the answer boxed.
+
+### Values read off the calculator: light, note, 🧮 card (Adrian, 1 Nov 2026)
+
+*"When narrator says '⁷C₂ is 21, 2⁵ is 32' you can highlight the words and put a side note use
+calculator to calculate and a popup that students can click: how to use a calculator."* When the
+voice reads a value off the calculator (an nCr, a power, a negative or fraction to a power, a whole
+term), the piece is `highlight`ed on the words that say it, a `note` `use calculator` sits under it,
+and the beat carries `"calc": ["ncr", "power", …]` (`lib/calculator-help.ts`: `ncr`, `power`,
+`negative`, `fraction`, `term`, `exact`). The board then shows a **🧮 Calculator** chip beside the
+💡 one; a tap pauses the clip and lays the key presses (Casio fx-97SG X) over the board. The
+in-between simplification line (31 Oct) stays.
+
 ### Checks and answers
 - **A log equation's check opens "For log equations, always check each answer."**
 - **Show where a checked expression comes from** ("it's from the first line, so students may have
