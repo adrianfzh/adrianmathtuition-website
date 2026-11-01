@@ -80,6 +80,8 @@ no focus, no clear.
 - **No beat of five words or fewer** — "Plus dot dot dot again." alone gets clipped and mis-heard
   (1 Nov 2026: the voice check scored it 60 %). Join it to the sentence before or after
   ("Three terms are enough, so plus dot dot dot.").
+- **No beat opens on a bare letter** — "X to the six term: …" is heard as "Next to the sixth term"
+  (1 Nov 2026, 82 % on the voice check). Open with a word: "The X to the six term …".
 - **One new thing per beat** (two at most) plus at most one pointing mark.
 - **The trap: one plain sentence, at the step where it bites**, with a `circle` on the
   token it is about. Not a warning speech before it.
