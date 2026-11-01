@@ -179,7 +179,8 @@ constant" → the formula as a board line, then `a = …, b = …`, then substit
 expansion of the first three terms, don't have to quote the formula, just directly do it, (do it
 like me). and have n choose 0 for the first term, so students can see the pattern"*): no formula
 line, no a/b/n lines — the bracket, then the expansion from ⁿC₀ with both powers, the voice saying
-the pattern, then simplify. The four steps below are for a clip that needs ONE term.
+the pattern, then simplify. The expansion is ONE board line (*"can you write the expansion in one line? easier
+to see"*), and so is the simplified line. The four steps below are for a clip that needs ONE term.
 
 **The order on the board, a Binomial clip that needs ONE term** (Adrian, 31 Oct 2026, after the remakes:
 *"write down the formula first, then say what is a, b and n, say a is first term etc, then sub in,
@@ -529,6 +530,8 @@ is not approved.
 - Never name Adrian or any person (students hear "we").
 - Adrian's method, not a textbook's: where the topic bible teaches a way, the clip uses it.
 - Never the bank's words "question bank", "source", "prelim".
+- **Never "kill"** (Adrian, 1 Nov 2026: *"do not say 'kill'"*) — say what happens: "an even power makes
+  it positive", "x = 1 makes the B term zero", "rules out the second root".
 
 ## 6. Redoing a clip — what we learnt (16–18 Oct 2026, the 7 A Math Logarithms clips)
 

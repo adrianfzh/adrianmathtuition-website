@@ -52,7 +52,7 @@ not teach.
 - Rule name on the board: **Remainder Theorem: f(x) ÷ (x − a) → remainder f(a)**;
   for (ax − b), remainder f(b/a) (601.08).
 - "Set the divisor = 0" to find what to sub: x + 2 → x = −2; 2x − 1 → x = ½.
-- Why it works: sub x = a "kills the Q(x) term, leaving just the remainder" (601.08).
+- Why it works: sub x = a makes the Q(x) term zero, "leaving just the remainder" (601.08).
 - Worked example used: **601.1** — 4x⁴ − x³ − 5x + 1 ÷ (x − 2): x = 2, f(2) = 64 − 8 − 10 + 1 = 47.
 - Traps: subbing the printed sign — x + 2 is NOT x = 2 (601.19); 2 − x gives x = 2, not −2
   (601.16); 2x + 1 gives x = −½, not −1 (pitfall). It gives only the remainder, not the quotient.

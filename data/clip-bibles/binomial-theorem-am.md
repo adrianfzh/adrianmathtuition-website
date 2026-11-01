@@ -49,7 +49,7 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 - "The second term keeps its sign … the power hits the coefficient AND the sign AND the x" (112.01).
 - Worked examples used: **112.03** — (2 + x)³ = 8 + 12x + 6x² + x³; **112.07** — (3 − 2x)⁴ =
   81 − 216x + 216x² − 96x³ + 16x⁴; **112.035** — (2 − x/2)⁴ (sign and fraction).
-- Rule notes: `Pattern: a's power falls, b's power rises`; `odd power keeps the minus, even power kills it`.
+- Rule notes: `Pattern: a's power falls, b's power rises`; `odd power keeps the minus, even power makes it positive`.
 - Traps: (−2x)³ = −8x³, not −2x³ (112.01, pitfall); "The minus sign belongs to b" (112.035);
   a coefficient line that does not match the expansion it produces (112.06 — cross-check).
 - **"Expand as far as the third term" (or "the first N terms") = expand TERM BY TERM, never the
@@ -58,7 +58,9 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
   One line writes the expansion as the pattern gives it, ending `+ ⋯`, **every term from ⁿC₀ with
   both powers written, even 0 and 1** (Adrian's own videos, 1 Nov 2026 — §6):
   `(px² + q/x)⁶ = ⁶C₀(px²)⁶(q/x)⁰ + ⁶C₁(px²)⁵(q/x)¹ + ⁶C₂(px²)⁴(q/x)² + ⋯`;
-  the next line(s) simplify each term in place: `= p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯`.
+  the next line simplifies each term in place: `= p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯`.
+  **Each of these is ONE board line, never split term by term down the board** (Adrian, 1 Nov 2026:
+  *"can you write the expansion in one line? easier to see"*) — the board shrinks it to fit a phone.
   Do not work out each term as a separate sum and assemble them afterwards.
 - **"Expand to the first N terms": no formula, no a/b/n lines — start expanding straight away**
   (Adrian, 1 Nov 2026, after watching the remake: *"for just expansion of the first three terms,
@@ -141,7 +143,7 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 
 ### 3.6 Two unknowns by comparing coefficients
 - Expand the product, group by power, then "match … x with x, x² with x²" (112.42).
-- Use the stated condition to reject: "The 'q is an integer' clause exists precisely to kill the
+- Use the stated condition to reject: "The 'q is an integer' clause exists precisely to rule out the
   second root" (112.42).
 - Worked example used: **112.42** — (1 + qx)(2 − px)⁵ = 32 − 80x + (176/5)x² → p = 1/5, q = −2.
 
@@ -163,7 +165,7 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 ## 4. Stock phrases (the series voice)
 
 - "Name A, B and N first." · "The first power falls, the second power rises." ·
-  "The minus travels inside every power." · "Odd power keeps the minus. Even power kills it." ·
+  "The minus travels inside every power." · "Odd power keeps the minus. Even power makes it positive." ·
   "Press N C R on the calculator." · "Only expand as far as you need." ·
   "No X means power zero." · "Every pair whose X's cancel." · "T R plus one — R is one less
   than the term number." · "Separate the numbers from the X." · "N must be a positive integer."

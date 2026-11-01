@@ -681,6 +681,8 @@ const FILLER: [RegExp, string][] = [
   [/\b(today we|in this (lesson|video|clip)|let's (go|begin|start|dive)|here's the (recipe|trick|thing)|let me show)\b/i, 'announces instead of doing — say the step'],
   [/\b(see\?|see it\?|right\?|simple, right|easy\.|easy marks|that's (it|all it is)\.|just sitting there|you've got this|don't believe me|hmm\b|nothing more\.|no working at all)/i, 'a cheer or a filler line — it explains nothing; cut it'],
   [/\b(as you can see|on the screen|on the board|shown here|look at the screen)\b/i, 'restates the screen — the board already shows it; say what we do and why'],
+  // Adrian, 1 Nov 2026: "do not say 'kill'" ("an even power kills the minus").
+  [/\bkill(s|ed|ing)?\b/i, "says 'kill' — say what happens instead: 'makes it positive', 'makes it zero', 'rules it out'"],
 ];
 
 /**

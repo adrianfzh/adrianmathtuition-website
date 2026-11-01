@@ -40,6 +40,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { ROOT, loadTs, parseArgs, resolveSupabase } from '../lessons/shared.mjs';
 
 const args = parseArgs(process.argv.slice(2));
@@ -454,7 +455,12 @@ await step('store', async () => {
     for (const k of ['audio', 'timing']) {
       if (!b[k] || /^https:/.test(b[k])) continue;
       const file = path.join(ROOT, 'public', b[k]);
-      b[k] = await upload(file, QC.clipAudioPath(QID, path.basename(file)), k === 'audio' ? 'audio/mpeg' : 'application/json');
+      // The file's own hash in its name: a remake must never reuse a URL, or a phone that kept the
+      // old voice (a year's cache) plays it under the new subtitles (Adrian, 1 Nov 2026: "the
+      // narration and the subtitles do not match").
+      const ext = path.extname(file);
+      const tag = createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 10);
+      b[k] = await upload(file, QC.clipAudioPath(QID, `${path.basename(file, ext)}-${tag}${ext}`), k === 'audio' ? 'audio/mpeg' : 'application/json');
     }
   }
   await saveRow({ script: lesson, plan: readJson(PLAN), gate });

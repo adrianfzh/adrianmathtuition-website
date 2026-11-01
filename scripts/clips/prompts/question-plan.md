@@ -49,7 +49,11 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   line on the one board — it slides up as lines are written; put a short `heading` on the first line
   of each step. Budget: the heading, an `intro` of at most about two phone lines (≈ 70 characters of
   words + maths — cut story words: "A cylinder: volume $(6+2\sqrt3)\pi$, radius $1+\sqrt3$. Find its
-  height."). A line wider than the phone (about 22 characters of maths) is cut off — split it. The
+  height."). A line wider than the phone (about 22 characters of maths) is cut off — split it.
+  **Except a Binomial expansion: each `=` line of it stays ONE board line** (Adrian, 1 Nov 2026,
+  on a three-line ⁶C₀ / ⁶C₁ / ⁶C₂ expansion: *"can you write the expansion in one line? easier to
+  see"*) — one token per term (`\binom{6}{0}(px^2)^6\left(\tfrac qx\right)^0` …, then `+\cdots`);
+  the board shrinks a long line to fit the phone by itself. The simplified line is one line too. The
   same holds for maths inside an `intro`: a long identity goes on the board as a line, not in the intro.
 - **A result used later is written again where it is used** (31 Oct 2026: two Binomial clips failed
   the look — "talked about but hidden" — because `−224x³` and the long expansion line had scrolled

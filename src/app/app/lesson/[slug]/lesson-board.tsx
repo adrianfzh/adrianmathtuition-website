@@ -150,8 +150,14 @@ export function markPath(kind: Exclude<BoardMark['kind'], 'arc' | 'arc-under'>, 
     // Tight on purpose: a loop that inflated by (10, 7) reached into the row
     // above and into the boxes of the tokens either side of it on a phone
     // board. +5 keeps it inside the row and column gaps the themed CSS opens.
-    const rx = (b.x1 - b.x0) / 2 + 5, ry = (b.y1 - b.y0) / 2 + 5;
-    for (let k = 0; k <= 52; k++) { const t = -0.9 + (k / 48) * Math.PI * 2.15; pts.push([cx + Math.cos(t) * (rx + wob(k)), cy + Math.sin(t) * (ry + wob(k + 3))]); }
+    // A rounded-box loop (a superellipse, power 4), sized so its CORNERS clear the box's corners — a
+    // plain ellipse through the box's sides cut the ends of a wide piece (Adrian, 1 Nov 2026, the
+    // circle round "p = 2, q = −3/2": "does not circle the entire thing, it cuts the numbers").
+    const hw = (b.x1 - b.x0) / 2, hh = (b.y1 - b.y0) / 2;
+    const ry = hh + 6;
+    const rx = hw / Math.pow(1 - Math.pow(hh / ry, 4), 0.25) + 4;
+    const sp = (v: number) => Math.sign(v) * Math.sqrt(Math.abs(v));
+    for (let k = 0; k <= 52; k++) { const t = -0.9 + (k / 48) * Math.PI * 2.15; pts.push([cx + sp(Math.cos(t)) * (rx + wob(k)), cy + sp(Math.sin(t)) * (ry + wob(k + 3))]); }
   } else {
     const p = 5;
     const c: [number, number][] = [[b.x0 - p, b.y0 - p], [b.x1 + p, b.y0 - p], [b.x1 + p, b.y1 + p], [b.x0 - p, b.y1 + p], [b.x0 - p, b.y0 - p + 5]];

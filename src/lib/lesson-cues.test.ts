@@ -120,6 +120,14 @@ describe('the verifier’s new rules', () => {
     expect(msgs.filter(m => m.where.endsWith('beats[4].say'))).toEqual([]);
     expect(msgs.every(m => m.severity === 'warn')).toBe(true);
   });
+  it("directIssues: 'kill' is flagged (Adrian, 1 Nov 2026), 'skill' is not", () => {
+    const msgs = directIssues(clip([
+      { say: 'An even power kills the minus.', do: [] },
+      { say: 'This skill uses an even power.', do: [] },
+    ]));
+    expect(msgs.filter(m => m.where.endsWith('beats[0].say')).length).toBe(1);
+    expect(msgs.filter(m => m.where.endsWith('beats[1].say'))).toEqual([]);
+  });
   it('motionIssues: three things in one beat, two at the same word, and a guessed fraction on a clip', () => {
     const msgs = motionIssues(clip([
       { say: SAY, do: [{ do: 'write', token: 'a', on: 'Start' }, { do: 'write', token: 'b', on: 'first' }, { do: 'write', token: 'c', on: 'squared' }] },

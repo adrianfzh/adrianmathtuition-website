@@ -17,7 +17,7 @@ these do not teach.
   (e.g. `A/(x−1) + B/(x+2)`) — the form is the plan.
 - The split line, the "comparing numerator" line and each "Sub x = …" are each their own line.
   Never merge "combine" and "compare" into one line when the notes write them apart (105.02).
-- Each "Sub x = …" line carries the note of what it kills (`x = 1 kills B(x − 1)`), `near` = the
+- Each "Sub x = …" line carries the note of what it makes zero (`x = 1 makes B(x − 1) zero`), `near` = the
   bracket that becomes zero.
 - A long-division board (105.19) is its own board: board 1 divides, board 2 splits.
 - The answer line keeps every piece — the quotient too — boxed in emerald.
@@ -58,7 +58,7 @@ Letters are capitals in `say` ("A", "B", "C", "X"). Constants stay exact — fra
 - "Always try to factorize the quadratic before you choose the split." (105.05)
 - "Three linear factors → three constants." (105.06)
 - Combining: "Each constant is multiplied by the other two factors." (105.06)
-- Each zeroing value "kills" the other terms: "x = −1 kills both the A and B terms." (105.06)
+- Each zeroing value makes the other terms zero: "x = −1 makes the A and B terms zero." (105.06)
 - Worked example used: **105.06** — (3x + 1)/((x + 2)(x² + 4x + 3)) → (x + 2)(x + 3)(x + 1);
   C = −1, A = 5, B = −4. Answer 5/(x + 2) − 4/(x + 3) − 1/(x + 1).
 - Also factorize a difference of squares: 4x² − 1 = (2x − 1)(2x + 1) (105.15); and a quadratic
@@ -111,7 +111,7 @@ Letters are capitals in `say` ("A", "B", "C", "X"). Constants stay exact — fra
 
 - Opening line = the question: "Express five X plus one, over X minus one times X plus two, as
   partial fractions."
-- "One constant over each linear factor." · "Comparing numerator." · "Sub X equals one — it kills B."
+- "One constant over each linear factor." · "Comparing numerator." · "Sub X equals one — the B term becomes zero."
 - "Factorize first." · "Cannot factorize — B X plus C on top." · "One without the square, one with."
 - "Check the degrees first." · "Improper — long division first." · "Keep the quotient."
 - The trap: one plain sentence where it bites ("A repeated factor needs both terms.").
