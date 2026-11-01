@@ -1138,7 +1138,11 @@ function scrollClipBoard(cont: HTMLElement) {
   // about is kept below it (20 Oct 2026, Laws of indices: "seven squared" was said with its line half
   // under the plan box).
   const cornerEl = stage.querySelector<HTMLElement>('[data-lsn-corner]');
-  const band = cornerEl ? Math.max(0, Math.ceil(cornerEl.getBoundingClientRect().bottom - boardEl.getBoundingClientRect().top)) : 0;
+  // The 💡 / 🧮 chips in the top corner own that strip too (1 Nov 2026, Binomial third term: the
+  // "Calculator" chip sat on the end of the one-line expansion).
+  const chipsEl = stage.querySelector<HTMLElement>('[data-lsn-chips="top"]');
+  const bandOf = (el: HTMLElement | null) => el ? Math.max(0, Math.ceil(el.getBoundingClientRect().bottom - boardEl.getBoundingClientRect().top)) : 0;
+  const band = Math.max(bandOf(cornerEl), bandOf(chipsEl));
   const FADE = 64 + band;
   const first = cont.dataset.scrollSeen !== '1';
   cont.dataset.scrollSeen = '1';
@@ -3452,7 +3456,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             const close = () => toggleRead(card === 'calc' ? 'calc:' : a!.slug);
             return (<>
               {!card && (
-                <div className={`absolute z-20 flex flex-row-reverse gap-1.5 ${at}`}>
+                <div data-lsn-chips={low ? 'low' : 'top'} className={`absolute z-20 flex flex-row-reverse gap-1.5 ${at}`}>
                   {a && (
                     <button key={`chip-${a.slug}`} type="button" data-aside-read-chip aria-expanded={false} aria-label={a.text}
                       onClick={e => { e.stopPropagation(); toggleRead(a.slug); }}
