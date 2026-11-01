@@ -3485,6 +3485,16 @@ images PDF** (`mode:'photos'`) = the annotated original photos ONLY, no typeset 
 no Puppeteer — a few seconds, and the closest thing to a hand-marked script. With a
 single photo the full mode returns a PNG (`kind:'image'`) instead of a PDF.
 
+**Pages in QUESTION order, not photo order (1 Nov 2026, Adrian: "apparently the PDFs are not
+arranged correctly").** A shuffled 35-photo upload ("worksheet (35 photos)", split P1/P2) came
+back Q6, Q1, Q5(iii), Q4(iii)… because the copy followed `photo_index`. Both builds (this route
+and the ✏️ Annotate assemble, `mark-paper-annotate-pdf`) now sort the body pages AFTER marking
+by the smallest question/part the marker found on each page (`lib/marked-page-question-order.ts`,
+tested on that paper). A page with no marked work rides with the page before it; no-work pages
+before the first marked one (covers) stay first; fewer than half the pages marked → photo order.
+The marking is untouched — `photo_index` still keys everything; only the stapling order moves.
+The bot's `lib/page-order.js` (labels read BEFORE marking) still runs only when pages are added.
+
 ### 🕳 A page in, is a page out — the missing-page invariant (14 Sep 2026)
 
 **The invariant: every page a student handed in appears in their marked copy.** It did

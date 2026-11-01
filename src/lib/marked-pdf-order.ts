@@ -26,6 +26,9 @@ function byLabel(a: { label: string }, b: { label: string }): number {
 export function orderMarkedPages<P, S>(
   photos: PhotoPage<P>[],
   sheets: SheetPage<S>[],
+  /** Photo order to use instead of photo_index — the question order from
+   *  lib/marked-page-question-order (1 Nov 2026). Omitted → photo_index order. */
+  rank?: (photoIndex: number) => number,
 ): OrderedPage<P, S>[] {
   const byPhoto = new Map<number, SheetPage<S>[]>();
   const orphans: SheetPage<S>[] = [];
@@ -40,7 +43,8 @@ export function orderMarkedPages<P, S>(
 
   const out: OrderedPage<P, S>[] = [];
   const placed = new Set<number>();
-  for (const p of photos.slice().sort((a, b) => a.photo_index - b.photo_index)) {
+  const order = rank ?? ((i: number) => i);
+  for (const p of photos.slice().sort((a, b) => order(a.photo_index) - order(b.photo_index) || a.photo_index - b.photo_index)) {
     out.push({ kind: 'photo', item: p.item });
     placed.add(p.photo_index);
     for (const s of (byPhoto.get(p.photo_index) || []).sort(byLabel)) {

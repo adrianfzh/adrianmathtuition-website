@@ -2,7 +2,8 @@
 //
 // The client has already flattened every INKED page to a JPEG and PUT it to Blob via
 // the client-token flow (un-inked pages keep their original Blob URL — byte-identical,
-// no second JPEG generation). This route stitches those pages, in photo_index order,
+// no second JPEG generation). This route stitches those pages, in QUESTION order (the
+// marker's results, lib/marked-page-question-order — 1 Nov 2026; photo order when unsure),
 // into one PDF laid out EXACTLY like the 🖼 images PDF it replaces (shared layout in
 // lib/marked-pdf-layout.ts, paper-total strip on page 1), uploads it, and best-effort
 // links it to the run as the annotated copy (kind 'annotated' — the same single slot
@@ -18,6 +19,7 @@ import { PDFDocument } from 'pdf-lib';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 import { isUngroundedTotal } from '@/lib/paper-total-text';
+import { questionPageRank } from '@/lib/marked-page-question-order';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -42,8 +44,16 @@ export async function POST(req: NextRequest) {
   const runId = body.runId || '';
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'bad runId' }, { status: 400 });
 
-  const pages = (body.pages || []).slice().sort((a, b) => a.photo_index - b.photo_index);
+  let pages = (body.pages || []).slice().sort((a, b) => a.photo_index - b.photo_index);
   if (!pages.length) return NextResponse.json({ error: 'no pages' }, { status: 400 });
+  // Question order, the same as the 🖼 images PDF this replaces. Best-effort.
+  try {
+    const { data } = await getSupabaseAdmin().from('paper_marking_runs')
+      .select('results:result_json->results').eq('id', runId).maybeSingle();
+    const results = (data as { results?: unknown } | null)?.results;
+    const rank = questionPageRank(pages.map(p => p.photo_index), results);
+    pages = pages.sort((a, b) => rank(a.photo_index) - rank(b.photo_index) || a.photo_index - b.photo_index);
+  } catch (e) { console.warn('[mark-paper-annotate-pdf] question order skipped:', (e as Error).message); }
   for (const p of pages) {
     if (!isOurFileUrl(p.url)) return NextResponse.json({ error: 'page url is not our file store' }, { status: 400 });
   }

@@ -5,6 +5,7 @@ import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { coverPhotoIndexes, frontMatterPages, orderMarkedPages } from '@/lib/marked-pdf-order';
 import { pageImages, type MarkedPdfMode } from '@/lib/annotated-photo-source';
 import { missingAnnotatedPages } from '@/lib/marked-pdf-gaps';
+import { questionPageRank } from '@/lib/marked-page-question-order';
 import { markedPdfColumn } from '@/lib/marked-pdf-column';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -280,9 +281,15 @@ export async function POST(req: NextRequest) {
     } catch (e) { console.warn('[mark-paper-pdf] front page skipped:', (e as Error).message); }
   }
 
+  // Pages in QUESTION order, from the marker's own results (1 Nov 2026: a shuffled
+  // 35-photo upload came back Q6, Q1, Q5(iii)…). The run's stored results first;
+  // the request's results when the run could not be read. Photo order otherwise.
+  const rank = questionPageRank(bodyPhotos.map(a => a.photo_index),
+    Array.isArray(runRow?.results) ? runRow!.results : body.results);
   const pages = orderMarkedPages(
     bodyPhotos.map(a => ({ photo_index: a.photo_index, item: a })),
     pngs.map(p => ({ photo_index: p.photo_index, label: p.label, item: p })),
+    rank,
   );
   for (const pg of pages) await embedPage(pg);
   // ── Worked solutions at the back — the model-answers booklet ────────────────
