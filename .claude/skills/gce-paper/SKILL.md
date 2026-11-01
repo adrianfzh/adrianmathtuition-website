@@ -366,7 +366,7 @@ to view one) — the assemble PDF is what the app prints.
 **Checkpoint 2 (Adrian):** hand him the DOCX/PDF (in-app file card; Telegram when the
 session is headless — CLAUDE.md §File deliverables). He reads the paper. Amend slots he
 flags (repair round) and re-assemble. Copy the final JSON to
-`data/gce-generated/<key>-seed<n>-<date>.json` (kept untracked unless he says commit).
+`data/gce-generated/<key>-seed<n>-<date>.json` (committed — since 28 Oct 2026 a generated paper lives in `data/gce-generated`, not loose on one Mac, 9c1ee5ae).
 
 ### 5. Publish as a Set
 
@@ -403,7 +403,7 @@ Adrian: "do both" — the JC blueprint cut at 2017 with recent years weighted (d
   2025 specimen stay in `corpus.json` (the novelty gate, and the only real examples of the
   REVISED syllabus — recurrence sequences in, the method of differences and polar form out).
   The register in `author-brief.md` and §5 item 7 of the standard list what may not be set.
-- **No Set 1 benchmark yet.** Until Adrian approves the first H2 Set the moderator omits
+- **H2 Set 1 is the benchmark since 9 Oct 2026** — the Opus prelim-style set, seed 32 (Adrian: "use the new H2 set", `docs/GCE-PAPER.md`); `generate.mjs` shows it to the moderator as for AM/EM (`BENCHMARK_SET`). History: **No Set 1 benchmark yet.** Until Adrian approves the first H2 Set the moderator omits
   `as_good_as_set1`; the first Set is held to the standard document alone (its §7).
 - **Bank levels.** GCE rows sit under `JC2` (the shape's `level`); a Set files under `JC`
   (`setLevel`; `publish.mjs`, `lib/print-sets`) and reaches JC1 + JC2 students through
@@ -415,7 +415,7 @@ Adrian: "do both" — the JC blueprint cut at 2017 with recent years weighted (d
   unsupported GC answers allowed unless stated) print instead (`export-docx.py`
   `INSTRUCTIONS_JC`). The PDF and DOCX title is "H2 Mathematics · Set N · Paper n · A-Level
   format" (`setPaperTitle`).
-- **THE IDEAS STEP — H2 only, since 27 Sep 2026.** Adrian on the first draft of H2 Set 1:
+- **THE IDEAS STEP — H2 only, since 27 Sep 2026 — RETRACTED: the Set it produced was rejected on 3 Oct 2026 ("it does not feel like h2 a level paper") and Adrian chose the Opus prelim-style set on 9 Oct; write H2 the way that set was written (`docs/GCE-PAPER.md` §H2) and treat this step and the "moves" rule as history.** Adrian on the first draft of H2 Set 1:
   "questions are too easy. And very standard. H2 A level math gce are more creative with the
   questions. They are set in a smart way, where students need to think, and they gave
   non-standard questions." That draft had passed every gate: the moderator's test rewarded a
