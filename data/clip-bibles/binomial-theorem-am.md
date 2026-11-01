@@ -60,7 +60,16 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
   `(px² + q/x)⁶ = ⁶C₀(px²)⁶(q/x)⁰ + ⁶C₁(px²)⁵(q/x)¹ + ⁶C₂(px²)⁴(q/x)² + ⋯`;
   the next line(s) simplify each term in place: `= p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯`.
   Do not work out each term as a separate sum and assemble them afterwards.
-- **The order on the board, every Binomial clip** (Adrian, 31 Oct 2026, after the remakes:
+- **"Expand to the first N terms": no formula, no a/b/n lines — start expanding straight away**
+  (Adrian, 1 Nov 2026, after watching the remake: *"for just expansion of the first three terms,
+  don't have to quote the formula, just directly do it, (do it like me). and have n choose 0 for
+  the first term, so students can see the pattern"*). Line 1 is the question's bracket
+  `(2 + x)^7`; line 2 is the term-by-term expansion from ⁿC₀ (`= \binom70(2)^7 + \binom71(2)^6(x) +
+  \binom72(2)^5(x)^2 + \cdots`); then simplify. The voice says the pattern as each term is written:
+  the top number stays, the bottom goes 0, 1, 2; the first term's power falls, the second's rises.
+  The order below (formula → a, b, n → substitute) is for clips that need ONE particular term
+  (§3.4) — steps 1–2 are skipped for an expansion; steps 3–4 still hold.
+- **The order on the board, a Binomial clip that needs ONE term** (expansions: the bullet above) (Adrian, 31 Oct 2026, after the remakes:
   *"write down the formula first, then say what is a, b and n, say a is first term etc, then sub in,
   show the simplification"*):
   1. **The formula first**, its own line — expanding: `(a+b)^n = a^n + \binom{n}{1}a^{n-1}b +

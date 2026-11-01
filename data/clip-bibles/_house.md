@@ -175,7 +175,13 @@ constant" → the formula as a board line, then `a = …, b = …`, then substit
 `binomial-theorem-am.md` §3.1 and §3.4. The same holds for any topic with a "general term"
 (the formula only when ONE term is wanted).
 
-**The order on the board, every Binomial clip** (Adrian, 31 Oct 2026, after the remakes:
+**"Expand to the first N terms" starts expanding straight away** (Adrian, 1 Nov 2026: *"for just
+expansion of the first three terms, don't have to quote the formula, just directly do it, (do it
+like me). and have n choose 0 for the first term, so students can see the pattern"*): no formula
+line, no a/b/n lines — the bracket, then the expansion from ⁿC₀ with both powers, the voice saying
+the pattern, then simplify. The four steps below are for a clip that needs ONE term.
+
+**The order on the board, a Binomial clip that needs ONE term** (Adrian, 31 Oct 2026, after the remakes:
 *"write down the formula first, then say what is a, b and n, say a is first term etc, then sub in,
 show the simplification"*):
 1. **The formula first**, its own line — expanding: `(a+b)^n = a^n + \binom{n}{1}a^{n-1}b +
