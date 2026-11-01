@@ -714,7 +714,8 @@ export const CLIP_MAX_SCENES = 4;   // a long working runs over boards, each sta
 // run to about 2½ minutes so every step is explained; sentences stay short (CLIP_BEAT_MAX_WORDS).
 export const CLIP_MAX_WORDS = 460;          // ≈ 3 min of voice C (~2.9 words a second); was 170 (one minute), then 340
 export const CLIP_BEAT_MAX_WORDS = 24;
-export const CLIP_BEAT_MIN_WORDS = 4;
+// 1 Nov 2026: "Plus dot dot dot again." (5 words) was clipped and mis-heard, three remakes running.
+export const CLIP_BEAT_MIN_WORDS = 6;
 /** Things that APPEAR in one beat (write / reveal / move / morph / note). */
 export const BEAT_MAX_APPEAR = 2;
 /** Two actions closer than this (s, at the voice's pace) move at once. */

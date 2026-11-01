@@ -77,6 +77,8 @@ const SPOKEN_SYMBOLS = [
   // "to the four" heard as "to the fourth"; "six C two" written "6C2".
   // 1 Nov 2026: "P X squared" written "Px2" (the letter before x hides the boundary); "six C one"
   // written "6C1".
+  // "dot dot dot" is written as "…" (punctuation, dropped): drop the words on both sides.
+  [/\b(dot\s*){2,3}\b/g, ' '],
   [/\b([a-z])x(2|²)(?![0-9.])/g, ' $1 x square '], [/\b(\d+)c(\d+)\b/g, ' $1 c $2 '],
   [/\byou\b/g, ' u '], [/\b([a-z])\s?(2|²)(?![0-9.])/g, ' $1 square '], [/\b([a-z])\s?(3|³)(?![0-9.])/g, ' $1 cube '],
   [/\b(four|fif|six|seven|eigh|nin|ten)th\b/g, (m, w) => ` ${({ four: 'four', fif: 'five', six: 'six', seven: 'seven', eigh: 'eight', nin: 'nine', ten: 'ten' })[w]} `],

@@ -143,6 +143,10 @@ describe('the verifier’s new rules', () => {
     const long = clip(Array.from({ length: 30 }, () => ({ say: 'Multiply the first term by the second term and write the product down on the next line now.', do: [] })));
     expect(clipIssues(long).map(m => m.message).join(' | ')).toMatch(/over about three minutes/);
   });
+  it('narrationIssues: a clip beat of five words or fewer is too short to voice (1 Nov 2026)', () => {
+    const msgs = narrationIssues(clip([{ say: 'Plus dot dot dot again.', do: [] }, { say: 'Three terms are enough, so plus dot dot dot.', do: [] }]));
+    expect(msgs.filter(m => /too thin/.test(m.message)).map(m => m.where)).toEqual(['scenes[0].beats[0].say']);
+  });
   it('clipIssues: Adrian\'s voice rules — never "flies", "negative one" not "minus one"', () => {
     const bad = clip([
       { say: 'Now the two in front flies up into the power.', do: [] },
