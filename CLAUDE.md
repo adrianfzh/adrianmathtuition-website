@@ -136,6 +136,15 @@ This binds every session, every model and every account, in both repos.
 6. If he says he does not understand, **start again from the problem** — do not repeat the
    same explanation with more detail.
 
+## 🇸🇬 Advice fits Singapore students (Adrian, 31 Oct 2026)
+
+Adrian, 31 Oct 2026, two chats: *"Are you sure these work on Singapore students?"* · *"Are you
+sure every student has a school iPad with an Apple Pencil?"* Why: our students sit the Singapore
+syllabus, use the device their school chose and pay Singapore prices — advice from elsewhere misleads.
+- Before a teaching idea, an app plan or a price, check it against Singapore: the MOE/SEAB syllabus,
+  the school device (iPad or Chromebook; a Pencil only in some schools), local apps and prices.
+- Say what you checked and how sure you are. A guess is called a guess.
+
 ## 📖 Readability — everything (Adrian, 29 Sep 2026)
 
 Adrian: *"can solutions pdf have better readability? i keep asking for better readability, is
