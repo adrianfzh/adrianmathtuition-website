@@ -77,6 +77,9 @@ no focus, no clear.
   your choice; **every LATER action must have `on`** = a word or short run of words
   copied EXACTLY from that beat's `say`, in spoken order, at least three words apart.
   Never `at`.
+- **No beat of five words or fewer** — "Plus dot dot dot again." alone gets clipped and mis-heard
+  (1 Nov 2026: the voice check scored it 60 %). Join it to the sentence before or after
+  ("Three terms are enough, so plus dot dot dot.").
 - **One new thing per beat** (two at most) plus at most one pointing mark.
 - **The trap: one plain sentence, at the step where it bites**, with a `circle` on the
   token it is about. Not a warning speech before it.
