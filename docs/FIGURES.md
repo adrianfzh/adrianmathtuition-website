@@ -949,3 +949,13 @@ nearer the wrong drawing, cluster the ink and give each small piece to the neare
 a drawing BELOW a caption at half distance (captions sit above their drawing); mask the crop so no
 stray ink rides along; check every crop by eye against the original.
 
+
+**Built and switched on, 1 Nov 2026** (Adrian: *"Build every figure family on the list … ask me one
+yes/no"* → *"Yes"*). The 18 open shapes became 8 families + 2 already drawable: `true-size-drawing`
+(6 shapes), `info-card` (fare-table, shop-advert, priced-bottle), `figure-panels` (two-panel-side-by,
+micrometer-zero-error-pair), `concentric-rings`, `line-bar-chart`, `composite-solid`,
+`venn-probability`, `riemann-rectangles`; `standard-x-y-axe` → `function-graph`,
+`triangle-klm-drawn-side` → `plane-geometry-configuration`. Detail, proofs and the switch: bot
+`docs/FIGURES.md` §Eight families from "Figures we need" (bot PR #24). **A true-size drawing prints at
+1 cm = 1 cm only through `scripts/gce-paper/figure.mjs`** (its `renderPng`, exactly 200 px/in) plus
+`gen_meta.figure.print_width_mm` (twin.mjs, figure-size.mjs) — never rasterise it another way.
