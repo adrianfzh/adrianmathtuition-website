@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'node:fs';
-import { blindMisses, blindPrompt, nextPaper, nextPaperId, paperOfPart, paperProblems, papersWanted, wantedWithinLimits, weakPaper, reviewFailures, reviewPrompt, REVIEW_ITEMS, sgUnlisted, sharedRuns, wordList, type ListeningPaper } from './english-listening-papers';
+import { blindMisses, blindPrompt, nextPaper, nextPaperId, paperOfPart, paperProblems, papersWanted, wantedWithinLimits, weakPaper, reviewFailures, reviewPrompt, REVIEW_ITEMS, sgUnlisted, sharedRuns, type ListeningPaper } from './english-listening-papers';
 import { listeningProblems, publicListening, type ListeningSet } from './english-listening';
 import { LISTENING_SETS } from './english-speaking-data';
+import { englishWords } from './english-listening-words';
 
 // The pilot's four sets, dressed as a paper: Section A 6 + 7 + 9, Section B 8.
 function pilotPaper(level: ListeningPaper['level'] = 'standard'): ListeningPaper {
@@ -20,7 +20,9 @@ function pilotPaper(level: ListeningPaper['level'] = 'standard'): ListeningPaper
   }
   return { id: 'lp001', level, parts };
 }
-const dict = fs.existsSync('/usr/share/dict/words') ? wordList(fs.readFileSync('/usr/share/dict/words', 'utf8')) : undefined;
+// The repo's own word list (data/english/words.txt.gz), not the Mac's /usr/share/dict/words — the
+// ship worker is Linux and has no dict, so ordinary sentence openers (Suddenly, Shall) were flagged.
+const dict = englishWords();
 
 describe('a whole paper', () => {
   it('the pilot, as a Standard paper, passes every check', () => {

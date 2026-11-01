@@ -26,7 +26,7 @@ async function main() {
   const P = await import('../../src/lib/english-listening-papers');
   const S = await import('../../src/lib/english-listening-store');
   const { LISTENING_SETS } = await import('../../src/lib/english-speaking-data');
-  const dict = fs.existsSync('/usr/share/dict/words') ? P.wordList(fs.readFileSync('/usr/share/dict/words', 'utf8')) : undefined;
+  const dict = (await import('../../src/lib/english-listening-words')).englishWords();   // the repo's list, same as the API route
   const readJson = (f: string) => JSON.parse(fs.readFileSync(f, 'utf8').replace(/^```(?:json)?\s*|\s*```\s*$/g, ''));
   const asDraft = (f: string): ListeningPaper => {
     const j = readJson(f);
