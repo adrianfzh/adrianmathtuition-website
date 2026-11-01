@@ -1175,7 +1175,14 @@ function scrollClipBoard(cont: HTMLElement) {
       // with the question line half off the top — the 64 px kept for the fade made the beat's two
       // targets "not fit", so the lowest won).
       const hi = top < FADE ? 0 : Math.floor(top - FADE);
+      // Not quite fitting with the comfortable margins? Try the tight ones — the fade itself (36 px)
+      // and 6 px above the subtitle — before letting the lowest win (1 Nov 2026, Binomial third term:
+      // "+15p⁴q²x⁶ is our third term" with the coefficient line three lines below on a phone — the
+      // term ended 5 px under the fade).
+      const tightHi = top < 36 + band + 2 ? 0 : Math.floor(top - (36 + band + 2));
+      const tightLo = Math.ceil(bottom - room - 12);
       if (lo <= hi) offset = Math.min(Math.max(offset, lo), hi);
+      else if (tightLo <= tightHi) offset = Math.min(Math.max(offset, tightLo), tightHi);
       else offset = lo;
       offset = Math.max(0, offset);
     }
