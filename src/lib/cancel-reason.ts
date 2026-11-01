@@ -7,7 +7,8 @@
 // short label, and a second line says the rest of what the note says.
 //
 // Note formats this reads (who writes them):
-//   'Holiday opt-out — November 2026[ (auto-created)]'  lib/holiday-optout.ts
+//   'Holiday opt-out — November 2026[ · by parent|Adrian …][ (auto-created)]'
+//                                                        lib/holiday-optout.ts
 //   'Public Holiday'                                     lib/lesson-generation.ts
 //   'Cancelled 15 Oct 2026 (Adrian): tutor away … — NO make-up …; not charged …'
 //                                                        hand-written by a session
@@ -17,7 +18,13 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 export type CancelReason = { label: string; detail: string | null };
 
-export function cancelReason(notes: string | null | undefined): CancelReason {
+export function cancelReason(notes: string | null | undefined, studentStatus?: string | null): CancelReason {
+  // A student who has left: that is the reason, whatever the old note says
+  // (Adrian, 1 Nov 2026: "for beryl should put her as graduated" · "for jayden,
+  // he has since discontinued").
+  if (studentStatus === 'Graduated') return { label: 'graduated', detail: null };
+  if (studentStatus === 'Inactive') return { label: 'discontinued', detail: null };
+
   const n = (notes ?? '').trim();
   if (!n) return { label: 'cancelled', detail: 'No reason written down' };
 
@@ -25,7 +32,10 @@ export function cancelReason(notes: string | null | undefined): CancelReason {
   if (opt) {
     const i = MONTHS.findIndex(m => m.toLowerCase() === opt[1].toLowerCase());
     const month = i >= 0 ? MONTHS[i].slice(0, 3) : opt[1];
-    return { label: `skipping ${month}`, detail: 'Year-end holiday opt-out (family skipping this month or date)' };
+    const who = /by parent/i.test(n) ? 'Family pressed the opt-out button in the email'
+      : /by adrian/i.test(n) ? 'You skipped it on the student page'
+      : 'Holiday opt-out — not recorded whether you or the family did it';
+    return { label: `skipping ${month}`, detail: who };
   }
 
   if (/public holiday/i.test(n)) return { label: 'public holiday', detail: null };

@@ -7,6 +7,18 @@ describe('cancelReason', () => {
     expect(cancelReason('Holiday opt-out — December 2026 (auto-created)').label).toBe('skipping Dec');
   });
 
+  it('says who made the opt-out when the note records it', () => {
+    expect(cancelReason('Holiday opt-out — November 2026 · by parent (email button) (auto-created)').detail).toMatch(/Family pressed/);
+    expect(cancelReason('Holiday opt-out — December 2026 · by Adrian (student page)').detail).toMatch(/You skipped/);
+    expect(cancelReason('Holiday opt-out — November 2026').detail).toMatch(/not recorded/);
+  });
+
+  it('a student who has left reads graduated / discontinued', () => {
+    expect(cancelReason('Holiday opt-out — November 2026 (auto-created)', 'Graduated')).toEqual({ label: 'graduated', detail: null });
+    expect(cancelReason('', 'Inactive')).toEqual({ label: 'discontinued', detail: null });
+    expect(cancelReason('Public Holiday', 'Active').label).toBe('public holiday');
+  });
+
   it('a public holiday stays a public holiday', () => {
     expect(cancelReason('Public Holiday')).toEqual({ label: 'public holiday', detail: null });
   });

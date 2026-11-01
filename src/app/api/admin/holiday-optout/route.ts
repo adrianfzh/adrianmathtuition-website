@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   if (bad) return NextResponse.json({ error: bad }, { status: 400 });
 
   try {
-    const result = await applyOptoutChanges(studentId, changes as OptoutChange[]);
+    const result = await applyOptoutChanges(studentId, changes as OptoutChange[], 'adrian');
     return NextResponse.json({ success: true, ...result });
   } catch (e: unknown) {
     console.error('[holiday-optout] POST failed:', e);

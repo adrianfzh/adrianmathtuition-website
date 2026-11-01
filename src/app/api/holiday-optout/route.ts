@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, unchanged: true, studentName: who.name, months: monthChoices(months) });
     }
 
-    const result = await applyOptoutChanges(auth.studentId, changes);
+    const result = await applyOptoutChanges(auth.studentId, changes, 'parent');
     const after = await loadOptoutMonths(auth.studentId);
     const choices = monthChoices(after || months);
 

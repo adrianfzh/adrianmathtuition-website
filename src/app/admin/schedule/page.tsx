@@ -74,6 +74,7 @@ interface Student {
   name: string;
   level: string;
   subjects?: string[];
+  status?: string;
 }
 
 interface ExamEntry { subject: string; paper: string; examType?: string; date: string | null; topics: string; notes: string; approx?: boolean; photoUrl?: string | null; noExam?: boolean }
@@ -3415,7 +3416,7 @@ export default function SchedulePage() {
     const cancelledStudents = (!isFuture ? cancelledHere : []).map(c => ({
       id: c.studentId as string,
       name: data?.students[c.studentId as string]?.name ?? 'Unknown',
-      ...cancelReason(c.notes),
+      ...cancelReason(c.notes, data?.students[c.studentId as string]?.status),
     }));
     const cancelledStudentIds = new Set(cancelledHere.map(c => c.studentId));
 

@@ -25,6 +25,11 @@ import { OPTOUT_MONTHS } from '@/lib/year-end-billing';
 
 export const OPTOUT_MARKER = 'Holiday opt-out';
 export const AUTO_CREATED = '(auto-created)';
+// Who made the opt-out, written after the month (Adrian, 1 Nov 2026: "also include if
+// i cancelled it, or they have click the opted out button themselves"). Opt-outs made
+// before 1 Nov 2026 carry no tag — nothing recorded which door they came through.
+export const OPTOUT_BY = { parent: 'by parent (email button)', adrian: 'by Adrian (student page)' } as const;
+export type OptoutBy = keyof typeof OPTOUT_BY;
 export const MONTHS_SHOWN = 3;          // upcoming optional months offered
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -304,7 +309,7 @@ export type ApplyResult = {
 };
 
 /** The write both doors do. Locked records are counted and left alone, never forced. */
-export async function applyOptoutChanges(studentId: string, changes: readonly OptoutChange[]): Promise<ApplyResult> {
+export async function applyOptoutChanges(studentId: string, changes: readonly OptoutChange[], by: OptoutBy): Promise<ApplyResult> {
   const dates = changes.map((c) => c.date).sort();
   const dayAfterEnd = (() => {
     const d = new Date(dates[dates.length - 1] + 'T00:00:00Z');
@@ -321,7 +326,7 @@ export async function applyOptoutChanges(studentId: string, changes: readonly Op
   for (const c of changes) {
     const rec = byKey.get(`${c.date}|${c.slotId}`);
     const monthLabel = billingMonthOf(c.date);
-    const marker = `${OPTOUT_MARKER} — ${monthLabel}`;
+    const marker = `${OPTOUT_MARKER} — ${monthLabel} · ${OPTOUT_BY[by]}`;
 
     if (c.skip) {
       if (!rec) {

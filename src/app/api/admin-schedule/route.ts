@@ -193,7 +193,7 @@ export async function GET(req: NextRequest) {
       ? fetchAll('Lessons', `?filterByFormula=${encodeURIComponent(`OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date&fields[]=Slot&fields[]=Status&fields[]=Rescheduled Lesson ID`)
       : Promise.resolve([] as any[]),
     studentIds.length
-      ? fetchAll('Students', `?filterByFormula=${encodeURIComponent(`OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects`)
+      ? fetchAll('Students', `?filterByFormula=${encodeURIComponent(`OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects&fields[]=Status`)
       : Promise.resolve([] as any[]),
     extraSlotIds.length
       ? fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`OR(${extraSlotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}`)
@@ -245,7 +245,7 @@ export async function GET(req: NextRequest) {
   const studentsById: Record<string, any> = Object.fromEntries(
     studentsData.map((r: any) => [
       r.id,
-      { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '', subjects: r.fields['Subjects'] || [] },
+      { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '', subjects: r.fields['Subjects'] || [], status: r.fields['Status'] || '' },
     ])
   );
 

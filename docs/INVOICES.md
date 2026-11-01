@@ -40,7 +40,7 @@ route. First month the machinery bills: **October 2026** (`ARREARS_BILLING_FROM`
 > `ARREARS_MONTHS = []`, `OPTOUT_MONTHS = [11, 12]`. What that means in practice:
 > - The 14th's advance run drafts EVERY active student for the next month, all year.
 > - A parent's opt-out (the email button → `/holiday-optout`) or Adrian's per-date screen
->   writes Cancelled lesson records with the `Holiday opt-out` marker; the advance
+>   writes Cancelled lesson records with the `Holiday opt-out` marker (since 1 Nov 2026 followed by `· by parent (email button)` or `· by Adrian (student page)` — docs/SCHEDULE.md); the advance
 >   generator fetches those for the invoice month (`optoutDatesByStudent`) and passes
 >   them to `invoiceMonthLessonDates` as exclusions, so a skipped month is simply not
 >   drafted and a skipped date comes off the line items. Deadline = the 13th of the
