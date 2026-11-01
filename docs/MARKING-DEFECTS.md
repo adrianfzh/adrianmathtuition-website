@@ -1255,3 +1255,12 @@ Both papers (Rainie Chemistry O-Level 2023 P1 and 2024 P1, 40 MCQ each) were mar
 - **A correct MCQ's ✓ parked at the end of a one-line options row, beside another option** — ✓B1 after "D 2 only" and "D 3 only" when she chose C; after "B 1 only" when she chose A; after table row D when she chose B (Rainie Chemistry 2023 P1 p9 Q23, p11 Q30, p15 Q38; 2024 P1 p17 Q38). Reads as "that option is the answer". Placement (MCQ ✓ seat = her letter).
 
 **1 Nov fixer — what is left from the reader's 1 Nov list (read / judgement, carried to the next night):** a correct MCQ's ✓ parked at the end of a one-line options row (the READ boxes the options row, not her letter — same family as 22–25 Oct shared rows); a lost MCQ with no ✗ because her answer letter was never boxed (2023 Q7, Q19; 2024 Q8, Q34 — the read); ✗ on the correct row D (2023 Q26) and on the needed "wooden splint" (2024 Q20) — the read's box, misleads, report only; marks inside a printed table (2023 Q34, 2024 Q26); a note 630 px from its slip (2024 Q14); the point said twice — covered by the open proposal say-each-point-once.
+
+# 2 Nov 2026 — the page reader: new defect classes (findings of 2 Nov: 1 paper, 10 pages; the fixer works them at 06:45)
+
+Abel H2 Math TYS 2021 P2 (`d7dafcd4`), drawn after the 30 Oct H2 pen fixes and the 1 Nov fixer pushes. One line per NEW class or 30 Oct RECURRENCE — returns (a second slip in a part with a bare ring/✗, three sightings; the point said 3–4× across note, strip and "From line"; the strip's arrow aimed at a ticked line; "careless" on follow-through) are in the reader's findings file.
+
+- **RECURRENCE of 30 Oct "define the random variable in a sentence"** — W appears only as "then W ~ B(5, p)" in the strip and "W ∼ B(5, 0.076855) ← days with more than 3 faulty" in the footer; p is never said (Abel H2 2021 P2 p10 Q11(b)(iii)). Words.
+- **An event set equal to a probability** — strip "X > 3 is 1 − P(X ≤ 3);" (the read's verdict_line printed verbatim; should be "P(X > 3) = 1 − P(X ≤ 3)") (same page). Words.
+- **RECURRENCE of 30 Oct "ring on the wrong token"** — a dropped denominator drawn as a ring round his CORRECT "1/(2(u − 1)) du"; the "1" written where u³ belongs is bare; the note sits at the page foot with a long leader (Abel H2 2021 P2 p4 Q5(d)). Misleads. Pen (insert vs ring — 16 Oct family).
+- **The footer's bold final line repeats its last step** — "a ∈ ℝ, a ≠ −½" as the last step, then "b = −1, a ∈ ℝ, a ≠ −½" (Abel H2 2021 P2 p2 Q3(b)(ii)). Pen (continuation end).
