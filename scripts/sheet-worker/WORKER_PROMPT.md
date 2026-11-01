@@ -79,7 +79,8 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
     solves it blind, you compare with our key, read it for completeness) and post the report:
     `{"action":"result","runner":"sheet-worker","report":{…}}`. A report that comes back
     `paused` or `retired` → swap that question for another. (When the check is switched off the
-    statuses all read `unchecked` and posting is refused — then carry on as before.)
+    statuses all read `unchecked` and posting is refused — then carry on as before. While it is PARKED,
+    18 Oct 2026, its table does not exist yet and the call returns an error — carry on as before then too.)
 
 1e. **A BATCH job — one sheet for several papers** (10 Sep 2026; Adrian, on
     Isabelle's five finished-but-unsent sheets: "the same mistakes or the same
