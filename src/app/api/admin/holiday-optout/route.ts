@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import {
-  loadOptoutMonths, applyOptoutChanges, validateChanges, type OptoutChange,
+  loadOptoutMonths, applyOptoutChanges, validateChanges, adminOptoutBy, type OptoutChange,
 } from '@/lib/holiday-optout';
 
 export const runtime = 'nodejs';
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   if (bad) return NextResponse.json({ error: bad }, { status: 400 });
 
   try {
-    const result = await applyOptoutChanges(studentId, changes as OptoutChange[], 'adrian');
+    const result = await applyOptoutChanges(studentId, changes as OptoutChange[], adminOptoutBy(req.headers.get('user-agent')));
     return NextResponse.json({ success: true, ...result });
   } catch (e: unknown) {
     console.error('[holiday-optout] POST failed:', e);

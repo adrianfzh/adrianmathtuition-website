@@ -28,8 +28,18 @@ export const AUTO_CREATED = '(auto-created)';
 // Who made the opt-out, written after the month (Adrian, 1 Nov 2026: "also include if
 // i cancelled it, or they have click the opted out button themselves"). Opt-outs made
 // before 1 Nov 2026 carry no tag — nothing recorded which door they came through.
-export const OPTOUT_BY = { parent: 'by parent (email button)', adrian: 'by Adrian (student page)' } as const;
+export const OPTOUT_BY = {
+  parent: 'by parent (email button)',
+  adrian: 'by Adrian (student page)',
+  session: 'by a Claude session',
+} as const;
 export type OptoutBy = keyof typeof OPTOUT_BY;
+
+/** The admin door is used by Adrian's browser and by Claude sessions (same
+ *  password). A browser sends a "Mozilla/…" User-Agent; a script does not. */
+export function adminOptoutBy(userAgent: string | null | undefined): OptoutBy {
+  return /mozilla\//i.test(userAgent || '') ? 'adrian' : 'session';
+}
 export const MONTHS_SHOWN = 3;          // upcoming optional months offered
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

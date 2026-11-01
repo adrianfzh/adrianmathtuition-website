@@ -10,6 +10,7 @@ describe('cancelReason', () => {
   it('says who made the opt-out when the note records it', () => {
     expect(cancelReason('Holiday opt-out — November 2026 · by parent (email button) (auto-created)').detail).toMatch(/Family pressed/);
     expect(cancelReason('Holiday opt-out — December 2026 · by Adrian (student page)').detail).toMatch(/You skipped/);
+    expect(cancelReason('Holiday opt-out — November 2026 · by a Claude session').detail).toMatch(/Claude session/);
     expect(cancelReason('Holiday opt-out — November 2026').detail).toMatch(/not recorded/);
   });
 
