@@ -3410,8 +3410,12 @@ export default function SchedulePage() {
     // Enrolled students whose lesson for THIS date+slot was cancelled (e.g.
     // June regular lesson cancelled for a Revision Sprint). Shown as a faded,
     // non-markable chip — NOT a "tap to mark" ghost. Reason derived from notes.
+    // A student who has left (Graduated / Inactive) is not shown at all — their
+    // leftover cancelled lessons are noise (Adrian, 1 Nov 2026: "so beryl's
+    // lessons should not be appearing anymore").
     const cancelledHere = (data?.cancelledLessons ?? []).filter(
       c => c.date === dateStr && c.slotId === slot.id && c.studentId
+        && !['Graduated', 'Inactive'].includes(data?.students[c.studentId]?.status ?? '')
     );
     const cancelledStudents = (!isFuture ? cancelledHere : []).map(c => ({
       id: c.studentId as string,
