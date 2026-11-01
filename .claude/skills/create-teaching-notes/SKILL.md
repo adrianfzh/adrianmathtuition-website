@@ -44,7 +44,7 @@ rules, append an entry to `docs/teaching-style/FEEDBACK.md`, and update STYLE.md
 
 1. **Clarify only if needed** (level, topic, length, answer format). Defaults:
    8–12 practice questions, answers-only key, topical mode.
-2. **Pull candidates from the bank** via `execute_sql`. Filter `deleted_at IS NULL`.
+2. **Pull candidates from the bank** via `execute_sql`. Filter `deleted_at IS NULL AND legacy_syllabus IS NOT TRUE AND national IS NOT TRUE` — an old-syllabus row never goes in notes a student gets (bot CLAUDE.md rule 12), a national GCE paper is grounding-only (`docs/CONTENT-POLICY.md`); leave out any part inside `parts` marked `legacy: true` (rule 13).
    Useful signals for sequencing:
    - `topics` TEXT[] (canonical topics), `subgroups`/`question_subgroups` (1,125
      fine-grained skill groups — THE skeleton for pedagogical ordering)
@@ -99,7 +99,7 @@ rules, append an entry to `docs/teaching-style/FEEDBACK.md`, and update STYLE.md
    presenting (spacing, arrows aligned, answers right-aligned orange, boxes intact).
 8. **Cite sources** for bank questions: `[<year>/<level>/<exam_type>/<school>/Q<n>]`
    (e.g. `[2025/EM/Prelim/Maris Stella/Q16]`). Mark adapted questions "modified".
-9. Save final docx to the AdrianMath folder root; present with a one-line summary.
+9. File it on the kiosk's Dropbox shelf by the create-worksheet rule (`docs/KIOSK.md` §Printable PDFs — Dropbox drop-in folder): notes with worked solutions → `Dropbox/Apps/AdrianMathNotes/Revision/<LEVEL>`; never overwrite a file already there. The AdrianMath folder root was retired 30 Sep 2026. Present with a one-line summary.
 
 ## Images from the bank
 
