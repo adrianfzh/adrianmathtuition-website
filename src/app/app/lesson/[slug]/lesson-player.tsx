@@ -1158,15 +1158,19 @@ function scrollClipBoard(cont: HTMLElement) {
   try {
     const f = JSON.parse(cont.dataset.focus || '{}') as { ids?: string[]; lines?: number[] };
     let top = Infinity, bottom = -Infinity;
-    const take = (el: Element | null) => {
+    const take = (el: Element | null, token = false) => {
       const line = el?.closest('.lsn-line') ?? el;
       const r = (el as HTMLElement | null)?.getBoundingClientRect();
       const lr = (line as HTMLElement | null)?.getBoundingClientRect();
       if (!r || !lr || r.height === 0) return;
-      top = Math.min(top, lr.top - zr.top);
+      // A token on the SECOND row of a wrapped line needs only its own row in view, not the row above
+      // (1 Nov 2026, Binomial "expand to the third term": "+15p⁴q²x⁶" sat on the wrapped half of the
+      // expansion; keeping the whole two-row line in view did not fit, the lowest target won, and the
+      // term the voice named slid under the fade).
+      top = Math.min(top, (token && lr.height > 1.8 * r.height ? r.top - 6 : lr.top) - zr.top);
       bottom = Math.max(bottom, r.bottom - zr.top);
     };
-    for (const id of f.ids ?? []) for (const el of Array.from(zoom.querySelectorAll(`[data-token-id="${CSS.escape(id)}"]`))) take(el);
+    for (const id of f.ids ?? []) for (const el of Array.from(zoom.querySelectorAll(`[data-token-id="${CSS.escape(id)}"]`))) take(el, true);
     for (const n of f.lines ?? []) take(zoom.querySelector(`[data-line="${n}"]`));
     if (top < Infinity) {
       const lo = Math.ceil(bottom - room);
