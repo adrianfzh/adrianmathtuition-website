@@ -308,6 +308,8 @@ date only, and never to JC1/JC2.
 
 ### Recurring lesson generation (Regular lessons)
 
+**Cancelled chips say why (Adrian, 1 Nov 2026: "yes give detailed reasons").** A cancelled regular lesson shows faded as `Cancelled · <label>`, with a grey second line for the rest of its note. `lib/cancel-reason.ts` reads the Notes: a year-end opt-out → "skipping Nov" (it used to say "holiday", which read like a public holiday); "Public Holiday" → "public holiday"; "Cancelled <date> (Adrian): tutor away … — NO make-up …" → "tutor away …" + the rest underneath; no note → "cancelled" + "No reason written down". Write cancellation notes as `Cancelled <date> (Adrian): <short reason> — <details>` so the chip reads well.
+
 Regular weekly lessons exist as individual `Lessons` records. Three things create them, all using `src/lib/lesson-generation.ts > generateRegularLessonsForSlot` (9-week default horizon, dedup by date+slot, holidays → `Cancelled`):
 - **Signup** (`/api/signup`) — for new students (own inline copy, 9 weeks).
 - **Slot switch** (`/api/admin-schedule/switch`) — deletes future old-slot lessons, generates 9 weeks on the new slot (was 28 days — too short). Accepts `{lessonId}` (calendar) OR `{studentId, oldSlotId}` (profile page). **Also mirrors the bot's `sw_confirm` proration + enrollment history:**

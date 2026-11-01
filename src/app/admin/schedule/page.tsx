@@ -22,6 +22,7 @@ import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { splitAdhoc } from '@/lib/adhoc-past';
 import { sgtTodayISO } from '@/lib/sgt';
+import { cancelReason } from '@/lib/cancel-reason';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1252,7 +1253,7 @@ function DroppableLessonSlot({
   onUndo?: (lesson: EnrichedLesson) => void;
   onQuickLog?: (lesson: EnrichedLesson) => void;
   ghostStudents?: { id: string; name: string }[];
-  cancelledStudents?: { id: string; name: string; reason: string }[];
+  cancelledStudents?: { id: string; name: string; label: string; detail: string | null }[];
   onGhostTap?: (studentId: string, studentName: string) => void;
   savingStudents?: Set<string>;
   activeExamType?: string | null;
@@ -1287,10 +1288,13 @@ function DroppableLessonSlot({
             key={s.id}
             className="lesson-chip absent"
             style={{ background: '#f8fafc', borderColor: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}
-            title={`Regular lesson cancelled (${s.reason}) — not attending this slot`}
+            title={`Regular lesson cancelled (${s.label}${s.detail ? ` — ${s.detail}` : ''}) — not attending this slot`}
           >
-            <div style={{ flex: 1, minWidth: 0, textDecoration: 'line-through', color: '#94a3b8' }}>{s.name}</div>
-            <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', flexShrink: 0 }}>Cancelled · {s.reason}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ textDecoration: 'line-through', color: '#94a3b8' }}>{s.name}</div>
+              {s.detail && <div style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.3, marginTop: 1 }}>{s.detail}</div>}
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', flexShrink: 0, maxWidth: '45%', textAlign: 'right' }}>Cancelled · {s.label}</span>
           </div>
         ))}
         {lessons.length === 0 && ghosts.length === 0 && cancelled.length === 0 && (
@@ -3411,9 +3415,7 @@ export default function SchedulePage() {
     const cancelledStudents = (!isFuture ? cancelledHere : []).map(c => ({
       id: c.studentId as string,
       name: data?.students[c.studentId as string]?.name ?? 'Unknown',
-      reason: /revision/i.test(c.notes) ? 'on revision'
-        : /holiday/i.test(c.notes) ? 'holiday'
-        : 'cancelled',
+      ...cancelReason(c.notes),
     }));
     const cancelledStudentIds = new Set(cancelledHere.map(c => c.studentId));
 
