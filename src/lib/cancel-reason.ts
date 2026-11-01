@@ -34,7 +34,7 @@ export function cancelReason(notes: string | null | undefined, studentStatus?: s
     const month = i >= 0 ? MONTHS[i].slice(0, 3) : opt[1];
     const who = /by parent/i.test(n) ? 'Family pressed the opt-out button in the email'
       : /by adrian/i.test(n) ? 'You skipped it on the student page'
-      : /by a claude session/i.test(n) ? 'A Claude session skipped it for you'
+      : /by a claude session/i.test(n) ? 'By Adrian - Claude'
       : 'Holiday opt-out — not recorded whether you or the family did it';
     return { label: `skipping ${month}`, detail: who };
   }
