@@ -34,6 +34,9 @@ const TWIN_SCHOOL = 'AdrianMath';
 const TWIN_EXAM_TYPE = 'Twin';
 const BUCKET = 'practice-figures';
 const PROMPT_VERSION = 'twin-v1';
+/** A true-size drawing's printed width in mm, read off its PNG: scripts/gce-paper/figure.mjs
+ *  rasterises that family at exactly 200 px per inch (1 Nov 2026). */
+function trueSizeWidthMm(pngPath) { try { const b = readFileSync(pngPath); return b.readUInt32BE(16) / 200 * 25.4; } catch { return null; } }
 const MODELS = { author: 'opus (Claude Code agent)', blind: 'sonnet (Claude Code agent)', moderate: 'opus (Claude Code agent)', figure: 'opus (Claude Code agent)' };
 // JC (H2) blind solves on Opus (Adrian, 30 Sep 2026): Sonnet misses more long H2
 // working cold, and every miss is a false key alarm for the moderator.
@@ -546,6 +549,8 @@ async function publish() {
       author_model: (plan.models ?? MODELS).author, blind_model: (plan.models ?? modelsFor(plan.level)).blind, moderate_model: (plan.models ?? MODELS).moderate,
       gates: { novelty: gates.novelty, number_swap: gates.novelty?.number_swap ?? null, structure: gates.structure?.ok ?? null, blind_agree: verdict.all_agree, moderator_score: verdict.score, figure_verify: q.needs_figure ? true : null, rounds: gates.rounds },
       figure: figureUrl || perPart.length ? { family: figureUrl ? figSpec?.family ?? null : null, spec: figureUrl ? figSpec : null, description: figureUrl ? q.figure_description ?? null : null,
+        // a true-size drawing prints at its own width (the graph-paper lane, render-paper-pdf uncappedFigures)
+        ...(figureUrl && figSpec?.family === 'true-size-drawing' ? { print_width_mm: trueSizeWidthMm(png) } : {}),
         ...(perPart.length ? { parts: Object.fromEntries(perPart.map((f) => { const sp = specOf(f.key); return [f.key, { label: f.label, url: partUrls[f.key], family: sp?.family ?? null, spec: sp, description: f.description }]; })) } : {}) } : null,
       blind_answers: blind?.answers ?? null,
       verdict: { key_verdict: verdict.key_verdict, why: verdict.why, fixes: verdict.fixes ?? [] },

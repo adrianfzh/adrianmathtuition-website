@@ -38,6 +38,13 @@ export async function gridPrintWidthMm(dir, pos, sharp) {
   if (!existsSync(specPath) || !existsSync(pngPath)) return null;
   let spec;
   try { spec = JSON.parse(readFileSync(specPath, 'utf8')); } catch { return null; }
+  // A true-size drawing (bot lib/figures/true-size-drawing.js, 1 Nov 2026) is rasterised at
+  // exactly 200 px per inch by figure.mjs, and trimming keeps that scale: its print width is
+  // its pixel width.
+  if (spec?.family === 'true-size-drawing') {
+    const { info } = await sharp(pngPath).toBuffer({ resolveWithObject: true });
+    return Math.round((info.width / 200) * 25.4 * 10) / 10;
+  }
   if (spec?.family !== 'graph-paper') return null;
   const cols = gridColumns(spec);
   if (!cols) return null;

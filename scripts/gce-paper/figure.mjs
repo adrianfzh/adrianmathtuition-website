@@ -194,7 +194,13 @@ for (const s of slots) {
     let png = null;
     if (sharp) {
       png = join(runDir, `${s.key}.figure.png`);
-      const buf = await sharp(Buffer.from(svg), { density }).flatten({ background: '#ffffff' }).png().toBuffer();
+      // A true-size drawing (bot lib/figures/true-size-drawing.js, 1 Nov 2026) must come out at
+      // exactly 200 px per inch — the printed paper prints it at naturalWidth × 96/200 — so it is
+      // rasterised by its own renderPng, which refuses a PNG of the wrong width.
+      const spec0 = s.kind === 'json' ? JSON.parse(readFileSync(s.file, 'utf8')) : null;
+      const buf = spec0?.family === 'true-size-drawing'
+        ? (await registry.getFamily('true-size-drawing').renderPng(spec0, sharp)).png
+        : await sharp(Buffer.from(svg), { density }).flatten({ background: '#ffffff' }).png().toBuffer();
       writeFileSync(png, buf);
     }
     const family = s.kind === 'json' ? JSON.parse(readFileSync(s.file, 'utf8')).family : 'engine';
