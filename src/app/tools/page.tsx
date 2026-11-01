@@ -92,18 +92,26 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
   { slug: 'matrix-calc', icon: '⌨️', title: 'Matrix Multiplier — Your Own Numbers',
     desc: 'Type any two matrices and step through the product entry by entry, with the row, the column and the full working shown. Tells you when the multiplication is impossible, and why.' },
   { slug: 'geometry-proofs', icon: '🧿', title: 'Circle Proofs — Statement and Reason',
-    desc: 'The eight theorems as a toolkit, then real proofs built one line at a time — each line lights up the part of the figure it is about and names the reason that earns the mark. Ends with a name-the-reason drill.' },
+    desc: 'The eight theorems as a toolkit, then real proofs built one line at a time — each line lights up the part of the figure it is about and names the reason that earns the mark. Ends with a name-the-reason drill.' },  { slug: '3d-trig', icon: '📦', title: '3D Trigonometry — Angles in Solids',
+    desc: 'Turn a cuboid or pyramid in your hand and step through the angle between a line and a plane, or two planes: the projection drops, the right-angled triangle lights up, and the working uses your own dimensions.' },
+  { slug: 'lines-planes', icon: '📐', title: 'Lines & Planes — Exact Working',
+    desc: 'Intersections, angles, feet of perpendiculars, distances and reflections for lines and planes in 3D, with exact working that follows your own numbers. Practice mode checks your answers.' },
+  { slug: 'volumes-of-revolution', icon: '🏺', title: 'Volumes of Revolution',
+    desc: 'Sweep a region 360° about the x- or y-axis and watch the solid form. Drag a disc or washer through it to see why the volume is π times the integral of y².' },
+  { slug: 'distributions', icon: '📊', title: 'Binomial, Normal & Sample Means',
+    desc: 'Shade any binomial or normal probability and see the GC rewrite, then draw thousands of sample means and watch the Central Limit Theorem happen.' },
 ];
 
 // Level tagging for the Sec / JC filter, kept OUT of the TOOLS objects above so
 // scripts/og-tools.mjs can keep parsing that array with its {slug,icon,title,desc}
 // regex. Anything not listed here serves both levels — which is most of them.
-const JC_ONLY = new Set(['argand-diagram', 'vectors-3d', 'hypothesis-conclusion']);
+const JC_ONLY = new Set(['argand-diagram', 'vectors-3d', 'hypothesis-conclusion', 'lines-planes', 'volumes-of-revolution', 'distributions']);
 const SEC_ONLY = new Set([
   'mental-math', 'area-ratios', 'linear-law', 'solution-stepper', 'completing-square',
   'r-formula', 'triangle-solver', 'circle-theorems', 'clips', 'probability-tree',
   'draw-the-line', 'speed-time', 'bar-model', 'constructions', 'ratio-drill',
   'add-fractions', 'quadratic-graphs', 'em-graphs', 'matrix-multiply', 'matrix-calc',
+  '3d-trig',
 ]);
 function levelsFor(slug: string): ToolLevel[] {
   if (JC_ONLY.has(slug)) return ['jc'];

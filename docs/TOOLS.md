@@ -245,6 +245,18 @@ the card 404s). Conventions, all load-bearing:
     (a −3°…360° range came back as "−0.052 to 2pi"). Fixed 2026-08-20; the same trap
     is waiting for any new button that reuses a toggle class.
 
+- **The "lab" look** (added 1 Nov 2026, Adrian: the new tools "look better"): `3d-trig`,
+  `lines-planes`, `volumes-of-revolution` and `distributions` share a dark glass style —
+  dark ground, translucent bordered panels, small uppercase letter-spaced panel headers, a
+  big amber result, mono working. System font stacks only (condensed display in caps,
+  ui-monospace for maths) so the zero-request rule holds. Two rules that bit on the first
+  build: **never put `text-transform:uppercase` on anything that holds maths** — it turned
+  θ into Θ, π into Π, y = x² into Y = X² and μ into M (fine on English headings, wrong on
+  chips, labels and titles that carry symbols); and every number on screen is real maths,
+  no decorative "live" readouts. 3D in these four is hand-rolled canvas (no Three.js).
+  `3d-trig` is E Math only (SEC); the other three are JC (9758). Not built on purpose:
+  shortest distance between skew lines (excluded from 9758), Argand loci (out of syllabus).
+
 ## Photo extraction (`/api/tools/vision` → bot `/api/tools-vision`)
 
 Snap-a-photo features on two tools: **graph-transformations** (digitize a printed
