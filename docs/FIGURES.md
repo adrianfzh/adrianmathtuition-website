@@ -959,3 +959,13 @@ micrometer-zero-error-pair), `concentric-rings`, `line-bar-chart`, `composite-so
 `docs/FIGURES.md` §Eight families from "Figures we need" (bot PR #24). **A true-size drawing prints at
 1 cm = 1 cm only through `scripts/gce-paper/figure.mjs`** (its `renderPng`, exactly 200 px/in) plus
 `gen_meta.figure.print_width_mm` (twin.mjs, figure-size.mjs) — never rasterise it another way.
+
+**Seeds waiting for a picture retry by themselves (1 Nov 2026, Adrian: "Yes").** A twin seed the Fly
+lanes parked for want of a picture ("figure not rendered — recorded as '<shape>'" / science "no figure
+family draws it — …") is tried **once** more as soon as its shape is marked **Built** here (the
+✓ Built button, or a session closing the shape). Each run the lanes read the Built shapes with
+`node scripts/figure-needs/record.mjs --built --bank maths|science` (fail-closed: nothing printed →
+nothing retried); the rule is bot `worker/fly/figure-retry.py`. A retried seed gets a
+`figure-retried` mark (so never a second time) and its old figure files move to `before-retry/`.
+Verdict parks (gates, moderator, checker) are never touched. Not covered: the Mac's paid-credit lane
+(`~/twins-api`, off since 19 Oct 2026) and cloud-session twins.

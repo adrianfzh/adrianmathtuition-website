@@ -39,8 +39,21 @@ function env() {
   return { url: String(out.SUPABASE_URL ?? '').trim().replace(/\/$/, ''), key: String(out.SUPABASE_SECRET_KEY ?? '').trim() };
 }
 
+// --built (1 Nov 2026, Adrian: "Yes" to the lanes retrying a figure park once its shape is built):
+// prints every shape marked Built for that bank, one per line. Fail-closed: nothing printed when
+// the table cannot be read, so a lane never retries on a guess.
+async function listBuilt(bank) {
+  const { url, key } = env();
+  if (!url || !key || !['maths', 'science'].includes(bank)) return;
+  const r = await fetch(`${url}/rest/v1/figure_needs?select=shape&status=eq.built&bank=eq.${bank}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+  if (!r.ok) { console.error(`record --built: ${r.status}`); return; }
+  const shapes = [...new Set((await r.json()).map((row) => row.shape).filter(Boolean))].sort();
+  if (shapes.length) console.log(shapes.join('\n'));
+}
+
 async function main() {
   const bank = argOf('--bank');
+  if (argv.includes('--built')) return listBuilt(bank);
   let seed = argOf('--seed'), what = argOf('--what'), shape = argOf('--shape'), subject = argOf('--subject'), level = argOf('--level'), topic = argOf('--topic');
   const run = argOf('--from-run');
   if (run) {
