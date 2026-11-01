@@ -143,6 +143,15 @@ describe('the verifier’s new rules', () => {
     const long = clip(Array.from({ length: 30 }, () => ({ say: 'Multiply the first term by the second term and write the product down on the next line now.', do: [] })));
     expect(clipIssues(long).map(m => m.message).join(' | ')).toMatch(/over about three minutes/);
   });
+  it('clipIssues: a first line heading that repeats the scene heading (1 Nov 2026)', () => {
+    const c = clip([{ say: 'Multiply x by x to get x squared.', do: [] }]);
+    const sc = c.scenes[0] as Extract<LessonScript['scenes'][number], { type: 'equation-steps' }>;
+    sc.heading = 'Expand term by term';
+    sc.steps[0].heading = 'Expand term by term, from ⁶C₀';
+    expect(clipIssues(c).map(m => m.message).join(' | ')).toMatch(/repeats the scene heading/);
+    sc.steps[0].heading = 'Work out each power';
+    expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/repeats the scene heading/);
+  });
   it('narrationIssues: a clip beat of five words or fewer is too short to voice (1 Nov 2026)', () => {
     const msgs = narrationIssues(clip([{ say: 'Plus dot dot dot again.', do: [] }, { say: 'Three terms are enough, so plus dot dot dot.', do: [] }]));
     expect(msgs.filter(m => /too thin/.test(m.message)).map(m => m.where)).toEqual(['scenes[0].beats[0].say']);

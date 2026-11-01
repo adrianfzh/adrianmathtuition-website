@@ -49,7 +49,7 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 - "The second term keeps its sign … the power hits the coefficient AND the sign AND the x" (112.01).
 - Worked examples used: **112.03** — (2 + x)³ = 8 + 12x + 6x² + x³; **112.07** — (3 − 2x)⁴ =
   81 − 216x + 216x² − 96x³ + 16x⁴; **112.035** — (2 − x/2)⁴ (sign and fraction).
-- Rule notes: `Pattern: a's power falls, b's power rises`; `odd power keeps the minus, even power makes it positive`.
+- Rule notes: `Pattern: first power falls, second power rises` (never "a's" / "b's" — an expansion clip names no a and b, 1 Nov 2026); `odd power keeps the minus, even power makes it positive`.
 - Traps: (−2x)³ = −8x³, not −2x³ (112.01, pitfall); "The minus sign belongs to b" (112.035);
   a coefficient line that does not match the expansion it produces (112.06 — cross-check).
 - **"Expand as far as the third term" (or "the first N terms") = expand TERM BY TERM, never the
