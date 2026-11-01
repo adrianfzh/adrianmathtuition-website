@@ -66,7 +66,10 @@ const SPOKEN_SYMBOLS = [
   [/\btimes\b|×|\*/g, ' x '], [/\bcubed\b/g, ' cube '], [/\bsquared\b/g, ' square '],
   [/\bover\b/g, ' / '], [/\bplus\b|\+/g, ' plus '], [/\bequals\b|=/g, ' equals '],
   // 16 Oct 2026: "seven to the power X" heard as "7 ^ x"; "write two" heard as "right two".
-  [/\^|\bto the power( of)?\b/g, ' pow '], [/\b(write|rite)\b/g, ' right '],
+  // 1 Nov 2026: "P X squared to the five" written "P(x^2)^5": ^2 / ^3 read as squared / cubed, and a
+  // bare "to the five" is a power too.
+  [/\^\s*2(?![0-9.])/g, ' square '], [/\^\s*3(?![0-9.])/g, ' cube '],
+  [/\^|\bto the power( of)?\b/g, ' pow '], [/\bto the\b/g, ' pow '], [/\b(write|rite)\b/g, ' right '],
   // 'negative one' is heard as '-1' (the transcript writes the sign): both read as minus.
   [/\bnegative\b/g, ' minus '],
   // 25 Oct 2026 (kinematics): "centimetres" heard as "cm", "centre" as the US "center".
