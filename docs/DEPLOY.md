@@ -54,4 +54,10 @@ doing things"*. A standing rule for every session, on any account:
 - **Wait in place only when** the next step needs the new thing running (a re-mark that proves
   a marking fix, a preview page you must look at) or Adrian asks whether it is live.
 - **A docs-only push builds nothing** (below) — never wait for a deployment after one.
-- **While long work runs, say in a few words what is happening**; do not go silent.
+- **While long work runs, end every reply with a "Still running:" line per task** (6 Oct 2026 —
+  the one-line version above did not stop the questions: *"what are the background tasks?"*,
+  *"how long more will the tasks take? my battery may be running out"*, *"how's the model
+  training?"* about 13 times on 5–6 Oct). Each line: what it is in plain words, what it is for,
+  about how long is left; a paused task says how it resumes; nothing running → no line. A job
+  he is watching (a model training) carries its progress number. Starting more than three at
+  once → say how many and why first. Full text: `CLAUDE.md` §"Still running".
