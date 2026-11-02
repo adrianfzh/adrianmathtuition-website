@@ -11,7 +11,7 @@ import { displaySpanMonth, getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-mo
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
-import { billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
+import { advanceExtrasWindowStartISO, billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
 import { firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
 import { optoutDatesByStudent, OPTOUT_MARKER } from '@/lib/holiday-optout';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -306,9 +306,11 @@ export async function POST(req: NextRequest) {
       billedFieldMissing = sweep.billedFieldMissing;
       addBeforeISO = sweep.beforeISO;
     } else {
-      const addToday = new Date();
-      const addWindowEnd = formatDate(addToday);
-      const addWindowStart = formatDate(new Date(addToday.getFullYear(), addToday.getMonth() - 1, 15));
+      // Three months back (lib/additional-lessons.ts): a student skipped this
+      // run (no lessons in the month — a Nov/Dec opt-out) keeps their extras
+      // for the next invoice they DO get. The Billed checkbox stops repeats.
+      const addWindowEnd = sgtTodayISO();
+      const addWindowStart = advanceExtrasWindowStartISO(addWindowEnd);
       const additionalBaseQ = `?filterByFormula=${encodeURIComponent(`AND({Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<'${nextDayISO(addWindowEnd)}')`)}&fields[]=Date&fields[]=Student&fields[]=Is Revision Makeup&fields[]=Notes`;
       additionalPool = await airtableRequestAll('Lessons', additionalBaseQ + `&fields[]=Billed`)
         .catch(async () => {

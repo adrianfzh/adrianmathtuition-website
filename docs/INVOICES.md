@@ -47,7 +47,12 @@ route. First month the machinery bills: **October 2026** (`ARREARS_BILLING_FROM`
 >   month before (the 14th generates). A later opt-out → 🔁 Regenerate Invoice, which
 >   re-projects from the month's live lesson records and so already honours it.
 > - One-off lessons in a skipped month are booked as `Additional` and swept onto the
->   NEXT advance invoice — that is the "arrears for them".
+>   NEXT advance invoice — that is the "arrears for them". **Since 2 Nov 2026 the advance
+>   run's extras window reaches back three months** (`advanceExtrasWindowStartISO`, from the
+>   1st of the month three months before the run day, SGT); `Billed` stops a repeat. Before,
+>   it was "15th of last month → run day", so a student with NO lessons in the billed month
+>   (a whole skipped Nov/Dec) got no invoice that run and the next run's window had moved
+>   on — their extras were never billed.
 > - The exam-year cut-off (Lane A below) still applies; it is independent of arrears.
 > - A non-exam-year October invoice carries `EXAM_PREP_NOTE` + `HOLIDAY_BILLING_NOTE` in
 >   Auto Notes (PDF) and the email block's "How November and December are billed"
@@ -409,6 +414,12 @@ Additional lessons ride the NEXT month's advance invoice, and a leaver has none.
   and sends them unattended when nothing else is on them (`isFinalExtrasInvoice`); subject
   "Additional Lessons — Invoice for <month>", no holiday paragraph.
 - A past extra still at `Scheduled` is never billed blind — listed in the Telegram line.
+- **The fields come from `finalExtrasInvoiceFields` (`lib/graduation.ts`, tested) and must
+  never include a computed field** (`INVOICE_COMPUTED_FIELDS`: `Invoice ID`, `Base Amount`,
+  `Paid (ledger)`). Until 2 Nov 2026 the draft wrote `Base Amount` — an Airtable FORMULA —
+  so Airtable refused EVERY final bill; the job only logged "1 failure(s)". Kayla (25 Sep),
+  Chloe Gng + Eva Isabelle Wong (13 Oct) and Alessi Tay (25 Oct) got no final bill; drafted
+  by hand on 2 Nov 2026 with the fixed code (they go out with the 15 Nov send).
 - Students.Status becomes **`Graduated`** for Sec 4/5/JC2 leaving from September (`leavingStatus`),
   else `Inactive`. Until the base has a `Graduated` option the write falls back to `Inactive`
   and the Telegram line says so.

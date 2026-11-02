@@ -149,3 +149,36 @@ export function finalExtrasMonth(dates: readonly string[]): string {
   const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(last);
   return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : '';
 }
+
+/**
+ * The Invoices fields for a leaver's final-extras bill. Never write a computed
+ * field: `Base Amount` is an Airtable FORMULA (Lessons Count × Rate Per Lesson),
+ * and writing it made Airtable refuse the whole invoice — the Oct 2026 leavers
+ * (Kayla 25 Sep, Chloe and Eva 13 Oct, Alessi 25 Oct) got no final bill and the
+ * job only logged "1 failure(s)". Found 2 Nov 2026.
+ */
+export function finalExtrasInvoiceFields(
+  studentId: string, dates: readonly string[], ratePerLesson: number, todayISO: string, dueISO: string,
+): Record<string, unknown> {
+  const month = finalExtrasMonth(dates);
+  const sorted = [...dates].sort();
+  const lineItems = sorted.map((date) => ({ date, day: '', type: 'Additional', description: `Additional Lesson — ${month}`, rate: ratePerLesson }));
+  const amount = Math.round(ratePerLesson * sorted.length * 100) / 100;
+  return {
+    Student: [studentId],
+    Month: month,
+    'Invoice Type': 'Adjustment',
+    Status: 'Draft',
+    'Lessons Count': sorted.length,
+    'Rate Per Lesson': ratePerLesson,
+    'Line Items': JSON.stringify(lineItems),
+    'Final Amount': amount,
+    'Issue Date': todayISO,
+    'Due Date': dueISO,
+    // Prints on the parent's PDF — and is how the send cron recognises it.
+    'Auto Notes': finalExtrasNote(sorted),
+  };
+}
+
+/** Invoices fields Airtable computes itself — a write to any of them 422s the record. */
+export const INVOICE_COMPUTED_FIELDS = ['Invoice ID', 'Base Amount', 'Paid (ledger)'];

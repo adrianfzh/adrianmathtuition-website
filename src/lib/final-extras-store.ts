@@ -4,7 +4,7 @@
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { addDaysISO, sgtTodayISO } from '@/lib/sgt';
 import {
-  GRADUATED, INACTIVE, finalExtras, finalExtrasMonth, finalExtrasNote, invoicedDates,
+  GRADUATED, INACTIVE, finalExtras, finalExtrasInvoiceFields, invoicedDates,
   leavingStatus, mapExtraLesson, type ExtraLessonRow,
 } from '@/lib/graduation';
 
@@ -48,30 +48,11 @@ export async function draftFinalExtrasInvoice(
   const result: FinalBill = { invoiceId: null, month: '', dates: bill.map((l) => l.date), amount: 0, unmarked: unmarked.map((l) => l.date) };
   if (!bill.length || !(ratePerLesson > 0)) return result;
 
-  const month = finalExtrasMonth(result.dates);
-  const lineItems = bill.map((l) => ({ date: l.date, day: '', type: 'Additional', description: `Additional Lesson — ${month}`, rate: ratePerLesson }));
-  const amount = Math.round(ratePerLesson * bill.length * 100) / 100;
   const today = sgtTodayISO();
-  const inv = await airtableRequest('Invoices', '', {
-    method: 'POST',
-    body: JSON.stringify({
-      fields: {
-        Student: [studentId],
-        Month: month,
-        'Invoice Type': 'Adjustment',
-        Status: 'Draft',
-        'Lessons Count': bill.length,
-        'Rate Per Lesson': ratePerLesson,
-        'Line Items': JSON.stringify(lineItems),
-        'Base Amount': amount,
-        'Final Amount': amount,
-        'Issue Date': today,
-        'Due Date': addDaysISO(today, 14),
-        // Prints on the parent's PDF — and is how the send cron recognises it.
-        'Auto Notes': finalExtrasNote(result.dates),
-      },
-    }),
-  });
+  const fields = finalExtrasInvoiceFields(studentId, result.dates, ratePerLesson, today, addDaysISO(today, 14));
+  const month = fields.Month as string;
+  const amount = fields['Final Amount'] as number;
+  const inv = await airtableRequest('Invoices', '', { method: 'POST', body: JSON.stringify({ fields }) });
   for (const l of bill) {
     await airtableRequest('Lessons', `/${l.id}`, {
       method: 'PATCH',

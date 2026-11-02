@@ -43,3 +43,22 @@ export function billableAdditionalFor(pool: AdditionalLessonRecord[], studentId:
     .filter(l => l.studentId === studentId && !l.billed && !l.isRevisionMakeup && !/revision makeup/i.test(l.notes))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
+
+/**
+ * First day (inclusive) of the advance run's Additional-lesson window: the 1st
+ * of the month THREE months before the run day (SGT). The Billed checkbox, not
+ * the window, stops a second billing — so the window can look back far enough
+ * that no extra is stranded.
+ *
+ * REGRESSION — found 2 Nov 2026: the window used to be the 15th of last month
+ * to the run day. A student with no lessons in the month being billed (a
+ * skipped November or December) gets no invoice that run, and the NEXT run's
+ * window had already moved on — so their extras from that window were never
+ * billed (e.g. a December-skipper's extras from 15 Oct–14 Nov).
+ */
+export function advanceExtrasWindowStartISO(runDayISO: string, monthsBack = 3): string {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(runDayISO);
+  if (!m) throw new Error(`bad run day: ${runDayISO}`);
+  const total = Number(m[1]) * 12 + (Number(m[2]) - 1) - monthsBack;
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}-01`;
+}

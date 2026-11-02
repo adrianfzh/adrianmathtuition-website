@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   leavingStatus, isFinalYearLevel, finalExtras, invoicedDates, finalExtrasNote,
-  isFinalExtrasInvoice, finalExtrasMonth, FINAL_EXTRAS_NOTE_RE, type ExtraLessonRow,
+  isFinalExtrasInvoice, finalExtrasMonth, FINAL_EXTRAS_NOTE_RE, finalExtrasInvoiceFields, INVOICE_COMPUTED_FIELDS, type ExtraLessonRow,
 } from './graduation';
 
 const row = (over: Partial<ExtraLessonRow>): ExtraLessonRow => ({
@@ -86,5 +86,23 @@ describe('the final-extras invoice', () => {
     expect(isFinalExtrasInvoice({ ...clean, 'Final Amount': 0 })).toBe(false);
     expect(isFinalExtrasInvoice({ ...clean, 'Adjustment Amount': -10 })).toBe(false);
     expect(isFinalExtrasInvoice({ ...clean, 'Custom Email Message': 'Hi' })).toBe(false);
+  });
+});
+
+describe('finalExtrasInvoiceFields', () => {
+  // REGRESSION — Oct 2026 leavers (Kayla 25 Sep, Chloe + Eva 13 Oct, Alessi
+  // 25 Oct): the draft wrote 'Base Amount', a FORMULA field, so Airtable refused
+  // every final bill and the extras went unbilled. Found 2 Nov 2026.
+  const f = finalExtrasInvoiceFields('recALESSI', ['2026-10-25', '2026-10-13'], 70, '2026-11-02', '2026-11-16');
+  it('writes no field Airtable computes', () => {
+    for (const k of INVOICE_COMPUTED_FIELDS) expect(f).not.toHaveProperty(k);
+  });
+  it('bills the dates at the rate, as a Draft the send cron recognises', () => {
+    expect(f['Final Amount']).toBe(140);
+    expect(f['Lessons Count']).toBe(2);
+    expect(f.Month).toBe('October 2026');
+    expect(f.Status).toBe('Draft');
+    expect(isFinalExtrasInvoice(f)).toBe(true);
+    expect(JSON.parse(f['Line Items'] as string).map((l: { date: string }) => l.date)).toEqual(['2026-10-13', '2026-10-25']);
   });
 });

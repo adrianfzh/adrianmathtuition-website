@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { billableAdditionalFor, mapAdditionalRecord } from './additional-lessons';
+import { advanceExtrasWindowStartISO, billableAdditionalFor, mapAdditionalRecord } from './additional-lessons';
 
 const rec = (over: Partial<ReturnType<typeof mapAdditionalRecord>>) => ({
   id: 'rec1', date: '2026-07-12', studentId: 'recStudent', isRevisionMakeup: false, notes: '', billed: false, ...over,
@@ -56,5 +56,21 @@ describe('mapAdditionalRecord', () => {
   it('is safe on missing fields', () => {
     const m = mapAdditionalRecord({ id: 'recL', fields: {} });
     expect(m).toEqual({ id: 'recL', date: '', studentId: null, isRevisionMakeup: false, notes: '', billed: false });
+  });
+});
+
+describe('advanceExtrasWindowStartISO', () => {
+  // REGRESSION — 2 Nov 2026: the window was "15th of last month → run day". A
+  // December-skipper gets no invoice on 14 Nov, and the 14 Dec run started at
+  // 15 Nov — so an extra on 3 Nov was never billed. The window must reach back
+  // past a skipped run; Billed stops a repeat.
+  it('reaches back past one skipped run', () => {
+    const start = advanceExtrasWindowStartISO('2026-12-14');
+    expect(start).toBe('2026-09-01');
+    expect('2026-11-03' >= start).toBe(true);
+  });
+  it('crosses the year boundary', () => {
+    expect(advanceExtrasWindowStartISO('2027-01-14')).toBe('2026-10-01');
+    expect(advanceExtrasWindowStartISO('2027-02-14')).toBe('2026-11-01');
   });
 });
