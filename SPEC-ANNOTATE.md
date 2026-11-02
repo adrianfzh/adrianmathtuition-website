@@ -741,3 +741,14 @@ solutions or helpful to have, it should be generated".
 - **Not done.** Science papers use the same panel unchanged (marker solutions); the figure library's
   science families are offered too. Not yet looked at on a real iPad.
 
+- **2 Nov 2026 — resize handle + the paper fix** (Adrian: *"allow the increase/reduce of the
+  solutions section the size by adding a handle (up/down and left/right)"* … *"and also paper
+  not found"*). A grip on the panel's edge: beside the page (landscape) the left edge drags
+  wider/narrower (25–80 %); as a sheet (portrait) the top edge drags taller/shorter (30–92 %).
+  The size is kept on that iPad (localStorage `annotate-side-width` / `-height`). The paper
+  failed with "Load failed" because a paper picked from the paper library is stored on the run
+  as a signed storage link, and the panel fetched it with cookies — the storage host's open
+  CORS refuses a credentialed fetch (and the link expires). The panel now asks
+  `/api/admin/annotate-side/paper?runId=`, which mints a fresh link (or points at our own file)
+  and redirects; the panel fetches same-origin credentials only. A redirect, not the bytes: a
+  combined paper is ~5 MB, over Vercel's 4.5 MB response cap.

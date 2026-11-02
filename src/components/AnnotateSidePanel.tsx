@@ -41,15 +41,54 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
   useEffect(() => { const t = setTimeout(() => setPage(photoIndex), 350); return () => clearTimeout(t); }, [photoIndex]);
   const questions = info?.byPage[String(page)] ?? [];
 
+  // Drag the handle to make the panel bigger or smaller (Adrian, 2 Nov 2026): beside the
+  // page it is the left edge (wider / narrower), as a sheet it is the top edge (taller /
+  // shorter). The size is kept on this iPad for next time.
+  const [size, setSize] = useState(() => readSize(beside));
+  useEffect(() => { setSize(readSize(beside)); }, [beside]);
+  const [dragging, setDragging] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const onHandleDown = (e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    const parent = shellRef.current?.parentElement;
+    if (!parent) return;
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    setDragging(true);
+    const box = parent.getBoundingClientRect();
+    let frame = 0; let last = size;
+    const move = (ev: PointerEvent) => {
+      const pct = beside ? ((box.right - ev.clientX) / box.width) * 100 : ((box.bottom - ev.clientY) / box.height) * 100;
+      last = clampSize(beside, pct);
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setSize(last));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      cancelAnimationFrame(frame);
+      setSize(last); setDragging(false);
+      try { localStorage.setItem(sizeKey(beside), String(Math.round(last))); } catch { /* private mode */ }
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  };
+
   const shell: React.CSSProperties = beside
-    ? { width: '50%', flex: 'none', borderLeft: '1px solid #d1d5db', background: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0 }
-    : { position: 'absolute', left: 0, right: 0, bottom: 0, height: '72%', zIndex: 20, background: '#fff', borderTopLeftRadius: 14, borderTopRightRadius: 14, boxShadow: '0 -8px 28px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', minHeight: 0, animation: 'annotate-sheet-in 180ms ease-out' };
+    ? { width: `${size}%`, flex: 'none', position: 'relative', borderLeft: '1px solid #d1d5db', background: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0 }
+    : { position: 'absolute', left: 0, right: 0, bottom: 0, height: `${size}%`, zIndex: 20, background: '#fff', borderTopLeftRadius: 14, borderTopRightRadius: 14, boxShadow: '0 -8px 28px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', minHeight: 0, animation: 'annotate-sheet-in 180ms ease-out' };
   const tab = (on: boolean): React.CSSProperties => ({ height: 36, padding: '0 14px', borderRadius: 9, border: '1px solid ' + (on ? '#111827' : '#d1d5db'), background: on ? '#111827' : '#fff', color: on ? '#fff' : '#111827', fontSize: 14, fontWeight: 700, cursor: 'pointer' });
 
   return (
-    <div data-side-panel style={shell} onPointerDown={(e) => e.stopPropagation()}>
+    <div ref={shellRef} data-side-panel style={shell} onPointerDown={(e) => e.stopPropagation()}>
       <style>{'@keyframes annotate-sheet-in{from{transform:translateY(30%);opacity:.4}to{transform:none;opacity:1}}'}</style>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderBottom: '1px solid #e5e7eb' }}>
+      <div role="separator" aria-orientation={beside ? 'vertical' : 'horizontal'} aria-label="Drag to resize the panel" title="Drag to resize"
+        onPointerDown={onHandleDown}
+        style={beside
+          ? { position: 'absolute', left: -14, top: 0, bottom: 0, width: 28, zIndex: 5, cursor: 'col-resize', touchAction: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+          : { height: 22, flex: 'none', cursor: 'row-resize', touchAction: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={beside
+          ? { width: 8, height: 64, borderRadius: 4, background: dragging ? '#111827' : '#9ca3af', boxShadow: '0 0 0 2px #fff' }
+          : { width: 64, height: 6, borderRadius: 3, background: dragging ? '#111827' : '#9ca3af' }} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: beside ? '8px 10px 8px 18px' : '0 10px 8px', borderBottom: '1px solid #e5e7eb' }}>
         <button style={tab(kind === 'paper')} onClick={() => onKind('paper')}>📄 Paper</button>
         <button style={tab(kind === 'solutions')} onClick={() => onKind('solutions')}>✅ Solutions</button>
         <span style={{ fontSize: 13, color: '#6b7280', marginLeft: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -58,7 +97,7 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
         <div style={{ flex: 1 }} />
         <button aria-label="Close the panel" style={{ ...tab(false), width: 40, padding: 0 }} onClick={onClose}>✕</button>
       </div>
-      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+      <div style={{ flex: 1, minHeight: 0, position: 'relative', pointerEvents: dragging ? 'none' : undefined }}>
         {infoErr ? <p style={{ padding: 16, color: '#b91c1c', fontSize: 14 }}>Could not load the paper: {infoErr}</p>
           : !info ? <p style={{ padding: 16, color: '#6b7280', fontSize: 14 }}>Loading…</p>
           : kind === 'solutions'
@@ -69,6 +108,19 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
       </div>
     </div>
   );
+}
+
+const sizeKey = (beside: boolean) => (beside ? 'annotate-side-width' : 'annotate-side-height');
+/** Percent of the screen: beside the page 25–80 % wide, as a sheet 30–92 % tall. */
+function clampSize(beside: boolean, pct: number): number {
+  return beside ? Math.min(80, Math.max(25, pct)) : Math.min(92, Math.max(30, pct));
+}
+function readSize(beside: boolean): number {
+  try {
+    const v = Number(localStorage.getItem(sizeKey(beside)));
+    if (Number.isFinite(v) && v > 0) return clampSize(beside, v);
+  } catch { /* private mode / server */ }
+  return beside ? 50 : 72;
 }
 
 /** No question paper uploaded (a self-contained worksheet): the questions as the marker read them. */
@@ -101,7 +153,9 @@ function PaperPdf({ url, questions }: { url: string; questions: string[] }) {
     (async () => {
       try {
         const pdfjs = await loadPdfjs();
-        const bytes = new Uint8Array(await (await fetch(url, { credentials: 'include' })).arrayBuffer());
+        const res = await fetch(url, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || `HTTP ${res.status}`);
+        const bytes = new Uint8Array(await res.arrayBuffer());
         const doc = await pdfjs.getDocument({ data: bytes, disableFontFace: true }).promise;
         const out: PdfPage[] = [];
         for (let i = 1; i <= doc.numPages; i++) {

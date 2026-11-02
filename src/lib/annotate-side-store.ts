@@ -40,7 +40,8 @@ export function sideInfo(run: Run) {
   const byPage = questionsByPage(rj);
   const prompts: Record<string, string> = {};
   for (const qs of Object.values(byPage)) for (const q of qs) { const p = markerPrompt(rj, q); if (p) prompts[q] = p; }
-  return { paperUrl: src.paper_pdf_url ? fileHref(src.paper_pdf_url) : null, byPage, prompts, paperName: run.paper_name };
+  // Through our own route: a paper-library link on the run is a signed link that expires.
+  return { paperUrl: src.paper_pdf_url ? `/api/admin/annotate-side/paper?runId=${run.id}` : null, byPage, prompts, paperName: run.paper_name };
 }
 
 type BankRow = {
