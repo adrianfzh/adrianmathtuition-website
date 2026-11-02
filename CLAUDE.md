@@ -123,6 +123,11 @@ This binds every session, every model and every account, in both repos.
 2. **One everyday comparison** for the technical idea. ("A private link is like the link in a
    'track your parcel' SMS.") No jargon: no token, signed, route, deploy, template id, webhook.
 3. **Say what exists today and what is missing**, in a few short lines.
+   **Before you suggest building something — your idea, or one from a video, book or post he
+   sent — check whether we already have it** (Adrian, 31 Oct – 1 Nov 2026, three chats: *"are
+   these built? it should already be build in the student portals?"* · *"aren't these already
+   build?"* · *"is this happening currently?"*). Search the code and docs first; mark each idea
+   "we already do this", "partly — missing …" or "new".
 4. **Give your recommendation for every decision and ask for ONE answer** ("If that sounds
    fine, reply yes"). Never hand him three open questions or a table of trade-offs.
 5. **Short sections, plain headings, one idea per line.** When he must do something, give
