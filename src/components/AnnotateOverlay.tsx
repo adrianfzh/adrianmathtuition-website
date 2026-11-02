@@ -1779,6 +1779,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (penDownRef.current || Date.now() - lastPenUpRef.current < 500) { logInk('touch-blocked', { w: Math.round(e.width), h: Math.round(e.height) }); return; }
       logInk('touch-down', { w: Math.round(e.width), h: Math.round(e.height), n: touchesRef.current.size + 1 });
       touchesRef.current.set(e.pointerId, cssPos(e));
+      // Keep this finger's move/up on the stage even when it slides off it (over the side panel).
+      try { el.setPointerCapture(e.pointerId); } catch { /* not capturable — the window net below clears it */ }
       stopMomentum();
       const pts = [...touchesRef.current.values()];
       const contact = Math.max(e.width || 0, e.height || 0);
@@ -2242,6 +2244,20 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
     const onPointerLeave = () => { cursorRef.current = null; scheduleLive(); };
 
+    // No finger left on the glass → no finger is remembered. A lift whose pointerup never
+    // reached the stage (ended over the side panel or the toolbar) left a ghost finger, and
+    // every later one-finger swipe became a "pinch" with it: when zoomed in the page would
+    // not slide, only pinch (Adrian, 2 Nov 2026). Runs after the stage's own pointerup.
+    const onAllFingersUp = (e: TouchEvent) => {
+      if (e.touches.length > 0 || !touchesRef.current.size) return;
+      setTimeout(() => {
+        if (!touchesRef.current.size) return;
+        logInk('ghost-fingers-cleared', { n: touchesRef.current.size });
+        touchesRef.current.clear();
+        gestureRef.current = null;
+      }, 0);
+    };
+
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
@@ -2470,6 +2486,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     window.addEventListener('touchmove', onTouchMoveFallback, { capture: true, passive: false });
     window.addEventListener('touchend', onTouchEndFallback, { capture: true, passive: false });
     window.addEventListener('touchcancel', onTouchEndFallback, { capture: true, passive: false });
+    window.addEventListener('touchend', onAllFingersUp, true);
+    window.addEventListener('touchcancel', onAllFingersUp, true);
     el.addEventListener('pointerleave', onPointerLeave);
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('contextmenu', swallow);
@@ -2487,6 +2505,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       el.removeEventListener('pointercancel', onPointerCancel);
       el.removeEventListener('touchstart', onTouchStartFallback);
       window.removeEventListener('touchmove', onTouchMoveFallback, true);
+      window.removeEventListener('touchend', onAllFingersUp, true);
+      window.removeEventListener('touchcancel', onAllFingersUp, true);
       window.removeEventListener('touchend', onTouchEndFallback, true);
       window.removeEventListener('touchcancel', onTouchEndFallback, true);
       el.removeEventListener('pointerleave', onPointerLeave);

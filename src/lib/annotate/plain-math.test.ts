@@ -24,6 +24,14 @@ describe('plain question text → maths', () => {
       .toBe('Net of a square-based pyramid cut from a 30 cm square: base a cm');
   });
 
+  it("typesets every power and the short letters beside an operator (Adrian's Q2, 2 Nov 2026)", () => {
+    expect(plainMathToTex('x³y⁵')).toBe('x^{3}y^{5}');
+    expect(plainMathToTex('x¹⁰')).toBe('x^{10}');
+    expect(joined('= x³y⁵. Find the tangent at (1, 1) in the form ax + by = c, a, b, c integers.'))
+      .toBe('[= x³y⁵]. Find the tangent at (1, 1) in the form [ax + by = c], a, b, c integers.');
+    expect(joined('Go to the shop by bus.')).toBe('Go to the shop by bus.');
+  });
+
   it('never typesets plain prose', () => {
     expect(joined('Find the maximum possible volume of the pyramid.')).toBe('Find the maximum possible volume of the pyramid.');
   });

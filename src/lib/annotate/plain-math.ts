@@ -7,19 +7,22 @@
 // when it has an operator or a subscript in it, and any word of two or more letters
 // (other than sin, cos, ln …) ends the run, so prose never comes out squashed in italics.
 
+const SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+// A lone operator between words: "ax + by = c" — the short words beside it are maths.
+const OP = /^[=+\-−–×÷<>≤≥≠]$/;
 const FUNCS = new Set(['sin', 'cos', 'tan', 'sec', 'cosec', 'csc', 'cot', 'ln', 'lg', 'log', 'exp', 'sqrt']);
 // A part label — "(a)", "(ii)", "(A)" — is prose, never maths.
 const LABEL = /^\([a-z]{1,4}\)$|^\([ivx]{1,4}\)$/i;
 
 function isMathToken(t: string): boolean {
   if (!t || LABEL.test(t)) return false;
-  if (!/^[A-Za-z0-9²³⁴_^()+\-−–=×÷*/.<>≤≥≠√θπαβ'|]+$/.test(t)) return false;
+  if (!/^[A-Za-z0-9⁰¹²³⁴⁵⁶⁷⁸⁹_^()+\-−–=×÷*/.<>≤≥≠√θπαβ'|]+$/.test(t)) return false;
   const words = t.match(/[A-Za-z]{2,}/g) || [];
   return words.every((w) => FUNCS.has(w.toLowerCase()));
 }
 
 function hasMath(run: string): boolean {
-  return /[=+\-−–×÷*/^²³⁴√<>≤≥≠]/.test(run) || /(^|[^A-Za-z])[A-Za-z]\d/.test(run);
+  return /[=+\-−–×÷*/^⁰¹²³⁴⁵⁶⁷⁸⁹√<>≤≥≠]/.test(run) || /(^|[^A-Za-z])[A-Za-z]\d/.test(run);
 }
 
 /** One maths run → TeX. */
@@ -29,7 +32,8 @@ export function plainMathToTex(s: string): string {
   t = t.replace(/(^|[^A-Za-z])([uvwTSabtx])\(([nrk](?:\s*[+\-−]\s*\d+)?)\)/g, (_, p, l, i) => `${p}${l}_{${i.replace(/\s+/g, '').replace('−', '-')}}`);
   // u1, v4, x2 → u_{1} (a single letter straight before digits, not part of a word).
   t = t.replace(/(^|[^A-Za-z])([A-Za-z])(\d+)(?![\d.])/g, (_, p, l, d) => `${p}${l}_{${d}}`);
-  t = t.replace(/²/g, '^{2}').replace(/³/g, '^{3}').replace(/⁴/g, '^{4}');
+  // x³y⁵ → x^{3}y^{5} (a run of superscript digits is one power).
+  t = t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => `^{${[...m].map((c) => SUP.indexOf(c)).join('')}}`);
   t = t.replace(/\^\(([^()]+)\)/g, '^{$1}').replace(/\^(-?[A-Za-z0-9]+)/g, '^{$1}');
   t = t.replace(/√\(([^()]+)\)/g, '\\sqrt{$1}').replace(/√([A-Za-z0-9]+)/g, '\\sqrt{$1}');
   t = t.replace(/sqrt\(([^()]+)\)/g, '\\sqrt{$1}');
@@ -55,6 +59,12 @@ export function splitPlainMath(s: string): PlainPiece[] {
     const word = raw.trimEnd(), space = raw.slice(word.length);
     const m = word.match(/^(.*?)([,;:.]*)$/)!;
     return { core: m[1], tail: m[2], space, raw, math: isMathToken(m[1]) };
+  });
+  // "ax", "by" are words to isMathToken; standing right beside a lone operator they are maths.
+  words.forEach((w, i) => {
+    if (w.math || !/^[a-z]{2}$/.test(w.core)) return;
+    const prev = words[i - 1], next = words[i + 1];
+    if ((prev && !prev.tail && OP.test(prev.core)) || (!w.tail && next && OP.test(next.core))) w.math = true;
   });
   const lead = String(s || '').match(/^\s*/)![0];
   push(lead, false);
