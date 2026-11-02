@@ -12,12 +12,17 @@
 // is hidden (the Live Text guard in AnnotateOverlay). Pages are drawn only near the view and
 // let go when far away — a whole paper of full-size bitmaps is what gets an iPad tab killed.
 // The solutions are a page of their own in a frame (/api/admin/annotate-side/solutions).
+//
+// Both at once (Adrian, 2 Nov 2026: "possible to have them side by side (so both can be seen
+// at once) … with handles to resize them"): the panel shows the paper AND the solutions,
+// split by a handle — side by side in the portrait sheet, one above the other beside the
+// page in landscape. 📄 / ✅ in the header show just one; the choice and the split are kept.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadPdfjs } from '@/lib/pdf-pages';
 import { findQuestionPage } from '@/lib/annotate/side-panel';
 
-export type SideKind = 'paper' | 'solutions';
+export type SideKind = 'paper' | 'solutions' | 'both';
 
 type Info = { paperUrl: string | null; byPage: Record<string, string[]>; prompts: Record<string, string>; paperName: string | null };
 
@@ -71,6 +76,14 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
   };
 
+  const solutionsView = (
+    <iframe key={`${runId}-${page}`} title="Worked solutions" src={`/api/admin/annotate-side/solutions?runId=${encodeURIComponent(runId)}&page=${page}`}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, background: '#fff' }} />
+  );
+  const paperView = !info ? null
+    : info.paperUrl ? <PaperPdf url={info.paperUrl} questions={questions} />
+    : <PrintedQuestions questions={questions} prompts={info.prompts} />;
+
   const shell: React.CSSProperties = beside
     ? { width: `${size}%`, flex: 'none', position: 'relative', touchAction: 'pan-x pan-y', borderLeft: '1px solid #d1d5db', background: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0 }
     : { position: 'absolute', left: 0, right: 0, bottom: 0, height: `${size}%`, touchAction: 'pan-x pan-y', zIndex: 20, background: '#fff', borderTopLeftRadius: 14, borderTopRightRadius: 14, boxShadow: '0 -8px 28px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', minHeight: 0, animation: 'annotate-sheet-in 180ms ease-out' };
@@ -90,6 +103,7 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: beside ? '8px 10px 8px 18px' : '0 10px 8px', borderBottom: '1px solid #e5e7eb' }}>
         <button style={tab(kind === 'paper')} onClick={() => onKind('paper')}>📄 Paper</button>
+        <button style={tab(kind === 'both')} onClick={() => onKind('both')} title="Paper and solutions together">📄 + ✅</button>
         <button style={tab(kind === 'solutions')} onClick={() => onKind('solutions')}>✅ Solutions</button>
         <span style={{ fontSize: 13, color: '#6b7280', marginLeft: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           Page {page + 1}{questions.length ? ` · Q${questions.join(', Q')}` : ''}
@@ -100,11 +114,9 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
       <div style={{ flex: 1, minHeight: 0, position: 'relative', pointerEvents: dragging ? 'none' : undefined }}>
         {infoErr ? <p style={{ padding: 16, color: '#b91c1c', fontSize: 14 }}>Could not load the paper: {infoErr}</p>
           : !info ? <p style={{ padding: 16, color: '#6b7280', fontSize: 14 }}>Loading…</p>
-          : kind === 'solutions'
-            ? <iframe key={`${runId}-${page}`} title="Worked solutions" src={`/api/admin/annotate-side/solutions?runId=${encodeURIComponent(runId)}&page=${page}`}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, background: '#fff' }} />
-            : info.paperUrl ? <PaperPdf url={info.paperUrl} questions={questions} />
-            : <PrintedQuestions questions={questions} prompts={info.prompts} />}
+          : kind === 'both'
+            ? <Split stacked={beside} paper={paperView} solutions={solutionsView} />
+            : kind === 'solutions' ? solutionsView : paperView}
       </div>
     </div>
   );
@@ -123,6 +135,58 @@ function readSize(beside: boolean): number {
   return beside ? 50 : 72;
 }
 
+/** Paper and solutions together, split by a handle: one above the other (stacked, beside the
+ *  page in landscape) or side by side (the portrait sheet). The split is kept on this iPad. */
+function Split({ stacked, paper, solutions }: { stacked: boolean; paper: React.ReactNode; solutions: React.ReactNode }) {
+  const key = stacked ? 'annotate-split-stacked' : 'annotate-split-side';
+  const [pct, setPct] = useState(() => readSplit(key));
+  useEffect(() => { setPct(readSplit(key)); }, [key]);
+  const [dragging, setDragging] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const onDown = (e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    const box = boxRef.current?.getBoundingClientRect();
+    if (!box) return;
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    setDragging(true);
+    let frame = 0; let last = pct;
+    const move = (ev: PointerEvent) => {
+      const raw = stacked ? ((ev.clientY - box.top) / box.height) * 100 : ((ev.clientX - box.left) / box.width) * 100;
+      last = Math.min(85, Math.max(15, raw));
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setPct(last));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      cancelAnimationFrame(frame);
+      setPct(last); setDragging(false);
+      try { localStorage.setItem(key, String(Math.round(last))); } catch { /* private mode */ }
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  };
+  const pane = (basis: number): React.CSSProperties => ({ flex: `0 0 ${basis}%`, position: 'relative', minWidth: 0, minHeight: 0, overflow: 'hidden', pointerEvents: dragging ? 'none' : undefined });
+  return (
+    <div ref={boxRef} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: stacked ? 'column' : 'row' }}>
+      <div style={pane(pct)}>{paper}</div>
+      <div role="separator" aria-orientation={stacked ? 'horizontal' : 'vertical'} aria-label="Drag to share the space between the paper and the solutions" title="Drag to resize"
+        onPointerDown={onDown}
+        style={{ flex: 'none', [stacked ? 'height' : 'width']: 22, background: '#f3f4f6', borderTop: stacked ? '1px solid #d1d5db' : undefined, borderBottom: stacked ? '1px solid #d1d5db' : undefined, borderLeft: stacked ? undefined : '1px solid #d1d5db', borderRight: stacked ? undefined : '1px solid #d1d5db', cursor: stacked ? 'row-resize' : 'col-resize', touchAction: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={stacked
+          ? { width: 64, height: 6, borderRadius: 3, background: dragging ? '#111827' : '#9ca3af' }
+          : { width: 6, height: 64, borderRadius: 3, background: dragging ? '#111827' : '#9ca3af' }} />
+      </div>
+      <div style={{ ...pane(100 - pct), flex: '1 1 0' }}>{solutions}</div>
+    </div>
+  );
+}
+function readSplit(key: string): number {
+  try {
+    const v = Number(localStorage.getItem(key));
+    if (Number.isFinite(v) && v > 0) return Math.min(85, Math.max(15, v));
+  } catch { /* private mode / server */ }
+  return 50;
+}
+
 /** No question paper uploaded (a self-contained worksheet): the questions as the marker read them. */
 function PrintedQuestions({ questions, prompts }: { questions: string[]; prompts: Record<string, string> }) {
   return (
@@ -132,7 +196,8 @@ function PrintedQuestions({ questions, prompts }: { questions: string[]; prompts
       {questions.map((q) => (
         <div key={q} style={{ marginBottom: 14 }}>
           <div style={{ fontWeight: 700, color: '#1c3a5e' }}>Question {q}</div>
-          <div style={{ whiteSpace: 'pre-wrap' }}>{prompts[q] || '—'}</div>
+          {/* Server-built HTML: the words escaped, the maths typeset (annotate-side-store plainPromptHtml). */}
+          <div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: prompts[q] || '—' }} />
         </div>
       ))}
     </div>
@@ -179,10 +244,13 @@ function PaperPdf({ url, questions }: { url: string; questions: string[] }) {
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    // Settle first: while a handle is dragged the box changes every frame, and every change
+    // redraws every page near the view.
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const ro = new ResizeObserver(() => { clearTimeout(t); t = setTimeout(() => setWidth(el.clientWidth), 150); });
     ro.observe(el);
     setWidth(el.clientWidth);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); clearTimeout(t); };
   }, [pages]);
 
   // Jump to where this page's first question starts.

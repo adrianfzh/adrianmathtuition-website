@@ -13,6 +13,10 @@ export const runtime = 'nodejs';
 
 const SCREEN_CSS = `
   html,body{touch-action:pan-x pan-y}
+  /* A narrow panel (paper and solutions side by side, 2 Nov 2026): a long line scrolls
+     sideways on its own instead of widening the whole page and cutting it off. */
+  body{overflow-x:hidden}
+  .sol-line,.sol-align,.sol-sub{max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
   @media screen {
     body{font-size:16px;line-height:1.6;padding:14px 16px 40px}
     .sol-list{padding-left:30px}

@@ -20,7 +20,10 @@ import { bankQuestionsForRun } from './question-clip-store';
 import { rollupSolution } from './solution-rollup';
 import { cropUrls, imgSrc, isPlausibleImagePath } from './kiosk-worksheet-images';
 import { renderFigure, figureDoc } from './twin-store';
-import { questionsByPage, markerPrompt, markerSolutionItem, sideDiagramKey, firstJson } from './annotate/side-panel';
+import { questionsByPage, markerPrompt, markerPromptLatex, markerSolutionItem, sideDiagramKey, firstJson } from './annotate/side-panel';
+import katex from 'katex';
+import { mathHtml, escapeHtml } from './math-inline';
+import { splitPlainMath, plainMathToTex, plainMathToDollar } from './annotate/plain-math';
 import type { SolutionsItem, SolutionsPart } from './render-solutions-pdf';
 
 /** Opus for the judgement (does a picture help, and what exactly does it show). */
@@ -38,8 +41,15 @@ export function sideInfo(run: Run) {
   const rj = run.result_json ?? {};
   const src = (rj.source ?? {}) as { paper_pdf_url?: string | null };
   const byPage = questionsByPage(rj);
+  // The question as the marker read it, as HTML with the maths typeset (Adrian, 2 Nov 2026:
+  // "questions math expression not in latex"): the marker's $…$ copy when it wrote one,
+  // else the plain text with its maths runs typeset.
   const prompts: Record<string, string> = {};
-  for (const qs of Object.values(byPage)) for (const q of qs) { const p = markerPrompt(rj, q); if (p) prompts[q] = p; }
+  for (const qs of Object.values(byPage)) for (const q of qs) {
+    const tex = markerPromptLatex(rj, q), plain = markerPrompt(rj, q);
+    if (tex) prompts[q] = mathHtml(tex);
+    else if (plain) prompts[q] = plainPromptHtml(plain);
+  }
   // Through our own route: a paper-library link on the run is a signed link that expires.
   return { paperUrl: src.paper_pdf_url ? `/api/admin/annotate-side/paper?runId=${run.id}` : null, byPage, prompts, paperName: run.paper_name };
 }
@@ -78,7 +88,7 @@ export async function sideSolutionItems(run: Run, photoIndex: number): Promise<{
       const figs = bankFigures(row);
       items.push({
         qnum: q,
-        questionText: (row.question_text ?? '').trim() || markerPrompt(rj, q),
+        questionText: (row.question_text ?? '').trim() || markerPromptLatex(rj, q) || plainMathToDollar(markerPrompt(rj, q)),
         solution,
         solutionFromParts: !(typeof row.solution === 'string' && row.solution.trim()),
         answer: (row.answer ?? '').trim(),
@@ -197,4 +207,11 @@ Reply with the spec as JSON only, with "family": "${family}".`));
     // A model or network failure is not remembered: the next open tries again.
     return { status: 'none', why: `could not draw: ${(e as Error).message.slice(0, 120)}` };
   }
+}
+
+/** Plain question text → HTML: words escaped, maths runs through KaTeX. */
+export function plainPromptHtml(plain: string): string {
+  return splitPlainMath(plain).map((p) => p.math
+    ? katex.renderToString(plainMathToTex(p.text), { throwOnError: false, output: 'html' })
+    : escapeHtml(p.text)).join('');
 }

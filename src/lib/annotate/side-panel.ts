@@ -5,6 +5,7 @@
 // improved on. And if there should be diagrams in the solutions or helpful to have, it
 // should be generated"). Pure; tested. The I/O lives in the route and the panel.
 import type { SolutionsItem, SolutionsPart } from '@/lib/render-solutions-pdf';
+import { plainMathToDollar } from './plain-math';
 
 type Rec = Record<string, unknown>;
 const rec = (v: unknown): Rec | null => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Rec) : null);
@@ -52,6 +53,11 @@ function resultFor(resultJson: unknown, q: string): Rec | null {
 /** The printed question as the marker read it. */
 export function markerPrompt(resultJson: unknown, q: string): string {
   return str(rec(rec(resultFor(resultJson, q)?.marking_output)?.question)?.prompt).trim();
+}
+
+/** The same question text with its maths in $…$ — written by the marker since 2 Nov 2026; '' on older runs. */
+export function markerPromptLatex(resultJson: unknown, q: string): string {
+  return str(rec(rec(resultFor(resultJson, q)?.marking_output)?.question)?.prompt_latex).trim();
 }
 
 const PART_LINE = /^\s*(?:\$\s*\\text\{\s*)?\(\s*([a-z]{1,2}|i{1,3}|iv|vi{0,3}|ix|x)\s*\)(?:\s*\}\s*\$)?\s*$/i;
@@ -116,7 +122,9 @@ export function markerSolutionItem(resultJson: unknown, q: string): SolutionsIte
   const correct = rec(rec(r.marking_output)?.correct);
   const full = str(correct?.full_solution_latex).trim();
   const final = str(correct?.final_answer).trim();
-  const prompt = markerPrompt(resultJson, q);
+  // The question for the solutions page: the marker's $…$ copy, else the plain text with its
+  // maths wrapped in $…$ — the page typesets $…$ (2 Nov 2026).
+  const prompt = markerPromptLatex(resultJson, q) || plainMathToDollar(markerPrompt(resultJson, q));
   if (!full && !final) return { qnum: q, questionText: prompt, solution: '', answer: '', parts: null, solutionImages: [] };
   const answers = splitFinalAnswer(final);
   const codes = schemeCodes(r);

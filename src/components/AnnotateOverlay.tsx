@@ -3236,10 +3236,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button style={tool === 'lasso' ? activeBtn : btn} onClick={() => setToolRemember('lasso')} aria-label="Lasso select" title="Lasso: circle strokes to select, then drag to move"><IconLasso /></button>
         {!isStudent && (
           <>
-            <button style={{ ...(side === 'paper' ? activeBtn : btn), fontSize: 13, fontWeight: 700, padding: '0 10px' }} onClick={() => setSide((k) => (k === 'paper' ? null : 'paper'))}
-              aria-pressed={side === 'paper'} title="The question paper beside this page — tap again to close">📄 Paper</button>
-            <button style={{ ...(side === 'solutions' ? activeBtn : btn), fontSize: 13, fontWeight: 700, padding: '0 10px' }} onClick={() => setSide((k) => (k === 'solutions' ? null : 'solutions'))}
-              aria-pressed={side === 'solutions'} title="The worked solutions for this page's questions — tap again to close">✅ Solutions</button>
+            {/* One button opens the paper and the solutions together (2 Nov 2026); the panel's own
+                header shows just one, and that choice is kept for next time. */}
+            <button style={{ ...(side ? activeBtn : btn), fontSize: 13, fontWeight: 700, padding: '0 10px' }} onClick={() => setSide((k) => (k ? null : readSideView()))}
+              aria-pressed={!!side} title="The question paper and the worked solutions beside this page — tap again to close">📄 Paper ✅ Solutions</button>
           </>
         )}
         {isStudent && (
@@ -3418,7 +3418,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       </div>
       {side && !isStudent && (
         <AnnotateSidePanel runId={runId} photoIndex={pages[currentPageIdx]?.photoIndex ?? 0} kind={side} beside={wide}
-          onKind={setSide} onClose={() => setSide(null)} />
+          onKind={(k) => { setSide(k); try { localStorage.setItem('annotate-side-view', k); } catch { /* private mode */ } }} onClose={() => setSide(null)} />
       )}
       </div>
 
@@ -3436,4 +3436,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       )}
     </div>
   );
+}
+
+/** The panel's last view on this iPad — paper, solutions, or both (the default). */
+function readSideView(): SideKind {
+  try {
+    const v = localStorage.getItem('annotate-side-view');
+    if (v === 'paper' || v === 'solutions' || v === 'both') return v;
+  } catch { /* private mode */ }
+  return 'both';
 }

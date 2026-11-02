@@ -763,3 +763,18 @@ solutions or helpful to have, it should be generated".
   and the solutions frame blocks its own pinch. The "died" note also records `side` (panel
   open) and `pageZoom` (`visualViewport.scale`) so the next death says which it was.
   NOT proven on the iPad.
+- **2 Nov 2026 — paper AND solutions at once; the question's maths typeset** (Adrian:
+  *"for paper and solutions, possible to have them side by side (so both can be seen at once)
+  if in portrait screen (with handles?), and if in landscape screen, have paper and solution
+  top and bottom … with handles to resize them"* · *"questions math expression not in
+  latex"*). The toolbar has ONE button, **📄 Paper ✅ Solutions**; the panel opens on both,
+  split by a handle — side by side in the portrait sheet, paper above solutions beside the
+  page in landscape. The header's 📄 / 📄+✅ / ✅ show one or both; the choice
+  (`annotate-side-view`) and each split (`annotate-split-side`, `annotate-split-stacked`,
+  15–85 %) are kept on the iPad. The PDF redraws only after a resize settles (150 ms). In a
+  narrow panel a long solution line scrolls sideways on its own (`.sol-line`, `.sol-align`,
+  `.sol-sub`) instead of the page widening and being cut off. The question text: the marker
+  now also writes `question.prompt_latex` (bot `ai/paper-marker.js`; `prompt` stays plain —
+  `lib/sketch-from-question.js` and others parse it); older runs go through
+  `lib/annotate/plain-math.ts` (`u(n+1)` → $u_{n+1}$, `v4` → $v_4$, `H²` → $H^2$; prose never
+  typeset, tested), in the panel as KaTeX HTML and on the solutions page as $…$.
