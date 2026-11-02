@@ -1040,7 +1040,8 @@ specifically mentioned … a<b, so that expression can be simplified"*.
   logs combined. A correct but unsimplified final answer is A0, the method marks stay.
 - The note says what the condition is for and writes the last step:
   "1 < a < b, so ln a > 0 and ln b > 0 — drop the | | and combine: = ln(ln b / ln a)".
-- Not yet in the marker (bot `ai/paper-marker.js`) — waiting for Adrian's yes.
+- **In the marker since 2 Nov 2026** (bot `ai/paper-marker.js`, "A CONDITION IN THE QUESTION MEANS THE FINAL
+  ANSWER IS SIMPLIFIED"; pen label "not finished"). Adrian chose "Only the rule": Nicole's Q5(c) stays 3/3.
 
 ## ✍️ How a note is written — Adrian's rulings on Lakshanya's H2 TYS 2023 P1/P2 (29 Oct 2026)
 
