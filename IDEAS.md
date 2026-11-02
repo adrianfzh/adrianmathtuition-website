@@ -196,7 +196,7 @@ else `—`. The builder writes the status. How it works: [`docs/NIGHTLY-BUILDER.
 
 | slug | repo | what to build | approved | allow | status |
 |---|---|---|---|---|---|
-| video-digest | bot | A 📚 Reading drop: links or small files sent to one Telegram topic (big book files in one Mac folder) get a four-part summary each (what it says · useful for us · what we already do · what to skip); trading books go to trading-signals `docs/book-findings.md`. Spec: [`docs/learn/video-digest.md`](docs/learn/video-digest.md) | 2026-11-02 Adrian (Telegram ✅) | — | approved |
+| video-digest | bot | A 📚 Reading drop: links or small files sent to one Telegram topic (big book files in one Mac folder) get a four-part summary each (what it says · useful for us · what we already do · what to skip); trading books go to trading-signals `docs/book-findings.md`. Spec: [`docs/learn/video-digest.md`](docs/learn/video-digest.md) | 2026-11-02 Adrian (Telegram ✅) | — | blocked 2026-11-03: the item mentions messages or emails to parents, and the build list does not allow that for it |
 
 ## 🧪 Science marking + the marking queue — the 10 Sep 2026 evening queue (Adrian: "remind me of what we wanted to fix")
 
