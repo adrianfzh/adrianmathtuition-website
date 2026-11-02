@@ -1029,6 +1029,19 @@ the mark: **"yes"**. Every paper, every student. Rules live in bot `ai/paper-mar
 - **The "Correct solution" box shows only parts that lost marks**, even when the
   question runs over two pages (F233).
 
+## 🧮 A condition in the question means the answer is simplified — Adrian's ruling (2 Nov 2026)
+
+Adrian, on Nicole's H2 TYS 2021 P2 Q5(c) (∫ₐᵇ 1/(x ln x) dx, where 1 < a < b), marked 3/3 for
+ln|b ln b/(a ln a)| − ln|b/a|: *"shouldn't the final answer be ln (ln b/ln a)? because question
+specifically mentioned … a<b, so that expression can be simplified"*.
+
+- **When the question gives a condition so the answer can be simplified** (1 < a < b makes
+  ln a, ln b > 0), **the A1 needs the simplified answer**: ln(ln b / ln a), no modulus,
+  logs combined. A correct but unsimplified final answer is A0, the method marks stay.
+- The note says what the condition is for and writes the last step:
+  "1 < a < b, so ln a > 0 and ln b > 0 — drop the | | and combine: = ln(ln b / ln a)".
+- Not yet in the marker (bot `ai/paper-marker.js`) — waiting for Adrian's yes.
+
 ## ✍️ How a note is written — Adrian's rulings on Lakshanya's H2 TYS 2023 P1/P2 (29 Oct 2026)
 
 Rules in bot `ai/paper-marker.js` ("HOW A NOTE IS WRITTEN", "A FRACTION IN A NOTE IS A
