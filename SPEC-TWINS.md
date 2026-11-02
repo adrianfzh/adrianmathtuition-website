@@ -361,6 +361,19 @@ sub-skills still owed and ~700 seeds unread. `sci-twin.mjs queue` now reads thos
 tried seed is removed before the pick, a skipped sub-skill is left out. The function returns at
 most five seeds a sub-skill, and three drops skip it, so five is enough.
 
+**Up to 3 multiple-choice twins from one school question (2 Nov 2026, Adrian: "Yes, apply it").** The
+15 Oct rule (§ "Up to 3 twins from one school question") had reached maths and structured science but
+not science multiple-choice, so 34 small sub-skills (Phys 6 · Chem 13 · Bio 30 twins short of 3, mostly
+the 12 Oct sub-skills with 1–4 school questions) sat at "0 of 0": every seed already used once. Now
+`sci-twin.mjs queue` offers, for a sub-skill with fewer fresh seeds than it still wants, a seed that
+already has 1–2 twins in that pool as `<uuid>~2` / `~3` (fewest twins first; the seeds come from the
+twins filed under the sub-skill, `twinSeedsOf`). `brief` takes `~n`, refuses past `SEED_CAP` 3, lists the
+earlier twins in the author brief (and the corpus already holds them, so the novelty gate checks them);
+the checker sees them and must call a look-alike `reads_as_source`; `publish` files it as
+`sci-twin-<seed>-<n>` (`gen_meta.seed_pass`). The bot lane needed no change (it already runs `~n` seeds
+in `<pool>-<uuid>__n`). At the worker's target of 5 that opened ~116 tries (87 of them second/third
+twins). The cloud door (`lib/twin-store.ts scienceUnits`) still offers fresh seeds only.
+
 **New science sub-skills (12 Oct 2026).** 16 types added to the science tree after a read of the
 2,159 questions the filer had set aside as "fits none" — most were correct skips under a second
 topic tag; ~150 were real gaps → [`docs/science-subskill-review-2026-10-12.md`](docs/science-subskill-review-2026-10-12.md).

@@ -219,10 +219,21 @@ async function queue() {
   const limit = Number(argOf('--limit', 10));
   const onlyPool = argOf('--pool', null);
   const tried = triedHere();
-  const rows = (await units())
-    .filter((u) => u.need > 0 && (!onlyPool || u.pool === onlyPool) && !tried.unit(u.pool, u.subgroup_id))
-    .map((u) => ({ ...u, seeds: (u.seeds ?? []).filter((sid) => !tried.seed(u.pool, sid)) }))
-    .filter((u) => u.seeds.length);
+  const short = (await units()).filter((u) => u.need > 0 && (!onlyPool || u.pool === onlyPool) && !tried.unit(u.pool, u.subgroup_id));
+  // science_twin_units' seeds are the seeds with no twin yet; a seed's next twin comes from the twins
+  // already filed under the sub-skill in this pool (their twin_of)
+  const twinSeeds = await twinSeedsOf(short.map((u) => Number(u.subgroup_id)));
+  const twinsOf = await twinsBySeed([...twinSeeds.values()].flat());
+  const rows = short.map((u) => {
+    const fresh = (u.seeds ?? []).filter((sid) => !tried.seed(u.pool, sid) && !(twinsOf.get(`${u.pool}|${sid}`) ?? []).length);
+    // 🌱 short of fresh seeds: a seed with 1–2 twins here offers its next one, fewest twins first
+    const again = fresh.length >= u.need ? [] : [...new Set(twinSeeds.get(`${u.pool}|${Number(u.subgroup_id)}`) ?? [])]
+      .map((sid) => ({ sid, n: (twinsOf.get(`${u.pool}|${sid}`) ?? []).length }))
+      .filter(({ sid, n }) => n >= 1 && n < SEED_CAP && !tried.seed(u.pool, `${sid}~${n + 1}`))
+      .sort((a, b) => a.n - b.n)
+      .map(({ sid, n }) => `${sid}~${n + 1}`);
+    return { ...u, seeds: [...fresh, ...again] };
+  }).filter((u) => u.seeds.length);
   const out = []; const used = new Set();
   for (let round = 0; out.length < limit; round++) {
     let left = 0;
@@ -280,7 +291,49 @@ export function splitMcq(text) {
 /** The level a twin with no seed level is filed at, from the checker's work score (the estimator's bands). */
 export const levelFromWork = (w) => { const n = Math.round(Number(w) || 3); return n <= 2 ? 'core' : n === 3 ? 'exam' : 'challenge'; };
 /** One twin per seed PER POOL: a pure twin keeps the old key, a Combined one carries its pool. */
-export const twinItem = (pool, seed) => (String(pool).startsWith('CS_') ? `sci-twin-${pool}-${seed}` : `sci-twin-${seed}`);
+export const twinItem = (pool, seed, pass = 1) => `${String(pool).startsWith('CS_') ? `sci-twin-${pool}-${seed}` : `sci-twin-${seed}`}${pass > 1 ? `-${pass}` : ''}`;
+// 🌱 Up to 3 twins from one school question, for short sub-skills (Adrian, 15 Oct 2026: "Let one school
+// question seed up to 3 twins, but only for skills that are short …"; applied to multiple-choice
+// 2 Nov 2026, Adrian: "Yes, apply it"). A sub-skill with fewer fresh seeds than it still wants lets a
+// seed that already has a twin in this pool carry a 2nd and 3rd, queued as "<uuid>~2" / "~3" (the
+// lane runs it in "<pool>-<uuid>__2"). The corpus holds the earlier twins, so the novelty gate compares
+// against them; the brief and the checker show them too. Same rule as sci-stwin.mjs.
+export const SEED_CAP = 3;
+export const splitSource = (raw) => { const [id, n] = String(raw ?? '').split('~'); return { id, pass: Math.max(1, Number(n) || 1) }; };
+/** The seeds of the MCQ twins filed under each sub-skill: Map("<pool>|<subgroup>" → [seed uuid]). */
+export async function twinSeedsOf(subgroupIds) {
+  const out = new Map();
+  const sgs = [...new Set(subgroupIds)].filter(Boolean);
+  if (!sgs.length) return out;
+  const filed = await all(() => sb().from('question_subgroups').select('question_id, subgroup_id').in('subgroup_id', sgs).order('question_id'));
+  const sgOf = new Map(); for (const f of filed) { const a = sgOf.get(f.question_id) ?? []; a.push(f.subgroup_id); sgOf.set(f.question_id, a); }
+  const qids = [...sgOf.keys()];
+  for (let i = 0; i < qids.length; i += 150) {
+    const { data, error } = await sb().from('questions').select('id, twin_of, quarantined, gen_meta->>pool, gen_meta->>kind')
+      .in('id', qids.slice(i, i + 150)).eq('school', TWIN_SCHOOL);
+    if (error) throw new Error(`twins of sub-skills: ${error.message}`);
+    for (const r of data ?? []) {
+      if (r.kind !== 'science-twin' || r.quarantined || !r.twin_of) continue;
+      for (const sg of sgOf.get(r.id) ?? []) { const k = `${r.pool}|${sg}`; const a = out.get(k) ?? []; a.push(r.twin_of); out.set(k, a); }
+    }
+  }
+  return out;
+}
+/** Live MCQ twins per seed in each pool: Map("<pool>|<seed>" → [{ id, item, text }]). */
+export async function twinsBySeed(seedIds) {
+  const out = new Map();
+  const ids = [...new Set(seedIds)].filter(Boolean);
+  for (let i = 0; i < ids.length; i += 150) {
+    const { data, error } = await sb().from('questions').select('id, twin_of, question_text, quarantined, gen_meta->>pool, gen_meta->>twin_item, gen_meta->>kind')
+      .in('twin_of', ids.slice(i, i + 150)).eq('school', TWIN_SCHOOL);
+    if (error) throw new Error(`twins of seeds: ${error.message}`);
+    for (const r of data ?? []) {
+      if (r.kind !== 'science-twin' || r.quarantined) continue;
+      const k = `${r.pool}|${r.twin_of}`; const a = out.get(k) ?? []; a.push({ id: r.id, item: r.twin_item, text: r.question_text }); out.set(k, a);
+    }
+  }
+  return out;
+}
 export const keyOf = (answer) => { const m = /([A-D])/.exec(String(answer ?? '').replace(/^\s*\*\*\(?/, '')); return m ? m[1] : null; };
 export function questionText(q) {
   return `${String(q.stem ?? '').trim()}\n\n${LETTERS.map((l) => `${l}) ${String(q.options?.[l] ?? '').trim()}`).join('\n')}`;
@@ -288,9 +341,9 @@ export function questionText(q) {
 
 // --------------------------------------------------------------- brief ----
 async function brief() {
-  const id = argOf('--source');
+  const { id, pass } = splitSource(argOf('--source'));
   const dir = resolve(argOf('--run', '.'));
-  if (!id) throw new Error('--source <uuid> required');
+  if (!id) throw new Error('--source <uuid>[~2|~3] required');
   mkdirSync(dir, { recursive: true });
   const { data: src, error } = await sb().from('questions').select('id, level, subject, school, year, exam_type, paper, question_number, question_text, answer, solution, topics, skill, has_image, image_url, difficulty').eq('id', id).single();
   if (error) throw new Error(error.message);
@@ -298,6 +351,8 @@ async function brief() {
   const combined = String(src.level).startsWith('CS_');
   const pool = argOf('--pool', poolName(key, combined));
   const pp = parsePool(pool);
+  const earlier = pass > 1 ? (await twinsBySeed([id])).get(`${pool}|${id}`) ?? [] : [];
+  if (pass > 1 && earlier.length >= SEED_CAP) throw new Error(`seed ${id} already has ${earlier.length} twins in ${pool} (cap ${SEED_CAP})`);
   const { data: pd } = await sb().from('practice_difficulty').select('level, source, reason, detail').eq('question_id', id).maybeSingle();
   const { data: f0 } = await sb().from('question_subgroups').select('subgroup_id, is_primary').eq('question_id', id);
   // the unit's sub-skill (--subgroup) is THE sub-skill this twin serves; else the seed's own filing
@@ -321,7 +376,7 @@ async function brief() {
     }
   }
   const plan = {
-    source: id, pool, key: pp.key, combined: pp.combined, subject: src.subject, bank_level: pp.combined ? SCI[pp.key].cs : SCI[pp.key].bank, topic,
+    source: id, pass, earlier_twins: earlier.map((t) => t.id), pool, key: pp.key, combined: pp.combined, subject: src.subject, bank_level: pp.combined ? SCI[pp.key].cs : SCI[pp.key].bank, topic,
     skill: src.skill ?? null, subgroups,
     // the level the twin is written at: the seed's own (students' results or the estimate); none → set by the checker's work score
     seed_level: ['results', 'estimate'].includes(pd?.source) ? pd.level : null, seed_reason: pd?.reason ?? null,
@@ -351,7 +406,7 @@ ${src.question_text}
 \`\`\`
 Key: ${keyOf(src.answer) ?? src.answer}
 ${src.solution ? `Its solution:\n\`\`\`\n${String(src.solution).slice(0, 1500)}\n\`\`\`` : ''}
-${siblings.length ? `\n## Other questions of the same sub-skill (the range of the skill — do not copy these either)\n${siblings.map((s, i) => `${i + 1}. ${String(s.question_text).slice(0, 600)}`).join('\n\n')}\n` : ''}
+${earlier.length ? `\n## Our own twins ALREADY written from this seed (yours must be clearly different from these too — another situation, other numbers, another order of ideas, a different wrong-option mistake where you can)\n${earlier.map((t, i) => `${i + 1}. ${String(t.text).slice(0, 800)}`).join('\n\n')}\n` : ''}${siblings.length ? `\n## Other questions of the same sub-skill (the range of the skill — do not copy these either)\n${siblings.map((s, i) => `${i + 1}. ${String(s.question_text).slice(0, 600)}`).join('\n\n')}\n` : ''}
 ## What to write
 - **Same sub-skill, same demand as the seed.** Core = one idea, most students get it; Exam = a
   typical exam step or two; Challenge = two or three ideas joined, a step most skip, or a trap.
@@ -522,7 +577,10 @@ ${src.question_text}
 \`\`\`
 Seed key: ${keyOf(src.answer)}
 
-## The nearest bank question by wording (trigram Jaccard ${gates.novelty.nearest_jaccard})
+${(plan.earlier_twins ?? []).length ? `## Our own twins already written from this seed (this one must NOT read as any of them — count that as reads_as_source = true)
+${plan.earlier_twins.map((id, i) => `${i + 1}. ${String(corpusById.get(id)?.text ?? '(not in the corpus)').slice(0, 1000)}`).join('\n\n')}
+
+` : ''}## The nearest bank question by wording (trigram Jaccard ${gates.novelty.nearest_jaccard})
 \`\`\`
 ${near ? String(near.text).slice(0, 1200) : '(none)'}
 \`\`\`
@@ -531,7 +589,7 @@ ${near ? String(near.text).slice(0, 1200) : '(none)'}
 1. key_correct — your own answer equals the key; blind_agrees — the blind solver's letter equals it.
 2. one_defensible_answer — no other option a strong candidate could defend (read the blind solver's "other_defensible").
 3. in_syllabus — everything needed is in ${plan.syllabus}.${plan.key === 'PHY' ? ' No equations of motion, no momentum, no circular motion.' : ''}
-4. original — not the seed (or the nearest question) with numbers or nouns swapped: a new situation, new numbers, new sentences. reads_as_source = true if a teacher holding both would call it the same question.
+4. original — not the seed (or the nearest question, or an earlier twin of this seed) with numbers or nouns swapped: a new situation, new numbers, new sentences. reads_as_source = true if a teacher holding both would call it the same question.
 5. same_skill — it exercises the seed's sub-skill.
 6. level — rate the work as the estimator does: steps, ideas that must be joined, traps; work_score 1–5 (1–2 Core, 3 Exam, 4–5 Challenge). level_ok = ${plan.seed_level ? `its work score sits in the ${plan.seed_level} band (Core 1–2, Exam 3, Challenge 4–5) — or one band above, never below —` : 'it is at least as demanding as the seed'} AND any difficulty is for a good reason (not obscure, not trick wording, not long arithmetic).
 7. distractors_real — each wrong option is a real student mistake.
@@ -576,7 +634,12 @@ async function publish() {
   if (!verdictOk(verdict, blind, q.answer)) throw new Error(`refused: blind ${blind?.answer} vs key ${q.answer}; verdict ${JSON.stringify(verdict ?? null).slice(0, 400)}`);
   const png = join(dir, 'Q1.figure.png');
   if (q.needs_figure && !existsSync(png)) throw new Error('needs_figure but Q1.figure.png is not rendered');
-  const item = twinItem(plan.pool, plan.source);
+  const pass = Number(plan.pass) || 1;
+  const item = twinItem(plan.pool, plan.source, pass);
+  if (pass > 1) {   // 🌱 never past SEED_CAP live twins of one seed in a pool
+    const here = (await twinsBySeed([plan.source])).get(`${plan.pool}|${plan.source}`) ?? [];
+    if (!here.some((t) => t.item === item) && here.length >= SEED_CAP) throw new Error(`seed ${plan.source} already has ${here.length} twins in ${plan.pool} (cap ${SEED_CAP})`);
+  }
   const level = plan.seed_level ?? levelFromWork(verdict.work_score);
   const label = { core: 'Core', exam: 'Exam', challenge: 'Challenge' }[level];
   const imagePath = q.needs_figure ? `twins/${item}.png` : null;
@@ -594,7 +657,7 @@ async function publish() {
     quarantined: false, not_in_syllabus: false, practice_hidden: false,
     practice_checked_at: now, practice_check_note: 'twin: every check passed (gates, blind solve, checker)',
     gen_meta: {
-      kind: 'science-twin', twin_item: item, twin_of: plan.source, prompt_version: PROMPT_VERSION, pool: plan.pool, level_written: level, subskill: (plan.subgroups ?? [])[0]?.id ?? null,
+      kind: 'science-twin', twin_item: item, twin_of: plan.source, ...(pass > 1 ? { seed_pass: pass } : {}), prompt_version: PROMPT_VERSION, pool: plan.pool, level_written: level, subskill: (plan.subgroups ?? [])[0]?.id ?? null,
       source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
       models: plan.models, gates: { novelty: gates.novelty, rounds: gates.rounds },
       blind: { answer: blind.answer, confidence: blind.confidence ?? null, other_defensible: blind.other_defensible ?? [] },
