@@ -1269,3 +1269,18 @@ Abel H2 Math TYS 2021 P2 (`d7dafcd4`), drawn after the 30 Oct H2 pen fixes and t
 - **An event set equal to a probability** — strip "X > 3 is 1 − P(X ≤ 3);" (the read's verdict_line printed verbatim; should be "P(X > 3) = 1 − P(X ≤ 3)") (same page). Words.
 - **RECURRENCE of 30 Oct "ring on the wrong token"** — a dropped denominator drawn as a ring round his CORRECT "1/(2(u − 1)) du"; the "1" written where u³ belongs is bare; the note sits at the page foot with a long leader (Abel H2 2021 P2 p4 Q5(d)). Misleads. Pen (insert vs ring — 16 Oct family).
 - **The footer's bold final line repeats its last step** — "a ∈ ℝ, a ≠ −½" as the last step, then "b = −1, a ∈ ℝ, a ≠ −½" (Abel H2 2021 P2 p2 Q3(b)(ii)). Pen (continuation end).
+
+# 3 Nov 2026 — the page reader: new defect classes (findings of 3 Nov: 1 paper, 8 pages; the fixer works them at 06:45)
+
+Abel H2 Math TYS 2022 P2 (`73f54a40`), marked 2 Nov 21:34 SGT — after the 2 Nov fixer pushes (b3998107, b4db029d, 43f81420, d2f424d8, ed2ac027). Seen fixed: no torn part labels; the bold footer answer no longer repeats its last step word for word. One line per NEW class or RECURRENCE — returns (the point said 3–4×; more ✗ than lost marks; a lost mark with no symbol; "B0 B0;" in the footer; the green-corrections boilerplate in the strip) are in the reader's findings file.
+
+- **His own question is answered in the read, but the answer is never drawn** — "whats the easier / mathematical way?" (reply "Split by how many from Admin (5, 4, 3)…" not on the page, p4 Q7(c)); "} correct?" (reply "not quite: …" not drawn — the part's verdict box sits on it instead, so the page never says "not quite", p8 Q11(e)). Pen (`PEN_STUDENT_NOTE`, 23 Oct).
+- **A missing-symbol slip printed as "calculation error" on a correct line** — "= 12.5h // shown" (1/1): the read's `notation_slip {kind: calculation, insert: "h"}` (his h is under his "//") → brown ring round "2.5" (the "1" left out) + strip "calculation error: should be 12.5h". Misleads (p1 Q2(a)). Read + pen.
+- **The printed note drops the step the read has** — box "900h − 625h = 275h, so h = 10/11", the "= 250" missing (error_summary has it; the verdict_line did not) (p1 Q2(c)). Words.
+- **A rounding note names the wrong rule** — "Keep 5 d.p.: use x̄ = 79.21 and s² = 14.72334" (79.21 has 2 d.p.; the point is "do not round before the GC") (p8 Q11(c)). Words.
+- **A part's ✗ seated on the previous part's last row** — Q11(e)'s ✗B0 on (d)'s "mean of his times", under (d)'s ✓B1 (p8). Placement.
+- **RECURRENCE of 30 Oct "never broken English"** — "missing reason: missing r has no units" (p7 Q10(b)). Pen (label join).
+- **RECURRENCE of 30 Oct "every line number used"** — a ① beside Q1's last line, no "from line ①" anywhere on the page (p1). Placement.
+- **RECURRENCE of 30 Oct "maths typed as text"** — "5/6 × 1/6 should be 25/216", the first half in the handwriting face (p3 Q6(b)). Pen.
+- **2 Nov class, partly fixed** — the footer's bold last line no longer repeats its step word for word but re-says it in other words ("…the line with the least Σe²" → bold "the line minimising Σe²", p7 Q10(e); same on p8 Q11(e)). Pen (continuation end).
+- **Possible accuracy — Adrian's call**: Q11(e) B0 B0 for "The times follow a normal distribution" (the expected first point is "his times are normally distributed"); Q10(c) B1 while he called distance "the dependent variable" and the page's note says independent.
