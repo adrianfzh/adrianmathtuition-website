@@ -2536,7 +2536,10 @@ export default function SchedulePage() {
       if (!res.ok) throw new Error(json.error || 'Failed');
       setBlockedRanges(json.ranges);
       setBlockedModal(m => m ? { ...m, start: '', end: '', reason: '', saving: false } : m);
-      showToast('success', '✓ Blocked period added');
+      showToast(json.marked == null ? 'error' : 'success', json.marked == null
+        ? 'Away dates saved, but the lessons could not be marked missed — the morning check will do it'
+        : `✓ Away dates added${json.marked ? ` · ${json.marked} lesson${json.marked === 1 ? '' : 's'} marked missed` : ''}`);
+      if (json.marked) fetchSchedule(monday);
     } catch (err: any) {
       setBlockedModal(m => m ? { ...m, saving: false } : m);
       showToast('error', err.message || 'Failed');
@@ -2544,7 +2547,7 @@ export default function SchedulePage() {
   }
 
   async function removeBlockedRange(r: { start: string; end: string }) {
-    if (!window.confirm('Remove this blocked period?')) return;
+    if (!window.confirm('Remove these away dates? Lessons they marked missed go back to scheduled (unless a make-up is already booked).')) return;
     try {
       const res = await fetch('/api/admin-schedule/blocked-dates', {
         method: 'DELETE', headers: { 'Content-Type': 'application/json' },
@@ -2553,7 +2556,8 @@ export default function SchedulePage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
       setBlockedRanges(json.ranges);
-      showToast('success', '✓ Removed');
+      showToast('success', `✓ Removed${json.restored ? ` · ${json.restored} lesson${json.restored === 1 ? '' : 's'} back to scheduled` : ''}`);
+      if (json.restored) fetchSchedule(monday);
     } catch (err: any) { showToast('error', err.message || 'Failed'); }
   }
 
@@ -4310,7 +4314,7 @@ export default function SchedulePage() {
             <div className="modal-header">
               <div>
                 <div className="modal-name">🏖 Away dates</div>
-                <div className="modal-type">Students can&apos;t reschedule into these periods</div>
+                <div className="modal-type">Lessons in these days are marked missed (reason: you are away), and students can&apos;t move a lesson into them. You get a Telegram reminder 2 weeks before to arrange make-ups.</div>
               </div>
               <button className="modal-close" onClick={() => setBlockedModal(null)}>✕</button>
             </div>

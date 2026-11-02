@@ -174,6 +174,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // student to Inactive when it was their last one. Runs (and stamps) every day,
   // most days with nothing due — so silence here means the job is dead, not quiet.
   'end-enrollments': { kind: 'interval', hours: 36, label: 'daily 8:15am' },
+  // 🏖 Away dates: marks lessons in an away period missed + the 14-day make-up reminder (2 Nov 2026).
+  'away-reminder':     { kind: 'interval', hours: 36, label: 'daily 8:30am' },
   'practice-topup':    { kind: 'interval', hours: 36, label: 'daily 2am' },
   'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
   // Compulsory Practice Again sheets not handed in — day 3, then weekly (8 Sep 2026).

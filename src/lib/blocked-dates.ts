@@ -11,6 +11,8 @@ export interface BlockedRange {
   start: string;
   end: string;
   reason: string;
+  /** SGT day the 14-day make-up reminder went out (cron/away-reminder) — once per period. */
+  remindedOn?: string;
 }
 
 const SETTING_NAME = 'blocked_dates';
@@ -33,7 +35,10 @@ export async function fetchBlockedRecord(): Promise<{ id: string | null; ranges:
     if (Array.isArray(parsed.ranges)) {
       ranges = parsed.ranges
         .filter(isValidRange)
-        .map((r: BlockedRange) => ({ start: r.start, end: r.end, reason: String(r.reason || '') }));
+        .map((r: BlockedRange) => ({
+          start: r.start, end: r.end, reason: String(r.reason || ''),
+          ...(r.remindedOn ? { remindedOn: r.remindedOn } : {}),
+        }));
     }
   } catch {}
   ranges.sort((a, b) => a.start.localeCompare(b.start));
