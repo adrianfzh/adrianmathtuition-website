@@ -372,7 +372,11 @@ earlier twins in the author brief (and the corpus already holds them, so the nov
 the checker sees them and must call a look-alike `reads_as_source`; `publish` files it as
 `sci-twin-<seed>-<n>` (`gen_meta.seed_pass`). The bot lane needed no change (it already runs `~n` seeds
 in `<pool>-<uuid>__n`). At the worker's target of 5 that opened ~116 tries (87 of them second/third
-twins). The cloud door (`lib/twin-store.ts scienceUnits`) still offers fresh seeds only.
+twins). The cloud door (`lib/twin-store.ts scienceUnits`) still offers fresh seeds only. **Also found 2 Nov:** the Fly
+worker's `/data/website` had sat at 19 Oct (a job committed there and never pushed, so every `--ff-only`
+pull failed silently) — every website script the lanes ran was two weeks old. Adrian reset it by hand;
+since bot `b051ff4a` `pull_web` resets a copy that went its own way to GitHub by itself, saving its own
+commits as patches in `/data/website-stranded/<time>/` first (Adrian: "can it autofix by itself?").
 
 **New science sub-skills (12 Oct 2026).** 16 types added to the science tree after a read of the
 2,159 questions the filer had set aside as "fits none" — most were correct skips under a second
