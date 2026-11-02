@@ -506,6 +506,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // 📄 Paper / ✅ Solutions beside the page (27 Oct 2026, SPEC-ANNOTATE §21): admin only.
   // Beside the page on a wide landscape screen; a sheet from the bottom otherwise.
   const [side, setSide] = useState<SideKind | null>(null);
+  const sideRef = useRef(side);   // for the "did the page die?" note
+  sideRef.current = side;
   const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 900 && window.innerWidth > window.innerHeight);
   useEffect(() => {
     const on = () => setWide(window.innerWidth >= 900 && window.innerWidth > window.innerHeight);
@@ -534,8 +536,6 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [hlColor, setHlColor] = useState(HL_COLORS[0]);
   const [eraserMode, setEraserMode] = useState<EraserMode>('stroke');
   const [selChip, setSelChip] = useState<{ x: number; y: number } | null>(null);
-  // An iPad outside the AdrianMarker app: the system's Live Text takes Pencil strokes over printed text (SPEC-ANNOTATE §12).
-  const [shellHint, setShellHint] = useState(false);
   // The gestures nobody can see (7 Oct 2026, Adrian: "let users know the two-finger tap is undo and
   // the three-finger tap is redo"): one line the first time the pen opens on a device, gone on OK.
   const [gestureHint, setGestureHint] = useState(false);
@@ -2758,6 +2758,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       runId, openedAt, at: Date.now(), pages: pages.length, layered: pages.filter((p) => !!p.layerUrl).length,
       strokes: strokesRef.current.reduce((a, l) => a + l.length, 0), points: strokesRef.current.reduce((a, l) => a + l.reduce((b, q) => b + q.points.length, 0), 0),
       zoom: Math.round(viewRef.current.zoom * 100) / 100, shell: inShell, hidden: document.hidden,
+      side: sideRef.current, pageZoom: Math.round((window.visualViewport?.scale ?? 1) * 100) / 100,
     });
     try {
       const died = JSON.parse(localStorage.getItem(ALIVE_KEY) || 'null');
@@ -2765,9 +2766,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       localStorage.setItem(ALIVE_KEY, aliveNote());
     } catch { /* diagnostics only */ }
     const aliveTimer = setInterval(() => { try { localStorage.setItem(ALIVE_KEY, aliveNote()); } catch { /* diagnostics only */ } }, 15_000);
-    if (!isStudent && !inShell && navigator.maxTouchPoints > 1 && /Mac|iPad/.test(navigator.userAgent)) setShellHint(true);
     const onVis = () => { if (!document.hidden) requestLock(); };
     document.addEventListener('visibilitychange', onVis);
+    // iPadOS ignores user-scalable=no. A pinch over the toolbar or the 📄/✅ side panel
+    // (only the page area swallowed Safari's gesture events) zoomed the WHOLE web page,
+    // which re-draws the full-screen canvases bigger — the likely cause of the page
+    // being killed and reloading after zooming in and out (Adrian, 2 Nov 2026).
+    const noPageZoom = (e: Event) => e.preventDefault();
+    document.addEventListener('gesturestart', noPageZoom, { passive: false });
+    document.addEventListener('gesturechange', noPageZoom, { passive: false });
     const bitmaps = bitmapsRef.current;
     const imgs = imgsRef.current;
     return () => {
@@ -2778,6 +2785,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (viewportMeta) viewportMeta.setAttribute('content', prevViewport ?? 'width=device-width, initial-scale=1');
       else lockMeta.remove();
       document.removeEventListener('visibilitychange', onVis);
+      document.removeEventListener('gesturestart', noPageZoom);
+      document.removeEventListener('gesturechange', noPageZoom);
       lock?.release?.().catch(() => {});
       for (const b of bitmaps) if (b && b.src instanceof ImageBitmap) b.src.close();
       for (let i = 0; i < imgs.length; i++) imgs[i] = null;
@@ -3311,12 +3320,6 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #bfdbfe', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <span>🔀 Page {mergedNote.map((n) => n + 1).join(', ')} changed somewhere else since this {deviceWord} last saved. You see the newer page with your unsaved ink on top — check it, then Done.</span>
           <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={() => setMergedNote([])}>OK</button>
-        </div>
-      )}
-      {shellHint && (
-        <div style={{ background: '#fffbeb', color: '#92400e', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #fde68a', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span>✏️ This is not the AdrianMarker app. Here the iPad can swallow Pencil strokes over printed text — open the paper in AdrianMarker for full ink.</span>
-          <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={() => setShellHint(false)}>OK</button>
         </div>
       )}
       {gestureHint && (

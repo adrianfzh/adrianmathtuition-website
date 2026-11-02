@@ -72,8 +72,8 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
   };
 
   const shell: React.CSSProperties = beside
-    ? { width: `${size}%`, flex: 'none', position: 'relative', borderLeft: '1px solid #d1d5db', background: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0 }
-    : { position: 'absolute', left: 0, right: 0, bottom: 0, height: `${size}%`, zIndex: 20, background: '#fff', borderTopLeftRadius: 14, borderTopRightRadius: 14, boxShadow: '0 -8px 28px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', minHeight: 0, animation: 'annotate-sheet-in 180ms ease-out' };
+    ? { width: `${size}%`, flex: 'none', position: 'relative', touchAction: 'pan-x pan-y', borderLeft: '1px solid #d1d5db', background: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0 }
+    : { position: 'absolute', left: 0, right: 0, bottom: 0, height: `${size}%`, touchAction: 'pan-x pan-y', zIndex: 20, background: '#fff', borderTopLeftRadius: 14, borderTopRightRadius: 14, boxShadow: '0 -8px 28px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', minHeight: 0, animation: 'annotate-sheet-in 180ms ease-out' };
   const tab = (on: boolean): React.CSSProperties => ({ height: 36, padding: '0 14px', borderRadius: 9, border: '1px solid ' + (on ? '#111827' : '#d1d5db'), background: on ? '#111827' : '#fff', color: on ? '#fff' : '#111827', fontSize: 14, fontWeight: 700, cursor: 'pointer' });
 
   return (

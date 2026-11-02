@@ -752,3 +752,14 @@ solutions or helpful to have, it should be generated".
   `/api/admin/annotate-side/paper?runId=`, which mints a fresh link (or points at our own file)
   and redirects; the panel fetches same-origin credentials only. A redirect, not the bytes: a
   combined paper is ~5 MB, over Vercel's 4.5 MB response cap.
+- **2 Nov 2026 — the amber "not the AdrianMarker app" line is gone** (Adrian: *"we need not
+  have the notification"*). **Reloads after zooming:** `annotate_ink_log` showed the pen dying
+  nine times between 10:43 and 10:56 on a 10-page layered paper with 0 strokes, one at 1.31×
+  and several within 15 s of reopening; two with `hidden: true` (the iPad dropped the tab
+  while another app was in front). Only the page area swallowed Safari's gesture events, and
+  iPadOS ignores `user-scalable=no`, so a pinch over the toolbar or the 📄/✅ panel zoomed the
+  WHOLE page — the full-screen canvases re-drawn larger — the likely kill. Now gesture events
+  are swallowed document-wide while the pen is open, the panel is `touch-action: pan-x pan-y`,
+  and the solutions frame blocks its own pinch. The "died" note also records `side` (panel
+  open) and `pageZoom` (`visualViewport.scale`) so the next death says which it was.
+  NOT proven on the iPad.

@@ -12,6 +12,7 @@ import { buildSolutionsHTML } from '@/lib/render-solutions-pdf';
 export const runtime = 'nodejs';
 
 const SCREEN_CSS = `
+  html,body{touch-action:pan-x pan-y}
   @media screen {
     body{font-size:16px;line-height:1.6;padding:14px 16px 40px}
     .sol-list{padding-left:30px}
@@ -51,6 +52,9 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
       .then(function(){ document.body.setAttribute('data-diagrams', String(made)); next(); });
   }
   next(); next();
+  // A pinch in this frame would zoom the whole marking page on the iPad (2 Nov 2026).
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive: false });
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive: false });
 })();
 </script>`;
 
