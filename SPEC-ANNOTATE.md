@@ -778,3 +778,17 @@ solutions or helpful to have, it should be generated".
   `lib/sketch-from-question.js` and others parse it); older runs go through
   `lib/annotate/plain-math.ts` (`u(n+1)` → $u_{n+1}$, `v4` → $v_4$, `H²` → $H^2$; prose never
   typeset, tested), in the panel as KaTeX HTML and on the solutions page as $…$.
+- **2 Nov 2026 — every question typeset; the scheme marks on the solution lines** (Adrian:
+  *"question's math expression should be in latex/katex"* · *"is solutions able to show the
+  mark scheme itself? like where is A1, M1, etc"*). The in-house typesetting missed fractions
+  and powers like x³y⁵, so once per question a model (Opus, `SIDE_DIAGRAM_MODEL`) writes the
+  question with its maths in $…$ AND copies the worked solution with each scheme code at the
+  end of the line that earns it — the scheme is the marker's part codes with every mark won
+  (`fullScheme`: "M1 A0" → "M1 A1"). `lib/annotate/side-extras.ts` (tested) refuses any copy
+  whose working changed (`sameApartFromCodes`), so the page never shows the model's rewrite of
+  the maths; a bank solution that already carries its own "[M1 …]" notes is left alone. Kept
+  with the run (`runs/<id>/side-diagrams/q-<n>-extras-v2.json`); `POST
+  /api/admin/annotate-side/extras` makes it, the solutions page swaps each question's block
+  in place (keeping a drawn diagram) and the panel's question text follows. On this screen
+  the codes are red, bold, 12.5 px (the marker's own page, not a student's). Checked on the
+  2 Nov worksheet run: Q2 got M1 M1 · A1 · M1 · A1 · A1 on six lines, Q3 M1 · M1 · A1.

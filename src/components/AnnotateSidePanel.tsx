@@ -82,7 +82,7 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
   );
   const paperView = !info ? null
     : info.paperUrl ? <PaperPdf url={info.paperUrl} questions={questions} />
-    : <PrintedQuestions questions={questions} prompts={info.prompts} />;
+    : <PrintedQuestions runId={runId} questions={questions} prompts={info.prompts} />;
 
   const shell: React.CSSProperties = beside
     ? { width: `${size}%`, flex: 'none', position: 'relative', touchAction: 'pan-x pan-y', borderLeft: '1px solid #d1d5db', background: '#fff', display: 'flex', flexDirection: 'column', minHeight: 0 }
@@ -188,7 +188,21 @@ function readSplit(key: string): number {
 }
 
 /** No question paper uploaded (a self-contained worksheet): the questions as the marker read them. */
-function PrintedQuestions({ questions, prompts }: { questions: string[]; prompts: Record<string, string> }) {
+function PrintedQuestions({ runId, questions, prompts }: { runId: string; questions: string[]; prompts: Record<string, string> }) {
+  // The question with ALL its maths typeset, made once per question by a model (the extras
+  // route); until it comes back, the quick in-house typesetting from the info call.
+  const [typeset, setTypeset] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let live = true;
+    for (const q of questions) {
+      if (typeset[q]) continue;
+      fetch('/api/admin/annotate-side/extras', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ runId, q }) })
+        .then((r) => r.json()).then((d) => { if (live && d?.questionHtml) setTypeset((m) => ({ ...m, [q]: d.questionHtml })); })
+        .catch(() => {});
+    }
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runId, questions.join(',')]);
   return (
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '14px 16px 40px', fontSize: 16, lineHeight: 1.6, color: '#111' }}>
       <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>No question paper was sent with this one — the questions are printed on the student&rsquo;s pages. As the marker read them:</p>
@@ -197,7 +211,7 @@ function PrintedQuestions({ questions, prompts }: { questions: string[]; prompts
         <div key={q} style={{ marginBottom: 14 }}>
           <div style={{ fontWeight: 700, color: '#1c3a5e' }}>Question {q}</div>
           {/* Server-built HTML: the words escaped, the maths typeset (annotate-side-store plainPromptHtml). */}
-          <div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: prompts[q] || '—' }} />
+          <div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: typeset[q] || prompts[q] || '—' }} />
         </div>
       ))}
     </div>

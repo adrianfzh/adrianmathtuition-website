@@ -6,7 +6,8 @@
 // the figure library when one would help (POST …/diagram). Admin only. SPEC-ANNOTATE §21.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { loadSideRun, sideSolutionItems } from '@/lib/annotate-side-store';
+import { loadSideRun, sideSolutionItems, readSideExtras } from '@/lib/annotate-side-store';
+import { applyExtras } from '@/lib/annotate/side-extras';
 import { buildSolutionsHTML } from '@/lib/render-solutions-pdf';
 
 export const runtime = 'nodejs';
@@ -24,7 +25,8 @@ const SCREEN_CSS = `
     .sol-q{margin-bottom:18px;padding-bottom:12px}
     .sol-stem,.sol-pstem{font-size:13.5px}
     .sol-check,.sol-note,.sol-al-lead{font-size:13.5px}
-    .sol-mk{font-size:10.5px}
+    /* The scheme marks are for Adrian here, not a student (2 Nov 2026: "where is A1, M1"): readable, the red pen's colour. */
+    .sol-mk{font-size:12.5px;font-weight:700;color:#c0392b;margin-left:8px;letter-spacing:.02em}
     .sol-part{padding-left:40px;margin-top:12px}
     .sol-title{font-size:16px}
     .sol-gen figure{margin:6px 0 10px}
@@ -62,6 +64,36 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
 })();
 </script>`;
 
+// Makes the missing extras one question at a time and swaps each question's block in place,
+// keeping a diagram already drawn in it, then typesets the new block.
+const EXTRAS_SCRIPT = (runId: string, qs: string[]) => qs.length ? `<script>
+(function(){
+  var qs = ${JSON.stringify(qs)}, i = 0;
+  function next(){
+    if (i >= qs.length) return;
+    var q = qs[i++];
+    fetch('/api/admin/annotate-side/extras', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ runId: ${JSON.stringify(runId)}, q: q }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.itemHtml) return;
+        var old = document.querySelector('li.sol-q[data-q="' + q.replace(/"/g, '') + '"]');
+        if (!old) return;
+        var box = document.createElement('div'); box.innerHTML = d.itemHtml.trim();
+        var li = box.querySelector('li'); if (!li) return;
+        var num = old.querySelector('.sol-qnum'); var newNum = li.querySelector('.sol-qnum');
+        if (num && newNum) newNum.textContent = num.textContent;
+        var gen = old.querySelector('.sol-gen'); var slot = li.querySelector('.sol-gen');
+        if (gen && slot) slot.replaceWith(gen);
+        old.replaceWith(li);
+        try { renderMathInElement(li, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\(',right:'\\\\)',display:false},{left:'\\\\[',right:'\\\\]',display:true}], throwOnError: false, strict: false, trust: true }); } catch (e) {}
+      })
+      .catch(function(){})
+      .then(next);
+  }
+  next();
+})();
+</script>` : '';
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return new NextResponse('Unauthorized', { status: 401 });
   const runId = req.nextUrl.searchParams.get('runId') || '';
@@ -69,10 +101,16 @@ export async function GET(req: NextRequest) {
   if (!/^[0-9a-f-]{36}$/i.test(runId) || !Number.isInteger(page) || page < 0) return new NextResponse('runId and page required', { status: 400 });
   const run = await loadSideRun(runId);
   if (!run) return new NextResponse('run not found', { status: 404 });
-  const { items, questions } = await sideSolutionItems(run, page);
+  const raw = await sideSolutionItems(run, page);
+  const { questions } = raw;
+  // The typeset question + the marks on the lines, where already made; the rest are made
+  // by the page script below and swapped in (2 Nov 2026).
+  const kept = await Promise.all(raw.items.map((it) => (it.qnum ? readSideExtras(runId, it.qnum) : Promise.resolve(null))));
+  const items = raw.items.map((it, i) => applyExtras(it, kept[i]));
+  const toMake = raw.items.filter((it, i) => it.qnum && !kept[i]).map((it) => it.qnum as string);
   const title = questions.length ? `Page ${page + 1} · Q${questions.join(', Q')}` : `Page ${page + 1}`;
   const html = items.length
-    ? buildSolutionsHTML({ title, items, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: DIAGRAM_SCRIPT(runId) })
+    ? buildSolutionsHTML({ title, items, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: DIAGRAM_SCRIPT(runId) + EXTRAS_SCRIPT(runId, toMake) })
     : buildSolutionsHTML({ title, items: [], meta: '', screenCss: SCREEN_CSS, extraBody: '<div class="sol-empty">No question was marked on this page.</div>' });
   return new NextResponse(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 }

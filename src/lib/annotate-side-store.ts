@@ -20,7 +20,8 @@ import { bankQuestionsForRun } from './question-clip-store';
 import { rollupSolution } from './solution-rollup';
 import { cropUrls, imgSrc, isPlausibleImagePath } from './kiosk-worksheet-images';
 import { renderFigure, figureDoc } from './twin-store';
-import { questionsByPage, markerPrompt, markerPromptLatex, markerSolutionItem, sideDiagramKey, firstJson } from './annotate/side-panel';
+import { questionsByPage, markerPrompt, markerPromptLatex, markerSolutionItem, sideDiagramKey, firstJson, schemeCodes, resultFor } from './annotate/side-panel';
+import { type SideExtras, fullScheme, hasOwnCodes, solutionTexts, sameApartFromCodes } from './annotate/side-extras';
 import katex from 'katex';
 import { mathHtml, escapeHtml } from './math-inline';
 import { splitPlainMath, plainMathToTex, plainMathToDollar } from './annotate/plain-math';
@@ -89,6 +90,7 @@ export async function sideSolutionItems(run: Run, photoIndex: number): Promise<{
       items.push({
         qnum: q,
         questionText: (row.question_text ?? '').trim() || markerPromptLatex(rj, q) || plainMathToDollar(markerPrompt(rj, q)),
+        questionFromMarker: !(row.question_text ?? '').trim(),
         solution,
         solutionFromParts: !(typeof row.solution === 'string' && row.solution.trim()),
         answer: (row.answer ?? '').trim(),
@@ -214,4 +216,70 @@ export function plainPromptHtml(plain: string): string {
   return splitPlainMath(plain).map((p) => p.math
     ? katex.renderToString(plainMathToTex(p.text), { throwOnError: false, output: 'html' })
     : escapeHtml(p.text)).join('');
+}
+
+// ── Extras: the question typeset + the scheme marks on the solution lines (2 Nov 2026) ──
+const extrasKey = (runId: string, q: string) => `${sideDiagramKey(runId, q)}-extras-v2.json`;
+
+export async function readSideExtras(runId: string, q: string): Promise<SideExtras | null> {
+  try {
+    const j = JSON.parse(await (await downloadStudentFile(extrasKey(runId, q))).text());
+    if (j && typeof j.questionLatex === 'string' && j.marked && typeof j.marked === 'object') return j as SideExtras;
+  } catch { /* not made yet */ }
+  return null;
+}
+
+/** The item for question q, wherever its page is. */
+export async function sideItemFor(run: Run, q: string): Promise<SolutionsItem | null> {
+  for (const [pi, qs] of Object.entries(questionsByPage(run.result_json ?? {}))) {
+    if (!qs.includes(q)) continue;
+    const { items } = await sideSolutionItems(run, Number(pi));
+    return items.find((it) => it.qnum === q) ?? null;
+  }
+  return null;
+}
+
+/** Make (once) and keep the extras for question q. Never throws: null = nothing to show. */
+export async function makeSideExtras(run: Run, q: string): Promise<SideExtras | null> {
+  const cached = await readSideExtras(run.id, q);
+  if (cached) return cached;
+  const rj = run.result_json ?? {};
+  const item = await sideItemFor(run, q);
+  if (!item) return null;
+  const plain = markerPrompt(rj, q);
+  const needQuestion = (item.questionFromMarker || !/\$/.test(item.questionText)) && !markerPromptLatex(rj, q) && !!plain;
+  const texts = solutionTexts(item);
+  const schemes: Record<string, string> = {};
+  for (const [label, codes] of Object.entries(schemeCodes(resultFor(rj, q)))) { const f = fullScheme(codes); if (f) schemes[label || '(whole question)'] = f; }
+  const needMarks = Object.keys(texts).length > 0 && Object.keys(schemes).length > 0 && !Object.values(texts).some(hasOwnCodes);
+  const out: SideExtras = { questionLatex: '', marked: {} };
+  if (needQuestion || needMarks) {
+    try {
+      const raw = await ask(`You prepare a worked solution for a maths tutor's screen. Return ONLY JSON:
+{"question_latex": "...", "solutions": { "<key>": "..." }}
+
+${needQuestion ? `1. question_latex: the question text below, with every mathematical expression written as LaTeX inside $...$ (fractions as \\frac, powers, subscripts like u_{n+1}, \\sin, \\ln). Words stay as words, outside the $. Change nothing else.
+QUESTION:
+${plain}
+` : '1. question_latex: "" (not needed).'}
+
+${needMarks ? `2. solutions: for each key below, copy the solution text EXACTLY, line for line, character for character, and append the mark-scheme codes at the END of the line where each mark is earned, in square brackets: " [M1]", " [A1]", " [B1]", or several on one line " [M1 A1]". M = method mark (the line that shows the method), A = accuracy mark (the line with the correct value it depends on), B = a mark for a correct statement on its own. Use exactly the codes in the scheme for that part, in order, each once. Never change, add or remove any other character.
+SCHEME (part label → codes; match a key to its part label):
+${JSON.stringify(schemes)}
+SOLUTION TEXTS (key → text):
+${JSON.stringify(texts)}` : '2. solutions: {} (not needed).'}`, 8000);
+      const j = firstJson(raw) as { question_latex?: unknown; solutions?: Record<string, unknown> } | null;
+      if (j && typeof j.question_latex === 'string') out.questionLatex = j.question_latex.trim();
+      for (const [k, v] of Object.entries(j?.solutions ?? {})) {
+        if (typeof v === 'string' && texts[k] != null && sameApartFromCodes(texts[k], v)) out.marked[k] = v;
+      }
+    } catch (e) {
+      console.error('[annotate-side extras]', (e as Error).message);
+      return null; // try again next time
+    }
+  }
+  try {
+    await putStudentFile({ key: extrasKey(run.id, q), body: Buffer.from(JSON.stringify({ ...out, at: new Date().toISOString() })), contentType: 'application/octet-stream' });
+  } catch { /* made again next time */ }
+  return out;
 }

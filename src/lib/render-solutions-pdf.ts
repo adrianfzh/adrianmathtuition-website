@@ -53,6 +53,8 @@ export interface SolutionsItem {
   codes?: string | null;
   /** Leave an empty slot a page script can fill with a drawn diagram (`data-gen="<qnum>"`). */
   diagramSlot?: boolean;
+  /** questionText is the marker's own reading of the question, not the bank's text. */
+  questionFromMarker?: boolean;
 }
 
 export interface SolutionsInput {
@@ -201,7 +203,7 @@ function partsHtml(parts: SolutionsPart[] | null, includeStems: boolean): string
     .join('');
 }
 
-function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): string {
+export function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): string {
   const num = it.qnum || String(index + 1);
   const images = it.solutionImages
     .map((u) => `<img class="sol-img" src="${esc(u)}" alt="solution">`)

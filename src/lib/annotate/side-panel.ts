@@ -36,7 +36,7 @@ export function questionsByPage(resultJson: unknown): Record<number, string[]> {
 }
 
 /** The marker's own record of one question (the first result carrying it). */
-function resultFor(resultJson: unknown, q: string): Rec | null {
+export function resultFor(resultJson: unknown, q: string): Rec | null {
   const results = rec(resultJson)?.results;
   if (!Array.isArray(results)) return null;
   let best: Rec | null = null;
@@ -98,7 +98,7 @@ export function splitFinalAnswer(text: string): Record<string, string> {
 }
 
 /** Per part, the marker's scheme codes ("B1 M1 A1") — shown small and grey. */
-function schemeCodes(result: Rec | null): Record<string, string> {
+export function schemeCodes(result: Rec | null): Record<string, string> {
   const parts = rec(result?.marking)?.parts;
   const out: Record<string, string> = {};
   if (!Array.isArray(parts)) return out;
@@ -125,14 +125,14 @@ export function markerSolutionItem(resultJson: unknown, q: string): SolutionsIte
   // The question for the solutions page: the marker's $…$ copy, else the plain text with its
   // maths wrapped in $…$ — the page typesets $…$ (2 Nov 2026).
   const prompt = markerPromptLatex(resultJson, q) || plainMathToDollar(markerPrompt(resultJson, q));
-  if (!full && !final) return { qnum: q, questionText: prompt, solution: '', answer: '', parts: null, solutionImages: [] };
+  if (!full && !final) return { qnum: q, questionText: prompt, questionFromMarker: true, solution: '', answer: '', parts: null, solutionImages: [] };
   const answers = splitFinalAnswer(final);
   const codes = schemeCodes(r);
   const split = splitByPartLabels(full);
   const labelled = split.some((p) => p.label);
   if (!labelled) {
     return {
-      qnum: q, questionText: prompt, solution: full, answer: final, parts: null, solutionImages: [],
+      qnum: q, questionText: prompt, questionFromMarker: true, solution: full, answer: final, parts: null, solutionImages: [],
       ...(codes[''] ? { codes: codes[''] } : {}),
     };
   }
@@ -142,7 +142,7 @@ export function markerSolutionItem(resultJson: unknown, q: string): SolutionsIte
     answer: (p.label && answers[p.label]) || (!p.label ? answers[''] : '') || null,
     ...(p.label && codes[p.label] ? { codes: codes[p.label] } : {}),
   }));
-  return { qnum: q, questionText: prompt, solution: full, solutionFromParts: true, answer: final, parts, solutionImages: [] };
+  return { qnum: q, questionText: prompt, questionFromMarker: true, solution: full, solutionFromParts: true, answer: final, parts, solutionImages: [] };
 }
 
 /**
