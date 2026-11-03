@@ -123,6 +123,15 @@ const dedupeFavs = (favs: string[], keep: number) => favs.filter((c, k) => k ===
 const HL_COLORS = ['#facc15', '#4ade80'];
 const MAX_ZOOM = 4;
 const DISPLAY_BITMAP_MAX_W = 2600;  // px cap for on-screen page bitmaps (memory)
+// A FAST FLING DECODES NOTHING (3 Nov 2026, evening — Adrian: "when i scroll up quickly … it refreshes"): the pen
+// held only 4 page bitmaps (50 MB) when the tab died, so the killer was the burst, not the hoard — every page a
+// fling passed started its own full-size JPEG decode and SVG rasterisation at once (≈ 40 MB in flight each, a
+// dozen at a time). One decode at a time on a touch screen (two elsewhere), nearest page first, none while the
+// pages are still flying faster than a reading scroll, and a page that has left the viewport by the time its
+// bitmap arrives is let go at once.
+const FLY_SPEED = 1.2;              // px per ms — a quick swipe, not a reading scroll
+const FLY_TAIL_MS = 160;            // the view counts as flying this long after the last fast move
+const DECODE_CAP = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1 ? 1 : 2;
 const UNDO_CAP = 100;
 const HOLD_MS = 500;                // draw-and-hold time to trigger shape snap
 const HOLD_MOVE_PX = 6;             // css px of movement that resets the hold
@@ -443,6 +452,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const imgErrRef = useRef<boolean[]>(pages.map(() => false));
   const bitmapsRef = useRef<(DisplayBitmap | null)[]>(pages.map(() => null));
   const bitmapBusyRef = useRef<boolean[]>(pages.map(() => false));
+  const pendingDecodesRef = useRef<{ i: number; kind: 'base' | 'layer'; targetW: number }[]>([]);
+  const decodeInFlightRef = useRef(0);
+  const decodePumpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flyingUntilRef = useRef(0);
+  /** A move at this speed (px per ms) means the pages are flying: decodes wait for them to settle. */
+  const noteSpeed = (pxPerMs: number) => { if (pxPerMs > FLY_SPEED) flyingUntilRef.current = performance.now() + FLY_TAIL_MS; };
   const strokesRef = useRef<Stroke[][]>(pages.map(() => []));
   const undoRef = useRef<Op[][]>(pages.map(() => []));
   const redoRef = useRef<Op[][]>(pages.map(() => []));
@@ -531,7 +546,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const layerBmRef = useRef<(DisplayBitmap | null)[]>(pages.map(() => null));
   const layerBmBusyRef = useRef<boolean[]>(pages.map(() => false));
   const layerGenRef = useRef<number[]>(pages.map(() => 0));
-  const rebuildLayerImageRef = useRef<(i: number, hideId?: string | null, refreshSel?: boolean) => void>(() => {});
+  const rebuildLayerImageRef = useRef<(i: number, hideId?: string | null, refreshSel?: boolean, onDone?: () => void) => void>(() => {});
   const seenPagesRef = useRef<Set<number>>(new Set());
   const layerBBoxRef = useRef<Map<string, LayerBox>[]>(pages.map(() => new Map()));
   const layerSelRef = useRef<{ pageIdx: number; id: string } | null>(null);
@@ -746,11 +761,72 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     return { first, last };
   }, [n]);
 
+  /** Start the next waiting decode(s): at most DECODE_CAP in flight, nearest page first, none while flying. */
+  const pumpDecodes = useCallback(() => {
+    const now = performance.now();
+    if (now < flyingUntilRef.current) {
+      if (!decodePumpTimerRef.current) {
+        decodePumpTimerRef.current = setTimeout(() => { decodePumpTimerRef.current = null; pumpDecodes(); }, flyingUntilRef.current - now + 5);
+      }
+      return;
+    }
+    while (decodeInFlightRef.current < DECODE_CAP && pendingDecodesRef.current.length) {
+      const job = pendingDecodesRef.current.shift()!;
+      const i = job.i, targetW = job.targetW;
+      const { first, last } = visibleRange();
+      if (i < first - 1 || i > last + 1) continue;                 // flew past while it waited
+      if (job.kind === 'layer') {
+        if (layerBmBusyRef.current[i] || !layerRef.current[i]) continue;
+        const lb = layerBmRef.current[i];
+        if (lb && !(lb.w < targetW && lb.w * 1.25 <= targetW)) continue;
+        decodeInFlightRef.current += 1;
+        const sel = layerSelRef.current;
+        rebuildLayerImageRef.current(i, sel && sel.pageIdx === i ? layerSelImgRef.current?.id ?? null : null, false,
+          () => { decodeInFlightRef.current = Math.max(0, decodeInFlightRef.current - 1); pumpDecodes(); });
+        continue;
+      }
+      if (bitmapBusyRef.current[i]) continue;
+      const cur = bitmapsRef.current[i];
+      if (cur && (cur.w >= targetW || cur.w * 1.25 > targetW)) continue;
+      const base = pageBaseRef.current[i];
+      if (!base) continue;
+      bitmapBusyRef.current[i] = true;
+      decodeInFlightRef.current += 1;
+      decodeBase(base, targetW)
+        .then((src) => {
+          bitmapBusyRef.current[i] = false;
+          decodeInFlightRef.current = Math.max(0, decodeInFlightRef.current - 1);
+          const v = visibleRange();
+          if (i < v.first - 1 || i > v.last + 1) {               // gone by the time it arrived
+            if (src instanceof ImageBitmap) src.close();
+            pumpDecodes();
+            return;
+          }
+          const prev = bitmapsRef.current[i];
+          if (prev && prev.src instanceof ImageBitmap) prev.src.close();
+          bitmapsRef.current[i] = { src, w: targetW };
+          scheduleBase();
+          pumpDecodes();
+        })
+        .catch(() => {
+          bitmapBusyRef.current[i] = false;
+          decodeInFlightRef.current = Math.max(0, decodeInFlightRef.current - 1);
+          imgErrRef.current[i] = true;
+          scheduleBase();
+          pumpDecodes();
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleRange]);
+
   const ensureBitmaps = useCallback((first: number, last: number) => {
     // A decoded bitmap only for the pages on screen and one either side; each is only as wide
     // as this zoom needs (in 512-px steps, at least 1024, never past the cap or the picture),
     // and is redone bigger when a pinch wants more. Everything else is just JPEG bytes.
+    // Far pages are let go here at once; the decodes themselves queue through pumpDecodes.
     const wanted = Math.ceil((DOC_W * kFactor() * sizeRef.current.dpr) / 512) * 512;
+    const centre = (first + last) / 2;
+    const todo: { i: number; kind: 'base' | 'layer'; targetW: number; d: number }[] = [];
     for (let i = 0; i < n; i++) {
       const near = i >= first - 1 && i <= last + 1;
       const cur = bitmapsRef.current[i];
@@ -770,30 +846,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const base = pageBaseRef.current[i];
       if (!base) continue;
       const targetW = Math.min(base.w, DISPLAY_BITMAP_MAX_W, Math.max(1024, wanted));
-      {
-        // The marker's layer, as a bitmap of the same width — built when the page comes near
-        // (or an edit changed it), redone bigger on a pinch, let go with the page bitmap.
-        const lb = layerBmRef.current[i];
-        if (layerRef.current[i] && !layerBmBusyRef.current[i] && (!lb || (lb.w < targetW && lb.w * 1.25 <= targetW))) {
-          const sel = layerSelRef.current;
-          rebuildLayerImageRef.current(i, sel && sel.pageIdx === i ? layerSelImgRef.current?.id ?? null : null, false);
-        }
-      }
-      if (bitmapBusyRef.current[i]) continue;
-      if (cur && (cur.w >= targetW || cur.w * 1.25 > targetW)) continue;
-      bitmapBusyRef.current[i] = true;
-      decodeBase(base, targetW)
-        .then((src) => {
-          const prev = bitmapsRef.current[i];
-          if (prev && prev.src instanceof ImageBitmap) prev.src.close();
-          bitmapsRef.current[i] = { src, w: targetW };
-          bitmapBusyRef.current[i] = false;
-          scheduleBase();
-        })
-        .catch(() => { bitmapBusyRef.current[i] = false; imgErrRef.current[i] = true; scheduleBase(); });
+      const d = Math.abs(i - centre);
+      // The page's picture first, then the marker's layer as a bitmap of the same width — built when
+      // the page comes near (or an edit changed it), redone bigger on a pinch, let go with the page.
+      if (!bitmapBusyRef.current[i] && !(cur && (cur.w >= targetW || cur.w * 1.25 > targetW))) todo.push({ i, kind: 'base', targetW, d });
+      const lb = layerBmRef.current[i];
+      if (layerRef.current[i] && !layerBmBusyRef.current[i] && (!lb || (lb.w < targetW && lb.w * 1.25 <= targetW))) todo.push({ i, kind: 'layer', targetW, d: d + 0.5 });
     }
+    todo.sort((a, b) => a.d - b.d);
+    pendingDecodesRef.current = todo;
+    if (todo.length) pumpDecodes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n]);
+  }, [n, pumpDecodes]);
 
   const renderBase = useCallback(() => {
     const canvas = baseRef.current;
@@ -1199,10 +1263,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
   }, [pages, scheduleBase]);
-  const rebuildLayerImage = useCallback((i: number, hideId: string | null = layerSelImgRef.current?.id ?? null, refreshSel = true) => {
+  const rebuildLayerImage = useCallback((i: number, hideId: string | null = layerSelImgRef.current?.id ?? null, refreshSel = true, onDone?: () => void) => {
     const parsed = layerRef.current[i];
     const meta = pages[i]?.layer;
-    if (!parsed || !meta) return;
+    if (!parsed || !meta) { onDone?.(); return; }
     // An edit while an object is lifted (a chip's marks, retyped text, ✓⇄✗) must reach the lifted copy too.
     if (refreshSel && hideId && layerSelImgRef.current?.id === hideId) rasteriseSelObj(i, hideId);
     // The selected object is left out of the page bitmap — it is drawn on its own (live drag).
@@ -1218,7 +1282,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const img = new Image();
     img.onload = async () => {
       URL.revokeObjectURL(url);
-      if (gen !== layerGenRef.current[i]) { img.src = ''; return; }
+      if (gen !== layerGenRef.current[i]) { img.src = ''; onDone?.(); return; }
       try {
         const base = pageBaseRef.current[i];
         const wanted = Math.ceil((DOC_W * kFactor() * sizeRef.current.dpr) / 512) * 512;
@@ -1230,7 +1294,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         img.src = '';
         let src: CanvasImageSource = c;
         try { src = await createImageBitmap(c); c.width = 0; c.height = 0; } catch { /* keep the canvas */ }
-        if (gen !== layerGenRef.current[i]) { if (src instanceof ImageBitmap) src.close(); return; }
+        if (gen !== layerGenRef.current[i]) { if (src instanceof ImageBitmap) src.close(); onDone?.(); return; }
         const prev = layerBmRef.current[i];
         if (prev && prev.src instanceof ImageBitmap) prev.src.close();
         layerBmRef.current[i] = { src, w };
@@ -1239,8 +1303,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       }
       layerBmBusyRef.current[i] = false;
       scheduleBase();
+      onDone?.();
     };
-    img.onerror = () => { URL.revokeObjectURL(url); if (gen === layerGenRef.current[i]) layerBmBusyRef.current[i] = false; };
+    img.onerror = () => { URL.revokeObjectURL(url); if (gen === layerGenRef.current[i]) layerBmBusyRef.current[i] = false; onDone?.(); };
     img.src = url;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, scheduleBase, rasteriseSelObj]);
@@ -2047,6 +2112,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       }
       g.lastX = p.x; g.lastY = p.y;
       g.samples.push({ t: Date.now(), x: p.x, y: p.y });
+      if (g.samples.length >= 2) {
+        const a = g.samples[g.samples.length - 2], b = g.samples[g.samples.length - 1];
+        noteSpeed(Math.hypot(b.x - a.x, b.y - a.y) / Math.max(1, b.t - a.t));
+      }
       if (g.samples.length > 6) g.samples.shift();
     };
 
@@ -2314,6 +2383,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const step = () => {
           vx *= 0.94; vy *= 0.94;
           if (Math.hypot(vx, vy) < 0.4) { momentumRef.current = null; return; }
+          noteSpeed(Math.hypot(vx, vy) / 16);
           viewRef.current.ox += vx;
           viewRef.current.oy += vy;
           clampView();
@@ -2905,6 +2975,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       bm: bitmapsRef.current.filter(Boolean).length,
       bmMB: Math.round(bitmapsRef.current.reduce((a, b, i) => { const d = dimsRef.current[i]; return b && d ? a + (b.w * b.w * (d.h / d.w) * 4) / 1e6 : a; }, 0)),
       lbm: layerBmRef.current.filter(Boolean).length,
+      inflight: decodeInFlightRef.current,
+      queued: pendingDecodesRef.current.length,
       seen: seenPagesRef.current.size,
       screen: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio}`,
     });
@@ -2942,6 +3014,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       for (const b of bitmaps) if (b && b.src instanceof ImageBitmap) b.src.close();
       for (const b of layerBms) if (b && b.src instanceof ImageBitmap) b.src.close();
       for (let i = 0; i < bases.length; i++) bases[i] = null;
+      pendingDecodesRef.current = [];
+      if (decodePumpTimerRef.current) { clearTimeout(decodePumpTimerRef.current); decodePumpTimerRef.current = null; }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
