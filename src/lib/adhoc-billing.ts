@@ -256,3 +256,19 @@ export function previousMonthLabel(label: string): string {
   if (!m || i < 0) return '';
   return i === 0 ? `December ${Number(m[2]) - 1}` : `${MONTHS[i - 1]} ${m[2]}`;
 }
+
+/**
+ * The month's one-off lessons as lines on the student's MONTHLY bill (Adrian,
+ * 3 Nov 2026, on Xavier Neo getting two emails on 15 Nov: one bill, the extra
+ * lessons as their own line). The PDF folds lines that share a description into
+ * one row (count × rate), so every lesson at one price shares the description
+ * "Extra lessons — 7, 14, 21 and 28 November 2026"; a second price gets its own.
+ */
+export function adhocMonthlyLines(lessons: BillableAdhoc[]): { date: string; day: string; type: string; description: string; rate: number }[] {
+  const prices = [...new Set(lessons.map(l => l.charge))];
+  return [...lessons].sort((a, b) => a.date.localeCompare(b.date)).map(l => {
+    const same = lessons.filter(x => x.charge === l.charge).map(x => x.date);
+    const price = prices.length > 1 ? ` at $${l.charge.toFixed(2)}` : '';
+    return { date: l.date, day: '', type: 'Ad-hoc', description: `Extra lessons — ${adhocDatesText(same)}${price}`, rate: l.charge };
+  });
+}

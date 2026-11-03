@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adhocChargeDefault, billableAdhocLessons, bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, isCleanAdhocInvoice, previousMonthLabel, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
+import { adhocChargeDefault, billableAdhocLessons, bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, isCleanAdhocInvoice, previousMonthLabel, adhocMonthlyLines, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
 
 const KEVIN = 'recKevin';
 const row = (id: string, fields: Record<string, any>): LessonRow => ({ id, fields: { Student: [KEVIN], ...fields } });
@@ -173,5 +173,18 @@ describe('previousMonthLabel', () => {
     expect(previousMonthLabel('December 2026')).toBe('November 2026');
     expect(previousMonthLabel('January 2027')).toBe('December 2026');
     expect(previousMonthLabel('nonsense')).toBe('');
+  });
+});
+
+describe('adhocMonthlyLines (on the monthly bill — Xavier Neo, 3 Nov 2026)', () => {
+  it('one description for one price, dates in it, each line at its price', () => {
+    const lines = adhocMonthlyLines(['2026-11-21', '2026-11-07', '2026-11-14', '2026-11-28'].map(d => ({ id: d, date: d, charge: 70 })));
+    expect(lines.map(l => l.date)).toEqual(['2026-11-07', '2026-11-14', '2026-11-21', '2026-11-28']);
+    expect(new Set(lines.map(l => l.description))).toEqual(new Set(['Extra lessons — 7, 14, 21 and 28 November 2026']));
+    expect(lines.reduce((t, l) => t + l.rate, 0)).toBe(280);
+  });
+  it('a second price gets its own row', () => {
+    const lines = adhocMonthlyLines([{ id: 'a', date: '2026-11-07', charge: 70 }, { id: 'b', date: '2026-11-14', charge: 80 }]);
+    expect(lines.map(l => l.description)).toEqual(['Extra lessons — 7 November 2026 at $70.00', 'Extra lessons — 14 November 2026 at $80.00']);
   });
 });

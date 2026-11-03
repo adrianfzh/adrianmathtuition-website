@@ -11,7 +11,8 @@ import { displaySpanMonth, getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-mo
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
-import { bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds } from '@/lib/adhoc-billing';
+import { bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, adhocMonthlyLines, type BillableAdhoc } from '@/lib/adhoc-billing';
+import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchAdhocRows, draftAdhocInvoice } from '@/lib/adhoc-store';
 import { advanceExtrasWindowStartISO, billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
 import { addDaysISO, firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
@@ -264,6 +265,12 @@ export async function POST(req: NextRequest) {
     const errors: any[] = [];
     const generatedList: { name: string; amount: number; count: number; extrasOnly?: boolean; cutoffNote?: string }[] = [];
     const generatedInvoices: { id: string; studentId: string; lineItemsExtra: any[]; finalAmount: number; autoNotes: string }[] = [];
+    // This month's booked one-off (ad-hoc) lessons — on the student's monthly
+    // bill when they get one, else on an ad-hoc bill of their own (below the loop).
+    const adhocFromISO = `${todayISO.slice(0, 7)}-01`;
+    const adhocToISO = lastDayOfMonthISO(adhocFromISO);
+    const adhocRowsAll = mode === 'advance' ? await fetchAdhocRows().catch(() => null) : null;
+    const adhocOnRegular = new Set<string>();
     // Year-end bookkeeping for the Telegram summary (names, grouped — one line
     // each instead of a per-student skip flag).
     const arrearsDeferred: string[] = [];     // advance run: month is arrears-billed for them
@@ -470,6 +477,7 @@ export async function POST(req: NextRequest) {
         let lessonCount = 0;
         let baseAmount = 0;
         let additionalLessons: AdditionalLessonRecord[] = [];
+        let adhocForInvoice: BillableAdhoc[] = [];
         let extrasOnly = false;
         let cutoffNote = '';
         let prepNote = '';
@@ -534,6 +542,15 @@ export async function POST(req: NextRequest) {
             });
           });
 
+          // This month's booked one-off lessons ride this bill as their own line
+          // (Adrian, 3 Nov 2026: one email, not two). A lesson with no charge
+          // leaves them all to the ad-hoc step below, which flags it.
+          const adhocHere = adhocRowsAll ? bookedAdhocLessons(adhocRowsAll, studentId, adhocFromISO, adhocToISO) : [];
+          if (adhocHere.length && adhocHere.every((l) => l.charge > 0)) {
+            adhocForInvoice = adhocHere;
+            lineItemsForInvoice.push(...adhocMonthlyLines(adhocHere));
+          }
+
           // The cut-off shortened this month (and no End Date cut it shorter):
           // tell the parent on the invoice. Auto Notes also makes the send
           // cron HOLD it for Adrian's review — deliberate in the first year.
@@ -595,7 +612,8 @@ export async function POST(req: NextRequest) {
 
         const additionalCount = additionalLessons.length;
         const additionalAmount = additionalCount * ratePerLesson;
-        const finalAmount = baseAmount + additionalAmount;
+        const adhocAmount = Math.round(adhocForInvoice.reduce((t, l) => t + l.charge, 0) * 100) / 100;
+        const finalAmount = baseAmount + additionalAmount + adhocAmount;
 
         // ── Per-month model (was: carry-forward) ────────────────────────
         // Each invoice carries ONLY its own month. Prior unpaid months stay open as
@@ -648,6 +666,14 @@ export async function POST(req: NextRequest) {
           method: 'POST',
           body: JSON.stringify({ fields: invoiceFields }),
         });
+
+        // Stamp the one-off lessons on this bill — Source Invoice is their
+        // "already billed" mark (lib/adhoc-billing.ts).
+        for (const l of adhocForInvoice) {
+          adhocOnRegular.add(l.id);
+          await at('Lessons', `/${l.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'Source Invoice': [createdRecord.id], 'Billing Month': billingMonthOf(l.date) } }) })
+            .catch((e: any) => errors.push({ student: student.fields['Student Name'], error: `ad-hoc stamp ${l.date}: ${e.message}` }));
+        }
 
         // Mark the invoiced Additional lessons Billed so no future run can
         // bill them again (skipped gracefully while the field doesn't exist).
@@ -733,7 +759,8 @@ export async function POST(req: NextRequest) {
     const adhocAheadLines: string[] = [];
     if (mode === 'advance') {
       try {
-        const adhocRows = await fetchAdhocRows();
+        const adhocRows = (adhocRowsAll ?? await fetchAdhocRows())
+          .filter((r) => !adhocOnRegular.has(r.id));
         const adhocIssueISO = (() => { const d = new Date(); d.setDate(15); return formatDate(d); })();
         const adhocDueISO = invoiceDueDateISO(mode, invoiceMonth.year, invoiceMonth.month, adhocIssueISO);
         const adhocInvoiceOf = new Map<string, string>();
@@ -742,8 +769,6 @@ export async function POST(req: NextRequest) {
           studentsById[sid]?.fields?.['Student Name']
           || (await at('Students', `/${sid}`).then((r: any) => r.fields?.['Student Name']).catch(() => null))
           || sid;
-        const adhocFromISO = `${todayISO.slice(0, 7)}-01`;
-        const adhocToISO = lastDayOfMonthISO(adhocFromISO);
         for (const sid of studentsWithBookedAdhoc(adhocRows, adhocFromISO, adhocToISO)) {
           const name = await nameOfAdhoc(sid);
           const all = bookedAdhocLessons(adhocRows, sid, adhocFromISO, adhocToISO);

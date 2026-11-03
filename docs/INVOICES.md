@@ -436,6 +436,13 @@ CURRENT month (done or still to come) → ONE `Adhoc` bill labelled with this mo
 the 14th → the student page's button. Chantal: November billed at sign-up (button), December
 ad-hoc + January Saturdays on 15 Dec. Xavier: November Saturdays on 15 Nov.
 
+**And: one bill, not two (3 Nov 2026).** Adrian, on Xavier Neo getting two emails on 15 Nov
+("Two invoices for Xavier on 15 Nov?") → "yes" to one bill. A student who gets a monthly bill in
+the run has this month's booked one-off lessons put ON that bill, as their own line
+(`adhocMonthlyLines`: "Extra lessons — 7, 14, 21 and 28 November 2026", 4 × $70), each lesson
+stamped Source Invoice = that bill. Only a student with no monthly bill that month gets a separate
+`Adhoc` bill. Xavier on 15 Nov: December (1, 8, 15, 29 Dec) $280 + November extras $280 = $560.
+
 **Later on 3 Nov 2026:**
 - **This month's booked ad-hoc lessons go on the 15th too.** Adrian, on Xavier Neo's four extra
   Saturdays in November: *"keep all invoices send on 15th November"*. The 14th's run takes booked,
