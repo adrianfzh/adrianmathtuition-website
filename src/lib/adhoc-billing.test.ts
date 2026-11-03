@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adhocChargeDefault, billableAdhocLessons, bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, isCleanAdhocInvoice, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
+import { adhocChargeDefault, billableAdhocLessons, bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, isCleanAdhocInvoice, previousMonthLabel, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
 
 const KEVIN = 'recKevin';
 const row = (id: string, fields: Record<string, any>): LessonRow => ({ id, fields: { Student: [KEVIN], ...fields } });
@@ -165,5 +165,13 @@ describe('isCleanAdhocInvoice (sent on the 15th unattended)', () => {
     expect(isCleanAdhocInvoice({ ...clean, 'Auto Notes': 'First invoice' })).toBe(false);
     expect(isCleanAdhocInvoice({ ...clean, 'Invoice Type': 'Regular' })).toBe(false);
     expect(isCleanAdhocInvoice({ ...clean, 'Final Amount': 0 })).toBe(false);
+  });
+});
+
+describe('previousMonthLabel', () => {
+  it('steps back a month, across the year', () => {
+    expect(previousMonthLabel('December 2026')).toBe('November 2026');
+    expect(previousMonthLabel('January 2027')).toBe('December 2026');
+    expect(previousMonthLabel('nonsense')).toBe('');
   });
 });

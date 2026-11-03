@@ -248,3 +248,11 @@ export function isCleanAdhocInvoice(f: Record<string, unknown>): boolean {
   if (((f['Custom Email Message'] as string) || '').trim()) return false;
   return /^Lessons on [^\n]*\.$/.test(((f['Auto Notes'] as string) || '').trim());
 }
+
+/** "December 2026" → "November 2026"; "January 2027" → "December 2026". '' when unreadable. */
+export function previousMonthLabel(label: string): string {
+  const m = /^([A-Za-z]+) (\d{4})$/.exec((label || '').trim());
+  const i = m ? MONTHS.indexOf(m[1]) : -1;
+  if (!m || i < 0) return '';
+  return i === 0 ? `December ${Number(m[2]) - 1}` : `${MONTHS[i - 1]} ${m[2]}`;
+}

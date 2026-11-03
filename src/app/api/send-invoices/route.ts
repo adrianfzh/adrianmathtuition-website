@@ -20,7 +20,7 @@ import { waDigits, waDisplay } from '@/lib/wa-number';
 import { formatDueDate, formatMoney, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
 import { adhocDatesText } from '@/lib/adhoc-billing';
 import { FINAL_EXTRAS_FORMULA, isFinalExtrasInvoice } from '@/lib/graduation';
-import { isCleanAdhocInvoice } from '@/lib/adhoc-billing';
+import { isCleanAdhocInvoice, previousMonthLabel } from '@/lib/adhoc-billing';
 import { getPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
@@ -555,7 +555,12 @@ export async function POST(req: NextRequest) {
       // …plus a leaver's final-extras bill (lib/graduation.ts), which carries the
       // month of its lessons, not this run's month — drafted when their last
       // enrollment closed, it goes out with the next send.
-      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),OR({Month}='${targetMonthLabel}',${FINAL_EXTRAS_FORMULA}))`;
+      // …plus an ad-hoc bill for lessons booked in THIS month, drafted by the
+      // 14th's run alongside next month's (3 Nov 2026, Xavier Neo's November
+      // Saturdays: "keep all invoices send on 15th November").
+      const thisMonthLabel = previousMonthLabel(targetMonthLabel);
+      const adhocThisMonth = thisMonthLabel ? `,AND({Invoice Type}='Adhoc',{Month}='${thisMonthLabel}')` : '';
+      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),OR({Month}='${targetMonthLabel}',${FINAL_EXTRAS_FORMULA}${adhocThisMonth}))`;
       const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(formula)}`);
       const candidates: any[] = data.records || [];
 

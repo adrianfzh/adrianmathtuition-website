@@ -37,6 +37,7 @@ interface SlotData {
   slotDay: string;
   slotTime: string;
   startDate: string | null;   // YYYY-MM-DD if admin-prefilled, null otherwise
+  note?: string | null;       // signed note from the link, shown to the parent
 }
 
 // Routes /signup between its two flows. Portal branch (?token=xxx&portal=1):
@@ -59,6 +60,7 @@ function SignupContent() {
   const subjectLevel  = params.get('subjectLevel')  || '';
   const trialLessonId = params.get('trialLessonId') || '';
   const startDateParam = params.get('startDate')    || '';   // YYYY-MM-DD, admin-prefilled
+  const noteParam     = params.get('note')          || '';   // signed note for the parent
   const namePrefill   = params.get('name')          || '';   // admin-prefilled student name (unsigned, editable)
   const expires       = params.get('expires')       || '';
   const sig           = params.get('sig')           || '';
@@ -131,6 +133,7 @@ function SignupContent() {
     const qs = new URLSearchParams({ slotId, level, subjects, subjectLevel, expires, sig });
     if (trialLessonId) qs.set('trialLessonId', trialLessonId);
     if (startDateParam) qs.set('startDate', startDateParam);
+    if (noteParam) qs.set('note', noteParam);
     fetch('/api/signup-data?' + qs.toString())
       .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
       .then(({ ok, data }) => {
@@ -234,6 +237,7 @@ function SignupContent() {
       ...(trialLessonId && { trialLessonId }),
       // Pass the URL's startDate param separately so the POST route can verify the HMAC
       ...(startDateParam && { lockedStartDate: startDateParam }),
+      ...(noteParam && { note: noteParam }),
       studentName:    fd.get('studentName'),
       school:         fd.get('school'),
       studentContact: fd.get('studentContact'),
@@ -350,6 +354,11 @@ function SignupContent() {
                     <span className="font-semibold text-[hsl(220,60%,20%)]">{r.value || '—'}</span>
                   </div>
                 ))}
+                {slotData.note && (
+                  <div className="mt-3 pt-3 border-t border-amber text-sm text-[hsl(220,60%,20%)] whitespace-pre-line">
+                    {slotData.note}
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} noValidate>

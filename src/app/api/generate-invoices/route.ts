@@ -178,7 +178,12 @@ export async function POST(req: NextRequest) {
     // safe, because an arrears run only ever bills Completed lessons).
     const enrollmentFormula = mode === 'arrears'
       ? `OR({Status}='Active',AND({Status}='Ended',OR({End Date}=BLANK(),{End Date}>='${billMonthFirstISO}')))`
-      : `{Status}='Active'`;
+      // A slot switch dated ahead marks the OLD enrollment Ended at once, with a
+      // future End Date (Ian Chen: Sunday class to 1 Jan, Saturday from 2 Jan).
+      // Since the run respects Start Date (3 Nov 2026), the months in between
+      // must still come from the old one — so an Ended enrollment whose End
+      // Date reaches this month is billed up to that date.
+      : `OR({Status}='Active',AND({Status}='Ended',{End Date}>='${billMonthFirstISO}'))`;
     const enrollmentsData = await airtableRequestAll(
       'Enrollments',
       `?filterByFormula=${encodeURIComponent(enrollmentFormula)}`
@@ -734,19 +739,28 @@ export async function POST(req: NextRequest) {
           studentsById[sid]?.fields?.['Student Name']
           || (await at('Students', `/${sid}`).then((r: any) => r.fields?.['Student Name']).catch(() => null))
           || sid;
-        for (const sid of studentsWithBookedAdhoc(adhocRows, monthFirstISO, monthLastISO)) {
+        // From the 1st of THIS month: lessons booked for the rest of this month
+        // that nobody billed yet ride the same send (Adrian, 3 Nov 2026, on Xavier
+        // Neo's November Saturdays: "keep all invoices send on 15th November").
+        // One bill per month of lessons, labelled with that month.
+        const adhocFromISO = `${todayISO.slice(0, 7)}-01` < monthFirstISO ? `${todayISO.slice(0, 7)}-01` : monthFirstISO;
+        for (const sid of studentsWithBookedAdhoc(adhocRows, adhocFromISO, monthLastISO)) {
           const name = await nameOfAdhoc(sid);
-          const lessons = bookedAdhocLessons(adhocRows, sid, monthFirstISO, monthLastISO);
-          if (lessons.some(l => !(l.charge > 0))) {
-            adhocAheadLines.push(`\u26a0\ufe0f ${name}: no charge on ${lessons.filter(l => !(l.charge > 0)).map(l => shortDate(l.date)).join(', ')} \u2014 set one, then bill from their page`);
+          const all = bookedAdhocLessons(adhocRows, sid, adhocFromISO, monthLastISO);
+          if (all.some(l => !(l.charge > 0))) {
+            adhocAheadLines.push(`\u26a0\ufe0f ${name}: no charge on ${all.filter(l => !(l.charge > 0)).map(l => shortDate(l.date)).join(', ')} \u2014 set one, then bill from their page`);
             continue;
           }
-          try {
-            const inv = await draftAdhocInvoice(sid, lessons, { issueISO: adhocIssueISO, dueISO: adhocDueISO, monthLabel: invoiceMonth.label });
-            adhocInvoiceOf.set(sid, inv.id);
-            adhocAheadLines.push(`${name} \u2014 ${inv.total.toFixed(2)} (${lessons.length} ad-hoc lesson${lessons.length === 1 ? '' : 's'} booked)`);
-          } catch (e: any) {
-            errors.push({ student: name, error: `ad-hoc bill: ${e.message}` });
+          const byMonth = new Map<string, typeof all>();
+          for (const l of all) byMonth.set(l.date.slice(0, 7), [...(byMonth.get(l.date.slice(0, 7)) || []), l]);
+          for (const lessons of byMonth.values()) {
+            try {
+              const inv = await draftAdhocInvoice(sid, lessons, { issueISO: adhocIssueISO, dueISO: adhocDueISO });
+              adhocInvoiceOf.set(sid, inv.id);
+              adhocAheadLines.push(`${name} \u2014 ${inv.total.toFixed(2)} (${lessons.length} ad-hoc lesson${lessons.length === 1 ? '' : 's'} in ${inv.month})`);
+            } catch (e: any) {
+              errors.push({ student: name, error: `ad-hoc bill: ${e.message}` });
+            }
           }
         }
 
@@ -1143,7 +1157,7 @@ export async function POST(req: NextRequest) {
         referralSection +
         deferredSection +
         billedSection +
-        (adhocAheadLines.length ? `\n\n\u{1F4C5} <b>Ad-hoc lessons booked for ${invoiceMonth.label}</b>\n${adhocAheadLines.join('\n')}` : '') +
+        (adhocAheadLines.length ? `\n\n\u{1F4C5} <b>Ad-hoc lessons booked ahead</b>\n${adhocAheadLines.join('\n')}` : '') +
         footer
     );
 

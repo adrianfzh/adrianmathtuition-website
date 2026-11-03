@@ -428,6 +428,23 @@ on 15th"* → "yes build it". Four changes:
   paid lesson that is MOVED is not a credit (the moved lesson is already paid for). No bill that
   month → the run's Telegram says to give the credit by hand.
 
+**Later on 3 Nov 2026:**
+- **This month's booked ad-hoc lessons go on the 15th too.** Adrian, on Xavier Neo's four extra
+  Saturdays in November: *"keep all invoices send on 15th November"*. The 14th's run takes booked,
+  unbilled ad-hoc lessons from the 1st of the CURRENT month to the end of the invoice month, one
+  `Adhoc` bill per month of lessons labelled with that month; the 15th's send also takes clean
+  `Adhoc` drafts labelled with the current month (`previousMonthLabel`).
+- **A slot switched ahead still bills until the old class ends.** Both switch flows (website
+  `admin-schedule/switch`, bot `lib/slot-switch.js`) mark the OLD enrollment `Ended` at once with a
+  future End Date. With Start Date respected, the months in between would have gone unbilled (Ian
+  Chen: Sunday class to 1 Jan 2027, Saturday from 2 Jan — no December bill). The advance run now
+  also takes `Ended` enrollments whose End Date reaches the month, billed up to that date.
+- **A sign-up link can carry a note the parent reads** (`note` on
+  `POST /api/admin-schedule/trial-signup-link`, SIGNED like the other params — param order
+  slotId, level, subjects, subjectLevel?, trialLessonId?, startDate?, note?, expires). It shows
+  under "You are registering for". Adrian, for Chantal: *"put a note saying that in November and
+  December lessons will be adhoc lessons, and billed accordingly"*.
+
 ## Leavers — "Graduated" and the final bill (29 Sep 2026)
 
 Adrian, on Kayla (IP Sec 4, last exam 29 Sep): "the 25 sep [additional lesson] should
