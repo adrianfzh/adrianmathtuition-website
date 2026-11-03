@@ -10,11 +10,31 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
   name by `parseSourceFilename` (all 310 read cleanly: maths 199 prelims + 10 PSLE, science 90
   prelims + 10 PSLE + 1 SA2), status `queued`, notes end `QUEUED 3 Nov 2026`. The Fly `extract`
   switch is on; the first file was claimed within minutes. Answer keys are inside each file.
-- **P5 (asked 3 Nov 2026, not built):** Dropbox `Primary Exam Paper.zip` (23.8 GB, root) holds
-  `Primary 5 Exam Paper/P5 Math` and `P5 Science`: one combined book per year 2014–2023
-  (100–240 MB, e.g. `2023 P5 Math Kiasu exam papers.pdf`) plus ~30 single files a year for
-  2011–2013. Needs: a `P5` level (parser, both banks' topic lists, the worker law, the serve
-  gate), and each book cut by school like the P6 books (§6). Waiting on Adrian's yes.
+- **P5 BUILT + QUEUED 3 Nov 2026 (Adrian: "Yes, set up P5").** Level `P5`, maths + science,
+  school end-of-year papers (SA2) 2018–2023 only.
+  - Code: the name reader files `P5 SA2 2023 Nanyang.pdf` / `P5 SCI SA2 …` as P5 (PSLE is
+    always P6); `P5_EXAM_TOPICS` = the P6 list without Algebra, Circles, Speed, Pie Charts,
+    Nets and Solids (mirrored as the bot's `canonical_topics.json` `P5` key); `PRIMARY_QLEVELS`
+    = P5 + P6, so the switch keeps both closed. Worker law v2026-11-03-p5 (§Primary 5 papers;
+    the old text is archived as `exam-extraction-2026-11-03`).
+  - Source: Dropbox `Primary Exam Paper.zip` (23.8 GB, root) → `Primary 5 Exam Paper/P5 Math`
+    and `P5 Science`, one vendor book per year (each also holds CA/SA1/WA papers, never queued).
+    Cut by their bookmarks into one file per school (Paper 1 + Paper 2 + answer key), every
+    cover and end page checked by eye; staging + scripts in `~/P5-staging/` (`_tools/plan_checked.json`
+    is the page map). **165 rows queued straight into `paper_library`** (83 maths, 82 science;
+    storage `sources/P5/<year>/<school>/`, notes `QUEUED 3 Nov 2026 … cut from <book> pages …`)
+    — not through the inbox, because production's name reader did not know P5 yet.
+  - Odd cases: 2022 maths Singapore Chinese Girls dropped (bookmark said SA2, cover says SA1;
+    no SA2 in the book); 2023 maths Red Swastika is printed twice in the book, the second copy
+    + key used; 2023 science Nan Hua's cover says "Preliminary Examination" (filed SA2);
+    2018 maths Tao Nan's bookmark was wrong (real pages 1130–1166).
+  - Not taken: 2014–2017 books and the 2011–2013 single files (Adrian asked for 2018–2023).
+- **Skill labels:** primary has no sub-skill list (`subgroups` has no P5/P6 rows), so the filer
+  leaves P5/P6 questions with topics only. Plan (3 Nov 2026): build the primary skill list
+  from the banked questions once ~100 P6 papers are in.
+- **First P6 results (3 Nov 2026):** PSLE maths 2017, 2020–2022 banked within the hour —
+  every question has answer, solution, topic, difficulty; 2017 has 12 questions marked
+  `has_image` with no picture yet (the missing-figures job's work).
 
 ## Earlier (23 Oct 2026)
 
