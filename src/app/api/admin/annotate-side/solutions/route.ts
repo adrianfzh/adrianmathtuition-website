@@ -19,7 +19,8 @@ const SCREEN_CSS = `
   body{overflow-x:hidden}
   .sol-line,.sol-align,.sol-sub{max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
   @media screen {
-    body{font-size:16px;line-height:1.6;padding:14px 16px 40px}
+    /* A little smaller (Adrian, 3 Nov 2026: "fonts for solutions can be slightly smaller"); two fingers zoom it. */
+    body{font-size:14px;line-height:1.55;padding:12px 14px 40px}
     .sol-list{padding-left:30px}
     .sol-qnum{left:-30px}
     .sol-q{margin-bottom:18px;padding-bottom:12px}
@@ -58,9 +59,27 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
       .then(function(){ document.body.setAttribute('data-diagrams', String(made)); next(); });
   }
   next(); next();
-  // A pinch in this frame would zoom the whole marking page on the iPad (2 Nov 2026).
+  // A pinch in this frame would zoom the whole marking page on the iPad (2 Nov 2026), so the
+  // browser's own pinch stays off and two fingers zoom just the solutions instead (Adrian,
+  // 3 Nov 2026: "allow pinch to zoom in/out"). The size is kept for the next page.
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive: false });
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive: false });
+  var KEY = 'annotate-solutions-zoom', z = 1;
+  try { z = Math.min(2.5, Math.max(0.6, Number(localStorage.getItem(KEY)) || 1)); } catch (e) {}
+  function setZoom(v){ z = Math.min(2.5, Math.max(0.6, v)); document.body.style.zoom = String(z); }
+  setZoom(z);
+  var start = null;
+  function gap(t){ return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+  document.addEventListener('touchstart', function(e){ if (e.touches.length === 2) start = { d: gap(e.touches), z: z, y: (window.scrollY + (e.touches[0].clientY + e.touches[1].clientY) / 2) / z, cy: (e.touches[0].clientY + e.touches[1].clientY) / 2 }; }, { passive: true });
+  document.addEventListener('touchmove', function(e){
+    if (!start || e.touches.length !== 2) return;
+    e.preventDefault();
+    setZoom(start.z * gap(e.touches) / start.d);
+    window.scrollTo(window.scrollX, start.y * z - start.cy);
+  }, { passive: false });
+  function end(e){ if (start && e.touches.length < 2) { start = null; try { localStorage.setItem(KEY, String(Math.round(z * 100) / 100)); } catch (err) {} } }
+  document.addEventListener('touchend', end, { passive: true });
+  document.addEventListener('touchcancel', end, { passive: true });
 })();
 </script>`;
 

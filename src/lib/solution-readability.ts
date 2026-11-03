@@ -75,7 +75,11 @@ export function displayFractions(line: string): string {
 
 /** True when the text has display maths that must stay in one block. */
 export function hasDisplayMath(t: string): boolean {
-  return /\$\$|\\\[|\\begin\{/.test(t);
+  if (/\$\$|\\\[/.test(t)) return true;
+  // A column vector inside inline $…$ (\begin{pmatrix}) is still one line of working: only a
+  // \begin{…} OUTSIDE the dollars is a display block. Every H2 vectors solution used to skip
+  // the "=" lining-up because of its vectors (Adrian, 3 Nov 2026: "align at equal sign").
+  return /\\begin\{/.test(t.replace(/\$[^$]*\$/g, ''));
 }
 
 /**
@@ -223,13 +227,19 @@ const NOT_A_CHAIN = /\\(?:Rightarrow|Leftarrow|Leftrightarrow|rightarrow|implies
 
 /** Split TeX at its top-level "=" (and ≈, ≡). null when it is not an equation
  *  (no relation, or an inequality anywhere at the top level). */
+// A column vector or matrix is one term of the chain, like a bracket (3 Nov 2026: the H2
+// vectors solutions never lined up because every \begin{pmatrix} counted as "not a chain").
+const MATRIX = /\\begin\{([pbvBV]?matrix)\}[\s\S]*?\\end\{\1\}/;
+
 export function splitRelations(tex: string): { terms: string[]; rels: string[] } | null {
-  if (NOT_A_CHAIN.test(tex)) return null;
+  if (NOT_A_CHAIN.test(tex.replace(new RegExp(MATRIX.source, 'g'), 'M'))) return null;
   const terms: string[] = [], rels: string[] = [];
   let depth = 0, cur = '', comma = false;
   for (let i = 0; i < tex.length; i++) {
     const c = tex[i], rest = tex.slice(i);
     if (c === '\\') {
+      const mx = rest.match(MATRIX);
+      if (mx && mx.index === 0) { cur += mx[0]; i += mx[0].length - 1; continue; }
       const cmd = rest.match(/^\\(?:left|right|big|Big|bigg|Bigg)[lr]?(?![a-zA-Z])\s*(\\[{}]|[()[\]|.])?/);
       if (cmd) {
         if (/^\\(?:left|big|Big|bigg|Bigg)l?(?![a-zA-Z])/.test(rest) && !/^\\[a-zA-Z]+r/.test(rest)) depth++;
@@ -251,7 +261,8 @@ export function splitRelations(tex: string): { terms: string[]; rels: string[] }
     cur += c;
   }
   terms.push(cur.trim());
-  if (!rels.length || terms.some((t) => !t)) return null;
+  // "= (−2, 2, −6)" carries on from the line above: an empty left side is allowed there only.
+  if (!rels.length || terms.some((t, k) => !t && k > 0)) return null;
   return { terms, rels };
 }
 

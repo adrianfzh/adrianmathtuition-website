@@ -203,3 +203,20 @@ describe('a "← reason" note holding an "=" (27 Oct 2026)', () => {
     expect(stepRows('$x = 2 = 3$')!).toHaveLength(2);
   });
 });
+
+describe('alignment — vectors (Adrian, 3 Nov 2026: "align at equal sign")', () => {
+  it('a column vector is one term, and a line that starts with "=" joins the line-up', () => {
+    const t = '$\\begin{pmatrix} 1 \\\\ 1 \\\\ 0 \\end{pmatrix}\\times\\begin{pmatrix} 1 \\\\ -5 \\\\ -2 \\end{pmatrix}=\\begin{pmatrix} 2 \\\\ -2 \\\\ 6 \\end{pmatrix}$ [M1]\n$=\\begin{pmatrix} -2 \\\\ 2 \\\\ -6 \\end{pmatrix}$ [A1]';
+    const v = alignView(solutionLines(t));
+    expect(v.map((l) => l.kind)).toEqual(['align']);
+    const rows = (v[0] as { kind: 'align'; rows: AlignRowT[] }).rows;
+    expect(rows.map((r) => r.lhs === '')).toEqual([false, true]);
+    expect(rows.map((r) => r.codes)).toEqual(['M1', 'A1']);
+  });
+
+  it('a real \\begin outside the dollars is still a display block', () => {
+    expect(solutionLines('$$x = 1$$')[0].kind).toBe('display');
+    expect(solutionLines('\\begin{aligned} x &= 1 \\end{aligned}')[0].kind).toBe('display');
+    expect(solutionLines('$\\begin{pmatrix} 1 \\\\ 2 \\end{pmatrix}$')[0].kind).toBe('step');
+  });
+});

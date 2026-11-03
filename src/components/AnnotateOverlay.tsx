@@ -2596,6 +2596,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const [dw, dh] = rot % 180 === 0 ? [meta.width * S, meta.height * S] : [meta.height * S, meta.width * S];
         cx.drawImage(orig, -dw / 2, -dh / 2, dw, dh);
         cx.restore();
+        // Let go of the full-size photo now (≈ 50 MB decoded each), not when the page closes.
+        orig.src = '';
         const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
         // Hand the working canvas's memory back NOW (6 Oct 2026): iPadOS frees a canvas's
         // backing store lazily, and twenty of these (≈ 25 MB each) is what a web app's
@@ -2678,7 +2680,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         await loadLayered(pages[i], i);
       }
     };
-    void Promise.all([pump(), pump()]).then(() => { if (!stopLoading) setAllLoaded(true); });
+    // A long paper builds ONE page at a time (3 Nov 2026: an 18-page paper reloaded twice
+    // within seconds of opening, before any ink — annotate_ink_log diedMidMarking). The page
+    // he opened on still comes first.
+    const lanes = layeredQueue.length > 8 ? [pump()] : [pump(), pump()];
+    void Promise.all(lanes).then(() => { if (!stopLoading) setAllLoaded(true); });
     // A saved draft (crash recovery, a Safari reload mid-paper, or a post-Done
     // re-edit) comes back ON THE PAGES straight away — the inked copy is the
     // default, and the banner's "Start fresh" is the revert. Before 3 Sep 2026

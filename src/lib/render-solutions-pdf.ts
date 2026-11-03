@@ -14,7 +14,7 @@
  */
 
 import { getBrowser } from '@/lib/generate-pdf';
-import { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine, stepLines, solutionLines, alignView } from '@/lib/solution-readability';
+import { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine, stepLines, solutionLines, alignView, hasDisplayMath } from '@/lib/solution-readability';
 export { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine };
 import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 
@@ -121,7 +121,7 @@ function lineHtml(l: string): string {
 }
 
 function linesBlock(t: string): string {
-  if (/\$\$|\\\[|\\begin\{/.test(t)) {
+  if (hasDisplayMath(t)) {
     const h = esc(markNotesToCodes(t)).replace(/\u0001([^\u0002]*)\u0002/g, '<span class="sol-mk">$1</span>');
     return `<div class="sol-body">${h}</div>`;
   }
