@@ -9,7 +9,9 @@ function runWith(missing: number[], pages = 17) {
   const source = { photos: Array.from({ length: pages }, (_, i) => ({ photo_index: i, original_url: `https://www.adrianmathtuition.com/api/files/o-${i}.jpg` })) };
   const annotated_photos = Array.from({ length: pages }, (_, i) => ({ photo_index: i, url: `https://www.adrianmathtuition.com/api/files/a-${i}.jpg` }))
     .filter(a => !missing.includes(a.photo_index));
-  return { source, annotated_photos };
+  // A marked paper carries its marking; the sweep only looks at those.
+  const results = [{ question: '1', awarded: 1, max: 2 }];
+  return { source, annotated_photos, results };
 }
 
 describe('gapsForRun', () => {
@@ -23,6 +25,17 @@ describe('gapsForRun', () => {
     expect(gapsForRun(runWith([]))).toEqual([]);
     expect(gapsForRun(null)).toEqual([]);
     expect(gapsForRun({ results: [] })).toEqual([]);
+  });
+
+  it('a paper not marked yet has no gaps — a waiting-list hand-in is not a broken paper', () => {
+    // Rainie Cheng, 3 Nov 2026: 13 photos in, queued for the next day, nothing marked.
+    const { source } = runWith([]);
+    expect(gapsForRun({ source, queued_for: '2026-11-04', portal_submission: true })).toEqual([]);
+    expect(gapsForRun({ source, results: [], annotated_photos: [] })).toEqual([]);
+    // Marked, but every marked image lost: that IS the case the sweep exists for.
+    expect(gapPageNumbers(gapsForRun({ source, results: [{ q: '1' }], annotated_photos: [] }))).toHaveLength(17);
+    // A marked image with no results list (a legacy shape) still counts as marked.
+    expect(gapPageNumbers(gapsForRun({ ...runWith([3]), results: undefined }))).toEqual([4]);
   });
 });
 

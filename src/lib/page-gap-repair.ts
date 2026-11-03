@@ -77,8 +77,24 @@ export function gapsForRun(resultJson: unknown): PageGap[] {
   const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as {
     source?: { photos?: unknown } | null;
     annotated_photos?: unknown;
+    results?: unknown;
   };
+  // A paper that has NOT been marked yet has no gaps — there is nothing for a
+  // page to be missing from. Rainie Cheng, 3 Nov 2026: her first hand-in of
+  // Chemistry Paper 1 2020 sat on the science waiting list for the next day
+  // (result_json.queued_for, no results, no marked images), and the 20:30
+  // sweep read "13 photos in, 0 marked images out" as 13 lost pages: it tried
+  // to redraw 8 pages of an unmarked paper ("no part-level marks on page N to
+  // draw from") and told Adrian 🕳 about a paper that was never broken. A run
+  // counts as marked once it carries marking results or at least one marked
+  // image; until then the sweep, the release check and the repair all see a
+  // whole paper.
+  if (!hasEntries(rj.results) && !hasEntries(rj.annotated_photos)) return [];
   return missingAnnotatedPages(rj.source?.photos, rj.annotated_photos);
+}
+
+function hasEntries(v: unknown): boolean {
+  return Array.isArray(v) && v.length > 0;
 }
 
 /** 1-based page numbers, the way a person counts a paper. */

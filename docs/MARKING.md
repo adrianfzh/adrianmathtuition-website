@@ -3540,6 +3540,15 @@ Three layers, all live:
    PDFs rebuilt; a run they **already hold** is repaired too and then re-issued ONCE on
    the **app channel**. `result_json.page_gap_check` is the audit trail and the memory
    that reports an unfixable page once rather than four times a day.
+   **A paper not marked yet has no gaps (4 Nov 2026).** `gapsForRun` returns nothing for a
+   run with no `results` and no `annotated_photos` — a science hand-in waiting for its day
+   (`queued_for`), a run still in the 🌙 queue. Before this, Rainie Cheng's first hand-in of
+   Chemistry Paper 1 2020 (3 Nov, waiting for 4 Nov) read as "13 photos in, 0 marked images
+   out": the 20:30 sweep tried to redraw 8 pages of an unmarked paper and sent Adrian a 🕳
+   line about a paper that was never broken, while her second hand-in of the same photos
+   (through the maths door) had been marked and released whole at 6:07 pm. The duplicate
+   was withdrawn by hand: `queue_status 'failed'` with the reason, `superseded_by` the
+   released run, `result_json.queue_removed_at` — the state every picker already honours.
 
    **Why the released branch changed (14 Sep 2026).** It used to only REPORT, and the
    reason was never the repair — it was the channel: the only way to tell a student their
