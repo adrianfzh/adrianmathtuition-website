@@ -111,10 +111,10 @@ export function billableAdhocLessons(rows: LessonRow[], studentId: string): Bill
 /**
  * A student's ad-hoc lessons BOOKED in [fromISO, toISO] (Scheduled, or already
  * Completed) and not yet on an invoice — billed BEFORE they happen.
- * Adrian, 3 Nov 2026, on Chantal's November–December one-off lessons: bill
- * November now, then "on 15 nov, issue for dec (based on the lessons agreed
- * upon) … every invoice will be issued on 15th". The 14th's run bills the next
- * month's booked lessons; the student page bills the current month's.
+ * Adrian, 3 Nov 2026: one-off lessons are billed on the 15th of the month
+ * they fall in, beside next month's regular invoice ("send out Dec invoice on
+ * 15 Dec for the adhoc lessons in December as well as the lessons for
+ * January"); the student page's button bills them sooner when asked.
  * Only the window's lessons: an old Completed lesson left unbilled on purpose
  * (Kevin Seng, Jul–Aug 2026) is never swept up by the run.
  */

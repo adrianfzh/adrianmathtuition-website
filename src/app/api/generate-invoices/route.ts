@@ -718,13 +718,16 @@ export async function POST(req: NextRequest) {
 
     await closeBrowser();
 
-    // ── Ad-hoc lessons booked for the invoice month — billed AHEAD ─────────
-    // Adrian, 3 Nov 2026 (Chantal's Nov–Dec one-off lessons): "on 15 nov, issue
-    // for dec (based on the lessons agreed upon) … every invoice will be issued
-    // on 15th". Each student with ad-hoc lessons booked in the invoice month
-    // gets ONE 'Adhoc' invoice; send-invoices sends it tomorrow with the rest.
-    // Only that month's bookings — an old Completed lesson left unbilled is never
-    // swept up (lib/adhoc-billing.ts bookedAdhocLessons).
+    // ── Ad-hoc lessons booked for THIS month — billed on the 15th ──────────
+    // Adrian, 3 Nov 2026: Xavier Neo's four November Saturdays — "keep all
+    // invoices send on 15th November"; Chantal — "send out Dec invoice on 15 Dec
+    // for the adhoc lessons in December as well as the lessons for January".
+    // So the 15th bills the CURRENT month's booked one-off lessons (done or still
+    // to come, not yet billed), beside next month's regular invoice: ONE 'Adhoc'
+    // invoice per student, labelled with this month; send-invoices sends it
+    // tomorrow with the rest. Only this month's bookings — an old Completed lesson
+    // left unbilled is never swept up (lib/adhoc-billing.ts bookedAdhocLessons).
+    // A lesson already billed by hand (the student page's button) is skipped.
     // Then: a paid-ahead ad-hoc lesson that was cancelled is credited once, on
     // this run's invoice for that student (the invoice is then held for review).
     const adhocAheadLines: string[] = [];
@@ -739,14 +742,11 @@ export async function POST(req: NextRequest) {
           studentsById[sid]?.fields?.['Student Name']
           || (await at('Students', `/${sid}`).then((r: any) => r.fields?.['Student Name']).catch(() => null))
           || sid;
-        // From the 1st of THIS month: lessons booked for the rest of this month
-        // that nobody billed yet ride the same send (Adrian, 3 Nov 2026, on Xavier
-        // Neo's November Saturdays: "keep all invoices send on 15th November").
-        // One bill per month of lessons, labelled with that month.
-        const adhocFromISO = `${todayISO.slice(0, 7)}-01` < monthFirstISO ? `${todayISO.slice(0, 7)}-01` : monthFirstISO;
-        for (const sid of studentsWithBookedAdhoc(adhocRows, adhocFromISO, monthLastISO)) {
+        const adhocFromISO = `${todayISO.slice(0, 7)}-01`;
+        const adhocToISO = lastDayOfMonthISO(adhocFromISO);
+        for (const sid of studentsWithBookedAdhoc(adhocRows, adhocFromISO, adhocToISO)) {
           const name = await nameOfAdhoc(sid);
-          const all = bookedAdhocLessons(adhocRows, sid, adhocFromISO, monthLastISO);
+          const all = bookedAdhocLessons(adhocRows, sid, adhocFromISO, adhocToISO);
           if (all.some(l => !(l.charge > 0))) {
             adhocAheadLines.push(`\u26a0\ufe0f ${name}: no charge on ${all.filter(l => !(l.charge > 0)).map(l => shortDate(l.date)).join(', ')} \u2014 set one, then bill from their page`);
             continue;

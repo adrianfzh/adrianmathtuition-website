@@ -428,6 +428,14 @@ on 15th"* → "yes build it". Four changes:
   paid lesson that is MOVED is not a credit (the moved lesson is already paid for). No bill that
   month → the run's Telegram says to give the credit by hand.
 
+**Changed again on 3 Nov 2026 (supersedes "billed a month ahead" above):** one-off lessons are
+billed on the 15th of the month they FALL IN, beside next month's regular invoice. Adrian:
+*"send out Dec invoice on 15 Dec for the adhoc lessons in December as well as the lessons for
+January"*. The 14th's run takes booked, unbilled ad-hoc lessons from the 1st to the end of the
+CURRENT month (done or still to come) → ONE `Adhoc` bill labelled with this month; booked after
+the 14th → the student page's button. Chantal: November billed at sign-up (button), December
+ad-hoc + January Saturdays on 15 Dec. Xavier: November Saturdays on 15 Nov.
+
 **Later on 3 Nov 2026:**
 - **This month's booked ad-hoc lessons go on the 15th too.** Adrian, on Xavier Neo's four extra
   Saturdays in November: *"keep all invoices send on 15th November"*. The 14th's run takes booked,

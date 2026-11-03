@@ -1312,7 +1312,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                   <div style={{ fontSize: 14, color: '#374151' }}>
                     <b>{adhoc.booked.lessons.length}</b> lesson{adhoc.booked.lessons.length === 1 ? '' : 's'} not billed yet · <b>{money(adhoc.booked.total)}</b>
                     <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{adhoc.booked.lessons.map(l => l.date).join(', ')}</div>
-                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Next month&apos;s booked lessons are billed on the 15th by themselves.</div>
+                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{new Date().getDate() < 14 ? 'Not billed by then? They go out with the bills on the 15th.' : 'This month’s 15th run has passed — bill these here.'}</div>
                   </div>
                   <button onClick={() => billAdhoc(adhoc.booked!.monthISO)} disabled={adhocBilling}
                     style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: adhocBilling ? 0.5 : 1 }}>
