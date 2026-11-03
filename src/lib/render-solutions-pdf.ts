@@ -134,9 +134,15 @@ function linesBlock(t: string): string {
       if (l.kind === 'align') {
         const rows = l.rows
           .map((r) => {
-            const rhs = esc(`$${r.rel ? `{}${r.rel} ` : ''}${displayFractions(r.rhs)}$`);
+            // A "← reason" tail is its own small grey piece, so a narrow panel moves it down
+            // whole instead of breaking the line at the arrow (3 Nov 2026).
+            const cut = r.rhs.search(/\s*(?:\\q?quad\s*)?\\leftarrow(?![a-zA-Z])/);
+            const main = cut > 0 ? r.rhs.slice(0, cut) : r.rhs;
+            const why = cut > 0 ? r.rhs.slice(cut).replace(/^\s*(?:\\q?quad\s*)?/, '') : '';
+            const rhs = esc(`$${r.rel ? `{}${r.rel} ` : ''}${displayFractions(main)}$`);
+            const whyHtml = why ? ` <span class="sol-note">${esc(`$${displayFractions(why)}$`)}</span>` : '';
             const note = r.note ? `<span class="sol-note">\u2190 ${esc(r.note)}</span>` : '';
-            return `<span class="sol-al-lead">${esc(r.lead ?? '')}</span><span class="sol-al-lhs">${r.done || r.lhs ? tex(r.done ? `${r.done} \\qquad ${r.lhs}` : r.lhs) : ''}</span><span class="sol-al-rhs">${rhs}${note}${mk(r.codes)}</span>`;
+            return `<span class="sol-al-lead">${esc(r.lead ?? '')}</span><span class="sol-al-lhs">${r.done || r.lhs ? tex(r.done ? `${r.done} \\qquad ${r.lhs}` : r.lhs) : ''}</span><span class="sol-al-rhs">${rhs}${mk(r.codes)}${whyHtml}${note}</span>`;
           })
           .join('');
         return `<div class="sol-align">${rows}</div>`;
@@ -273,7 +279,7 @@ ${katexInlineHead()}
   .sol-al-lead{color:#8a8a8a;font-size:9pt;text-align:right}
   .sol-al-lhs{text-align:right}
   .sol-al-rhs{min-width:0}
-  .sol-note{color:#8a8a8a;font-size:9pt;margin-left:10pt}
+  .sol-note{display:inline-block;color:#8a8a8a;font-size:9pt;margin-left:10pt}
   .sol-check{white-space:pre-wrap;color:#8a8a8a;font-size:9.5pt}
   .sol-check .katex{color:#8a8a8a}
   .sol-part{position:relative;padding-left:34pt;margin-top:7pt;break-inside:avoid}
