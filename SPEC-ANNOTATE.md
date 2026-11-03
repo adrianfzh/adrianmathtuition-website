@@ -792,3 +792,24 @@ solutions or helpful to have, it should be generated".
   in place (keeping a drawn diagram) and the panel's question text follows. On this screen
   the codes are red, bold, 12.5 px (the marker's own page, not a student's). Checked on the
   2 Nov worksheet run: Q2 got M1 M1 · A1 · M1 · A1 · A1 on six lines, Q3 M1 · M1 · A1.
+
+### 21a. Reading the solutions panel (Adrian, 3 Nov 2026)
+
+Adrian: *"can you make solutions align at equal sign, fonts for solutions can be slightly smaller,
+allow pinch to zoom in/out"*.
+- **Lined up at "=" — vectors too.** A column vector inside `$…$` (`\begin{pmatrix}`) no longer makes
+  the whole solution "display maths" (which skipped the line-up), a vector is one term of the chain,
+  and a line that starts with "=" joins the line above (`lib/solution-readability.ts`
+  `hasDisplayMath` / `splitRelations`). Applies to every solutions page and PDF, not just the panel.
+- **A "← reason" note** on a lined-up row is its own small grey piece after the mark code, so a
+  narrow panel moves it down whole (`render-solutions-pdf.ts linesBlock`).
+- **Text 14 px** in the panel (was 16).
+- **Two fingers zoom the solutions** (0.6×–2.5×), centred on the fingers; zoomed in, the page keeps
+  its width and slides sideways instead of re-wrapping. The size is remembered on the device
+  (`annotate-solutions-zoom`). The browser's own pinch stays off there — it zoomed the whole
+  marking page.
+- **Opening the pen from far down the desk** jumps the page to the top while the pen is open and
+  back on close — iPad Safari had drawn the pen above the screen, only its bottom strip showing.
+- **Reloads on open**: two `diedMidMarking` records on an 18-page paper within seconds of opening.
+  Papers over 8 pages now build their pages one at a time, and each full-size photo is let go as
+  soon as its page is built. Watch `annotate_ink_log` for `diedMidMarking` to see whether it held.

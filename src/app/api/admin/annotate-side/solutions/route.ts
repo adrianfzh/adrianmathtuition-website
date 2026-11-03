@@ -66,16 +66,32 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive: false });
   var KEY = 'annotate-solutions-zoom', z = 1;
   try { z = Math.min(2.5, Math.max(0.6, Number(localStorage.getItem(KEY)) || 1)); } catch (e) {}
-  function setZoom(v){ z = Math.min(2.5, Math.max(0.6, v)); document.body.style.zoom = String(z); }
+  // Zoomed in, the page keeps its width and grows past the frame (slide sideways), like a
+  // real pinch; re-wrapping into the narrow panel squashed every vector row. Zoomed out it
+  // re-wraps to use the room.
+  function setZoom(v){
+    z = Math.min(2.5, Math.max(0.6, v));
+    var b = document.body, big = z > 1;
+    b.style.boxSizing = 'border-box';
+    b.style.width = big ? document.documentElement.clientWidth + 'px' : '';
+    b.style.overflowX = big ? 'visible' : '';
+    b.style.zoom = String(z);
+  }
   setZoom(z);
   var start = null;
   function gap(t){ return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
-  document.addEventListener('touchstart', function(e){ if (e.touches.length === 2) start = { d: gap(e.touches), z: z, y: (window.scrollY + (e.touches[0].clientY + e.touches[1].clientY) / 2) / z, cy: (e.touches[0].clientY + e.touches[1].clientY) / 2 }; }, { passive: true });
+  function mid(t, k){ return (t[0][k] + t[1][k]) / 2; }
+  document.addEventListener('touchstart', function(e){
+    if (e.touches.length !== 2) return;
+    var cx = mid(e.touches, 'clientX'), cy = mid(e.touches, 'clientY');
+    start = { d: gap(e.touches), z: z, x: (window.scrollX + cx) / z, y: (window.scrollY + cy) / z, cx: cx, cy: cy };
+  }, { passive: true });
   document.addEventListener('touchmove', function(e){
     if (!start || e.touches.length !== 2) return;
     e.preventDefault();
     setZoom(start.z * gap(e.touches) / start.d);
-    window.scrollTo(window.scrollX, start.y * z - start.cy);
+    // the spot between the fingers stays under the fingers
+    window.scrollTo(start.x * z - start.cx, start.y * z - start.cy);
   }, { passive: false });
   function end(e){ if (start && e.touches.length < 2) { start = null; try { localStorage.setItem(KEY, String(Math.round(z * 100) / 100)); } catch (err) {} } }
   document.addEventListener('touchend', end, { passive: true });
