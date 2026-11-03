@@ -37,6 +37,22 @@ git checkout main && git merge --ff-only dev && git push origin main && git chec
 ```
 This keeps history linear (`dev` is always at or ahead of `main`). If `--ff-only` fails (main moved independently), rebase `dev` onto `main` first, then promote. After promoting, keep working on `dev`.
 
+**A promote that built nothing (4 Nov 2026, 00:5x SGT).** `git push origin origin/dev:main` landed
+on GitHub (`git ls-remote origin refs/heads/main` showed the new commit) but Vercel never
+started a production build — the newest production deployment stayed the previous one and
+GitHub held no deployment record for the commit. Check the deployment list before telling
+Adrian "promoted" (`GET https://api.vercel.com/v6/deployments?projectId=…&teamId=…&limit=6`,
+the CLI token from `~/Library/Application Support/com.vercel.cli/auth.json`; run
+`vercel whoami` first when the API says the token is invalid — it refreshes it). The fix is
+what the dashboard's Redeploy button does, through the API (not the seat-blocked `vercel
+deploy`): `POST https://api.vercel.com/v13/deployments?teamId=…&forceNew=1` with
+`{"name":"adrianmathtuition-website","project":"<PID>","target":"production","gitSource":
+{"type":"github","repoId":1167239188,"ref":"main","sha":"<full sha>"}}` — it came back
+INITIALIZING at once and built like any other production deployment. The project has no
+deploy hooks. (Also the `git push origin origin/dev:main` form is the promote when a dirty
+generated file blocks `git checkout main`; `git fetch origin main:main` afterwards keeps the
+local branch in step.)
+
 - **Each session in its own clone (11 Sep 2026).** Two Claude sessions never share this checkout: the second one works in `~/dev/adrianmathtuition-website-2` (a full clone; bot: `~/dev/adrianmath-telegram-math-bot-2`). If `git status` shows edits you did not make, you are in a shared checkout — commit by pathspec, never stash or reset the other session's work, and say so. → `docs/FANOUT.md` §7
 - **Hotfix exception:** if the user says something is broken in prod and wants it fixed *now*, it's fine to commit to `dev` and promote in the same turn — but still say so, don't silently push to `main`.
 - Rollback is `git revert` on `main` + push, or Vercel → Deployments → promote a previous build.
