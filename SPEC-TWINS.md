@@ -6,9 +6,7 @@ science-twins run found "0 of 0". Science stood at 551 of 589 sub-skills with 5+
 fails); long questions 103 parked + 10 skipped, of which **38 were "brief failed" — a bug**. A seed filed under
 two topics got its first twin under the other topic, and `sci-stwin.mjs brief` read the earlier twins from the
 topic corpus only, so every `~2`/`~3` pass said "no first twin". Fixed in c2785cb0: the earlier twins are read by
-`twin_of` and added to the corpus. **Still to do:** the 38 run folders on the worker keep their `parked` file, so
-the lane skips them until it is renamed (`parked` → `parked.brief-failed-3nov` where `lane.log` says "has no first
-twin"). That step needs Adrian's OK to change files on the worker.
+`twin_of` and added to the corpus. **Reopened 3 Nov 2026 (Adrian: "Yes, reopen them"):** every worker run folder parked "brief failed" whose `lane.log` says "has no first twin" had `parked` renamed to `parked.brief-failed-3nov` — 224 folders (the 38 still queued plus older ones; the queue only offers those a sub-skill still needs). Undo = rename back.
 
 **🎯 Where things stand (15 Oct 2026, Adrian: *"finish 3 per skill first for both math and science, then we consider 5 next"*).** Maths lanes stop at **3** twins per sub-skill (bot `fly.worker.toml` `TWINS_TARGETS = '3'`, was `'3 5'`; the stuck report's E Math / A Math sub-skills also stop at 3). Science lanes write **multiple-choice twins to 3 first** and no structured twin until that list is empty, then structured again by themselves (`SCI_TWINS_MCQ_FIRST = '1'`, bot `worker/fly/science-twins.sh`). JC maths is still not in the lanes (Adrian 1 Oct: *"there is no need for JC yet"*). Left on 15 Oct: maths Sec 1–4 ≈ 190 writable to reach 3, science ≈ 120 multiple-choice. **Free API credit (16 Oct 2026):** `scripts/twins/api-twins.mjs` writes twins on the promotional credit with the same gates — trial 16/20 maths + 15/19 science long questions, US$14 spent; the full run (stop line US$120) waits for Adrian → §14. **Going to 5 is Adrian's next decision** — then put `TWINS_TARGETS` back to `'3 5'` and remove `SCI_TWINS_MCQ_FIRST`.
 
