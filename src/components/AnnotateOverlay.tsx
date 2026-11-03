@@ -2745,6 +2745,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       }
     } catch { /* defaults are fine */ }
 
+    // Opened from far down the marking page (the desk's result list), iPad Safari drew this
+    // full-screen layer at the TOP of the page, above where the eye was: only its bottom strip
+    // showed until Adrian scrolled up (3 Nov 2026). Go to the top while the pen is open and
+    // come back to the same place on close.
+    const savedScrollY = window.scrollY;
+    const toTop = () => { if (window.scrollY || (window.visualViewport?.offsetTop ?? 0)) window.scrollTo(0, 0); };
+    toTop();
+    const toTopLater = [setTimeout(toTop, 50), setTimeout(toTop, 300)];
     document.body.style.overflow = 'hidden';
     // iPad Safari: a page that was pinch-zoomed BEFORE the pen opened keeps that zoom,
     // which pushes this fixed toolbar off screen and leaves only the canvas, at 2×,
@@ -2801,7 +2809,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       stopLoading = true;
       clearInterval(aliveTimer);
       try { localStorage.removeItem(ALIVE_KEY); } catch { /* diagnostics only */ }
+      toTopLater.forEach(clearTimeout);
       document.body.style.overflow = '';
+      if (savedScrollY) requestAnimationFrame(() => window.scrollTo(0, savedScrollY));
       if (viewportMeta) viewportMeta.setAttribute('content', prevViewport ?? 'width=device-width, initial-scale=1');
       else lockMeta.remove();
       document.removeEventListener('visibilitychange', onVis);
