@@ -1,12 +1,17 @@
 // GET /api/admin/annotate-side/solutions?runId=&page=<photoIndex> — the worked solutions for
 // the questions on one marked page, as a page the ✏️ Annotate side panel shows in a frame.
+// `page=all` (3 Nov 2026) is the WHOLE paper in one document, a hidden section per marked
+// page, and the panel tells the frame which page to show (postMessage {type:'show-page'}):
+// the frame used to load a fresh document for every page scrolled past — each with its own
+// KaTeX, fonts and model calls in flight — and an iPad scrolling through 17 pages died of it.
 // The house solutions layout (lib/render-solutions-pdf: one step a line, a bold Answer per
 // part, mark codes small and grey, KaTeX), sized for a half-screen panel. A question with
 // no figure of its own gets a slot the page fills, without waiting, with a diagram drawn by
 // the figure library when one would help (POST …/diagram). Admin only. SPEC-ANNOTATE §21.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { loadSideRun, sideSolutionItems, readSideExtras } from '@/lib/annotate-side-store';
+import { loadSideRun, sideInfo, sideSolutionItems, readSideExtras } from '@/lib/annotate-side-store';
+import type { SolutionsItem } from '@/lib/render-solutions-pdf';
 import { applyExtras } from '@/lib/annotate/side-extras';
 import { buildSolutionsHTML } from '@/lib/render-solutions-pdf';
 
@@ -35,6 +40,7 @@ const SCREEN_CSS = `
     .sol-gen figcaption{font-size:11px;color:#9a9a9a;margin-top:3px}
     .sol-gen .drawing{font-size:12px;color:#9a9a9a;font-style:italic}
     .sol-empty{color:#6E6E6E;font-size:14px;margin-top:20px;text-align:center}
+    .sol-ptitle{font-size:12px;font-weight:700;color:#6b7280;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px}
   }`;
 
 // Fills each empty diagram slot without holding the page: two at a time, quiet on "none".
@@ -59,6 +65,12 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
       .then(function(){ document.body.setAttribute('data-diagrams', String(made)); next(); });
   }
   next(); next();
+})();
+</script>` + DIAGRAM_ZOOM_SCRIPT();
+
+// Two fingers zoom the solutions; the browser's own pinch stays off.
+const DIAGRAM_ZOOM_SCRIPT = () => `<script>
+(function(){
   // A pinch in this frame would zoom the whole marking page on the iPad (2 Nov 2026), so the
   // browser's own pinch stays off and two fingers zoom just the solutions instead (Adrian,
   // 3 Nov 2026: "allow pinch to zoom in/out"). The size is kept for the next page.
@@ -99,6 +111,71 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
 })();
 </script>`;
 
+// The whole paper in one frame: show the page the panel names, and only then make THAT page's
+// diagrams and extras (two jobs at a time, each page once). A page's work carries on in the
+// background if the pen scrolls away; nothing is reloaded.
+const PAGES_SCRIPT = (runId: string) => `<script>
+(function(){
+  var RUN = ${JSON.stringify(runId)};
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.sol-page'));
+  var none = document.querySelector('[data-none]');
+  var queue = [], busy = 0, started = {};
+  function pump(){
+    while (busy < 2 && queue.length) { busy++; queue.shift()().catch(function(){}).then(function(){ busy--; pump(); }); }
+  }
+  function diagramJob(el){
+    return function(){
+      var q = el.getAttribute('data-gen');
+      var t = setTimeout(function(){ el.innerHTML = '<div class="drawing">drawing a diagram…</div>'; }, 3000);
+      return fetch('/api/admin/annotate-side/diagram', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ runId: RUN, q: q }) })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          clearTimeout(t);
+          if (d && d.status === 'ok' && d.url) el.innerHTML = '<figure><img alt="diagram" src="' + d.url.replace(/"/g, '&quot;') + '"><figcaption>Diagram drawn for this solution</figcaption></figure>';
+          else el.innerHTML = '';
+        })
+        .catch(function(){ clearTimeout(t); el.innerHTML = ''; });
+    };
+  }
+  function extrasJob(sec, q){
+    return function(){
+      return fetch('/api/admin/annotate-side/extras', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ runId: RUN, q: q }) })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d || !d.itemHtml) return;
+          var old = sec.querySelector('li.sol-q[data-q="' + q.replace(/"/g, '') + '"]');
+          if (!old) return;
+          var box = document.createElement('div'); box.innerHTML = d.itemHtml.trim();
+          var li = box.querySelector('li'); if (!li) return;
+          var num = old.querySelector('.sol-qnum'); var newNum = li.querySelector('.sol-qnum');
+          if (num && newNum) newNum.textContent = num.textContent;
+          var gen = old.querySelector('.sol-gen'); var slot = li.querySelector('.sol-gen');
+          if (gen && slot) slot.replaceWith(gen);
+          old.replaceWith(li);
+          try { renderMathInElement(li, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false, strict: false, trust: true }); } catch (e) {}
+        })
+        .catch(function(){});
+    };
+  }
+  function showPage(n){
+    var key = String(n), sec = null;
+    sections.forEach(function(s){ var on = s.getAttribute('data-page') === key; s.hidden = !on; if (on) sec = s; });
+    if (none) none.hidden = !!sec;
+    window.scrollTo(0, 0);
+    if (!sec || started[key]) return;
+    started[key] = true;
+    Array.prototype.forEach.call(sec.querySelectorAll('.sol-gen[data-gen]'), function(el){ queue.push(diagramJob(el)); });
+    (sec.getAttribute('data-make') || '').split(',').filter(Boolean).forEach(function(q){ queue.push(extrasJob(sec, q)); });
+    pump();
+  }
+  window.addEventListener('message', function(e){
+    if (e.origin !== location.origin || !e.data || e.data.type !== 'show-page') return;
+    showPage(Number(e.data.page));
+  });
+  window.__showPage = showPage;
+})();
+</script>`;
+
 // Makes the missing extras one question at a time and swaps each question's block in place,
 // keeping a diagram already drawn in it, then typesets the new block.
 const EXTRAS_SCRIPT = (runId: string, qs: string[]) => qs.length ? `<script>
@@ -132,10 +209,30 @@ const EXTRAS_SCRIPT = (runId: string, qs: string[]) => qs.length ? `<script>
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return new NextResponse('Unauthorized', { status: 401 });
   const runId = req.nextUrl.searchParams.get('runId') || '';
-  const page = Number(req.nextUrl.searchParams.get('page'));
-  if (!/^[0-9a-f-]{36}$/i.test(runId) || !Number.isInteger(page) || page < 0) return new NextResponse('runId and page required', { status: 400 });
+  const pageParam = req.nextUrl.searchParams.get('page');
+  const page = Number(pageParam);
+  const all = pageParam === 'all';
+  if (!/^[0-9a-f-]{36}$/i.test(runId) || (!all && (!Number.isInteger(page) || page < 0))) return new NextResponse('runId and page required', { status: 400 });
   const run = await loadSideRun(runId);
   if (!run) return new NextResponse('run not found', { status: 404 });
+  if (all) {
+    const pageIdxs = Object.keys(sideInfo(run).byPage).map(Number).filter((n) => Number.isInteger(n) && n >= 0).sort((a, b) => a - b);
+    const sections: { page: number; title: string; make: string[]; items: SolutionsItem[] }[] = [];
+    // four pages at a time: each one reads the bank
+    for (let i = 0; i < pageIdxs.length; i += 4) {
+      const built = await Promise.all(pageIdxs.slice(i, i + 4).map(async (p) => {
+        const raw = await sideSolutionItems(run, p);
+        const kept = await Promise.all(raw.items.map((it) => (it.qnum ? readSideExtras(runId, it.qnum) : Promise.resolve(null))));
+        const items = raw.items.map((it, j) => applyExtras(it, kept[j]));
+        const make = raw.items.filter((it, j) => it.qnum && !kept[j]).map((it) => it.qnum as string);
+        const title = raw.questions.length ? `Page ${p + 1} · Q${raw.questions.join(', Q')}` : `Page ${p + 1}`;
+        return { page: p, title, make, items };
+      }));
+      sections.push(...built.filter((b) => b.items.length));
+    }
+    const html = buildSolutionsHTML({ title: run.paper_name || 'This paper', items: [], sections, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: DIAGRAM_ZOOM_SCRIPT() + PAGES_SCRIPT(runId) });
+    return new NextResponse(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
+  }
   const raw = await sideSolutionItems(run, page);
   const { questions } = raw;
   // The typeset question + the marks on the lines, where already made; the rest are made

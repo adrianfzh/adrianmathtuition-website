@@ -824,5 +824,19 @@ allow pinch to zoom in/out"*.
   only as wide as the zoom needs (512-px steps, ≥ 1024, ≤ `DISPLAY_BITMAP_MAX_W`, redone bigger
   on a pinch), and `close()`s the rest — a bitmap made from bytes has no hidden cache, so what we
   close is gone. Done flattens from the same bytes. Expected steady state on an iPad: 3–4 bitmaps
-  of ≈ 12 MB plus the two screen canvases. Not changed, next suspects if it still dies: the
-  per-page layer `<img>` (an SVG document each) and the per-stroke surface resets (§12).
+  of ≈ 12 MB plus the two screen canvases.
+  **Still died (Adrian, 4:40 pm the same day, 17 pages, 0 strokes, side panel "both").** Two
+  more things scrolling did, both fixed in the next commit: (1) **the Solutions frame loaded a
+  fresh document for every page scrolled past** (`<iframe key=runId-page>`: its own KaTeX, fonts,
+  and diagram / extras model calls in flight each time — a document with fetches pending stays
+  alive until they end) — now ONE frame per paper, `…/solutions?page=all` (every marked page as
+  a hidden `<section data-page>`, `buildSolutionsHTML sections`), and the panel posts
+  `{type:'show-page', page}` to it; the frame shows that section and only then makes THAT
+  page's diagrams and extras, two at a time, each page once (`PAGES_SCRIPT`). (2) **The marker's
+  layer was an SVG `<img>` per page drawn into the canvas on every frame** — on iPadOS an SVG
+  image drawn into an accelerated canvas is rasterised whole on each draw (≈ 5 MB a page, three
+  pages a frame, sixty a second while scrolling). Now `rebuildLayerImage` rasterises it ONCE into
+  a bitmap of the page bitmap's width (`layerBmRef`, a `gen` counter so the newest edit wins),
+  built when the page comes near and closed with the page bitmap in `ensureBitmaps`. The alive
+  note now carries `bm` / `bmMB` / `lbm` / `seen` / `screen`, so the next `diedMidMarking` row
+  says what the pen was holding.

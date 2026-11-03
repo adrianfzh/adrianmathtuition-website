@@ -524,7 +524,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const resizeSelRef = useRef<{ anchor: { x: number; y: number }; startDist: number; scale: number } | null>(null);
   // ── the marker's editable layer (SPEC-ANNOTATE §14) ────────────────────────
   const layerRef = useRef<(ParsedLayer | null)[]>(pages.map(() => null));
-  const layerImgRef = useRef<(HTMLImageElement | null)[]>(pages.map(() => null));
+  // The marker's layer as a BITMAP per page, near the viewport only (3 Nov 2026). It was an
+  // SVG <img> per page drawn straight into the canvas on every frame — on iPadOS an SVG image
+  // drawn into an accelerated canvas is rasterised whole on each draw (≈ 5 MB a page, three
+  // pages, sixty times a second while scrolling), and that churn is what a tab dies of.
+  const layerBmRef = useRef<(DisplayBitmap | null)[]>(pages.map(() => null));
+  const layerBmBusyRef = useRef<boolean[]>(pages.map(() => false));
+  const layerGenRef = useRef<number[]>(pages.map(() => 0));
+  const rebuildLayerImageRef = useRef<(i: number, hideId?: string | null, refreshSel?: boolean) => void>(() => {});
+  const seenPagesRef = useRef<Set<number>>(new Set());
   const layerBBoxRef = useRef<Map<string, LayerBox>[]>(pages.map(() => new Map()));
   const layerSelRef = useRef<{ pageIdx: number; id: string } | null>(null);
   // Live drag + resize of the marker's objects (Adrian, 1 Oct 2026: "when i move the annotations,
@@ -751,12 +759,27 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           if (cur.src instanceof ImageBitmap) cur.src.close();
           bitmapsRef.current[i] = null;
         }
+        const lb = layerBmRef.current[i];
+        if (lb) {
+          if (lb.src instanceof ImageBitmap) lb.src.close();
+          layerBmRef.current[i] = null;
+        }
         continue;
       }
-      if (bitmapBusyRef.current[i]) continue;
+      seenPagesRef.current.add(i);
       const base = pageBaseRef.current[i];
       if (!base) continue;
       const targetW = Math.min(base.w, DISPLAY_BITMAP_MAX_W, Math.max(1024, wanted));
+      {
+        // The marker's layer, as a bitmap of the same width — built when the page comes near
+        // (or an edit changed it), redone bigger on a pinch, let go with the page bitmap.
+        const lb = layerBmRef.current[i];
+        if (layerRef.current[i] && !layerBmBusyRef.current[i] && (!lb || (lb.w < targetW && lb.w * 1.25 <= targetW))) {
+          const sel = layerSelRef.current;
+          rebuildLayerImageRef.current(i, sel && sel.pageIdx === i ? layerSelImgRef.current?.id ?? null : null, false);
+        }
+      }
+      if (bitmapBusyRef.current[i]) continue;
       if (cur && (cur.w >= targetW || cur.w * 1.25 > targetW)) continue;
       bitmapBusyRef.current[i] = true;
       decodeBase(base, targetW)
@@ -807,11 +830,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       {
         // The marker's layer, as Adrian has it right now, between the page and his ink.
         const dl = dimsRef.current[i];
-        const li = layerImgRef.current[i];
+        const li = layerBmRef.current[i];
         if (dl && li) {
           const fl = (DOC_W * k) / dl.w;
           ctx.setTransform(dpr * fl, 0, 0, dpr * fl, dpr * x, dpr * y);
-          ctx.drawImage(li, 0, 0, dl.w, dl.h);
+          ctx.drawImage(li.src, 0, 0, dl.w, dl.h);
           // "was 3/3" beside every chip whose marks Adrian changed (1 Oct 2026: "put at the side
           // 0/2, 1/2, 2/2 according to the change, in some other colour badge") — purple, the
           // re-mark colour the student will see.
@@ -1188,16 +1211,40 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       : serializeLayer(parsed);
     const doc = layerDocument(body, meta, fontCssRef.current);
     const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
+    // Rasterised ONCE into a bitmap as wide as the page's own bitmap (3 Nov 2026); a newer
+    // build of the same page wins (gen), so a quick run of edits never lands out of order.
+    const gen = ++layerGenRef.current[i];
+    layerBmBusyRef.current[i] = true;
     const img = new Image();
-    img.onload = () => {
-      const prev = layerImgRef.current[i];
-      layerImgRef.current[i] = img;
-      if (prev && prev.src.startsWith('blob:')) URL.revokeObjectURL(prev.src);
+    img.onload = async () => {
+      URL.revokeObjectURL(url);
+      if (gen !== layerGenRef.current[i]) { img.src = ''; return; }
+      try {
+        const base = pageBaseRef.current[i];
+        const wanted = Math.ceil((DOC_W * kFactor() * sizeRef.current.dpr) / 512) * 512;
+        const w = Math.min(base ? base.w : meta.canvasW * 2, DISPLAY_BITMAP_MAX_W, Math.max(1024, wanted));
+        const h = Math.round(meta.totalH * (w / meta.canvasW));
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d')!.drawImage(img, 0, 0, w, h);
+        img.src = '';
+        let src: CanvasImageSource = c;
+        try { src = await createImageBitmap(c); c.width = 0; c.height = 0; } catch { /* keep the canvas */ }
+        if (gen !== layerGenRef.current[i]) { if (src instanceof ImageBitmap) src.close(); return; }
+        const prev = layerBmRef.current[i];
+        if (prev && prev.src instanceof ImageBitmap) prev.src.close();
+        layerBmRef.current[i] = { src, w };
+      } catch (e) {
+        console.warn('[annotate] layer bitmap failed:', (e as Error).message);
+      }
+      layerBmBusyRef.current[i] = false;
       scheduleBase();
     };
-    img.onerror = () => URL.revokeObjectURL(url);
+    img.onerror = () => { URL.revokeObjectURL(url); if (gen === layerGenRef.current[i]) layerBmBusyRef.current[i] = false; };
     img.src = url;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, scheduleBase, rasteriseSelObj]);
+  useEffect(() => { rebuildLayerImageRef.current = rebuildLayerImage; }, [rebuildLayerImage]);
   /** Lift the selected object out of the page: its own bitmap, then the page without it. */
   const buildSelObjImage = useCallback((i: number, id: string) => {
     rasteriseSelObj(i, id, () => rebuildLayerImage(i, id, false));
@@ -2854,6 +2901,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       strokes: strokesRef.current.reduce((a, l) => a + l.length, 0), points: strokesRef.current.reduce((a, l) => a + l.reduce((b, q) => b + q.points.length, 0), 0),
       zoom: Math.round(viewRef.current.zoom * 100) / 100, shell: inShell, hidden: document.hidden,
       side: sideRef.current, pageZoom: Math.round((window.visualViewport?.scale ?? 1) * 100) / 100,
+      // what the pen holds right now (3 Nov 2026): page bitmaps, their MB, layer bitmaps, pages seen
+      bm: bitmapsRef.current.filter(Boolean).length,
+      bmMB: Math.round(bitmapsRef.current.reduce((a, b, i) => { const d = dimsRef.current[i]; return b && d ? a + (b.w * b.w * (d.h / d.w) * 4) / 1e6 : a; }, 0)),
+      lbm: layerBmRef.current.filter(Boolean).length,
+      seen: seenPagesRef.current.size,
+      screen: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio}`,
     });
     try {
       const died = JSON.parse(localStorage.getItem(ALIVE_KEY) || 'null');
@@ -2871,6 +2924,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     document.addEventListener('gesturestart', noPageZoom, { passive: false });
     document.addEventListener('gesturechange', noPageZoom, { passive: false });
     const bitmaps = bitmapsRef.current;
+    const layerBms = layerBmRef.current;
     const bases = pageBaseRef.current;
     return () => {
       stopLoading = true;
@@ -2886,6 +2940,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       document.removeEventListener('gesturechange', noPageZoom);
       lock?.release?.().catch(() => {});
       for (const b of bitmaps) if (b && b.src instanceof ImageBitmap) b.src.close();
+      for (const b of layerBms) if (b && b.src instanceof ImageBitmap) b.src.close();
       for (let i = 0; i < bases.length; i++) bases[i] = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -18,7 +18,7 @@
 // split by a handle — side by side in the portrait sheet, one above the other beside the
 // page in landscape. 📄 / ✅ in the header show just one; the choice and the split are kept.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadPdfjs } from '@/lib/pdf-pages';
 import { findQuestionPage } from '@/lib/annotate/side-panel';
 
@@ -76,8 +76,18 @@ export default function AnnotateSidePanel({ runId, photoIndex, kind, beside, onK
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
   };
 
+  // ONE frame per paper (3 Nov 2026): the whole paper's solutions load once, and a page change
+  // just tells the frame which section to show. A new frame per page (its own KaTeX, fonts and
+  // model calls each time) was a fresh document for every page scrolled past — an iPad
+  // scrolling through 17 pages died of it.
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const showPage = useCallback((p: number) => {
+    try { frameRef.current?.contentWindow?.postMessage({ type: 'show-page', page: p }, window.location.origin); } catch { /* frame not ready */ }
+  }, []);
+  useEffect(() => { showPage(page); }, [page, showPage]);
   const solutionsView = (
-    <iframe key={`${runId}-${page}`} title="Worked solutions" src={`/api/admin/annotate-side/solutions?runId=${encodeURIComponent(runId)}&page=${page}`}
+    <iframe key={runId} ref={frameRef} title="Worked solutions" src={`/api/admin/annotate-side/solutions?runId=${encodeURIComponent(runId)}&page=all`}
+      onLoad={() => showPage(page)}
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, background: '#fff' }} />
   );
   const paperView = !info ? null

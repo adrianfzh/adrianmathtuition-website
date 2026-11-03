@@ -69,6 +69,9 @@ export interface SolutionsInput {
   extraBody?: string;
   /** The small line under the title; default "N questions". */
   meta?: string;
+  /** One document for a whole paper (the ✏️ Annotate side panel, 3 Nov 2026): a hidden
+   *  <section data-page> per marked page instead of the one list; the page script shows one. */
+  sections?: { page: number; title: string; make: string[]; items: SolutionsItem[] }[];
 }
 
 function esc(s: string): string {
@@ -312,9 +315,17 @@ ${input.screenCss ?? ''}
     <div class="sol-meta">${esc(input.meta ?? `${input.items.length} question${input.items.length === 1 ? '' : 's'}`)}</div>
   </div>
 
-  <ol class="sol-list">
+${input.sections
+    ? `${input.sections.map((s) => `  <section class="sol-page" data-page="${s.page}" data-make="${esc(s.make.join(','))}" hidden>
+    <div class="sol-ptitle">${esc(s.title)}</div>
+    <ol class="sol-list">
+${s.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n')}
+    </ol>
+  </section>`).join('\n')}
+  <div class="sol-empty" data-none hidden>No question was marked on this page.</div>`
+    : `  <ol class="sol-list">
 ${input.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n')}
-  </ol>
+  </ol>`}
 
 ${katexAutoRenderScript()}
 ${input.extraBody ?? ''}
