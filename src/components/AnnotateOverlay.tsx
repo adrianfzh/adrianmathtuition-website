@@ -246,6 +246,60 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     img.src = url;
   });
 }
+/** A page's picture, kept COMPRESSED (the JPEG bytes, well under 1 MB) with its pixel size. */
+type PageBase = { blob: Blob; w: number; h: number };
+/**
+ * Decode a page's JPEG at `targetW` pixels wide, as a bitmap we can close() the moment the page
+ * scrolls away (3 Nov 2026). Before this every page lived as an HTMLImageElement: Safari decoded
+ * each one the first time it was drawn (≈ 20 MB a page at 2×) and kept the decoded picture on
+ * the element for as long as we held it — so scrolling once through a 17-page paper pinned
+ * ≈ 350 MB and iPadOS killed the tab ("when I scroll up and down, page refreshes"). A bitmap
+ * made from the bytes has no such hidden cache: what we close is gone.
+ */
+async function decodeBase(b: PageBase, targetW: number): Promise<CanvasImageSource> {
+  const targetH = Math.round(b.h * (targetW / b.w));
+  const shrink = (src: CanvasImageSource): CanvasImageSource => {
+    const c = document.createElement('canvas');
+    c.width = targetW; c.height = targetH;
+    c.getContext('2d')!.drawImage(src, 0, 0, targetW, targetH);
+    return c;
+  };
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bm = targetW === b.w
+        ? await createImageBitmap(b.blob)
+        : await createImageBitmap(b.blob, { resizeWidth: targetW, resizeHeight: targetH, resizeQuality: 'high' });
+      // A Safari that ignores the resize options hands back the full size: shrink it ourselves.
+      if (bm.width === targetW) return bm;
+      try { return shrink(bm); } finally { bm.close(); }
+    } catch { /* no Blob source or no resize on this browser: the <img> road below */ }
+  }
+  const url = URL.createObjectURL(b.blob);
+  try {
+    const img = await loadImage(url);
+    const out = shrink(img);
+    img.src = '';
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+/** The pixel size of a picture, decoded once and let go. */
+async function imageSize(blob: Blob): Promise<{ w: number; h: number }> {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bm = await createImageBitmap(blob);
+      const out = { w: bm.width, h: bm.height };
+      bm.close();
+      return out;
+    } catch { /* fall through */ }
+  }
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = await loadImage(url);
+    const out = { w: img.naturalWidth, h: img.naturalHeight };
+    img.src = '';
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
 /** Mount the layer off-screen once and let the browser measure every object's box. */
 function measureLayer(body: string, meta: LayerMeta, fontCss: string): Map<string, LayerBox> {
   const host = document.createElement('div');
@@ -385,7 +439,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const viewRef = useRef({ zoom: 1, ox: 0, oy: 0 });
   const dimsRef = useRef<PageDim[]>(pages.map(() => null));
-  const imgsRef = useRef<(HTMLImageElement | null)[]>(pages.map(() => null));
+  const pageBaseRef = useRef<(PageBase | null)[]>(pages.map(() => null));
   const imgErrRef = useRef<boolean[]>(pages.map(() => false));
   const bitmapsRef = useRef<(DisplayBitmap | null)[]>(pages.map(() => null));
   const bitmapBusyRef = useRef<boolean[]>(pages.map(() => false));
@@ -685,34 +739,35 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, [n]);
 
   const ensureBitmaps = useCallback((first: number, last: number) => {
+    // A decoded bitmap only for the pages on screen and one either side; each is only as wide
+    // as this zoom needs (in 512-px steps, at least 1024, never past the cap or the picture),
+    // and is redone bigger when a pinch wants more. Everything else is just JPEG bytes.
+    const wanted = Math.ceil((DOC_W * kFactor() * sizeRef.current.dpr) / 512) * 512;
     for (let i = 0; i < n; i++) {
       const near = i >= first - 1 && i <= last + 1;
       const cur = bitmapsRef.current[i];
-      if (!near && cur) {
-        if (cur.src instanceof ImageBitmap) cur.src.close();
-        bitmapsRef.current[i] = null;
+      if (!near) {
+        if (cur) {
+          if (cur.src instanceof ImageBitmap) cur.src.close();
+          bitmapsRef.current[i] = null;
+        }
+        continue;
       }
-      if (near && !cur && !bitmapBusyRef.current[i]) {
-        const img = imgsRef.current[i];
-        if (!img || !img.complete || !img.naturalWidth) continue;
-        bitmapBusyRef.current[i] = true;
-        const targetW = Math.min(img.naturalWidth, DISPLAY_BITMAP_MAX_W);
-        const targetH = Math.round(img.naturalHeight * (targetW / img.naturalWidth));
-        createImageBitmap(img, { resizeWidth: targetW, resizeHeight: targetH, resizeQuality: 'high' })
-          .catch(() => {
-            // Older Safari: no resize options — downscale via a canvas instead.
-            const c = document.createElement('canvas');
-            c.width = targetW; c.height = targetH;
-            c.getContext('2d')!.drawImage(img, 0, 0, targetW, targetH);
-            return c;
-          })
-          .then((src) => {
-            bitmapsRef.current[i] = { src, w: targetW };
-            bitmapBusyRef.current[i] = false;
-            scheduleBase();
-          })
-          .catch(() => { bitmapBusyRef.current[i] = false; });
-      }
+      if (bitmapBusyRef.current[i]) continue;
+      const base = pageBaseRef.current[i];
+      if (!base) continue;
+      const targetW = Math.min(base.w, DISPLAY_BITMAP_MAX_W, Math.max(1024, wanted));
+      if (cur && (cur.w >= targetW || cur.w * 1.25 > targetW)) continue;
+      bitmapBusyRef.current[i] = true;
+      decodeBase(base, targetW)
+        .then((src) => {
+          const prev = bitmapsRef.current[i];
+          if (prev && prev.src instanceof ImageBitmap) prev.src.close();
+          bitmapsRef.current[i] = { src, w: targetW };
+          bitmapBusyRef.current[i] = false;
+          scheduleBase();
+        })
+        .catch(() => { bitmapBusyRef.current[i] = false; imgErrRef.current[i] = true; scheduleBase(); });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n]);
@@ -2562,17 +2617,21 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
   useEffect(() => {
     // Natural dimensions first (layout), bitmaps lazily near the viewport.
-    const loadFlat = (p: AnnotatePageInput, i: number) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        dimsRef.current[i] = { w: img.naturalWidth, h: img.naturalHeight };
+    const loadFlat = async (p: AnnotatePageInput, i: number) => {
+      try {
+        const r = await fetch(p.url);
+        if (!r.ok) throw new Error(`page ${r.status}`);
+        const blob = await r.blob();
+        const { w, h } = await imageSize(blob);
+        pageBaseRef.current[i] = { blob, w, h };
+        dimsRef.current[i] = { w, h };
         setDimsTick((t) => t + 1);
         scheduleBase();
-      };
-      img.onerror = () => { imgErrRef.current[i] = true; scheduleBase(); };
-      img.src = p.url;
-      imgsRef.current[i] = img;
+      } catch (e) {
+        console.warn('[annotate] page failed to load:', (e as Error).message);
+        imgErrRef.current[i] = true;
+        scheduleBase();
+      }
     };
     // A page with an editable marker layer (SPEC-ANNOTATE §14): the base is the
     // CLEAN original, turned as the marker turned it and laid in the layer's own
@@ -2599,12 +2658,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         // Let go of the full-size photo now (≈ 50 MB decoded each), not when the page closes.
         orig.src = '';
         const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
+        const bw = c.width, bh = c.height;
         // Hand the working canvas's memory back NOW (6 Oct 2026): iPadOS frees a canvas's
         // backing store lazily, and twenty of these (≈ 25 MB each) is what a web app's
         // memory budget cannot hold — the page gets killed and reloads mid-marking.
         c.width = 0; c.height = 0;
         if (!blob) throw new Error('could not build the page base');
-        imgsRef.current[i] = await loadImage(URL.createObjectURL(blob));
+        // Only the JPEG bytes are kept; ensureBitmaps decodes them near the viewport (3 Nov 2026).
+        pageBaseRef.current[i] = { blob, w: bw, h: bh };
         dimsRef.current[i] = { w: meta.canvasW, h: meta.totalH };
         // Which layer file, which edits, which ink: restoreRef (planRestore at open, 27 Oct 2026).
         let plan = restoreRef.current[i];
@@ -2660,30 +2721,30 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         loadFlat(p, i);
       }
     };
-    // Layered pages build TWO AT A TIME, not all at once (6 Oct 2026, Adrian: "sometimes
+    // Pages build TWO AT A TIME, not all at once (6 Oct 2026, Adrian: "sometimes
     // halfway marking pages will go back to mark pages page, then go back to the
-    // annotations again"). Each one decodes the full-size original and draws it into a
+    // annotations again"). A layered one decodes the full-size original and draws it into a
     // double-size canvas; a 20-page paper did all twenty together — hundreds of MB in one
-    // burst, on a device that kills a page for less. Flat pages are just an <img> each.
-    const layeredQueue: number[] = [];
-    pages.forEach((p, i) => {
-      if (p.layerUrl && p.layer && p.originalUrl) layeredQueue.push(i);
-      else loadFlat(p, i);
-    });
+    // burst, on a device that kills a page for less. Flat pages go through the same queue
+    // since 3 Nov 2026 (each is decoded once for its size).
+    const isLayered = (p: AnnotatePageInput) => !!(p.layerUrl && p.layer && p.originalUrl);
+    const queue: number[] = pages.map((_, i) => i);
+    const layeredCount = pages.filter(isLayered).length;
     // the page he opened on first, then outwards from it
     const start = Math.max(0, pages.findIndex((p) => p.photoIndex === initialPage));
-    layeredQueue.sort((a, b) => Math.abs(a - start) - Math.abs(b - start) || a - b);
+    queue.sort((a, b) => Math.abs(a - start) - Math.abs(b - start) || a - b);
     let stopLoading = false;
     const pump = async () => {
-      while (!stopLoading && layeredQueue.length) {
-        const i = layeredQueue.shift()!;
-        await loadLayered(pages[i], i);
+      while (!stopLoading && queue.length) {
+        const i = queue.shift()!;
+        if (isLayered(pages[i])) await loadLayered(pages[i], i);
+        else await loadFlat(pages[i], i);
       }
     };
     // A long paper builds ONE page at a time (3 Nov 2026: an 18-page paper reloaded twice
     // within seconds of opening, before any ink — annotate_ink_log diedMidMarking). The page
     // he opened on still comes first.
-    const lanes = layeredQueue.length > 8 ? [pump()] : [pump(), pump()];
+    const lanes = layeredCount > 8 ? [pump()] : [pump(), pump()];
     void Promise.all(lanes).then(() => { if (!stopLoading) setAllLoaded(true); });
     // A saved draft (crash recovery, a Safari reload mid-paper, or a post-Done
     // re-edit) comes back ON THE PAGES straight away — the inked copy is the
@@ -2810,7 +2871,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     document.addEventListener('gesturestart', noPageZoom, { passive: false });
     document.addEventListener('gesturechange', noPageZoom, { passive: false });
     const bitmaps = bitmapsRef.current;
-    const imgs = imgsRef.current;
+    const bases = pageBaseRef.current;
     return () => {
       stopLoading = true;
       clearInterval(aliveTimer);
@@ -2825,7 +2886,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       document.removeEventListener('gesturechange', noPageZoom);
       lock?.release?.().catch(() => {});
       for (const b of bitmaps) if (b && b.src instanceof ImageBitmap) b.src.close();
-      for (let i = 0; i < imgs.length; i++) imgs[i] = null;
+      for (let i = 0; i < bases.length; i++) bases[i] = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -3099,15 +3160,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         if (!entry.reencode) { finalPages.push({ photo_index: entry.photoIndex, url: entry.url }); continue; }
         done += 1;
         setBusy(`Flattening page ${done}/${inkedPhotoIdx.length}…`);
-        const img = imgsRef.current[i];
+        const base = pageBaseRef.current[i];
         const d = dimsRef.current[i];
-        if (!img || !d) throw new Error(`page ${entry.photoIndex + 1} isn't loaded — scroll to it once, then Done again`);
-        const bmp = await createImageBitmap(img);
+        if (!base || !d) throw new Error(`page ${entry.photoIndex + 1} isn't loaded yet — wait a moment, then Done again`);
+        const bmp = await decodeBase(base, base.w);
         const canvas = document.createElement('canvas');
         canvas.width = d.w; canvas.height = d.h;
         const ctx = canvas.getContext('2d')!;
         ctx.drawImage(bmp, 0, 0, d.w, d.h);
-        bmp.close?.();
+        if (bmp instanceof ImageBitmap) bmp.close();
         drawStrokes(ctx, strokesRef.current[i], 'hl');
         drawStrokes(ctx, strokesRef.current[i], 'pen');
         const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));

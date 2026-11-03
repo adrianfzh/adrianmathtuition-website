@@ -813,3 +813,16 @@ allow pinch to zoom in/out"*.
 - **Reloads on open**: two `diedMidMarking` records on an 18-page paper within seconds of opening.
   Papers over 8 pages now build their pages one at a time, and each full-size photo is let go as
   soon as its page is built. Watch `annotate_ink_log` for `diedMidMarking` to see whether it held.
+- **Reloads on scroll (later on 3 Nov 2026, Adrian: "when I scroll up and down, page refreshes";
+  the log: a 17-page paper died 15 s after opening, 0 strokes, outside the shell).** Every page's
+  picture used to be held as an `HTMLImageElement` (the 2× JPEG, ≈ 2000 × 2560): Safari decodes
+  one the first time it is drawn (≈ 20 MB) and keeps the decoded picture on the element for as
+  long as we hold it, so one scroll through the paper pinned ≈ 350 MB on top of the on-screen
+  bitmaps — and iPadOS killed the tab. Now `pageBaseRef` holds only the JPEG **bytes** (`PageBase`,
+  well under 1 MB a page; flat pages are fetched the same way, through the same queue); `ensureBitmaps`
+  decodes the pages on screen ± 1 with `createImageBitmap(blob, {resizeWidth})` (`decodeBase`),
+  only as wide as the zoom needs (512-px steps, ≥ 1024, ≤ `DISPLAY_BITMAP_MAX_W`, redone bigger
+  on a pinch), and `close()`s the rest — a bitmap made from bytes has no hidden cache, so what we
+  close is gone. Done flattens from the same bytes. Expected steady state on an iPad: 3–4 bitmaps
+  of ≈ 12 MB plus the two screen canvases. Not changed, next suspects if it still dies: the
+  per-page layer `<img>` (an SVG document each) and the per-stroke surface resets (§12).
