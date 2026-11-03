@@ -132,6 +132,7 @@ const DISPLAY_BITMAP_MAX_W = 2600;  // px cap for on-screen page bitmaps (memory
 const FLY_SPEED = 1.2;              // px per ms — a quick swipe, not a reading scroll
 const FLY_TAIL_MS = 160;            // the view counts as flying this long after the last fast move
 const DECODE_CAP = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1 ? 1 : 2;
+const BUILD_REACH = 3;           // a layered page's picture is built this many pages ahead of the screen
 const UNDO_CAP = 100;
 const HOLD_MS = 500;                // draw-and-hold time to trigger shape snap
 const HOLD_MOVE_PX = 6;             // css px of movement that resets the hold
@@ -452,8 +453,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const imgErrRef = useRef<boolean[]>(pages.map(() => false));
   const bitmapsRef = useRef<(DisplayBitmap | null)[]>(pages.map(() => null));
   const bitmapBusyRef = useRef<boolean[]>(pages.map(() => false));
-  const pendingDecodesRef = useRef<{ i: number; kind: 'base' | 'layer'; targetW: number }[]>([]);
+  const pendingDecodesRef = useRef<{ i: number; kind: 'build' | 'base' | 'layer'; targetW: number }[]>([]);
   const decodeInFlightRef = useRef(0);
+  // A layered page's picture is BUILT (the clean original decoded, turned, laid in the layer's
+  // space, re-encoded) only when the page comes near the screen — through the same queue as the
+  // decodes, one at a time, never while flying (3 Nov 2026, 9:35 pm: the pen died within 15 s
+  // of opening a 17-page paper, before any page was seen, and opening felt slow — the open
+  // effect built all 17 pictures back to back). Set in the load effect; Done awaits it too.
+  const buildBaseRef = useRef<(i: number) => Promise<void>>(async () => {});
+  const baseBuildingRef = useRef<(Promise<void> | null)[]>(pages.map(() => null));
   const decodePumpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flyingUntilRef = useRef(0);
   /** A move at this speed (px per ms) means the pages are flying: decodes wait for them to settle. */
@@ -774,7 +782,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const job = pendingDecodesRef.current.shift()!;
       const i = job.i, targetW = job.targetW;
       const { first, last } = visibleRange();
-      if (i < first - 1 || i > last + 1) continue;                 // flew past while it waited
+      const reach = job.kind === 'build' ? BUILD_REACH : 1;
+      if (i < first - reach || i > last + reach) continue;         // flew past while it waited
+      if (job.kind === 'build') {
+        if (pageBaseRef.current[i] || baseBuildingRef.current[i] || imgErrRef.current[i]) continue;
+        decodeInFlightRef.current += 1;
+        buildBaseRef.current(i).finally(() => {
+          decodeInFlightRef.current = Math.max(0, decodeInFlightRef.current - 1);
+          scheduleBase();          // renderBase → ensureBitmaps queues the page's decode next
+          pumpDecodes();
+        });
+        continue;
+      }
       if (job.kind === 'layer') {
         if (layerBmBusyRef.current[i] || !layerRef.current[i]) continue;
         const lb = layerBmRef.current[i];
@@ -826,10 +845,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     // Far pages are let go here at once; the decodes themselves queue through pumpDecodes.
     const wanted = Math.ceil((DOC_W * kFactor() * sizeRef.current.dpr) / 512) * 512;
     const centre = (first + last) / 2;
-    const todo: { i: number; kind: 'base' | 'layer'; targetW: number; d: number }[] = [];
+    const todo: { i: number; kind: 'build' | 'base' | 'layer'; targetW: number; d: number }[] = [];
     for (let i = 0; i < n; i++) {
       const near = i >= first - 1 && i <= last + 1;
       const cur = bitmapsRef.current[i];
+      const d = Math.abs(i - centre);
       if (!near) {
         if (cur) {
           if (cur.src instanceof ImageBitmap) cur.src.close();
@@ -840,13 +860,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           if (lb.src instanceof ImageBitmap) lb.src.close();
           layerBmRef.current[i] = null;
         }
+        // The compressed picture of a page a few pages away is built ahead (after everything on
+        // screen), so a steady scroll finds it ready; the bytes are small and stay.
+        if (i >= first - BUILD_REACH && i <= last + BUILD_REACH && !pageBaseRef.current[i] && !baseBuildingRef.current[i] && !imgErrRef.current[i]) todo.push({ i, kind: 'build', targetW: 0, d: d + 100 });
         continue;
       }
       seenPagesRef.current.add(i);
       const base = pageBaseRef.current[i];
-      if (!base) continue;
+      if (!base) {
+        if (!baseBuildingRef.current[i] && !imgErrRef.current[i]) todo.push({ i, kind: 'build', targetW: 0, d });
+        continue;
+      }
       const targetW = Math.min(base.w, DISPLAY_BITMAP_MAX_W, Math.max(1024, wanted));
-      const d = Math.abs(i - centre);
       // The page's picture first, then the marker's layer as a bitmap of the same width — built when
       // the page comes near (or an edit changed it), redone bigger on a pinch, let go with the page.
       if (!bitmapBusyRef.current[i] && !(cur && (cur.w >= targetW || cur.w * 1.25 > targetW))) todo.push({ i, kind: 'base', targetW, d });
@@ -2754,35 +2779,75 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     // CLEAN original, turned as the marker turned it and laid in the layer's own
     // coordinate space (so strokes and objects share one space), with the cream
     // side strip / footer the marker added; the marker's ink comes in as objects.
+    // The page's PICTURE, built on demand (3 Nov 2026 — see buildBaseRef): the clean original,
+    // turned as the marker turned it, laid in the layer's coordinate space at 2×, kept as JPEG
+    // bytes only. Decoded straight to the drawn size where the browser can (no 50 MB full-size
+    // decode of the photo); the <img> road is the fallback.
+    const buildBase = (i: number): Promise<void> => {
+      const p = pages[i];
+      const meta = p?.layer;
+      if (!p || !meta || !p.originalUrl || pageBaseRef.current[i]) return Promise.resolve();
+      const started = baseBuildingRef.current[i];
+      if (started) return started;
+      const job = (async () => {
+        try {
+          const S = 2;
+          const rot = (((p.rot || 0) % 360) + 360) % 360;
+          const [dw, dh] = rot % 180 === 0 ? [meta.width * S, meta.height * S] : [meta.height * S, meta.width * S];
+          let orig: CanvasImageSource | null = null;
+          let release = () => {};
+          try {
+            const r = await fetch(p.originalUrl!, { credentials: 'include' });
+            if (!r.ok) throw new Error(`original ${r.status}`);
+            const bm = await createImageBitmap(await r.blob(), { resizeWidth: dw, resizeHeight: dh, resizeQuality: 'high' });
+            orig = bm; release = () => bm.close();
+          } catch {
+            const img = await loadImage(p.originalUrl!);
+            orig = img; release = () => { img.src = ''; };
+          }
+          const c = document.createElement('canvas');
+          c.width = meta.canvasW * S; c.height = meta.totalH * S;
+          const cx = c.getContext('2d')!;
+          cx.fillStyle = '#fdfcf7';
+          cx.fillRect(0, 0, c.width, c.height);
+          cx.save();
+          cx.translate((meta.width * S) / 2, (meta.height * S) / 2);
+          cx.rotate((rot * Math.PI) / 180);
+          cx.drawImage(orig, -dw / 2, -dh / 2, dw, dh);
+          cx.restore();
+          // Let go of the decoded photo now, not when the page closes.
+          release();
+          const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
+          const bw = c.width, bh = c.height;
+          // Hand the working canvas's memory back NOW (6 Oct 2026): iPadOS frees a canvas's
+          // backing store lazily, and twenty of these (≈ 25 MB each) is what a web app's
+          // memory budget cannot hold — the page gets killed and reloads mid-marking.
+          c.width = 0; c.height = 0;
+          if (!blob) throw new Error('could not build the page base');
+          // Only the JPEG bytes are kept; ensureBitmaps decodes them near the viewport (3 Nov 2026).
+          pageBaseRef.current[i] = { blob, w: bw, h: bh };
+        } catch (e) {
+          // No original to build from: the flat marked copy, without the editable layer (as before).
+          console.warn('[annotate] page picture fell back to the flat copy:', (e as Error).message);
+          layerRef.current[i] = null;
+          const lb = layerBmRef.current[i];
+          if (lb) { if (lb.src instanceof ImageBitmap) lb.src.close(); layerBmRef.current[i] = null; }
+          await loadFlat(p, i);
+        } finally {
+          baseBuildingRef.current[i] = null;
+        }
+      })();
+      baseBuildingRef.current[i] = job;
+      return job;
+    };
+    buildBaseRef.current = buildBase;
+    // The LIGHT part of a layered page, done for every page at open: its size (from the marker's
+    // geometry — no picture needed), the marker's layer file, Adrian's saved ink. The picture
+    // itself is built by the queue when the page comes near the screen.
     const loadLayered = async (p: AnnotatePageInput, i: number) => {
       const meta = p.layer!;
       try {
         if (!fontCssRef.current) fontCssRef.current = await loadPatrickHandCss();
-        const orig = await loadImage(p.originalUrl!);
-        const S = 2;
-        const c = document.createElement('canvas');
-        c.width = meta.canvasW * S; c.height = meta.totalH * S;
-        const cx = c.getContext('2d')!;
-        cx.fillStyle = '#fdfcf7';
-        cx.fillRect(0, 0, c.width, c.height);
-        const rot = (((p.rot || 0) % 360) + 360) % 360;
-        cx.save();
-        cx.translate((meta.width * S) / 2, (meta.height * S) / 2);
-        cx.rotate((rot * Math.PI) / 180);
-        const [dw, dh] = rot % 180 === 0 ? [meta.width * S, meta.height * S] : [meta.height * S, meta.width * S];
-        cx.drawImage(orig, -dw / 2, -dh / 2, dw, dh);
-        cx.restore();
-        // Let go of the full-size photo now (≈ 50 MB decoded each), not when the page closes.
-        orig.src = '';
-        const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
-        const bw = c.width, bh = c.height;
-        // Hand the working canvas's memory back NOW (6 Oct 2026): iPadOS frees a canvas's
-        // backing store lazily, and twenty of these (≈ 25 MB each) is what a web app's
-        // memory budget cannot hold — the page gets killed and reloads mid-marking.
-        c.width = 0; c.height = 0;
-        if (!blob) throw new Error('could not build the page base');
-        // Only the JPEG bytes are kept; ensureBitmaps decodes them near the viewport (3 Nov 2026).
-        pageBaseRef.current[i] = { blob, w: bw, h: bh };
         dimsRef.current[i] = { w: meta.canvasW, h: meta.totalH };
         // Which layer file, which edits, which ink: restoreRef (planRestore at open, 27 Oct 2026).
         let plan = restoreRef.current[i];
@@ -2829,8 +2894,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         layerLoadingRef.current[i] = false;
         setInkTick((t) => t + 1);
         setDimsTick((t) => t + 1);
-        rebuildLayerImage(i);
-        scheduleBase();
+        scheduleBase();          // the layer's bitmap is built by the queue when the page is near
       } catch (e) {
         console.warn('[annotate] layered page fell back to the flat copy:', (e as Error).message);
         layerRef.current[i] = null;
@@ -2845,6 +2909,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     // burst, on a device that kills a page for less. Flat pages go through the same queue
     // since 3 Nov 2026 (each is decoded once for its size).
     const isLayered = (p: AnnotatePageInput) => !!(p.layerUrl && p.layer && p.originalUrl);
+    // Every layered page's size is known from the marker's geometry: lay the paper out at once.
+    pages.forEach((p, i) => { if (isLayered(p) && !dimsRef.current[i]) dimsRef.current[i] = { w: p.layer!.canvasW, h: p.layer!.totalH }; });
+    setDimsTick((t) => t + 1);
     const queue: number[] = pages.map((_, i) => i);
     const layeredCount = pages.filter(isLayered).length;
     // the page he opened on first, then outwards from it
@@ -2977,6 +3044,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       lbm: layerBmRef.current.filter(Boolean).length,
       inflight: decodeInFlightRef.current,
       queued: pendingDecodesRef.current.length,
+      built: pageBaseRef.current.filter(Boolean).length,
       seen: seenPagesRef.current.size,
       screen: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio}`,
     });
@@ -2985,7 +3053,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (died && typeof died === 'object') postInkLog('log', { at: new Date().toISOString(), diedMidMarking: died, minutesOpen: Math.round(((died.at ?? 0) - (died.openedAt ?? 0)) / 6000) / 10 });
       localStorage.setItem(ALIVE_KEY, aliveNote());
     } catch { /* diagnostics only */ }
-    const aliveTimer = setInterval(() => { try { localStorage.setItem(ALIVE_KEY, aliveNote()); } catch { /* diagnostics only */ } }, 15_000);
+    // Every 5 s (was 15 — the 9:35 pm death note still showed the state at open, so it said nothing).
+    const aliveTimer = setInterval(() => { try { localStorage.setItem(ALIVE_KEY, aliveNote()); } catch { /* diagnostics only */ } }, 5_000);
     const onVis = () => { if (!document.hidden) requestLock(); };
     document.addEventListener('visibilitychange', onVis);
     // iPadOS ignores user-scalable=no. A pinch over the toolbar or the 📄/✅ side panel
@@ -3289,6 +3358,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         if (!entry.reencode) { finalPages.push({ photo_index: entry.photoIndex, url: entry.url }); continue; }
         done += 1;
         setBusy(`Flattening page ${done}/${inkedPhotoIdx.length}…`);
+        // A page inked from a saved draft but never scrolled to has no picture yet: build it now.
+        if (!pageBaseRef.current[i]) await buildBaseRef.current(i);
         const base = pageBaseRef.current[i];
         const d = dimsRef.current[i];
         if (!base || !d) throw new Error(`page ${entry.photoIndex + 1} isn't loaded yet — wait a moment, then Done again`);
