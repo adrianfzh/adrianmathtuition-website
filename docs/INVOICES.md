@@ -448,6 +448,10 @@ shorten links?"* — the bot has shortened its sign-up links since 13 Oct (`lib/
 Supabase `short_links` → `/j/<code>`), but the website's `POST /api/admin-schedule/trial-signup-link`
 never did. It now returns `url` = `https://www.adrianmathtuition.com/j/<code>` (same lifetime as the
 signed link) and `longUrl` (`lib/short-link.ts`). Every sign-up link sent to a parent is the short one.
+Later the same day (Adrian: *"is it possible to put the word "registration" or "signup" in the link?
+still short links"*): a sign-up short link reads `https://www.adrianmathtuition.com/register/<code>`
+(website `shortBaseFor`, bot `lib/short-link.js baseFor`); `/j/<code>` still works for older links and
+other kinds. Both routes forward through `lib/short-link-forward.ts`.
 
 **Later on 3 Nov 2026:**
 - **This month's booked ad-hoc lessons go on the 15th too.** Adrian, on Xavier Neo's four extra

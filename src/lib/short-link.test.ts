@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { newShortCode, shortenable } from './short-link';
+import { newShortCode, shortenable, shortBaseFor } from './short-link';
 
 describe('short links', () => {
   it('makes an 8-character code without look-alike letters', () => {
     const code = newShortCode(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]));
     expect(code).toBe('ABCDEFGH');
     expect(newShortCode()).toMatch(/^[A-HJ-NP-Za-km-z2-9]{8}$/);
+  });
+  it('a sign-up link says register', () => {
+    expect(shortBaseFor('signup')).toBe('https://www.adrianmathtuition.com/register/');
+    expect(shortBaseFor('other')).toBe('https://www.adrianmathtuition.com/j/');
   });
   it('only shortens our own site', () => {
     expect(shortenable('https://www.adrianmathtuition.com/signup?x=1')).toBe(true);

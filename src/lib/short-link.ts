@@ -7,6 +7,8 @@ import { randomBytes } from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const SHORT_BASE = 'https://www.adrianmathtuition.com/j/';
+/** Sign-up links read as what they are: adrianmathtuition.com/register/<code> (3 Nov 2026). */
+export const shortBaseFor = (purpose: string) => purpose === 'signup' ? 'https://www.adrianmathtuition.com/register/' : SHORT_BASE;
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';   // no 0/O/1/l/I
 
 /** An 8-character code. Pure apart from the random bytes. */
@@ -26,7 +28,7 @@ export async function shortenUrl(url: string, opts: { expiresAt: Date; purpose?:
       const { error } = await sb.from('short_links').insert({
         code, url, purpose: opts.purpose || 'signup', expires_at: opts.expiresAt.toISOString(),
       });
-      if (!error) return SHORT_BASE + code;
+      if (!error) return shortBaseFor(opts.purpose || 'signup') + code;
       if (!/duplicate|unique/i.test(error.message || '')) throw new Error(error.message);
     }
   } catch (e) {
