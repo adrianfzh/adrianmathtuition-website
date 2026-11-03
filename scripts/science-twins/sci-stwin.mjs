@@ -380,7 +380,13 @@ async function brief() {
     try { const r = await fetch(u); if (!r.ok) continue; const f = join(dir, `seed-fig-${i + 1}.png`); writeFileSync(f, Buffer.from(await r.arrayBuffer())); figs.push(f); } catch { /* skip */ }
   }
   // 🌱 the seed's earlier structured twins in this pool (a 2nd / 3rd twin must differ from each)
-  const earlier = corpus.filter((r) => r.twin_of === id && r.exam_type === 'Twin' && r.school === TWIN_SCHOOL && !r.practice_hidden && (r.gen_meta?.pool ?? pool) === pool);
+  // read by twin_of, not from the topic corpus (3 Nov 2026): a seed filed under two topics can have its
+  // first twin under the OTHER topic, and the corpus-only read said "no first twin" — 38 long-question
+  // seeds parked "brief failed" and the lane found "0 of 0" from 2 Nov with ~60 twins still owed.
+  // A twin missing from the corpus is added to it, so the novelty gate still compares against it.
+  const { data: tw } = await sb().from('questions').select('id, level, school, year, question_text, parts, twin_of, exam_type, practice_hidden, gen_meta').eq('twin_of', id);
+  const earlier = (tw ?? []).filter((r) => r.exam_type === 'Twin' && r.school === TWIN_SCHOOL && !r.practice_hidden && (r.gen_meta?.pool ?? pool) === pool);
+  for (const r of earlier) if (!corpus.some((c) => c.id === r.id)) corpus.push(r);
   if (pass > 1 && earlier.length >= SEED_CAP) throw new Error(`seed ${id} already has ${earlier.length} twins in ${pool} (cap ${SEED_CAP})`);
   if (pass > 1 && !earlier.length) throw new Error(`seed ${id} has no first twin in ${pool} yet — brief it without ~${pass}`);
   const leaves = flatParts(src.parts);
