@@ -3,7 +3,20 @@
 Started 23 Oct 2026. Adrian, 23 Oct 2026: *"We just need 2018 to 2025 psle prelim papers and
 for psle Tys - past 10 years"*. Maths and science only; English and Chinese come later.
 
-## Where things stand (23 Oct 2026)
+## Where things stand (3 Nov 2026)
+
+- **3 Nov 2026 (Adrian: "Yes, P6 first"): all 310 P6 files QUEUED.** They sat `held` (level
+  empty) since 1 Nov. Each row's level / year / school / paper / exam type was filled from its
+  name by `parseSourceFilename` (all 310 read cleanly: maths 199 prelims + 10 PSLE, science 90
+  prelims + 10 PSLE + 1 SA2), status `queued`, notes end `QUEUED 3 Nov 2026`. The Fly `extract`
+  switch is on; the first file was claimed within minutes. Answer keys are inside each file.
+- **P5 (asked 3 Nov 2026, not built):** Dropbox `Primary Exam Paper.zip` (23.8 GB, root) holds
+  `Primary 5 Exam Paper/P5 Math` and `P5 Science`: one combined book per year 2014–2023
+  (100–240 MB, e.g. `2023 P5 Math Kiasu exam papers.pdf`) plus ~30 single files a year for
+  2011–2013. Needs: a `P5` level (parser, both banks' topic lists, the worker law, the serve
+  gate), and each book cut by school like the P6 books (§6). Waiting on Adrian's yes.
+
+## Earlier (23 Oct 2026)
 
 - **Built:** the level, the filename reader, the worker's rules, the topic lists, the switch
   (off).
