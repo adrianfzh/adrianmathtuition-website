@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adhocChargeDefault, billableAdhocLessons, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
+import { adhocChargeDefault, billableAdhocLessons, bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, isCleanAdhocInvoice, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
 
 const KEVIN = 'recKevin';
 const row = (id: string, fields: Record<string, any>): LessonRow => ({ id, fields: { Student: [KEVIN], ...fields } });
@@ -95,5 +95,75 @@ describe('the invoice’s words', () => {
     expect(adhocInvoiceNote(dates)).toBe('Lessons on 13, 27 and 31 July; 3, 10, 18, 19, 21 and 23 August 2026.');
     expect(adhocInvoiceNote(['2026-07-13'])).toBe('Lessons on 13 July 2026.');
     expect(adhocInvoiceNote([])).toBe('');
+  });
+});
+
+// 3 Nov 2026 — Chantal: one-off lessons in Nov/Dec paid AHEAD, a month at a time.
+describe('bookedAdhocLessons (billed ahead)', () => {
+  const C = 'recChantal';
+  const c = (id: string, fields: Record<string, any>): LessonRow => ({ id, fields: { Student: [C], Type: 'Ad-hoc', 'Charge Override': 80, ...fields } });
+  const rows = [
+    c('n20', { Status: 'Scheduled', Date: '2026-11-20' }),
+    c('d04', { Status: 'Scheduled', Date: '2026-12-04' }),
+    c('d13', { Status: 'Scheduled', Date: '2026-12-13' }),
+    c('d18', { Status: 'Cancelled', Date: '2026-12-18' }),
+    c('d20', { Status: 'Scheduled', Date: '2026-12-20', 'Source Invoice': ['recInv'] }),
+    row('k1', { Type: 'Ad-hoc', Status: 'Completed', Date: '2026-07-04', 'Charge Override': 80 }),
+  ];
+  it('takes only the window\'s booked, unbilled lessons', () => {
+    expect(bookedAdhocLessons(rows, C, '2026-12-01', '2026-12-31').map(l => l.id)).toEqual(['d04', 'd13']);
+    expect(bookedAdhocLessons(rows, C, '2026-11-01', '2026-11-30').map(l => l.id)).toEqual(['n20']);
+  });
+  it('never sweeps an old unbilled Completed lesson into the run (Kevin Seng, Jul 2026)', () => {
+    expect(studentsWithBookedAdhoc(rows, '2026-12-01', '2026-12-31')).toEqual([C]);
+    expect(bookedAdhocLessons(rows, KEVIN, '2026-12-01', '2026-12-31')).toEqual([]);
+  });
+  it('a paid-ahead lesson that is moved is not billed again', () => {
+    const moved = [
+      c('o', { Status: 'Rescheduled', Date: '2026-12-04', 'Source Invoice': ['recInv'] }),
+      c('m', { Type: 'Rescheduled', Status: 'Scheduled', Date: '2026-12-06', 'Makeup For': ['o'], 'Charge Override': undefined }),
+    ];
+    expect(bookedAdhocLessons(moved, C, '2026-12-01', '2026-12-31')).toEqual([]);
+  });
+});
+
+describe('cancelledPaidAdhoc (credit on the next bill)', () => {
+  const C = 'recChantal';
+  const c = (id: string, fields: Record<string, any>): LessonRow => ({ id, fields: { Student: [C], Type: 'Ad-hoc', 'Charge Override': 80, ...fields } });
+  it('credits a paid lesson that was cancelled, once', () => {
+    const rows = [
+      c('paid', { Status: 'Cancelled', Date: '2026-12-18', 'Source Invoice': ['recInv'] }),
+      c('unpaid', { Status: 'Cancelled', Date: '2026-12-20' }),
+      c('done', { Status: 'Completed', Date: '2026-12-13', 'Source Invoice': ['recInv'] }),
+    ];
+    expect(cancelledPaidAdhoc(rows, C, new Set())).toEqual([{ lessonId: 'paid', date: '2026-12-18', amount: 80 }]);
+    expect(cancelledPaidAdhoc(rows, C, new Set(['paid']))).toEqual([]);
+  });
+  it('a moved paid lesson is no credit; the moved one cancelled is', () => {
+    const rows = [
+      c('o', { Status: 'Rescheduled', Date: '2026-12-04', 'Source Invoice': ['recInv'] }),
+      c('m', { Type: 'Rescheduled', Status: 'Scheduled', Date: '2026-12-06', 'Makeup For': ['o'], 'Charge Override': undefined }),
+    ];
+    expect(cancelledPaidAdhoc(rows, C, new Set())).toEqual([]);
+    rows[1].fields.Status = 'Cancelled';
+    expect(cancelledPaidAdhoc(rows, C, new Set())).toEqual([{ lessonId: 'm', date: '2026-12-06', amount: 80 }]);
+  });
+  it('the credit line carries the lesson id, and is read back', () => {
+    const line = adhocCreditLine({ lessonId: 'paid', date: '2026-12-18', amount: 80 });
+    expect(line).toEqual({ description: 'Credit — lesson on 18 December 2026 cancelled', amount: -80, lessonId: 'paid' });
+    expect([...creditedLessonIds([JSON.stringify([line]), null, 'not json'])]).toEqual(['paid']);
+  });
+});
+
+describe('isCleanAdhocInvoice (sent on the 15th unattended)', () => {
+  const clean = { 'Invoice Type': 'Adhoc', 'Final Amount': 400, 'Auto Notes': adhocInvoiceNote(['2026-12-04', '2026-12-13']) };
+  it('sends a plain booked-ahead bill', () => { expect(isCleanAdhocInvoice(clean)).toBe(true); });
+  it('holds one with a credit, an adjustment, a custom email or another note', () => {
+    expect(isCleanAdhocInvoice({ ...clean, 'Line Items Extra': '[{"amount":-80}]' })).toBe(false);
+    expect(isCleanAdhocInvoice({ ...clean, 'Adjustment Amount': 10 })).toBe(false);
+    expect(isCleanAdhocInvoice({ ...clean, 'Custom Email Message': 'hi' })).toBe(false);
+    expect(isCleanAdhocInvoice({ ...clean, 'Auto Notes': 'First invoice' })).toBe(false);
+    expect(isCleanAdhocInvoice({ ...clean, 'Invoice Type': 'Regular' })).toBe(false);
+    expect(isCleanAdhocInvoice({ ...clean, 'Final Amount': 0 })).toBe(false);
   });
 });

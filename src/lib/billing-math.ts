@@ -97,14 +97,24 @@ export function weekdayLessonDates(
  * which formatted local-midnight Dates with toISOString() — correct only while
  * the server timezone is UTC. Parity with that loop is pinned in
  * billing-math.test.ts.
+ *
+ * `startISO` (the enrollment's Start Date, INCLUSIVE) drops the weeks before
+ * it. Until 3 Nov 2026 the run ignored Start Date, so a class booked to start
+ * in January was billed for December's weeks too (Ian Chen's Saturday class
+ * from 2 Jan 2027; Chantal, a new student starting 2 Jan).
  */
 export function invoiceMonthLessonDates(
   monthFirstISO: string,
   weekday: number,
   endISO: string | null = null,
   excluded: readonly string[] = [],
+  startISO: string | null = null,
 ): string[] {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(monthFirstISO)) return [];
+  if (startISO && /^\d{4}-\d{2}-\d{2}$/.test(startISO) && startISO > monthFirstISO) {
+    if (startISO > lastDayOfMonthISO(monthFirstISO)) return [];
+    return invoiceMonthLessonDates(monthFirstISO, weekday, endISO, excluded).filter((d) => d >= startISO);
+  }
   // Fail CLOSED on a malformed end date, exactly as the retired loop did (its
   // Invalid-Date comparison yielded no dates): under-billing beats billing
   // past an enrollment's end.
@@ -130,4 +140,21 @@ export function firstInvoiceLessonDates(
     ? weekdayLessonDates(firstOfNextMonthISO(startISO), lastDayOfMonthISO(firstOfNextMonthISO(startISO)), weekday, excluded)
     : [];
   return { startMonth, nextMonth };
+}
+
+/**
+ * Does a signup bill its first lessons at once? Only when the monthly run for
+ * the start month (the 14th of the month before) has already passed. A class
+ * that starts later is billed by that run on the 15th like everyone else
+ * (Adrian, 3 Nov 2026, on Chantal signing up now for a Saturday class from
+ * 2 Jan: "every invoice will be issued on 15th"). Before this, a signup made
+ * the start month's invoice the moment the form was sent, however far away.
+ */
+export function signupBillsNow(startISO: string, todayISO: string): boolean {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(startISO);
+  if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(todayISO)) return true;   // unknown → the old behaviour
+  let y = Number(m[1]), mo = Number(m[2]) - 1;                     // the month before the start month
+  if (mo === 0) { y -= 1; mo = 12; }
+  const runDay = `${y}-${String(mo).padStart(2, '0')}-14`;
+  return todayISO >= runDay;
 }

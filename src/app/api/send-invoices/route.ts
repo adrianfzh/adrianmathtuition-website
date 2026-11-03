@@ -20,6 +20,7 @@ import { waDigits, waDisplay } from '@/lib/wa-number';
 import { formatDueDate, formatMoney, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
 import { adhocDatesText } from '@/lib/adhoc-billing';
 import { FINAL_EXTRAS_FORMULA, isFinalExtrasInvoice } from '@/lib/graduation';
+import { isCleanAdhocInvoice } from '@/lib/adhoc-billing';
 import { getPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
@@ -573,7 +574,8 @@ export async function POST(req: NextRequest) {
         if ((f['Custom Email Message'] || '').trim()) return false;         // bespoke email
         return true;
       };
-      const sendsItself = (r: any) => isCleanRegular(r) || isFinalExtrasInvoice(r.fields || {});
+      // …and an ad-hoc bill for lessons booked in this month (drafted by yesterday's run).
+      const sendsItself = (r: any) => isCleanRegular(r) || isFinalExtrasInvoice(r.fields || {}) || isCleanAdhocInvoice(r.fields || {});
       invoiceRecords = candidates.filter(sendsItself);
       heldForReview = candidates.filter(r => !sendsItself(r));
       console.log(`[send-invoices] cron classifier: ${invoiceRecords.length} clean → auto-send, ${heldForReview.length} held for review`);
@@ -591,6 +593,7 @@ export async function POST(req: NextRequest) {
         for (const r of hs.records) heldStudents[r.id] = r.fields['Student Name'];
       }
       const reason = (f: any): string => {
+        if (f['Invoice Type'] === 'Adhoc') return 'ad-hoc lessons';
         if ((f['Invoice Type'] || 'Regular') !== 'Regular') return 'revision sprint';
         if (Number(f['Final Amount']) <= 0) return Number(f['Final Amount']) < 0 ? 'credit balance' : '$0';
         if (Number(f['Adjustment Amount'] || 0) !== 0) return 'adjustment';

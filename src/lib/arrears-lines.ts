@@ -30,6 +30,8 @@ export interface SlotLine {
   rate: number;
   /** Enrollment End Date (or the exam cut-off) — projection stops here. */
   endISO: string | null;
+  /** Enrollment Start Date — no lesson is billed before it. */
+  startISO?: string | null;
 }
 
 /** "Sec 3 A Math & E Math" — the description base before " — <month>". */
@@ -75,7 +77,7 @@ export function projectedLessonLines(
   const out: InvoiceLineItem[] = [];
   for (const slot of opts.slots) {
     if (slot.weekday === undefined) continue;
-    for (const date of invoiceMonthLessonDates(monthFirstISO, slot.weekday, slot.endISO, opts.excluded)) {
+    for (const date of invoiceMonthLessonDates(monthFirstISO, slot.weekday, slot.endISO, opts.excluded, slot.startISO)) {
       out.push({ date, day: slot.dayLabel, type: 'Regular', description, rate: slot.rate || opts.defaultRate });
     }
   }

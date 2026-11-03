@@ -398,6 +398,36 @@ The rules are pure in `lib/adhoc-billing.ts` (tested).
   disagreed with the email's) and stored every PDF under `<name>-<month>.pdf` with
   allowOverwrite, so an ad-hoc PDF replaced that month's regular invoice PDF.
 
+### Booked ad-hoc lessons billed AHEAD, and a class that starts later (3 Nov 2026)
+
+Adrian, 3 Nov 2026, on Chantal (new: one-off Fri/Sun lessons 20 Nov – 27 Dec, then a weekly
+Saturday class from 2 Jan 2027): *"give signup link, then issue invoice for november. on 15 nov,
+issue for dec (based on the lessons agreed upon, and also for jan). every invoice will be issued
+on 15th"* → "yes build it". Four changes:
+
+- **The monthly run skips weeks before an enrollment's Start Date** (`invoiceMonthLessonDates`
+  5th argument, `SlotLine.startISO`). Until now Start Date was ignored: Ian Chen's Saturday class
+  from 2 Jan 2027 would have been billed every December Saturday on 15 Nov. A month wholly before
+  the start shows in the run's skip list as "starts <date>". The bot's weekly lesson maker
+  (`handlers/flows.js`, both loops) skips those weeks too.
+- **A signup whose class starts after the next monthly run makes no bill at signup**
+  (`signupBillsNow` in `lib/billing-math.ts`: bill now only from the 14th of the month before the
+  start month). The run bills it on the 15th like everyone else; the welcome email says "Your first
+  invoice will arrive separately".
+- **Booked ad-hoc lessons are billed a month ahead.** The 14th's advance run drafts ONE `Adhoc`
+  invoice per student for the ad-hoc lessons booked in the invoice month (Scheduled or Completed,
+  no Source Invoice — `bookedAdhocLessons`), labelled with that month, and the 15th's send sends it
+  unattended when clean (`isCleanAdhocInvoice`). Only that month's bookings: old Completed lessons
+  left unbilled (Kevin Seng, Jul–Aug 2026) are never swept up. The student page's billing tab has a
+  second card, "Ad-hoc lessons booked in <this month>" → **Bill <Month> now**
+  (`POST /api/admin/bill-adhoc {studentId, month:'YYYY-MM'}`) for the current month. An `Adhoc`
+  bill no longer counts as "already has this month's invoice" for the regular run.
+- **A paid-ahead ad-hoc lesson that is cancelled is credited once** on that student's next bill made
+  by the run (`cancelledPaidAdhoc` → a `Line Items Extra` line carrying `lessonId`, the dedup key;
+  the stored PDF is cleared so the send renders a fresh one; the bill is then held for review). A
+  paid lesson that is MOVED is not a credit (the moved lesson is already paid for). No bill that
+  month → the run's Telegram says to give the credit by hand.
+
 ## Leavers — "Graduated" and the final bill (29 Sep 2026)
 
 Adrian, on Kayla (IP Sec 4, last exam 29 Sep): "the 25 sep [additional lesson] should

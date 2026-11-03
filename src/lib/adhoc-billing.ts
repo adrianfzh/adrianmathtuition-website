@@ -66,18 +66,17 @@ function originOf(row: LessonRow, byId: Map<string, LessonRow>): LessonRow[] {
 }
 
 /**
- * A student's Completed ad-hoc lessons not yet on an invoice, oldest first.
- * `rows` = Lessons of Type 'Ad-hoc' and 'Rescheduled' (any student — the
- * student is matched here from the link array, never in the Airtable formula).
- * A moved ad-hoc lesson is billed ONCE, on the row that happened, at its own
- * charge or else the charge of the ad-hoc row it replaced.
+ * The ad-hoc rows of one student that pass `want` and are not yet on an
+ * invoice, oldest first. A moved ad-hoc lesson is billed ONCE, on the row that
+ * happened (or will happen), at its own charge or else the charge of the
+ * ad-hoc row it replaced; once any row of the chain is billed, none is again.
  */
-export function billableAdhocLessons(rows: LessonRow[], studentId: string): BillableAdhoc[] {
+function unbilledAdhoc(rows: LessonRow[], studentId: string, want: (f: Record<string, any>) => boolean): BillableAdhoc[] {
   const byId = new Map(rows.map(r => [r.id, r]));
   const out: BillableAdhoc[] = [];
   for (const r of rows) {
     const f = r.fields;
-    if (f['Student']?.[0] !== studentId || f['Status'] !== 'Completed') continue;
+    if (f['Student']?.[0] !== studentId || !want(f)) continue;
     if (f['Source Invoice']?.length) continue;
     if (f['Type'] === 'Ad-hoc') {
       out.push({ id: r.id, date: f['Date'], charge: Number(f['Charge Override']) || 0 });
@@ -97,6 +96,93 @@ export function billableAdhocLessons(rows: LessonRow[], studentId: string): Bill
     });
   }
   return out.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+
+/**
+ * A student's Completed ad-hoc lessons not yet on an invoice, oldest first —
+ * billed AFTER they happen, from the student page's button.
+ * `rows` = Lessons of Type 'Ad-hoc' and 'Rescheduled' (any student — the
+ * student is matched here from the link array, never in the Airtable formula).
+ */
+export function billableAdhocLessons(rows: LessonRow[], studentId: string): BillableAdhoc[] {
+  return unbilledAdhoc(rows, studentId, f => f['Status'] === 'Completed');
+}
+
+/**
+ * A student's ad-hoc lessons BOOKED in [fromISO, toISO] (Scheduled, or already
+ * Completed) and not yet on an invoice — billed BEFORE they happen.
+ * Adrian, 3 Nov 2026, on Chantal's November–December one-off lessons: bill
+ * November now, then "on 15 nov, issue for dec (based on the lessons agreed
+ * upon) … every invoice will be issued on 15th". The 14th's run bills the next
+ * month's booked lessons; the student page bills the current month's.
+ * Only the window's lessons: an old Completed lesson left unbilled on purpose
+ * (Kevin Seng, Jul–Aug 2026) is never swept up by the run.
+ */
+export function bookedAdhocLessons(rows: LessonRow[], studentId: string, fromISO: string, toISO: string): BillableAdhoc[] {
+  return unbilledAdhoc(rows, studentId, f =>
+    (f['Status'] === 'Scheduled' || f['Status'] === 'Completed') &&
+    String(f['Date'] || '') >= fromISO && String(f['Date'] || '') <= toISO);
+}
+
+/** Every student with an ad-hoc lesson booked in [fromISO, toISO] still to bill. */
+export function studentsWithBookedAdhoc(rows: LessonRow[], fromISO: string, toISO: string): string[] {
+  const ids = new Set<string>();
+  for (const r of rows) {
+    const sid = r.fields['Student']?.[0];
+    if (sid && !ids.has(sid) && bookedAdhocLessons(rows, sid, fromISO, toISO).length) ids.add(sid);
+  }
+  return [...ids];
+}
+
+const CANCELLED = new Set(['Cancelled', 'Cancelled - Prorated']);
+
+export interface AdhocCredit {
+  lessonId: string;
+  date: string;
+  /** Positive — the line on the invoice is its negative. */
+  amount: number;
+}
+
+/**
+ * A student's ad-hoc lessons that were PAID AHEAD and then cancelled — each is
+ * credited once on their next bill. A paid-ahead lesson that was MOVED is not
+ * a credit (the moved lesson is already paid for); a moved one that is then
+ * cancelled is. `credited` = lesson ids already credited on an invoice
+ * (`lessonId` on a Line Items Extra line — see creditedLessonIds).
+ */
+export function cancelledPaidAdhoc(rows: LessonRow[], studentId: string, credited: ReadonlySet<string>): AdhocCredit[] {
+  const byId = new Map(rows.map(r => [r.id, r]));
+  const out: AdhocCredit[] = [];
+  for (const r of rows) {
+    const f = r.fields;
+    if (f['Student']?.[0] !== studentId || !CANCELLED.has(f['Status']) || credited.has(r.id)) continue;
+    const chain = f['Type'] === 'Ad-hoc' ? [r] : f['Type'] === 'Rescheduled' ? originOf(r, byId) : [];
+    if (!chain.length || chain[chain.length - 1].fields['Type'] !== 'Ad-hoc') continue;
+    if (!chain.some(x => x.fields['Source Invoice']?.length)) continue;   // never billed → nothing to give back
+    const charged = chain.find(x => Number(x.fields['Charge Override']) > 0);
+    if (!charged) continue;
+    out.push({ lessonId: r.id, date: f['Date'], amount: round2(Number(charged.fields['Charge Override'])) });
+  }
+  return out.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+
+/** The credit's line on the next invoice (Line Items Extra). */
+export function adhocCreditLine(c: AdhocCredit): { description: string; amount: number; lessonId: string } {
+  const [y, m, d] = c.date.split('-').map(Number);
+  const when = y && m && d ? `${d} ${MONTHS[m - 1]} ${y}` : c.date;
+  return { description: `Credit — lesson on ${when} cancelled`, amount: -c.amount, lessonId: c.lessonId };
+}
+
+/** Lesson ids already credited, read from invoices' Line Items Extra (JSON strings). */
+export function creditedLessonIds(extras: (string | null | undefined)[]): Set<string> {
+  const ids = new Set<string>();
+  for (const raw of extras) {
+    if (!raw) continue;
+    try {
+      for (const li of JSON.parse(raw)) if (li && typeof li.lessonId === 'string') ids.add(li.lessonId);
+    } catch { /* not JSON — no credits on it */ }
+  }
+  return ids;
 }
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -145,4 +231,20 @@ export function adhocDatesText(dates: string[]): string {
 export function adhocInvoiceNote(dates: string[]): string {
   const text = adhocDatesText(dates);
   return text ? `Lessons on ${text}.` : '';
+}
+
+/**
+ * An ad-hoc bill with nothing unusual on it — the 15th's send may send it
+ * unattended, like a clean regular invoice (3 Nov 2026: booked lessons billed
+ * ahead go out with everyone's bills). A credit, an adjustment, a custom
+ * email or a note other than the lesson dates holds it for review.
+ */
+export function isCleanAdhocInvoice(f: Record<string, unknown>): boolean {
+  if ((f['Invoice Type'] as string) !== 'Adhoc') return false;
+  if (!(Number(f['Final Amount']) > 0)) return false;
+  if (Number(f['Adjustment Amount'] || 0) !== 0) return false;
+  const extra = ((f['Line Items Extra'] as string) || '').trim();
+  if (extra && extra !== '[]') return false;
+  if (((f['Custom Email Message'] as string) || '').trim()) return false;
+  return /^Lessons on [^\n]*\.$/.test(((f['Auto Notes'] as string) || '').trim());
 }

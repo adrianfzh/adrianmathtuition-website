@@ -169,7 +169,12 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
 
   const [data, setData] = useState<Profile | null>(null);
   // Ad-hoc billing: un-billed Completed Ad-hoc lessons → one Draft invoice on demand.
-  const [adhoc, setAdhoc] = useState<{ lessons: { id: string; date: string; charge: number }[]; total: number } | null>(null);
+  // …and this month's BOOKED ad-hoc lessons, billed ahead (3 Nov 2026, Chantal);
+  // the 14th's run bills each next month's on its own.
+  const [adhoc, setAdhoc] = useState<{
+    lessons: { id: string; date: string; charge: number }[]; total: number;
+    booked?: { month: string; monthISO: string; lessons: { id: string; date: string; charge: number }[]; total: number };
+  } | null>(null);
   const [adhocBilling, setAdhocBilling] = useState(false);
   async function loadAdhoc() {
     try {
@@ -177,13 +182,13 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
       if (r.ok) setAdhoc(await r.json());
     } catch { /* non-fatal */ }
   }
-  async function billAdhoc() {
+  async function billAdhoc(month?: string) {
     if (adhocBilling) return;
     setAdhocBilling(true);
     try {
       const r = await fetch('/api/admin/bill-adhoc', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId }),
+        body: JSON.stringify(month ? { studentId, month } : { studentId }),
       });
       const d = await r.json();
       if (!r.ok) { showToast('err', d.error || 'Failed to bill'); return; }
@@ -1300,6 +1305,23 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
               })()}
             </Section>
 
+            {/* Ad-hoc lessons booked this month, not yet invoiced — bill ahead */}
+            {adhoc?.booked && adhoc.booked.lessons.length > 0 && (
+              <Section title={`Ad-hoc lessons booked in ${adhoc.booked.month}`} show={tab === 'billing'}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 14, color: '#374151' }}>
+                    <b>{adhoc.booked.lessons.length}</b> lesson{adhoc.booked.lessons.length === 1 ? '' : 's'} not billed yet · <b>{money(adhoc.booked.total)}</b>
+                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{adhoc.booked.lessons.map(l => l.date).join(', ')}</div>
+                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Next month&apos;s booked lessons are billed on the 15th by themselves.</div>
+                  </div>
+                  <button onClick={() => billAdhoc(adhoc.booked!.monthISO)} disabled={adhocBilling}
+                    style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: adhocBilling ? 0.5 : 1 }}>
+                    {adhocBilling ? 'Billing…' : `Bill ${adhoc.booked.month.split(' ')[0]} now`}
+                  </button>
+                </div>
+              </Section>
+            )}
+
             {/* Ad-hoc lessons ready to bill (Completed, not yet invoiced) */}
             {adhoc && adhoc.lessons.length > 0 && (
               <Section title="Ad-hoc lessons to bill" show={tab === 'billing'}>
@@ -1308,7 +1330,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                     <b>{adhoc.lessons.length}</b> completed session{adhoc.lessons.length === 1 ? '' : 's'} · <b>{money(adhoc.total)}</b>
                     <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{adhoc.lessons.map(l => l.date).join(', ')}</div>
                   </div>
-                  <button onClick={billAdhoc} disabled={adhocBilling}
+                  <button onClick={() => billAdhoc()} disabled={adhocBilling}
                     style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: adhocBilling ? 0.5 : 1 }}>
                     {adhocBilling ? 'Billing…' : 'Create draft invoice'}
                   </button>

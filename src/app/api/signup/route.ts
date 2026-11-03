@@ -10,7 +10,7 @@ import { NO_LESSON_DATES } from '@/lib/holidays';
 import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
 import { sendWelcomeEmail } from '@/lib/welcome-email';
 import { displaySpanMonth } from '@/lib/invoice-month';
-import { firstInvoiceLessonDates, weekdayLessonDates, addDaysISO, nextDayISO } from '@/lib/billing-math';
+import { firstInvoiceLessonDates, signupBillsNow, weekdayLessonDates, addDaysISO, nextDayISO } from '@/lib/billing-math';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { REC_ID_RE, appendReferrerMarker } from '@/lib/referral-link';
 import { sgtDateISO } from '@/lib/sgt';
@@ -357,7 +357,8 @@ export async function POST(request: NextRequest) {
     let firstInvoicePdf: Buffer | null = null;
     let firstInvoiceMeta: { id: string; month: string; amount: number; dueDate: string; filename: string } | null = null;
     try {
-      if (ratePerLesson && slotIds.length > 0) {
+      // A class starting after the next monthly run is billed by that run on the 15th (signupBillsNow).
+      if (ratePerLesson && slotIds.length > 0 && signupBillsNow(String(startDate), sgtDateISO(new Date()))) {
         const start = new Date(String(startDate) + 'T00:00:00');
         const todayForInvoice = new Date();
         // Use SGT for the issue date — plain toISOString() is UTC, which
@@ -634,7 +635,9 @@ export async function POST(request: NextRequest) {
           `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
           `Start date: ${startDate}\n` +
           `Lessons created: ${lessonsCreated}\n` +
-          `No invoice generated (start date may be in a future month).`
+          (signupBillsNow(String(startDate), sgtDateISO(new Date()))
+            ? `No invoice generated — check the invoice step above.`
+            : `No invoice yet — the first one goes out with the monthly bills on the 15th.`)
         );
       } catch (tgError) {
         console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);

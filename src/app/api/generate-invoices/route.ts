@@ -11,8 +11,10 @@ import { displaySpanMonth, getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-mo
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
+import { bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds } from '@/lib/adhoc-billing';
+import { fetchAdhocRows, draftAdhocInvoice } from '@/lib/adhoc-store';
 import { advanceExtrasWindowStartISO, billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
-import { firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
+import { addDaysISO, firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
 import { optoutDatesByStudent, OPTOUT_MARKER } from '@/lib/holiday-optout';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import {
@@ -214,8 +216,12 @@ export async function POST(req: NextRequest) {
 
     const studentsById: Record<string, any> = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r]));
     const slotsById: Record<string, any> = Object.fromEntries(slotsData.records.map((r: any) => [r.id, r]));
+    // An 'Adhoc' bill for the month (lessons booked ahead, drafted below) is
+    // not the month's regular invoice — a re-run must still make that one.
     const existingStudentIds = new Set(
-      existingInvoicesData.records.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)
+      existingInvoicesData.records
+        .filter((r: any) => r.fields['Invoice Type'] !== 'Adhoc')
+        .map((r: any) => r.fields['Student']?.[0]).filter(Boolean)
     );
     // Arrears runs look at WHICH invoice types a student already holds for the
     // label: a Regular/Enrollment one means the lessons are billed (an
@@ -450,6 +456,7 @@ export async function POST(req: NextRequest) {
             weekday: slot ? DAY_INDICES[dayName] : undefined,
             rate: enrollment.fields['Rate Per Lesson'] || ratePerLesson,
             endISO: effectiveEndISO(enrollEnd, cutoff?.iso),
+            startISO: (enrollment.fields['Start Date'] as string | undefined) ?? null,
           });
         }
 
@@ -475,7 +482,7 @@ export async function POST(req: NextRequest) {
           const description = `${descBase} — ${invoiceMonth.label}`;
           for (const s of slots) {
             if (s.weekday === undefined) continue;
-            const dates = invoiceMonthLessonDates(monthFirstISO, s.weekday, s.endISO, [...NO_LESSON_DATES, ...(optoutDates.get(studentId) ?? [])]);
+            const dates = invoiceMonthLessonDates(monthFirstISO, s.weekday, s.endISO, [...NO_LESSON_DATES, ...(optoutDates.get(studentId) ?? [])], s.startISO);
             if (dates.length > 0) hasLessons = true;
             for (const date of dates) {
               lineItemsForInvoice.push({ date, day: s.dayLabel, type: 'Regular', description, rate: s.rate || ratePerLesson });
@@ -492,6 +499,8 @@ export async function POST(req: NextRequest) {
               if (!slot) return `Slot ${slotId} not in fetched Slots set (deleted or past pagination)`;
               const day = (slot.fields['Day'] || '').toString().replace(/^\d+\s+/, '').trim();
               if (!day) return `Slot ${slotId} has blank Day`;
+              const startDate = enr.fields['Start Date'];
+              if (startDate && startDate > billMonthLastISO) return `starts ${startDate}`;
               const endDate = enr.fields['End Date'];
               if (endDate && new Date(endDate) < invoiceMonth.firstDay) {
                 return `enrollment End Date ${endDate} is before ${invoiceMonth.label}`;
@@ -703,6 +712,81 @@ export async function POST(req: NextRequest) {
     }
 
     await closeBrowser();
+
+    // ── Ad-hoc lessons booked for the invoice month — billed AHEAD ─────────
+    // Adrian, 3 Nov 2026 (Chantal's Nov–Dec one-off lessons): "on 15 nov, issue
+    // for dec (based on the lessons agreed upon) … every invoice will be issued
+    // on 15th". Each student with ad-hoc lessons booked in the invoice month
+    // gets ONE 'Adhoc' invoice; send-invoices sends it tomorrow with the rest.
+    // Only that month's bookings — an old Completed lesson left unbilled is never
+    // swept up (lib/adhoc-billing.ts bookedAdhocLessons).
+    // Then: a paid-ahead ad-hoc lesson that was cancelled is credited once, on
+    // this run's invoice for that student (the invoice is then held for review).
+    const adhocAheadLines: string[] = [];
+    if (mode === 'advance') {
+      try {
+        const adhocRows = await fetchAdhocRows();
+        const adhocIssueISO = (() => { const d = new Date(); d.setDate(15); return formatDate(d); })();
+        const adhocDueISO = invoiceDueDateISO(mode, invoiceMonth.year, invoiceMonth.month, adhocIssueISO);
+        const adhocInvoiceOf = new Map<string, string>();
+        // studentsById holds only students with an Active enrollment — look the rest up.
+        const nameOfAdhoc = async (sid: string): Promise<string> =>
+          studentsById[sid]?.fields?.['Student Name']
+          || (await at('Students', `/${sid}`).then((r: any) => r.fields?.['Student Name']).catch(() => null))
+          || sid;
+        for (const sid of studentsWithBookedAdhoc(adhocRows, monthFirstISO, monthLastISO)) {
+          const name = await nameOfAdhoc(sid);
+          const lessons = bookedAdhocLessons(adhocRows, sid, monthFirstISO, monthLastISO);
+          if (lessons.some(l => !(l.charge > 0))) {
+            adhocAheadLines.push(`\u26a0\ufe0f ${name}: no charge on ${lessons.filter(l => !(l.charge > 0)).map(l => shortDate(l.date)).join(', ')} \u2014 set one, then bill from their page`);
+            continue;
+          }
+          try {
+            const inv = await draftAdhocInvoice(sid, lessons, { issueISO: adhocIssueISO, dueISO: adhocDueISO, monthLabel: invoiceMonth.label });
+            adhocInvoiceOf.set(sid, inv.id);
+            adhocAheadLines.push(`${name} \u2014 ${inv.total.toFixed(2)} (${lessons.length} ad-hoc lesson${lessons.length === 1 ? '' : 's'} booked)`);
+          } catch (e: any) {
+            errors.push({ student: name, error: `ad-hoc bill: ${e.message}` });
+          }
+        }
+
+        // Credits for paid-ahead lessons that were cancelled.
+        const creditStudents = [...new Set(adhocRows.map(r => r.fields['Student']?.[0]).filter(Boolean))] as string[];
+        const recentExtras = await airtableRequestAll('Invoices',
+          `?filterByFormula=${encodeURIComponent(`AND(IS_AFTER({Issue Date},'${addDaysISO(todayISO, -400)}'),{Line Items Extra}!='')`)}&fields[]=Line Items Extra`);
+        const credited = creditedLessonIds((recentExtras.records || []).map((r: any) => r.fields['Line Items Extra']));
+        for (const sid of creditStudents) {
+          const credits = cancelledPaidAdhoc(adhocRows, sid, credited);
+          if (!credits.length) continue;
+          const name = await nameOfAdhoc(sid);
+          const total = credits.reduce((t, c) => t + c.amount, 0);
+          const targetId = generatedInvoices.find(g => g.studentId === sid)?.id || adhocInvoiceOf.get(sid);
+          if (!targetId) {
+            adhocAheadLines.push(`\u26a0\ufe0f ${name}: \u2212$${total.toFixed(2)} credit for a paid lesson that was cancelled (${credits.map(c => shortDate(c.date)).join(', ')}) \u2014 no ${invoiceMonth.label} bill to put it on, give it by hand`);
+            continue;
+          }
+          try {
+            const inv = await at('Invoices', `/${targetId}`);
+            const extra = inv.fields['Line Items Extra'] ? JSON.parse(inv.fields['Line Items Extra']) : [];
+            extra.push(...credits.map(adhocCreditLine));
+            await at('Invoices', `/${targetId}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ fields: {
+                'Line Items Extra': JSON.stringify(extra),
+                'Final Amount': Math.max(0, Math.round(((inv.fields['Final Amount'] || 0) - total) * 100) / 100),
+                // The stored PDF predates the credit — the send step renders a fresh one.
+                'PDF URL': '',
+              } }),
+            });
+            adhocAheadLines.push(`${name}: \u2212$${total.toFixed(2)} credit for a paid lesson that was cancelled (${credits.map(c => shortDate(c.date)).join(', ')}) \u2014 on their ${invoiceMonth.label} bill, held for review`);
+          } catch (e: any) {
+            errors.push({ student: name, error: `ad-hoc credit: ${e.message}` });
+          }
+        }
+      } catch (e: any) {
+        errors.push({ student: '(ad-hoc lessons)', error: e.message });
+      }
+    }
 
     // ── Referral reward check ──────────────────────────────────────────────
     const referralRewards: any[] = [];
@@ -1059,6 +1143,7 @@ export async function POST(req: NextRequest) {
         referralSection +
         deferredSection +
         billedSection +
+        (adhocAheadLines.length ? `\n\n\u{1F4C5} <b>Ad-hoc lessons booked for ${invoiceMonth.label}</b>\n${adhocAheadLines.join('\n')}` : '') +
         footer
     );
 

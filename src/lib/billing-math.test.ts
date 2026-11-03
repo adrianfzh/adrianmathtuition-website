@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO, monthWindowClause } from './billing-math';
+import { signupBillsNow, weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO, monthWindowClause } from './billing-math';
 import { NO_LESSON_DATES } from './holidays';
 
 const FRI = 5, SUN = 0, TUE = 2;
@@ -137,6 +137,23 @@ describe('firstInvoiceLessonDates (signup combined invoice)', () => {
 });
 
 describe('invoiceMonthLessonDates (generate-invoices regular lessons)', () => {
+  // 3 Nov 2026: a Saturday class starting 2 Jan 2027 (Ian Chen, Chantal) was
+  // billed for every December Saturday on the 15 Nov run — Start Date was ignored.
+  it('bills nothing in a month before the enrollment starts', () => {
+    const SAT = 6;
+    expect(invoiceMonthLessonDates('2026-12-01', SAT, null, [], '2027-01-02')).toEqual([]);
+    expect(invoiceMonthLessonDates('2027-01-01', SAT, null, [], '2027-01-02')).toEqual([
+      '2027-01-02', '2027-01-09', '2027-01-16', '2027-01-23', '2027-01-30',
+    ]);
+  });
+
+  it('drops the weeks before a mid-month start (start date itself billed)', () => {
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, null, [], '2026-07-17')).toEqual([
+      '2026-07-17', '2026-07-24', '2026-07-31',
+    ]);
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, null, [], '2026-06-01')).toHaveLength(5);
+  });
+
   it('counts a 5-occurrence month whose LAST day is the lesson weekday', () => {
     // July 2026 has five Fridays and ends on one — both the 5-occurrence case
     // and the Kieran Lai month-end case in a single month.
@@ -408,5 +425,20 @@ describe('signup window — parity with the retired inline walk', () => {
     const walk = oracleSignupWalk(start, FRI);
     expect(walk).toHaveLength(10);
     expect(weekdayLessonDates(start, addDaysISO(start, 63), FRI)).toEqual(walk);
+  });
+});
+
+describe('signupBillsNow (3 Nov 2026: a far start waits for the 15th)', () => {
+  it('waits when the start month\'s run is still ahead (Chantal: 3 Nov → 2 Jan)', () => {
+    expect(signupBillsNow('2027-01-02', '2026-11-03')).toBe(false);
+    expect(signupBillsNow('2027-01-02', '2026-12-13')).toBe(false);
+  });
+  it('bills at once from the 14th of the month before the start', () => {
+    expect(signupBillsNow('2027-01-02', '2026-12-14')).toBe(true);
+    expect(signupBillsNow('2026-11-20', '2026-11-03')).toBe(true);
+    expect(signupBillsNow('2026-12-06', '2026-11-20')).toBe(true);
+  });
+  it('a start next month, before its run, waits', () => {
+    expect(signupBillsNow('2026-12-06', '2026-11-03')).toBe(false);
   });
 });
