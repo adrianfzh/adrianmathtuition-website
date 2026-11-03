@@ -3,6 +3,7 @@
 // student — the website equivalent of the bot's `/trial signup`. The HMAC scheme
 // MUST match /api/signup-data + /api/signup validation exactly (param order:
 // slotId, level, subjects, subjectLevel?, trialLessonId?, startDate?, note?, expires).
+import { shortenUrl } from '@/lib/short-link';
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -47,5 +48,8 @@ export async function POST(req: NextRequest) {
   // list that excludes it, so appending it here won't break signature checks.
   if (studentName && studentName.trim()) params.set('name', studentName.trim());
 
-  return NextResponse.json({ url: `https://www.adrianmathtuition.com/signup?${params.toString()}` });
+  const longUrl = `https://www.adrianmathtuition.com/signup?${params.toString()}`;
+  // Short /j/<code> for WhatsApp, living as long as the link itself (lib/short-link.ts).
+  const url = await shortenUrl(longUrl, { expiresAt: new Date(Number(params.get('expires'))), purpose: 'signup' });
+  return NextResponse.json({ url, longUrl });
 }

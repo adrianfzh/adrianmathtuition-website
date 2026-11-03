@@ -443,6 +443,12 @@ the run has this month's booked one-off lessons put ON that bill, as their own l
 stamped Source Invoice = that bill. Only a student with no monthly bill that month gets a separate
 `Adhoc` bill. Xavier on 15 Nov: December (1, 8, 15, 29 Dec) $280 + November extras $280 = $560.
 
+**Sign-up links are short (3 Nov 2026).** Adrian, on Chantal's long link: *"I thought we said to
+shorten links?"* — the bot has shortened its sign-up links since 13 Oct (`lib/short-link.js` →
+Supabase `short_links` → `/j/<code>`), but the website's `POST /api/admin-schedule/trial-signup-link`
+never did. It now returns `url` = `https://www.adrianmathtuition.com/j/<code>` (same lifetime as the
+signed link) and `longUrl` (`lib/short-link.ts`). Every sign-up link sent to a parent is the short one.
+
 **Later on 3 Nov 2026:**
 - **This month's booked ad-hoc lessons go on the 15th too.** Adrian, on Xavier Neo's four extra
   Saturdays in November: *"keep all invoices send on 15th November"*. The 14th's run takes booked,
