@@ -840,3 +840,4 @@ allow pinch to zoom in/out"*.
   built when the page comes near and closed with the page bitmap in `ensureBitmaps`. The alive
   note now carries `bm` / `bmMB` / `lbm` / `seen` / `screen`, so the next `diedMidMarking` row
   says what the pen was holding.
+  **Checked on the preview (3 Nov 2026, 7:30 pm, the same 17-page paper, panel "both", scrolled top to bottom twice in headless Chrome at iPad size):** all 17 pages seen, the pen holding **2 page pictures (29 MB)** and 2 layer bitmaps at the end — before round 1 it held all 17 decoded (≈ 350 MB); **one** Solutions document loaded (`page=all`), its sections following the page; no console errors. Both rounds reached `main` the same evening, carried by the billing session's promotes (450bcab8 at 6:57 pm), so the main site has them too. Adrian has not yet confirmed on the iPad.
