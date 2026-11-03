@@ -214,7 +214,7 @@ function PrintedQuestions({ runId, questions, prompts }: { runId: string; questi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, questions.join(',')]);
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '14px 16px 40px', fontSize: 16, lineHeight: 1.6, color: '#111' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', padding: '14px 16px 40px', fontSize: 16, lineHeight: 1.6, color: '#111' }}>
       <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>No question paper was sent with this one — the questions are printed on the student&rsquo;s pages. As the marker read them:</p>
       {questions.length === 0 && <p style={{ color: '#6b7280' }}>No question was marked on this page.</p>}
       {questions.map((q) => (
@@ -293,8 +293,10 @@ function PaperPdf({ url, questions }: { url: string; questions: string[] }) {
   if (err) return <p style={{ padding: 16, color: '#b91c1c', fontSize: 14 }}>Could not open the question paper: {err}</p>;
   if (!pages) return <p style={{ padding: 16, color: '#6b7280', fontSize: 14 }}>Opening the question paper…</p>;
   const w = Math.max(200, width - 16);
+  // overscroll contain: a swipe past the top stays in this pane instead of bouncing the
+  // page and tripping Safari's reload (4 Nov 2026).
   return (
-    <div ref={scrollRef} style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: '#eef0f3', padding: 8 }}>
+    <div ref={scrollRef} style={{ position: 'absolute', inset: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', background: '#eef0f3', padding: 8 }}>
       {target == null && questions.length > 0 && (
         <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 8px' }}>Could not find Q{questions[0]} in the paper&rsquo;s text — scroll to it.</p>
       )}

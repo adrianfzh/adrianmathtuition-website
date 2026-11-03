@@ -3005,6 +3005,23 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     toTop();
     const toTopLater = [setTimeout(toTop, 50), setTimeout(toTop, 300)];
     document.body.style.overflow = 'hidden';
+    // 🔄 "Still refreshes when scroll up" (Adrian, 4 Nov 2026, 00:36). Every death note of
+    // the day showed a page holding 50–80 MB, 5–15 s after opening, nothing in flight —
+    // not a crash shape. iPad Safari reloads a page when a swipe DOWN at the very top
+    // over-scrolls it (its pull-to-refresh); the page area swallows its touches, but a
+    // swipe that starts on the toolbar, or in the 📄/✅ side panel at its top, pans the
+    // document under the pen, bounces it, and Safari reloads. Three belts: the document
+    // never over-scrolls while the pen is open (here), the overlay's chrome takes no
+    // native pan (touch-action none on the root), and the side panel's scrollers keep
+    // their over-scroll to themselves (overscroll-behavior contain; the Solutions
+    // document says the same inside its frame).
+    const prevOverscroll = [document.documentElement.style.overscrollBehavior, document.body.style.overscrollBehavior];
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.overscrollBehavior = 'none';
+    // A reload is not a kill: the note is stamped on the way out, so the next open's
+    // diedMidMarking says `unloaded` for a reload and nothing for a page that was killed.
+    const onPageHide = () => { try { const n = localStorage.getItem(ALIVE_KEY); if (n) localStorage.setItem(ALIVE_KEY, JSON.stringify({ ...JSON.parse(n), unloaded: Date.now() })); } catch { /* diagnostics only */ } };
+    window.addEventListener('pagehide', onPageHide);
     // iPad Safari: a page that was pinch-zoomed BEFORE the pen opened keeps that zoom,
     // which pushes this fixed toolbar off screen and leaves only the canvas, at 2×,
     // with no way to zoom out or change tool (the desk, 8 Sep 2026). Re-declaring
@@ -3073,6 +3090,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       try { localStorage.removeItem(ALIVE_KEY); } catch { /* diagnostics only */ }
       toTopLater.forEach(clearTimeout);
       document.body.style.overflow = '';
+      document.documentElement.style.overscrollBehavior = prevOverscroll[0];
+      document.body.style.overscrollBehavior = prevOverscroll[1];
+      window.removeEventListener('pagehide', onPageHide);
       if (savedScrollY) requestAnimationFrame(() => window.scrollTo(0, savedScrollY));
       if (viewportMeta) viewportMeta.setAttribute('content', prevViewport ?? 'width=device-width, initial-scale=1');
       else lockMeta.remove();
@@ -3494,6 +3514,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       position: 'fixed', inset: 0, zIndex: 3000, background: '#e8eaef',
       display: 'flex', flexDirection: 'column', height: '100dvh',
       userSelect: 'none', WebkitUserSelect: 'none',
+      // No native pan from the toolbar or any chrome: a swipe there used to scroll the
+      // page under the pen and trip Safari's pull-to-refresh (4 Nov 2026). The side
+      // panel's own scrollers still scroll — touch-action is read up to the nearest
+      // scrolling box, not past it.
+      touchAction: 'none', overscrollBehavior: 'none',
     }}>
       {/* top bar */}
       <div data-annotate-toolbar style={{

@@ -18,7 +18,10 @@ import { buildSolutionsHTML } from '@/lib/render-solutions-pdf';
 export const runtime = 'nodejs';
 
 const SCREEN_CSS = `
-  html,body{touch-action:pan-x pan-y}
+  /* overscroll-behavior none: a swipe past the top of the solutions stays in this frame
+     instead of bouncing the page under the pen, which iPad Safari reads as pull-to-refresh
+     (4 Nov 2026). */
+  html,body{touch-action:pan-x pan-y;overscroll-behavior:none}
   /* A narrow panel (paper and solutions side by side, 2 Nov 2026): a long line scrolls
      sideways on its own instead of widening the whole page and cutting it off. */
   body{overflow-x:hidden}
