@@ -235,14 +235,16 @@ function detectHumanities(stem: string): { level: string; subject: SourceSubject
 // paper number is read, or it would be filed as paper 6. A PSLE name with no other exam token IS
 // the national paper: exam 'PSLE', school 'GCE', so every grounding-only rule for national papers
 // (served never, read by the marker and the writers) applies to it unchanged. SPEC-PSLE.md.
-const PRIMARY_LEVEL = /^P6\b|\bPRI(?:MARY)?\s?6\b/i;
+// Primary 5 (3 Nov 2026, Adrian: "Yes, set up P5"): level P5, the same reading as P6. PSLE is always P6.
+const PRIMARY_LEVEL = /^P[56]\b|\bPRI(?:MARY)?\s?[56]\b/i;
 const PSLE = /\bPSLE\b/i;
 const PRIMARY_SCIENCE = /\bSCI(?:ENCE)?\b/i;
 /** The words that name the level, the subject or a booklet in a primary name; never part of a school. */
-const PRIMARY_WORDS = /^P6\b|\bPRI(?:MARY)?\s?6\b|\bPSLE\b|\bMATH(?:S|EMATICS)?\b|\bSCI(?:ENCE)?\b|\bBOOKLET\s?[AB]\b|\bBKLT?\s?[AB]\b/gi;
+const PRIMARY_WORDS = /^P[56]\b|\bPRI(?:MARY)?\s?[56]\b|\bPSLE\b|\bMATH(?:S|EMATICS)?\b|\bSCI(?:ENCE)?\b|\bBOOKLET\s?[AB]\b|\bBKLT?\s?[AB]\b/gi;
 function detectPrimary(stem: string): { level: string; subject: SourceSubject } | null {
   if (!PRIMARY_LEVEL.test(stem) && !PSLE.test(stem)) return null;
-  return { level: 'P6', subject: PRIMARY_SCIENCE.test(stem) ? 'science' : 'math' };
+  const five = !PSLE.test(stem) && /^P5\b|\bPRI(?:MARY)?\s?5\b/i.test(stem);
+  return { level: five ? 'P5' : 'P6', subject: PRIMARY_SCIENCE.test(stem) ? 'science' : 'math' };
 }
 
 function detectExam(stem: string): { examType: string | null; token: RegExp | null } {
@@ -273,7 +275,7 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   const tagged = pri || sci || eng || hum;
   const level = tagged ? tagged.level : detectLevel(stem);
   const subject: SourceSubject = tagged ? tagged.subject : 'math';
-  if (!level) return { ok: false, reason: 'no level token (P6/PSLE/AM/EM/S1–S3/JC1/JC2/BIO/CHEM/PHY/History/Geography/Social Studies)', stem, ext };
+  if (!level) return { ok: false, reason: 'no level token (P5/P6/PSLE/AM/EM/S1–S3/JC1/JC2/BIO/CHEM/PHY/History/Geography/Social Studies)', stem, ext };
   const yearMatch = stem.match(/\b(19|20)\d{2}\b/);
   if (!yearMatch) return { ok: false, reason: 'no 4-digit year', stem, ext };
   const year = Number(yearMatch[0]);

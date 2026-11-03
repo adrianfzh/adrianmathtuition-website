@@ -355,6 +355,15 @@ export const P6_EXAM_TOPICS: TopicCategory[] = [
   },
 ];
 
+// ─── Primary 5 Mathematics (3 Nov 2026, SPEC-PSLE.md) ──────────────────────
+// The bank's level 'P5'. School P5 papers test P3–P5 work, so this is the P6 list
+// without the topics first taught in P6: Algebra, Circles, Speed, Pie Charts, Nets and Solids.
+// Mirrors the bot's extraction/canonical_topics.json "P5" key — change both.
+const P6_ONLY_TOPICS = new Set(['Algebra', 'Circles', 'Speed', 'Pie Charts', 'Nets and Solids']);
+export const P5_EXAM_TOPICS: TopicCategory[] = P6_EXAM_TOPICS
+  .map(c => ({ ...c, topics: c.topics.filter(t => !P6_ONLY_TOPICS.has(t)) }))
+  .filter(c => c.topics.length > 0);
+
 // ─── Legacy flat arrays (used for topic chip lookups) ─────────────────────────
 const _s1Flat = S1_EXAM_TOPICS.flatMap(c => c.topics);
 const _s2Flat = S2_OWN_TOPICS.flatMap(c => c.topics);
@@ -415,6 +424,7 @@ export function getTopicsForPaperLevel(level: string): TopicCategory[] {
     case 'S2':
     case 'S2_NA': return S2_EXAM_TOPICS;
     case 'P6': return P6_EXAM_TOPICS;                 // Primary 6 / PSLE (23 Oct 2026)
+    case 'P5': return P5_EXAM_TOPICS;                 // Primary 5 (3 Nov 2026)
     default: return [];
   }
 }

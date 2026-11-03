@@ -447,6 +447,22 @@ describe('regroundNotice', () => {
   });
 });
 
+describe('parseSourceFilename — Primary 5 (3 Nov 2026)', () => {
+  const ok = (n: string) => { const r = parseSourceFilename(n); if (!r.ok) throw new Error(r.reason); return r; };
+  it('a P5 paper is level P5; its P5 is never read as paper 5', () => {
+    const r = ok('P5 SA2 2023 Nanyang Paper 2.pdf');
+    expect([r.level, r.subject, r.examType, r.school, r.paper, r.year]).toEqual(['P5', 'math', 'SA2', 'Nanyang', 'p2', 2023]);
+    expect(ok('P5 SA2 2021 Rosyth.pdf').paper).toBe('all');
+  });
+  it('a P5 science paper is P5 science', () => {
+    const r = ok('P5 SCI SA2 2022 Henry Park Paper 1.pdf');
+    expect([r.level, r.subject, r.school, r.paper]).toEqual(['P5', 'science', 'Henry Park', 'p1']);
+  });
+  it('PSLE is always P6', () => {
+    expect(ok('PSLE Maths 2019 Paper 1.pdf').level).toBe('P6');
+  });
+});
+
 describe('parseSourceFilename — Primary 6 and PSLE (23 Oct 2026)', () => {
   const ok = (n: string) => { const r = parseSourceFilename(n); if (!r.ok) throw new Error(r.reason); return r; };
   it('a P6 prelim is level P6 maths; its P6 is never read as paper 6', () => {

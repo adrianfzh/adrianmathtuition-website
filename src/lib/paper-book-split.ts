@@ -165,8 +165,10 @@ export function partFileName(
   const school = national ? '' : ` ${book.school}`;
   // Primary 6 (23 Oct 2026, SPEC-PSLE.md): one level for both subjects, so the name says
   // SCI for science; the national paper is the PSLE, not "GCE".
-  const levelTokens = book.level === 'P6' && book.subject === 'science' ? 'P6 SCI' : levelNameTokens(book.level);
-  const nationalWord = book.level === 'P6' ? 'PSLE' : 'GCE';
+  // Primary 5 the same way (3 Nov 2026).
+  const primary = book.level === 'P5' || book.level === 'P6';
+  const levelTokens = primary && book.subject === 'science' ? `${book.level} SCI` : levelNameTokens(book.level);
+  const nationalWord = primary ? 'PSLE' : 'GCE';
   return `${levelTokens} ${national ? nationalWord : exam} ${year}${school} Paper ${part.paper}.${ext}`;
 }
 
