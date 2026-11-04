@@ -115,8 +115,11 @@ const DIAGRAM_ZOOM_SCRIPT = () => `<script>
   // 3 Nov 2026: "allow pinch to zoom in/out"). The size is kept for the next page.
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive: false });
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive: false });
-  var KEY = 'annotate-solutions-zoom', z = 1;
-  try { z = Math.min(2.5, Math.max(0.6, Number(localStorage.getItem(KEY)) || 1)); } catch (e) {}
+  // Floor 0.9, was 0.6 (4 Nov 2026: Adrian's iPad had 0.6 stored — the old CSS zoom never
+  // really honoured it in Safari, the picture scale did, and "the fonts got too small").
+  // A stored value under the floor is treated as 1, not clamped: nobody chose 60%.
+  var KEY = 'annotate-solutions-zoom', MIN = 0.9, MAX = 2.5, z = 1;
+  try { var saved = Number(localStorage.getItem(KEY)) || 1; z = saved < MIN ? 1 : Math.min(MAX, saved); } catch (e) {}
   // Zoomed in, the page keeps its width and grows past the frame (slide sideways), like a
   // real pinch; re-wrapping into the narrow panel squashed every vector row. Zoomed out it
   // re-wraps to use the room.
@@ -125,7 +128,7 @@ const DIAGRAM_ZOOM_SCRIPT = () => `<script>
   // other ("the lines eat into each other") — the Mac's Chrome, at zoom 1, never showed it.
   // A transform leaves the layout at its natural size and only scales the picture.
   function setZoom(v){
-    z = Math.min(2.5, Math.max(0.6, v));
+    z = Math.min(MAX, Math.max(MIN, v));
     var b = document.body, big = z > 1, w = document.documentElement.clientWidth;
     b.style.boxSizing = 'border-box';
     b.style.zoom = '';
