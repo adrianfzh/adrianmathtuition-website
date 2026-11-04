@@ -331,6 +331,12 @@ pen left Gemini on 12 Oct.
 
 **Recommendation (4 Nov 2026, awaiting Adrian's word — nothing switched):** leave the live answers alone (that is the quality students pay for) and move the three API jobs that do not need to be instant onto the plan worker — the hand-in page reads, the nightly prompt lint, the nightly missing-figures sweep (≈ US$12–15 a month, no change a student can see). The only bigger lever left is routing fewer hard questions to Opus, which trades answer quality and is his call, not a default.
 
+**The Console, read on 4 Nov 2026 (platform.claude.com → Cost → Group by API key; the ledger above was only the bot's key).** 30 days to 4 Nov: **US$889.32** across five keys — `bot-prod` US$329 · `website` US$290 (about US$224 of it the twins run of 15–23 Oct on this key) · `trading-signals` US$108 · `bot-marking` US$87 · `ci` US$75. The bot's ledger (US$262 Claude) under-counts `bot-prod` by about US$67 of untagged calls. **The last four days, 1–4 Nov (UTC):** US$43.93 = `trading-signals` US$15.87 · `bot-prod` US$11.38 · `ci` US$8.81 · `website` US$6.16 · `bot-marking` US$1.72. So in a quiet week the biggest spender is not the tuition business at all:
+- **`trading-signals`** — the separate auto-trader (`~/dev/trading-signals`, Fly scheduler; Haiku 4.5 classifier, Sonnet 5 / Opus 5.5 strategy and synthesis). US$6–7 a day lately and rising; it has its own cost logic (`src/ingest/lib/aiCostLogic.ts`). Off or on is Adrian's call; it is not marking or students.
+- **`ci`** — the bot repo's GitHub Actions "Answer content gate" (`.github/workflows/fly-deploy.yml`, `scripts/smoke-content-gate.js`), run on EVERY push to `main`: 47 deploy runs in 4 days ≈ US$0.19 a run, US$75 a month. Lever: run the gate only when a push touches the answer prompts or callers (the way the pre-push pen bench already skips itself), or nightly instead of per push.
+- `bot-prod` = the live answers above; `website` = the site's own calls (US$1–4 a day without the twins run); `bot-marking` = the marking fallback reads.
+Credit balance that day: US$16.69 with auto-reload to US$20 (the US$200 promotional credit is used up; whether it covered the twins run is in the invoice history).
+
 ## Adding a job
 
 1. Pick a kebab slug. 2. Stamp your success path (`logJobRun` / SKILL.md insert /
