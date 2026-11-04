@@ -22,11 +22,11 @@ use — so every place that shows autopsy units shows these too.
   mistake. `noveltyProblems` refuses a copied line, a reused distinctive number (anything but small
   integers and round figures) or 7 copied words in a row. A fresh Opus agent re-solves every card
   before it is saved. Runbook: `.claude/skills/spot-the-error/SKILL.md`.
-- **Privacy page:** it says we use a child's work "to make our teaching and marking better".
-  Re-written examples shown to other students fit that, but are not spelled out — recommended
-  extra line (needs Adrian's yes, and a POLICY_VERSION bump if added): *"We may turn a common
-  mistake into a practice example for other students — always re-written with new numbers and a
-  new question, never your child's own work, name or handwriting."*
+- **Privacy page — no change (Adrian, 4 Nov 2026: "there is no need to mention that right?").**
+  The page already says we use a child's work "to make our teaching and marking better", and a
+  re-written card holds nothing of the child's (no name, photo, handwriting, numbers or wording),
+  so it is not their personal data. This holds only while the re-write rules above hold — a card
+  that copies from a script would need the page changed first.
 
 ## 3. Approval — nothing reaches a student first
 - `scripts/spot-error/insert-drafts.mts` saves cards as `learning_units` rows, `kind 'autopsy'`,
