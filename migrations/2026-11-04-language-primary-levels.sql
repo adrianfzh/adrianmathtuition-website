@@ -1,0 +1,21 @@
+-- 4 Nov 2026 (Adrian: "let's do chinese (and higher chinese) and english as well") — APPLIED to the
+-- maths project (nempslbewxtlikfzachi) the same day through a DO block that rewrote one check inside
+-- public.bank_insert_language_paper (the rest of the function is unchanged). The old check:
+--
+--   if d_subject is distinct from 'english' then raise exception 'only english has extraction rules yet (subject %)', d_subject; end if;
+--   if d_level not in ('EL','EL_NA','EL_NT','S1_EL','S2_EL','S3_EL','S3_EL_NA') then
+--     raise exception 'level % is not an English level (…)', d_level;
+--   end if;
+--
+-- The new check (primary English, Chinese and Higher Chinese papers, P4–P6):
+--
+--   if d_subject is null or d_subject not in ('english', 'chinese', 'higher_chinese') then
+--     raise exception 'only english, chinese and higher_chinese have extraction rules (subject %)', d_subject; end if;
+--   if d_subject = 'english' and d_level not in ('EL','EL_NA','EL_NT','S1_EL','S2_EL','S3_EL','S3_EL_NA','P4_EL','P5_EL','P6_EL') then … end if;
+--   if d_subject = 'chinese' and d_level not in ('P4_CL','P5_CL','P6_CL') then … end if;
+--   if d_subject = 'higher_chinese' and d_level not in ('P5_HCL','P6_HCL') then … end if;
+--
+-- language_items / language_texts already allowed subject chinese / higher_chinese (their CHECKs).
+-- Checked after applying: chinese P5_CL, higher_chinese P6_HCL, english P4_EL and english EL pass the
+-- level check; chinese EL and malay are refused. To read the live text:
+--   select pg_get_functiondef('public.bank_insert_language_paper'::regproc);

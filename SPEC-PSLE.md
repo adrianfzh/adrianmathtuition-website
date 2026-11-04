@@ -34,8 +34,23 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
   school end-of-year (SA2) papers 2018–2023, cut by school into `~/P4-staging/`, uploaded as `paper_library`
   rows with status **`held`** until the P5 queue is empty, then released (`queued`). Needs level `P4` in the
   name reader, a P4 topic list, `PRIMARY_QLEVELS` + the worker law, like P5. The Fly worker shrinks only
-  after P4 is done too. **English and Chinese (P4–P6) wait** until a primary English or Chinese practice
-  is planned — nothing would use them now (English practice serves only our own passages).
+  after P4 is done too.
+- **Primary English, Chinese, Higher Chinese P4–P6 (4 Nov 2026, Adrian: "let's do chinese (and higher
+  chinese) and english as well" — reversing the same day's "wait").** Source: the same zip, one vendor book
+  per year per level-subject (P4/P5 2018–2023, P6 2018–2022; ~46 books, roughly 600 papers). Cut by school
+  into `~/PL-staging/english|chinese/` (one file = Paper 1 + Paper 2 + the key; P4/P5 SA2, P6 Prelim),
+  uploaded as `paper_library` rows status **`held`**: subject `english` level `P4_EL|P5_EL|P6_EL`, subject
+  `chinese` level `P4_CL|P5_CL|P6_CL`, subject `higher_chinese` level `P5_HCL|P6_HCL`. Into the language bank
+  (`language_items` / `language_texts`, MAIN project) — never served to students.
+  - Built the same day: `bank_insert_language_paper` accepts those subject/level pairs
+    (`migrations/2026-11-04-language-primary-levels.sql`); worker law v2026-11-04-primary-lang
+    §Primary language papers (old text archived `exam-extraction-2026-11-04`); bot `worker/fly/extract.sh`
+    + `EXTRACT_PROMPT.md` route chinese / higher_chinese like english (Chinese on the default model, English
+    on Sonnet).
+  - Order: P6 → P5 → P4 maths/science → the languages. Release = `update paper_library set status='queued'
+    where kind='source' and status='held' and level in (…)`. Check the FIRST English and the FIRST Chinese
+    paper by hand (read rows back against the page) before letting the rest run.
+  - The Fly worker shrinks only after all of it, which pushes the cost plan back about a week.
 - **⏰ When the primary extraction finishes → shrink the Fly worker (Adrian, 4 Nov 2026: "let's
   finish the extraction work first. and then later bring cost down to less than US$50 per month").**
   The worker stays on performance-2x / 8 GB (≈ US$114/mo in sin) until the P5 + P6 queue is empty.
