@@ -646,8 +646,15 @@ out, file storage) is projected over 100 % or has passed 90 % — each once per 
   storage exact (`storage.objects`, all three projects), "data out" = the last 24 h of FILE
   downloads × days so far — **a lower bound**: database reads are not counted (the logs do not
   record their size), and the brief says so in one bracket line. The stamp's
-  `meta.platform_error` says which path ran. The token may need **Analytics: Read** (logs) and
-  billing read on top of the security check's scopes — the first live run will say.
+  `meta.platform_error` says which path ran. The token needs, on ALL THREE projects (maths, science,
+  trading-signals): **Advisors, Database, Backups** (the security and backup checks) + **Logs: Read**
+  (file downloads, \`logs.all\`) + **Add-ons: Read** (server sizes) — names as on Supabase's
+  personal-access-token page (docs/guides/platform/personal-access-tokens, checked 4 Nov 2026).
+  Without Logs the "data out" figure is unknown; without Add-ons every server counts as Micro.
+  Adrian's steps (4 Nov 2026): Supabase → Account preferences → Access Tokens → Generate new token
+  "website checks", three projects, those five Read → Vercel → Settings → Environment Variables →
+  SUPABASE_ACCESS_TOKEN → Edit → paste (Production) → a session redeploys production (an env change
+  only reaches NEW deployments) → then delete the old token.
 - Billing cycle: 27th → 27th (`BILLING_ANCHOR_DAY`), or Supabase's own when the subscription answers.
 - **Dry run, 4 Nov 2026** (Adrian's Usage page: 129.95 GB on day 8–9, 93.3 GB storage):
   `📈 Supabase data sent out: 130 GB of the 250 GB included so far (52%), on course for about 476 GB
