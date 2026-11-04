@@ -72,9 +72,17 @@ describe('planMathLevel', () => {
     expect(p.write).toBeNull();
     expect(p.change).toBeNull();
   });
-  it('results never make a Challenge question', () => {
-    expect(planMathLevel('Advanced', null, tally(40, 40)).write).toBeNull();   // already Advanced, not promoted
-    expect(planMathLevel('Standard', null, tally(40, 40)).write).toBe('Advanced');   // one step only
+  it('Advanced that 3 in 4 get wrong → Challenge; one step at a time from Core (4 Nov 2026)', () => {
+    expect(planMathLevel('Advanced', null, tally(40, 31)).write).toBe('Challenging');   // 77.5 %
+    expect(planMathLevel('Advanced', null, tally(40, 30)).write).toBeNull();            // exactly 75 %: stays
+    expect(planMathLevel('Standard', null, tally(40, 40)).write).toBe('Advanced');      // one step only
+  });
+  it('at most one move per 4 weeks', () => {
+    const now = new Date('2026-12-01T00:00:00Z');
+    const recent = { starting_level: 'Standard', level: 'Advanced', source: 'results' as const, pinned: false, changed_at: '2026-11-20T00:00:00Z' };
+    expect(planMathLevel('Advanced', recent, tally(40, 39), 20, now).write).toBeNull();
+    const old = { ...recent, changed_at: '2026-10-20T00:00:00Z' };
+    expect(planMathLevel('Advanced', old, tally(40, 39), 20, now).write).toBe('Challenging');
   });
   it('a Challenge question most students get first time → Advanced (4 Nov 2026)', () => {
     const p = planMathLevel('Challenging', null, tally(20, 9));   // 45% wrong
@@ -114,21 +122,19 @@ describe('planMathLevel', () => {
 
 describe('mathWeeklyLine', () => {
   it('empty week → nothing', () => expect(mathWeeklyLine([])).toBe(''));
-  it('leads with tapped Advanced → Core', () => {
+  it('lists moves down first, then up, with the level words', () => {
     const line = mathWeeklyLine([
       { from_level: 'Advanced', to_level: 'Standard', starting_level: 'Advanced', attempts: 20, wrong: 2, label: 'A Math · Logarithms' },
       { from_level: 'Standard', to_level: 'Advanced', starting_level: 'Standard', attempts: 22, wrong: 14, label: 'E Math · Sets' },
-    ]);
-    expect(line).toMatch(/moved 2 questions/);
-    expect(line).toMatch(/1 were Advanced → now Core/);
-    expect(line).toMatch(/A Math · Logarithms — 2 of 20 wrong/);
-    expect(line).toMatch(/1 Core → now Advanced/);
-  });
-  it('lists Challenge questions that moved down', () => {
-    const line = mathWeeklyLine([
       { from_level: 'Challenging', to_level: 'Advanced', starting_level: 'Challenging', attempts: 24, wrong: 6, label: 'E Math · Matrices' },
+      { from_level: 'Advanced', to_level: 'Challenging', starting_level: 'Advanced', attempts: 30, wrong: 25, label: 'A Math · Proof' },
     ]);
-    expect(line).toMatch(/1 were Challenge → now Advanced/);
-    expect(line).toMatch(/E Math · Matrices — 6 of 24 wrong/);
+    expect(line).toMatch(/moved 4 questions/);
+    expect(line).toMatch(/2 moved down/);
+    expect(line).toMatch(/A Math · Logarithms: Advanced → Core — 2 of 20 wrong/);
+    expect(line).toMatch(/E Math · Matrices: Challenge → Advanced — 6 of 24 wrong/);
+    expect(line).toMatch(/2 moved up/);
+    expect(line).toMatch(/A Math · Proof: Advanced → Challenge — 25 of 30 wrong/);
+    expect(line.indexOf('moved down')).toBeLessThan(line.indexOf('moved up'));
   });
 });

@@ -7,8 +7,8 @@
 // next step" help), the preview identity left out. With ≥ 20 first tries: under 25 % wrong →
 // Core, over 55 % → Advanced, written to questions.difficulty (what practice_next and every
 // count read). `math_practice_difficulty` keeps the starting level; a hand change after results
-// pins the question; a Challenge question moves down to Advanced when fewer than half get it wrong
-// first time (4 Nov 2026) — results never make one. Each move → math_practice_difficulty_changes.
+// pins the question. Since 4 Nov 2026 every level moves up AND down one step (MATH_STEPS: Core ↔
+// Advanced at 25/55 %, Advanced ↔ Challenge at 50/75 %), at most once per MOVE_GAP_DAYS. Each move → math_practice_difficulty_changes.
 //
 // ?weekly=1 (Mondays 9am SGT via /api/cron/math-practice-difficulty-weekly, 0 1 * * 1 UTC): sends Adrian ONE Telegram line about the week's
 // moves (nothing when none) and marks them reported. ?dry=1 = report only, no writes.
@@ -19,6 +19,7 @@ import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
 import { cronAuth } from '@/lib/cron-auth';
+import { classifyTrap, type TrapStat } from '@/lib/question-traps';
 import {
   tallyMathFirstAttempts, tallySummary, planMathLevel, mathWeeklyLine, MIN_FIRST_ATTEMPTS,
   type MathAttempt, type MathDifficultyStored, type MathChange,
@@ -77,7 +78,7 @@ export async function GET(req: Request) {
   for (const part of chunks(ids, 200)) {
     const [q, s] = await Promise.all([
       sb.from('questions').select('id, difficulty').in('id', part),
-      sb.from('math_practice_difficulty').select('question_id, starting_level, level, source, pinned').in('question_id', part),
+      sb.from('math_practice_difficulty').select('question_id, starting_level, level, source, pinned, changed_at').in('question_id', part),
     ]);
     if (q.error || s.error) {
       const msg = (q.error || s.error)!.message;
@@ -95,7 +96,7 @@ export async function GET(req: Request) {
   const planned: { id: string; to: string; from: string }[] = [];
   for (const t of tallies) {
     if (!current.has(t.questionId)) continue;                           // deleted question
-    const plan = planMathLevel(current.get(t.questionId) ?? null, stored.get(t.questionId) ?? null, t);
+    const plan = planMathLevel(current.get(t.questionId) ?? null, stored.get(t.questionId) ?? null, t, MIN_FIRST_ATTEMPTS, new Date(now));
     if (!plan.row) continue;
     if (plan.row.pinned && !stored.get(t.questionId)?.pinned) pinned++;
     if (plan.write && plan.change) planned.push({ id: t.questionId, to: plan.write, from: plan.change.from });
@@ -126,9 +127,33 @@ export async function GET(req: Request) {
     }
   }
 
-  const line = `${summary.firstAttempts} first tries on ${summary.questionsTried} maths questions (most on one: ${summary.maxOnOne}); ${summary.enough} with ≥ ${MIN_FIRST_ATTEMPTS} → ${dry ? planned.length : moved} level${(dry ? planned.length : moved) === 1 ? '' : 's'} moved${pinned ? `, ${pinned} pinned by a hand change` : ''}${failed ? `, ${failed} writes FAILED` : ''}`;
-  if (!dry) await logJobRun('math-practice-difficulty', failed === 0, line, { ...summary, moved, pinned, failed }).catch(() => {});
-  return NextResponse.json({ ok: failed === 0, dry, attemptRows: rows.length, ...summary, moved, pinned, failed, planned: dry ? planned : undefined, line });
+  // 🪤 Common traps (4 Nov 2026): the counts are aggregated in SQL (question_trap_stats — marked
+  // papers + practice, each student's first go); lib/question-traps turns them into the label.
+  let traps = 0, trapNamed = 0, trapError = '';
+  {
+    const { data, error } = await sb.rpc('question_trap_stats', { p_exclude: [...SCIENCE_PREVIEW_IDENTITIES] });
+    if (error) trapError = error.message;
+    else {
+      const trapRows = ((data ?? []) as TrapStat[]).map(classifyTrap);
+      traps = trapRows.filter(r => r.is_trap).length;
+      trapNamed = trapRows.filter(r => r.kind).length;
+      if (!dry) {
+        for (const part of chunks(trapRows.map(r => ({ ...r, updated_at: now })), 500)) {
+          const { error: e } = await sb.from('question_traps').upsert(part, { onConflict: 'question_id' });
+          if (e) { trapError = e.message; break; }
+        }
+        // A question the counts no longer reach (e.g. its paper match turned out ambiguous) drops out.
+        if (!trapError) {
+          const { error: e } = await sb.from('question_traps').delete().lt('updated_at', now);
+          if (e) trapError = e.message;
+        }
+      }
+    }
+  }
+
+  const line = `${summary.firstAttempts} first tries on ${summary.questionsTried} maths questions (most on one: ${summary.maxOnOne}); ${summary.enough} with ≥ ${MIN_FIRST_ATTEMPTS} → ${dry ? planned.length : moved} level${(dry ? planned.length : moved) === 1 ? '' : 's'} moved${pinned ? `, ${pinned} pinned by a hand change` : ''}${failed ? `, ${failed} writes FAILED` : ''}; common traps: ${trapError ? `FAILED (${trapError})` : `${traps} (${trapNamed} with the mistake named)`}`;
+  if (!dry) await logJobRun('math-practice-difficulty', failed === 0 && !trapError, line, { ...summary, moved, pinned, failed, traps, trapNamed }).catch(() => {});
+  return NextResponse.json({ ok: failed === 0 && !trapError, dry, attemptRows: rows.length, ...summary, moved, pinned, failed, traps, trapNamed, planned: dry ? planned : undefined, line });
 }
 
 async function weekly(sb: ReturnType<typeof createServiceClient>, dry: boolean) {

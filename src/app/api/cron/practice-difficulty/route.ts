@@ -6,14 +6,17 @@
 // marking_json.science.questionId); each student's first try per question is counted, and a
 // question with ≥ MIN_FIRST_ATTEMPTS first tries gets its level from the share wrong, written
 // to the SCIENCE project's `practice_difficulty` (source 'results', replacing any estimate).
-// The preview / demo identity is left out. Nothing a student sees reads the table yet.
+// The preview / demo identity is left out. Students' Core / Exam / Challenge choice in science
+// practice reads this table (lib/science-bank scienceNext). Since 4 Nov 2026 a results-sorted
+// question moves one step at a time, with a margin and at most one move per MOVE_GAP_DAYS
+// (lib/practice-difficulty planScienceRows; the last move's date is detail.moved_at).
 // Stamps job_runs 'practice-difficulty' every run (a quiet night still stamps). ?dry=1 = report only.
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getScienceClient, scienceConfigured } from '@/lib/science-bank';
 import { logJobRun } from '@/lib/job-log';
 import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
-import { tallyFirstAttempts, resultsRows, tallySummary, MIN_FIRST_ATTEMPTS, type McqAttempt } from '@/lib/practice-difficulty';
+import { tallyFirstAttempts, planScienceRows, tallySummary, MIN_FIRST_ATTEMPTS, type McqAttempt, type ScienceStored } from '@/lib/practice-difficulty';
 import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
@@ -54,7 +57,20 @@ export async function GET(req: Request) {
   }
   const tallies = tallyFirstAttempts(attempts);
   const summary = tallySummary(tallies);
-  const upserts = resultsRows(tallies).map(r => ({ ...r, updated_at: new Date().toISOString() }));
+  // What the table already holds for the questions with enough tries (level, source, last move).
+  const enoughIds = tallies.filter(t => t.attempts >= MIN_FIRST_ATTEMPTS).map(t => t.questionId);
+  const existing = new Map<string, ScienceStored>();
+  for (let i = 0; i < enoughIds.length; i += 200) {
+    const { data, error } = await getScienceClient().from('practice_difficulty').select('question_id, level, source, detail').in('question_id', enoughIds.slice(i, i + 200));
+    if (error) {
+      await logJobRun('practice-difficulty', false, `read failed: ${error.message}`).catch(() => {});
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    for (const r of (data ?? []) as (ScienceStored & { question_id: string })[]) existing.set(r.question_id, r);
+  }
+  const now = new Date();
+  const { rows: planned, moves } = planScienceRows(tallies, existing, now);
+  const upserts = planned.map(r => ({ ...r, updated_at: now.toISOString() }));
 
   let written = 0;
   if (!dry && upserts.length) {
@@ -66,7 +82,7 @@ export async function GET(req: Request) {
     written = upserts.length;
   }
 
-  const line = `${summary.firstAttempts} first tries on ${summary.questionsTried} questions (most on one: ${summary.maxOnOne}); ${summary.enough} with ≥ ${MIN_FIRST_ATTEMPTS} → ${written} sorted by results`;
-  if (!dry) await logJobRun('practice-difficulty', true, line, { ...summary, written }).catch(() => {});
-  return NextResponse.json({ ok: true, dry, attemptRows: rows.length, ...summary, written, line });
+  const line = `${summary.firstAttempts} first tries on ${summary.questionsTried} questions (most on one: ${summary.maxOnOne}); ${summary.enough} with ≥ ${MIN_FIRST_ATTEMPTS} → ${written} sorted by results, ${moves.length} level${moves.length === 1 ? '' : 's'} moved`;
+  if (!dry) await logJobRun('practice-difficulty', true, line, { ...summary, written, moved: moves.length }).catch(() => {});
+  return NextResponse.json({ ok: true, dry, attemptRows: rows.length, ...summary, written, moves: dry ? moves : moves.length, line });
 }
