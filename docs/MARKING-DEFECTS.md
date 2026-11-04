@@ -1301,3 +1301,30 @@ Rainie Chemistry P1 2020 (`ab860e85`), 2021 (`9f87f446`), 2022 (`242194c5`), 40 
 - **A formula in the strip set as spaced plain text** — `\text{C}_2\text{H}_4 + \text{Cl}_2` prints "C ₂ H ₄+ Cl ₂ → C ₂ H ₄ Cl ₂" (2020 p12 Q37); a strip equation wraps mid-way "Ba(OH)₂ / +2HNO₃ → Ba(NO₃)₂ / +2H₂O" (2022 p6 Q11). Pen (strip TeX).
 - **A note that sounds like a telling-off for something she got right** — "You labelled X the anode: O₂ forms there, M at Y." She labelled X the anode correctly; the answer D is never printed (2022 p7 Q13). Words.
 - **Possible accuracy — Adrian's call**: 2020 Q22 note "in C the nitrogens do not balance: 5 N on the left, 3 N on the right". 2NH₄NO₃ has 4 N. The B0 stands, but the printed count is false. Read.
+
+# 5 Nov 2026 — the page reader: new defect classes (findings of 5 Nov: 5 papers, 40 pages; the fixer works them at 06:45)
+
+Rainie Chemistry P1 2016 (`7245f326`), 2017 (`4d422767`), 2018 (`c552aa5d`), 2019 (`5c3e4f9c`), 2020 sent again (`73b1aac6`, now read as chemistry), 40 MCQ each, sent 4 Nov 14:41–23:48 SGT. All five came after F262 and 059d2d86. 2016, 2017 and probably 2018 also came after mcq-mark-by-her-option (shipped 16:11).
+
+Seen working:
+- the tick by her letter, on most rows;
+- marks staying in their own question (4 of 5 blank-method pages);
+- formulas kept whole;
+- the 2020 Q22 N count, now right ("4 N").
+
+One line per NEW class. The returns are in the reader's findings file:
+- a correct MCQ's ✓ after another option (6 times after the ship, all on one-line options rows or table rows);
+- a credited MCQ with nothing drawn (7 times, all after the ship — up from 3);
+- a ✗ beside the right answer with "should be <that letter>";
+- the lost MCQ only in the footer;
+- a note in the next question's space;
+- red ink over printed words;
+- the point said 2–3×;
+- the right letter never printed;
+- 13 pages released with ink-audit failures.
+
+New classes:
+- **A note cut at an abbreviation's full stop.** The read's "conc. sulfuric acid reacts with ammonia — use CaO" prints as "Conc." and nothing else, boxed with an arrow to diagram D (2017 P1 p2 Q1). The same could happen with "aq.", "dil.", "e.g.", "no.". Misleads. Pen (first-sentence cut).
+- **The part label "(answer)" printed in every chip**, for example "Q1(answer) 0/1", or "Q10(answer):" in the strip. Every page of 2019 P1 has it. `no-red-sentence` failed on all 7 pages, and all 7 were released. This is F250's family with a new word. Read (label) + pen (chip).
+- **A "✗" inside the read's words prints as a tofu box**: "your own list says C ⍰" (2019 P1 p8 Q21). `pen-font-safe` failed and the page was released. Pen (note font).
+- **Possible accuracy — Adrian's call**: in 2018 P1, Q3 and Q20 carry the paper's printed "Out of syllabus". She left both blank, and each was scored 0/1 ("not attempted"), giving 27/40 rather than 27/38. On the same day, the 2017 paper's out-of-syllabus Q31 was left out of the total. Read (OOS note not seen; F206 family).
