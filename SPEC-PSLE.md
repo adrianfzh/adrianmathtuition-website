@@ -35,6 +35,10 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
   rows with status **`held`** until the P5 queue is empty, then released (`queued`). Needs level `P4` in the
   name reader, a P4 topic list, `PRIMARY_QLEVELS` + the worker law, like P5. The Fly worker shrinks only
   after P4 is done too.
+  **Cut 4 Nov 2026: 159 rows held** (maths 81, science 78; staging + page map `~/P4-staging/_tools/`).
+  2021–22 are thin (maths 7 + 9, science 5 + 9): the vendor re-files older papers under later years and
+  those copies were dropped, as for English. Every row has its key. The helper's own write-up was lost to a
+  network drop; each row's notes hold its pages and odd cases.
 - **Primary English, Chinese, Higher Chinese P4–P6 (4 Nov 2026, Adrian: "let's do chinese (and higher
   chinese) and english as well" — reversing the same day's "wait").** Source: the same zip, one vendor book
   per year per level-subject (P4/P5 2018–2023, P6 2018–2022; ~46 books, roughly 600 papers). Cut by school
