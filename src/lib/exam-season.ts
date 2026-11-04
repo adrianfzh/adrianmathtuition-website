@@ -234,7 +234,9 @@ export function pickDisplaySeason(
   for (const [t, s] of byType) {
     if (s.earliestAhead !== null && (bestDate === null || s.earliestAhead < bestDate)) { best = t; bestDate = s.earliestAhead; }
   }
-  if (best) return { examType: best, upcoming: true, closed: seasonClosed(best, today) };
+  // A dated exam still ahead keeps its lines even past the window's end (a
+  // school whose paper falls on 12 Nov is not "over" on the 11th).
+  if (best) return { examType: best, upcoming: true, closed: false };
   if (active && byType.has(active)) return { examType: active, upcoming: false, closed: seasonClosed(active, today) };
   let latestType: string | null = null; let latest = '';
   for (const [t, s] of byType) if (latestType === null || s.latest > latest) { latestType = t; latest = s.latest; }

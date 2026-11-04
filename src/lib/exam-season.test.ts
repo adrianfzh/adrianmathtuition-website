@@ -148,6 +148,12 @@ describe('season end (Adrian, 4 Nov 2026: "all the EOYs and promos are done")', 
     expect(pickDisplaySeason([{ examType: 'EOY', examDate: null }], 'WA3', '2026-08-22'))
       .toEqual({ examType: 'EOY', upcoming: true, closed: false });
   });
+  it('a dated exam AFTER the window end still shows until it has passed', () => {
+    expect(pickDisplaySeason([{ examType: 'EOY', examDate: '2026-11-14' }], null, '2026-11-12'))
+      .toEqual({ examType: 'EOY', upcoming: true, closed: false });
+    expect(pickDisplaySeason([{ examType: 'EOY', examDate: '2026-11-14' }], null, '2026-11-15'))
+      .toEqual({ examType: 'EOY', upcoming: false, closed: true });
+  });
   it('Promo done rows close with the EOY window', () => {
     expect(pickDisplaySeason([{ examType: 'Promo', examDate: '2026-10-02' }], null, '2026-11-20'))
       .toEqual({ examType: 'Promo', upcoming: false, closed: true });
