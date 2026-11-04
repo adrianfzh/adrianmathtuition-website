@@ -32,8 +32,13 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
 - **⏰ When the primary extraction finishes → shrink the Fly worker (Adrian, 4 Nov 2026: "let's
   finish the extraction work first. and then later bring cost down to less than US$50 per month").**
   The worker stays on performance-2x / 8 GB (≈ US$114/mo in sin) until the P5 + P6 queue is empty.
-  Then tell Adrian, and propose a size under US$50/mo for the worker (shared CPUs; exams are over, so
-  marking is light). History of every size and why: bot `fly.worker.toml` `[[vm]] size` comment.
+  Then shrink the worker to shared-cpu-2x / 4 GB (≈ US$30/mo; Adrian, 4 Nov: "Under US$50 for the worker
+  alone … yes"). History of every size and why: bot `fly.worker.toml` `[[vm]] size` comment.
+  Same day, Adrian: *"for telegram bot > exams are over, we also don't need such large capacity … and able to
+  auto set up such that if usage ramps up, capacity ramps up as well?"* — the bot is already at its normal
+  post-split size (app shared-1x/2 GB, marker shared-2x/4 GB since 10 Sep); the proposal is a marker that
+  sleeps when no paper waits and is woken like the worker (`lib/fly-worker.js`), plus spare machines that
+  wake when a queue grows. Awaiting his go-ahead.
 - **Skill labels:** primary has no sub-skill list (`subgroups` has no P5/P6 rows), so the filer
   leaves P5/P6 questions with topics only. Plan (3 Nov 2026): build the primary skill list
   from the banked questions once ~100 P6 papers are in.
