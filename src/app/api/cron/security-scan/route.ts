@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
     const now = [...maths, ...science];
     const report = toReport(now, prev);
     const resolved = resolvedKeys(now, prev);
-    const summary = scanSummary(now, report, resolved, prev === null);
+    const summary = scanSummary(now, report, resolved, prev === null)
+      + (dry ? ' (dry run — nothing saved)' : '');
     if (!dry) {
       await logJobRun('security-scan', true, summary, {
         keys: now.map((f) => f.key),

@@ -4,9 +4,9 @@
 //
 // Privacy: the candidate list is every public table/view the anon role is GRANTED select
 // on, plus public storage buckets. A grant is not a leak (most tables have rules that let
-// only the server or the owner in), so each candidate is then really read AS anon —
-// `set role anon` in the same SQL call — and only a table that hands an outsider a row
-// counts. Reads only; nothing is changed.
+// only the server or the owner in), so each candidate is then really read from outside with
+// the public key, and only a table that hands a stranger a row counts. Reads only.
+// The management login needs Advisors + Database + Backups READ on both projects (docs/OPS.md).
 
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { advisorFindings, privacyFindings, type Finding, type Project } from '@/lib/security-scan';
@@ -48,27 +48,40 @@ union all
 select 'bucket', id::text from storage.buckets where public
 order by 1, 2`;
 
-const qi = (s: string) => `"${s.replace(/"/g, '""')}"`;
+// The PUBLIC keys an outsider holds (meant to be public — they ship to browsers). The
+// science one is not in the site's env (nothing in a browser uses that project), so it is
+// written here; a rotated key makes every probe fail, which the check reports, never hides.
+const SCIENCE_PUBLISHABLE_KEY = 'sb_publishable_MpF9DbkbsBmGMvQ03QiKHQ_0dlr1QCD';
+function publicKey(project: Project): string {
+  if (project === 'science') return SCIENCE_PUBLISHABLE_KEY;
+  return (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+}
 
-/** Tables among `names` that hand the anon role at least one row. */
-async function anonReadable(ref: string, names: string[]): Promise<string[]> {
+/** Tables among `names` that hand a stranger at least one row — read from OUTSIDE, through the
+ *  public data door with the public key, exactly as a stranger would. (4 Nov 2026: the first
+ *  version did `set role anon` inside SQL; the read-only management login may not switch role,
+ *  every probe failed and the check said "0 readable" — so failures now count and are loud.) */
+async function anonReadable(project: Project, names: string[]): Promise<string[]> {
+  const key = publicKey(project);
+  if (!key) throw new Error(`no public key for the ${project} database — cannot test what strangers can read`);
+  const base = `https://${PROJECT_REFS[project]}.supabase.co/rest/v1`;
   const out: string[] = [];
-  for (let i = 0; i < names.length; i += 40) {
-    const chunk = names.slice(i, i + 40);
-    const probe = (ts: string[]) =>
-      `set role anon; select ${ts.map((t, j) => `(select count(*) from (select 1 from public.${qi(t)} limit 1) x) as c${j}`).join(', ')};`;
-    try {
-      const row = (await sql(ref, probe(chunk)))[0] || {};
-      chunk.forEach((t, j) => { if (Number(row[`c${j}`]) > 0) out.push(t); });
-    } catch {
-      // one refused read (e.g. a view over a table anon may not touch) fails the whole
-      // call — read that chunk one table at a time; a refusal means "not readable".
-      for (const t of chunk) {
-        try { if (Number(((await sql(ref, probe([t])))[0] || {}).c0) > 0) out.push(t); } catch { /* not readable */ }
-      }
-    }
+  let failed = 0;
+  for (let i = 0; i < names.length; i += 10) {
+    await Promise.all(names.slice(i, i + 10).map(async (t) => {
+      try {
+        const r = await fetch(`${base}/${encodeURIComponent(t)}?select=*&limit=1`, { headers: { apikey: key } });
+        if (r.status >= 500 || r.status === 401) { failed++; return; }   // 401 = the key itself was refused
+        if (!r.ok) return;                                                // 403/404 = locked: not readable
+        const rows = await r.json().catch(() => []);
+        if (Array.isArray(rows) && rows.length > 0) out.push(t);
+      } catch { failed++; }
+    }));
   }
-  return out;
+  if (names.length && failed > names.length / 2) {
+    throw new Error(`could not test the ${project} tables as a stranger: ${failed} of ${names.length} reads failed (public key refused or Supabase down)`);
+  }
+  return out.sort();
 }
 
 export async function scanProject(project: Project): Promise<Finding[]> {
@@ -77,7 +90,7 @@ export async function scanProject(project: Project): Promise<Finding[]> {
   const cands = await sql(ref, CANDIDATES);
   const tables = cands.filter((r) => r.kind === 'table').map((r) => String(r.name));
   const buckets = cands.filter((r) => r.kind === 'bucket').map((r) => String(r.name));
-  return [...advisors, ...privacyFindings(project, await anonReadable(ref, tables), buckets)];
+  return [...advisors, ...privacyFindings(project, await anonReadable(project, tables), buckets)];
 }
 
 /** Last run's list of keys (job_runs `security-scan`, newest ok row), or null on the first run. */
