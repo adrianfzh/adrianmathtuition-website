@@ -291,6 +291,46 @@ Monday message stops offering it:
 | `switch classify-flash` | `CLASSIFY_ON_FLASH=1` (shadow first: `CLASSIFY_SHADOW=1`) | the page sorter on the cheaper vision model (only paid on paper the API reads) | `result_json.classify_shadow` ≥ 20 papers, page kind ≥ 97 %, printed questions ≥ 95 % |
 | `switch reader-<level>` | none yet — a code change per level | the cheaper reader for one level | the 👻 shadow read (`shadow-read-report`) per level |
 
+## 💸 Where the API money goes — 30 days to 4 Nov 2026 (Adrian: "can you find out what's using the API?")
+
+Adrian, 4 Nov 2026: *"I am still getting API charges even after the reduction in marking and
+bot-answering-questions costs. Do you have the breakdown?"* Read on 4 Nov from the bot's own
+ledger (Airtable `CostLog`, every tagged call priced by the bot — the "by part" view on
+`/admin/costs`), `paper_marking_runs`, `job_runs`, and a grep of every API call site in both
+repos. Re-run the numbers any time: `/admin/costs?days=30` (admin login).
+
+**The ledger's 30 days (5 Oct → 4 Nov): US$301.56 — Claude US$261.89, Gemini US$39.66.**
+By week (Claude): 5 Oct US$34 · 12 Oct US$46 · 19 Oct US$56 · **26 Oct US$102 (exam-prep
+week, students asking)** · 2 Nov US$22 (3 days). Gemini fell to under US$1 a week after the red
+pen left Gemini on 12 Oct.
+
+| Job | What it is for | Trigger · how often | Model | 30-day cost (ledger) | Stop / move to plan? |
+|---|---|---|---|---|---|
+| **Web Ask + /chat answers** (`web_answer_image`, `web_answer_text`, `web_classification`) | answering a student's question in the app, photo or typed | student action · 922 calls | Opus 5.5 for photos, Sonnet 5 for text | **US$84** | No — live, seconds matter; the plan logins are for batch work. Photo answers on Opus are US$0.18 each |
+| **Telegram solver** (`edge_route_opus`, `student_answer_*`) | answering on Telegram/WhatsApp; hard questions routed to Opus | student message · 477 calls | Sonnet 5, Opus 5.5 when routed | **US$74** (US$52 of it the Opus route) | No (live). The Opus route is the lever if quality is traded |
+| **Science solver** (`science_*`, `ask_science_topic`) | science answers in the app and on Telegram | student action · ~300 calls | Opus 5.5 | **US$18** | No (live) |
+| **Marking — shadow tests** (`marking_shadow_read`, `marking_vision_shadow`, `*_shadow`) | second readers run beside the real marking to test the cost levers; nothing a student sees | ran 5–18 Oct, **all stopped by 18 Oct** | Sonnet 5.5 / Opus 5.5 / Gemini Flash | **US$47** — past, US$0 since 28 Oct | Already off (`MARKING_SHADOW_ARMS`, `VISION_MODEL_TIER`, `VISION_HELPER_TIER`, `CLASSIFY_SHADOW` unset). `OPUS_SHADOW`/`LABEL_SHADOW` are still `'1'` in `fly.toml` but spent nothing since 18 Oct (their 7-day budget ran out) |
+| **Marking — real reads on the API** (`marking_read`, `marking_second_look`, `marking_fix_first`, …) | a page read on the API when a plan slot cannot (mark-now, a retry, a re-mark); the second look | marking queue · 98 reads + 230 small checks | Opus 5.5 / Sonnet 5 | **US$20** (US$4.50 of it since 28 Oct) | Mostly plan already: 195 of 195 papers in 30 days went through the plan lane; the Monday report says US$0.32 a paper. The API reads are the fallback |
+| **Marking — red pen placement** (`marking_vision`, Gemini) | placing ticks and crosses on the page | per marked page | Gemini 3.1 Pro / 3.8 Flash | **US$19** — nearly all before 12 Oct | Already moved: our own pen since 12 Oct; Gemini is under US$1 a week now |
+| **Message sorter** (`route_classify`, `route_classify_subject`) | every incoming message sorted twice: which subject, which path | every message · 2,157 calls | Sonnet 5 | **US$19** | Could merge the two sorts into one call (≈ US$8 a month). Haiku was measured and is NOT good enough (`docs/FANOUT.md` §9a, 8 Oct) |
+| **Hand-in page reads** (`handin-read`) | reading the printed questions off a hand-in so the marker has them | `extraction-inbox` every 10 min when a new hand-in arrives · 476 calls | Sonnet 5 | **US$9** | Could move to the plan worker's extraction lane (a delay of minutes is fine) |
+| **Checks** (`verification_*`, `prompt_lint`, `prompt_improvement`, `evaluator`) | verifying bot answers; the nightly prompt lint | per answer; `prompt_lint` nightly | Opus 5.5 / Sonnet 4.6 / Haiku | **US$8** | `prompt_lint` (US$3, nightly Opus) could run on the plan worker |
+| **Practice generation** (`practice_*`, `portal_generate`) | "Made for you" questions on Find | student action · 34 calls | Sonnet 4.6 / Opus 5.5 | **US$1** | Nothing to do |
+| **Twins on the promotional credit** (`scripts/twins/api-twins.mjs`) | our own questions, written on the free US$200 credit (15 Oct) | by hand, 15–18 Oct on this Mac, 23–30 Oct on the MacBook Air | Opus 5.5 (batch) | **US$224 of credit** by the last stamp (US$175 from this Mac + the Air's runs); not in the ledger above | Finished (last `api:` stamp week of 26 Oct). **Not a charge unless the credit ran short** — the Console's credit line is the only place to see that; the credit expires 11 Nov |
+| **Fly worker lanes** (extraction, maths + science twins, the sub-skill filer, nightly builder, page reader, marking fixer, learn-from-Adrian, day/bot/find reviews, science qcheck, figure fitness) | the batch work | every few minutes to nightly | Opus 5.5 / Sonnet 5.5 on `claude -p` | **US$0** — plan logins; every lane script unsets the API key | Already on the plan |
+| **Invisible — not in any ledger** | (1) the website's own calls on Vercel: practice grading and hints, Learn explanations, humanities/English checks, the Annotate side panel, cockpit chat, lesson proposals, the scan-inbox cover reads — about 40 call sites, none recorded; (2) the worker's nightly `missing-figures` sweep (Sonnet 5.5, up to 80 looks a night, API key, untagged); (3) `tell-student`, the voice-note transcription (Gemini), OpenAI embeddings (`text-embedding-3-small`, nightly `embed-index`) | student and admin actions; nightly | mixed | **unknown** — the Console is the only count. Student volume on the site is small (31 practice attempts, 9 Learn requests, 2 English attempts in the tables) | The nightly sweep and prompt lint → plan worker; the rest is per-click |
+
+**The top three, in plain words.**
+1. **Students' questions, answered live — about US$176 of the US$302 (58 %).** Web Ask photo answers on Opus, the Telegram Opus route, and science answers. The exam-prep week of 21–27 Oct alone was US$117, nearly all questions. This is the product working, not a leak; the cut in September reduced the *number* of bot answers, not the price of each (US$0.18 a photo answer on Opus).
+2. **The shadow tests on marking — US$47, but all before 18 Oct.** They measured the cost levers (short answers, cheaper readers, Flash placement) and are finished. They are not part of today's spend.
+3. **The sorter and the hand-in reads — US$28.** Every message sorted twice on Sonnet 5, and the printed pages of every hand-in read on the API.
+
+**What is NOT the API any more:** marking itself (195 of 195 papers on the plan lane; US$0.32 a paper of bot-side extras), the red pen (our own since 12 Oct), extraction, twins, the filer, the nightly builder, the reviews — all on the plan logins. **Run-rate in the quiet week 28 Oct–4 Nov: US$31.73 in 8 days ≈ US$4 a day ≈ US$120 a month on the bot's key, almost all live answers.**
+
+**The number this page cannot see: the Console.** The ledger counts the bot's tagged calls only. The website's own key (Vercel), the worker's nightly sweep, and the credit balance show only on Anthropic's Console. Adrian's clicks, once: **platform.claude.com → sign in → "Usage" in the left menu → date range "Last 30 days" → "Group by: API key"**. Expect four lines: the bot's main key, `bot-marking`, the worker's key, the website's key — the names are the ones he gave them. Then **"Billing" → the credit line**: how much of the US$200 (15 Oct) is left and whether the twins run went past it. An Admin key (`ANTHROPIC_ADMIN_KEY`) would let `/admin/costs` show the invoice itself, but the Console only issues those to an organisation account (9 Sep 2026 note above).
+
+**Recommendation (4 Nov 2026, awaiting Adrian's word — nothing switched):** leave the live answers alone (that is the quality students pay for) and move the three API jobs that do not need to be instant onto the plan worker — the hand-in page reads, the nightly prompt lint, the nightly missing-figures sweep (≈ US$12–15 a month, no change a student can see). The only bigger lever left is routing fewer hard questions to Opus, which trades answer quality and is his call, not a default.
+
 ## Adding a job
 
 1. Pick a kebab slug. 2. Stamp your success path (`logJobRun` / SKILL.md insert /
