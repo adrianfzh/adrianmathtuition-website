@@ -22,7 +22,12 @@ export async function fetchAdhocRows(): Promise<LessonRow[]> {
  */
 export async function draftAdhocInvoice(
   studentId: string, lessons: BillableAdhoc[],
-  opts: { issueISO: string; dueISO: string; monthLabel?: string },
+  opts: {
+    issueISO: string; dueISO: string; monthLabel?: string;
+    /** Lines carried in from another unsent bill (a leaver's final extras) —
+     *  one email on the 15th, not two (Adrian, 3 Nov 2026, Kayla Ang). */
+    carryLines?: { date: string; rate: number; description: string; type?: string; day?: string }[];
+  },
 ): Promise<{ id: string; total: number; month: string }> {
   // One line item per lesson (the email and the records read the dates); the
   // PDF folds them into one row per price — see adhocRowDescription.
@@ -35,7 +40,9 @@ export async function draftAdhocInvoice(
     rate: l.charge,
     ...(l.movedFromDate ? { movedFrom: l.movedFromDate } : {}),
   }));
-  const total = Math.round(lineItems.reduce((s, li) => s + li.rate, 0) * 100) / 100;
+  const carry = (opts.carryLines || []).map(l => ({ day: '', type: 'Additional', ...l }));
+  const allLines = [...carry, ...lineItems].sort((a, b) => a.date.localeCompare(b.date));
+  const total = Math.round(allLines.reduce((s, li) => s + Number(li.rate || 0), 0) * 100) / 100;
   const month = opts.monthLabel || billingMonthOf(lessons[lessons.length - 1].date);
 
   const inv = await airtableRequest('Invoices', '', {
@@ -47,13 +54,13 @@ export async function draftAdhocInvoice(
         Month: month,
         'Invoice Type': 'Adhoc',
         Status: 'Draft',
-        'Lessons Count': lessons.length,
-        'Line Items': JSON.stringify(lineItems),
+        'Lessons Count': allLines.length,
+        'Line Items': JSON.stringify(allLines),
         'Final Amount': total,
         'Issue Date': opts.issueISO,
         'Due Date': opts.dueISO,
         // Prints on the parent's PDF ({{AUTO_NOTES}}) — parent-facing words only.
-        'Auto Notes': adhocInvoiceNote(lessons.map(l => l.date)),
+        'Auto Notes': adhocInvoiceNote(allLines.map(l => l.date)),
       },
     }),
   });

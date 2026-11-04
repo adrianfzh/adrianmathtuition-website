@@ -14,6 +14,7 @@ import { NO_LESSON_DATES } from '@/lib/holidays';
 import { bookedAdhocLessons, studentsWithBookedAdhoc, cancelledPaidAdhoc, adhocCreditLine, creditedLessonIds, adhocMonthlyLines, type BillableAdhoc } from '@/lib/adhoc-billing';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchAdhocRows, draftAdhocInvoice } from '@/lib/adhoc-store';
+import { FINAL_EXTRAS_FORMULA } from '@/lib/graduation';
 import { advanceExtrasWindowStartISO, billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
 import { addDaysISO, firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
 import { optoutDatesByStudent, OPTOUT_MARKER } from '@/lib/holiday-optout';
@@ -769,6 +770,13 @@ export async function POST(req: NextRequest) {
           studentsById[sid]?.fields?.['Student Name']
           || (await at('Students', `/${sid}`).then((r: any) => r.fields?.['Student Name']).catch(() => null))
           || sid;
+        // A leaver's final-extras bill still waiting to go out rides this ad-hoc
+        // bill instead of going as a second email (Adrian, 3 Nov 2026, Kayla Ang
+        // coming back: "1 bill on 15 november -> remember that we said to
+        // consolidate?"). Its lines are copied in and the old bill is Voided.
+        const leftoverBills = await airtableRequestAll('Invoices',
+          `?filterByFormula=${encodeURIComponent(`AND({Status}='Draft',${FINAL_EXTRAS_FORMULA})`)}&fields[]=Student&fields[]=Line Items&fields[]=Final Amount`)
+          .then((d: any) => d.records || []).catch(() => []);
         for (const sid of studentsWithBookedAdhoc(adhocRows, adhocFromISO, adhocToISO)) {
           const name = await nameOfAdhoc(sid);
           const all = bookedAdhocLessons(adhocRows, sid, adhocFromISO, adhocToISO);
@@ -778,9 +786,22 @@ export async function POST(req: NextRequest) {
           }
           const byMonth = new Map<string, typeof all>();
           for (const l of all) byMonth.set(l.date.slice(0, 7), [...(byMonth.get(l.date.slice(0, 7)) || []), l]);
+          const leftovers = leftoverBills.filter((r: any) => r.fields['Student']?.[0] === sid);
+          let carryLines: { date: string; rate: number; description: string; type?: string; day?: string }[] = [];
+          for (const r of leftovers) {
+            try { carryLines.push(...JSON.parse(r.fields['Line Items'] || '[]').filter((l: any) => l?.date && Number(l.rate) > 0)); } catch { /* unreadable → left as its own bill */ }
+          }
           for (const lessons of byMonth.values()) {
             try {
-              const inv = await draftAdhocInvoice(sid, lessons, { issueISO: adhocIssueISO, dueISO: adhocDueISO });
+              const inv = await draftAdhocInvoice(sid, lessons, { issueISO: adhocIssueISO, dueISO: adhocDueISO, carryLines });
+              if (carryLines.length) {
+                for (const r of leftovers) {
+                  await at('Invoices', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Status: 'Voided' } }) })
+                    .catch((e: any) => errors.push({ student: name, error: `void leftover bill ${r.id}: ${e.message} — it may go out twice` }));
+                }
+                adhocAheadLines.push(`${name}: their leftover bill (${carryLines.map(l => shortDate(l.date)).join(', ')}) is on this bill now`);
+                carryLines = [];
+              }
               adhocInvoiceOf.set(sid, inv.id);
               adhocAheadLines.push(`${name} \u2014 ${inv.total.toFixed(2)} (${lessons.length} ad-hoc lesson${lessons.length === 1 ? '' : 's'} in ${inv.month})`);
             } catch (e: any) {

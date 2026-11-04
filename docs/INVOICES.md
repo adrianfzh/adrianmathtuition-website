@@ -453,6 +453,14 @@ still short links"*): a sign-up short link reads `https://www.adrianmathtuition.
 (website `shortBaseFor`, bot `lib/short-link.js baseFor`); `/j/<code>` still works for older links and
 other kinds. Both routes forward through `lib/short-link-forward.ts`.
 
+**A leftover leaver bill rides the ad-hoc bill (3 Nov 2026).** Adrian, on Kayla Ang coming back
+(one-off H2 lessons Nov–Jan at $90, weekly Sunday 5–7pm JC from 14 Feb 2027) while her $70
+September final-extras bill was still waiting for 15 Nov: *"1 bill on 15 november -> remember that
+we said to consolidate?"*. When the 14th's run drafts a student's separate ad-hoc bill, any of their
+Draft final-extras bills (`FINAL_EXTRAS_FORMULA`) are copied in as lines (`draftAdhocInvoice`
+`carryLines`) and the old bill is set `Voided`. Kayla on 15 Nov: 25 Sep $70 + 8, 15, 29 Nov 3 × $90
+= $340, one email.
+
 **Later on 3 Nov 2026:**
 - **This month's booked ad-hoc lessons go on the 15th too.** Adrian, on Xavier Neo's four extra
   Saturdays in November: *"keep all invoices send on 15th November"*. The 14th's run takes booked,
