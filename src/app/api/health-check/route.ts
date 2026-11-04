@@ -1409,6 +1409,18 @@ export async function GET(req: NextRequest) {
     const { count } = await sb.from('question_health').select('question_id', { count: 'exact', head: true }).eq('status', 'paused').abortSignal(T(5000));
     return `on · oldest waiting ${hours.toFixed(1)} h · ${count ?? 0} paused for Adrian`;
   }));
+  // 🔀 Another way to solve this (SPEC-ANOTHER-WAY.md): the serving rule still refuses a waiting or
+  // failed row, and the table the practice solution and the marked paper read answers.
+  results.push(await timed('another-way', async () => {
+    const { altView } = await import('@/lib/alt-method');
+    const ok = { same: true, solver_answer: '1', working_ok: true, different: true, in_syllabus: true };
+    const row = { question_id: '0', main_method: 'A', alt_method: 'B', working: 'x', better: 'y', status: 'approved', checks: ok };
+    if (!altView(row) || altView({ ...row, status: 'pending' }) || altView({ ...row, checks: { ...ok, same: false } })) throw new Error('the serving rule changed');
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const { error } = await getSupabaseAdmin().from('question_alt_methods').select('id').limit(1).abortSignal(T(5000));
+    if (error) throw new Error(`question_alt_methods: ${error.message}`);
+  }));
+
   results.push(await timed('part-marks', async () => {
     const { studentView } = await import('@/lib/part-syllabus');
     const v = studentView({

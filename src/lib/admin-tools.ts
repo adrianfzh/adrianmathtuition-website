@@ -16,7 +16,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
   { group: 'Marking', links: [
     { label: 'Mark a paper', href: '/admin/mark-paper', emoji: '✍️' }, { label: 'Marked papers', href: '/admin/papers', emoji: '🗂' },
     { label: 'Mark schemes', href: '/admin/schemes', emoji: '📘' }, { label: 'Calibration', href: '/admin/calibration', emoji: '⚖️' },
-    { label: 'Stuck', href: '/admin/stuck', emoji: '🧭' }, { label: 'Generated', href: '/admin/generated', emoji: '📷' }, { label: 'Spot the error', href: '/admin/spot-error', emoji: '🔍' },
+    { label: 'Stuck', href: '/admin/stuck', emoji: '🧭' }, { label: 'Generated', href: '/admin/generated', emoji: '📷' }, { label: 'Spot the error', href: '/admin/spot-error', emoji: '🔍' }, { label: 'Another way', href: '/admin/another-way', emoji: '🔀' },
     { label: 'Essays', href: '/admin/essays', emoji: '📝' }, { label: 'Listening papers', href: '/admin/listening-papers', emoji: '🎧' },
     { label: 'Humanities marker', href: '/admin/humanities-marker', emoji: '📜' },
   ] },

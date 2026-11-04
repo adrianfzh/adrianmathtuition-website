@@ -13,7 +13,9 @@ import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { fixOneOpenFor } from '@/lib/portal-beta';
-import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, explainClipVisible, questionClipsVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, explainClipVisible, questionClipsVisible, anotherWayVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { altViewsFor } from '@/lib/alt-method-store';
+import type { AltView } from '@/lib/alt-method';
 import { bankQuestionsForRun, photoClipIdsForRun } from '@/lib/question-clip-store';
 import { lostPartLinks, type DefSubjectKey } from '@/lib/definition-asks';
 import { DEFINITIONS } from '@/lib/science-definitions';
@@ -130,6 +132,16 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   const photoClipIds = !isScience && (await questionClipsVisible(sid))
     ? photoClipIdsForRun(id, paper.dropped.map(q => q.questionNumber).filter(n => !(clipIds as Record<string, string>)[n]))
     : {};
+
+  // 🔀 Another way to solve this (SPEC-ANOTHER-WAY.md): an approved second method for a dropped
+  // question the marking matched to the bank — closed under its worked solution.
+  const altViews: Record<string, AltView> = {};
+  if (!isScience && paper.dropped.length && (await anotherWayVisible(sid))) {
+    const byNumber = Object.keys(clipIds).length ? clipIds as Record<string, string>
+      : await bankQuestionsForRun((row as { result_json?: unknown }).result_json, paper.dropped.map(q => q.questionNumber)).catch(() => ({} as Record<string, string>));
+    const views: Record<string, AltView> = await altViewsFor(Object.values(byNumber), isAdmin).catch(() => ({}));
+    for (const [n, qid] of Object.entries(byNumber)) if (views[qid]) altViews[n] = views[qid];
+  }
 
   const { data: sheetRows } = isScience ? { data: [] } : await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
@@ -405,7 +417,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
           {/* Every question that dropped marks, with the comment and the annotated
               worked solution — moved here from the Papers list on 17 Sep 2026. */}
-          <LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} fixOne={showFixOne} />
+          <LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} altViews={altViews} fixOne={showFixOne} />
         </>
       ) : (
         <Suspense fallback={null}>
@@ -431,7 +443,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
                 </div>
               )}
             </>}
-            marks={<LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} fixOne={showFixOne} />} />
+            marks={<LostMarks paper={paper} explain={explain} clipIds={clipIds} photoClipIds={photoClipIds} altViews={altViews} fixOne={showFixOne} />} />
         </Suspense>
       )}
 

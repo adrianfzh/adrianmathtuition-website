@@ -10,6 +10,9 @@ import { isNationalRow } from '@/lib/serve-gate';
 import { tidyChemText } from '@/lib/chem-text';
 import { approvedDiagrams, diagramForQuestion } from '@/lib/science-diagram-library';
 import { studentRow } from '@/lib/part-syllabus';
+import { anotherWayVisible, questionClipsAdmin } from '@/lib/portal-beta';
+import { portalIdentity } from '@/lib/portal-auth';
+import { altViewFor } from '@/lib/alt-method-store';
 
 export const runtime = 'nodejs';
 
@@ -70,5 +73,11 @@ export async function GET(req: NextRequest) {
     const { data: row } = await getSupabaseAdmin().from('questions').select('national, school').eq('id', id).maybeSingle();
     if (row && isNationalRow(row)) return NextResponse.json({ error: 'not found' }, { status: 404 });
   }
-  return NextResponse.json({ markdown: solutionMarkdown(q, gate) });
+  // 🔀 Another way (SPEC-ANOTHER-WAY.md): an approved second method rides along, shown in a
+  // closed drop-down under the solution — admin + the preview student until the switch opens.
+  // Adrian's own admin cookie also sees rows still waiting for his approval, tagged as such.
+  const another = (caller.kind === 'admin' || (await anotherWayVisible(portalIdentity(caller.account))))
+    ? await altViewFor(id, caller.kind === 'admin' && (await questionClipsAdmin())).catch(() => null)
+    : null;
+  return NextResponse.json({ markdown: solutionMarkdown(q, gate), ...(another ? { another } : {}) });
 }

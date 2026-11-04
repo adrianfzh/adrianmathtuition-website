@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import WatchIt from './watch-it';
 import ClipDoor from '../clip/q/[id]/clip-door';
+import AnotherWay from '@/components/AnotherWay';
+import type { AltView } from '@/lib/alt-method';
 import { MathMarkdown } from '@/lib/math-markdown';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
@@ -184,6 +186,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const questionRef = useRef<HTMLDivElement>(null);
 
   const [solution, setSolution] = useState<string | null>(null);
+  const [another, setAnother] = useState<AltView | null>(null);
   // ?mode=structured on a SCIENCE run (1 Oct 2026): the student writes or photographs an
   // answer and gets it MARKED first; the scheme shows only after a mark (Adrian, later
   // that day: "for structured, they must practice right? then we mark? … no point just
@@ -362,7 +365,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   }, [mode, loadingOverview, topics]);
 
   function resetAttempt() {
-    setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null); setHint(null);
+    setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null); setAnother(null); setHint(null);
     setLadder(null);
   }
 
@@ -442,9 +445,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     if (!q) return;
     setSolLoading(true);
     try {
-      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${q.id}${q.subject ? `&subject=${encodeURIComponent(q.subject)}` : ''}`);
+      const d = await portalFetch<{ markdown?: string; another?: AltView }>(`/api/portal/practice/solution?id=${q.id}${q.subject ? `&subject=${encodeURIComponent(q.subject)}` : ''}`);
       setSolution(d.markdown || '_Could not load the solution._');
-    } catch { setSolution('_Could not load the solution._'); }
+      setAnother(d.another ?? null);
+    } catch { setSolution('_Could not load the solution._'); setAnother(null); }
     finally { setSolLoading(false); }
   }
 
@@ -1207,6 +1211,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               {q?.subject && q.mcq && <WatchIt questionId={q.id} />}
               {/* 🎬 A maths question's one-minute solution clip (SPEC-CLIP-PIPELINE.md §9): shows only when one is ready and the switch is open for this viewer; Adrian also gets "Make a clip". */}
               {q && !q.subject && <div className="mt-3"><ClipDoor questionId={q.id} from="practice" /></div>}
+              {/* 🔀 Another way to solve this (SPEC-ANOTHER-WAY.md): a second method Adrian approved, closed until tapped. */}
+              {q && !q.subject && another && <AnotherWay alt={another} className="mt-3" />}
             </div>
           )}
         </div>

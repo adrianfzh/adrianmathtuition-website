@@ -11,14 +11,17 @@ import { canExplain, explainHref } from '@/lib/explain-clip';
 import AnnotatedSolution, { SchemeChips, CodeLegend } from './AnnotatedSolution';
 import ClipDoor from '../clip/q/[id]/clip-door';
 import FixOne from './FixOne';
+import AnotherWay from '@/components/AnotherWay';
+import type { AltView } from '@/lib/alt-method';
 // Questions carry inline $…$ TeX — mathHtml KaTeXes only the math spans, and
 // this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
 
 /** `clipIds`: question number → its bank row, when the paper matched the bank — the 🎬 solution-clip door (SPEC-CLIP-PIPELINE.md §9).
  *  `photoClipIds`: question number → its photo-question clip id, for the rest (§9b).
+ *  `altViews`: question number → an approved second method (🔀 Another way, SPEC-ANOTHER-WAY.md), shown closed under the worked solution.
  *  `fixOne`: show 🎯 Fix one under the question that lost the most marks (SPEC-STUDENT-FIRST.md §Fix one) — the page decides. */
-export default function LostMarks({ paper, explain = false, clipIds = {}, photoClipIds = {}, fixOne = false }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string>; photoClipIds?: Record<string, string>; fixOne?: boolean }) {
+export default function LostMarks({ paper, explain = false, clipIds = {}, photoClipIds = {}, altViews = {}, fixOne = false }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string>; photoClipIds?: Record<string, string>; altViews?: Record<string, AltView>; fixOne?: boolean }) {
   if (paper.dropped.length === 0) {
     return paper.questions.length > 0
       ? <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">✅ Full marks on every question marked.</p>
@@ -103,6 +106,7 @@ export default function LostMarks({ paper, explain = false, clipIds = {}, photoC
                 <AnnotatedSolution solution={q.solution} schemes={q.schemes} />
               </details>
             )}
+            {altViews[q.questionNumber] && <AnotherWay alt={altViews[q.questionNumber]} className="mt-2" />}
             {q.slips.length > 0 && (
               <ul className="mt-1.5 space-y-1">
                 {q.slips.map((s, j) => (

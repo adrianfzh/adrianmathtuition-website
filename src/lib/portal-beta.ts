@@ -760,6 +760,19 @@ export async function questionClipsAdmin(): Promise<boolean> {
   return admin && !(await viewingAsStudent());
 }
 
+// 🔀 Another way to solve this (SPEC-ANOTHER-WAY.md, 4 Nov 2026, Adrian: "can we build #5 too >
+// but as a dropdown (closed by default), so students can click or tap if they want?"): under a
+// maths question's worked solution (Practice, and a marked paper's lost-marks question matched to
+// the bank), a closed drop-down with a second method and one line on which is better here. Only
+// rows Adrian approved on /admin/another-way are ever served. ADMIN + the preview student until he
+// has looked at the pilot — flip to show approved rows to every student.
+export const ANOTHER_WAY_OPEN_TO_STUDENTS = false;
+export async function anotherWayVisible(identity?: string | null): Promise<boolean> {
+  if (ANOTHER_WAY_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  return questionClipsAdmin();
+}
+
 // Primary 6 / PSLE (23 Oct 2026, SPEC-PSLE.md — Adrian: "We just need 2018 to 2025 psle prelim
 // papers and for psle Tys - past 10 years"). The bank now takes level 'P6' questions (maths and
 // science); no student surface serves them yet. Closed = a P6 row is refused by the by-id gate
