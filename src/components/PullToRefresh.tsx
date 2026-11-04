@@ -16,9 +16,18 @@ export default function PullToRefresh({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const atTop = () => (document.scrollingElement?.scrollTop ?? window.scrollY) <= 0;
+    // 🚫 Stand down under a full-screen tool. The ✏️ Annotate pen locks the page
+    // (body overflow hidden, always at the top) and scrolls its pages by touch, so
+    // every pull toward the top of a paper read here as "refresh" — the page reloaded
+    // 1–8 s into marking, 5 Oct → 4 Nov 2026, and three rounds of fixes chased Safari
+    // and memory for it (SPEC-ANNOTATE §21a). A touch that starts inside an element
+    // marked data-ptr="off", or while the page scroll is locked, is not a pull.
+    const off = (t: EventTarget | null) =>
+      document.body.style.overflow === 'hidden'
+      || !!(t as Element | null)?.closest?.('[data-ptr="off"]');
 
     const onStart = (e: TouchEvent) => {
-      if (busy.current || e.touches.length !== 1) return;
+      if (busy.current || e.touches.length !== 1 || off(e.target)) return;
       startY.current = atTop() ? e.touches[0].clientY : null;
     };
     const onMove = (e: TouchEvent) => {

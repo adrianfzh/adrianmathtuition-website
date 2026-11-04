@@ -868,3 +868,15 @@ allow pinch to zoom in/out"*.
   scroller under it and whether it could still move) plus `scrollY` and the visual viewport's
   top, and the `pagehide` stamp adds `hideScrollY`/`hideVv`/`inputs` — so the next reload
   names the swipe that did it.
+  **FOUND (Adrian, 4 Nov 2026, 10:38: "Still refreshes") — it was OUR OWN pull-to-refresh.**
+  The touch record named it: one finger on the page area (`on: div`, no scroller under it),
+  moving DOWN 100–240 px with the document at `scrollY 0`, then the page unloaded cleanly
+  0.9–8 s later. `src/app/admin/layout.tsx` wraps every admin page in
+  `components/PullToRefresh` — written for the installed admin app, which had no browser bar:
+  a one-finger drag down of 140 px while the document is at its top, then lift → spinner →
+  `location.reload()` 150 ms later. While the pen is open the document is ALWAYS at its top
+  (body locked) and the pen's pages scroll by touch, so every pull toward the top of a paper
+  was a "refresh". Safari's gesture, memory, the decode queue — none of it. Fix: the helper
+  stands down while the page scroll is locked or the touch starts inside `[data-ptr="off"]`
+  (the pen's root carries it). The earlier belts stay (they cost nothing); the touch record in
+  the alive note stays (it is what found this).

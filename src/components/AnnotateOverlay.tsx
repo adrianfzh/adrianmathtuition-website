@@ -3577,7 +3577,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const canRedo = (redoRef.current[currentPageIdx]?.length ?? 0) > 0;
 
   return (
-    <div style={{
+    <div data-ptr="off" style={{
       position: 'fixed', inset: 0, zIndex: 3000, background: '#e8eaef',
       display: 'flex', flexDirection: 'column', height: '100dvh',
       userSelect: 'none', WebkitUserSelect: 'none',
