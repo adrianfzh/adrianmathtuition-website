@@ -4104,6 +4104,10 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-note-up .lsn-note-arrow { font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
 [data-lsn-clip] .lsn-note-up .katex { font-size: 0.98em; }
 [data-lsn-clip] .lsn-note-up .lsn-note-text { display: inline-block; white-space: nowrap; }
+/* A note whose part is over closes up smoothly, so the next note under that line sits right under
+   its term, not below an empty gap (4 Nov 2026). */
+[data-lsn-clip] .lsn-note-up { max-height: 8em; transition: max-height 350ms cubic-bezier(.4,0,.2,1), opacity 300ms ease; }
+[data-lsn-clip] .lsn-note-up.lsn-note-done { max-height: 0; overflow: hidden; margin: 0; padding-top: 0; padding-bottom: 0; }
 .lsn-sup { font-size: 0.7em; vertical-align: 0.42em; line-height: 0; margin-left: 0.04em; }
 /* A note with a raised number has room for it under the ↑ (4 Nov 2026: the ↑ sat on the ² of x²). */
 [data-lsn-clip] .lsn-note-up .lsn-note-text:has(.lsn-sup) { padding-top: 0.35em; }

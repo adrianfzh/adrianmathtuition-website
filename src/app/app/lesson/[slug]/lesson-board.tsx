@@ -307,7 +307,7 @@ export function NoteSlotView({ note, board, pointAt, expired = false }: {
     const text = note.text.replace(/^\s*[←↑↳]\s*/, '');
     const warn = /^\s*✗/.test(text);
     return (
-      <span data-key={note.id} data-prose="1" data-point-at={pointAt} data-point-inside={note.inside} className={`lsn-el lsn-note lsn-note-up${warn ? ' lsn-note-warn' : ''} w ${board.shown.has(note.id) && !expired ? 'on' : ''}`}>
+      <span data-key={note.id} data-prose="1" data-point-at={pointAt} data-point-inside={note.inside} className={`lsn-el lsn-note lsn-note-up${warn ? ' lsn-note-warn' : ''}${expired && board.shown.has(note.id) ? ' lsn-note-done' : ''} w ${board.shown.has(note.id) && !expired ? 'on' : ''}`}>
         <span className="lsn-note-arrow">↑</span>{' '}<span className="lsn-note-text"><MathText text={text} /></span>
       </span>
     );
