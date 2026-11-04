@@ -55,6 +55,14 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     where kind='source' and status='held' and level in (…)`. Check the FIRST English and the FIRST Chinese
     paper by hand (read rows back against the page) before letting the rest run.
   - The Fly worker shrinks only after all of it, which pushes the cost plan back about a week.
+  - **Released 4 Nov 2026 ~16:00 (Adrian: "yes" — no idle gaps between batches):** P4 (159) and English
+    (239) set `queued` now; the queue claims oldest first (`indexed_at`), so they follow P5 by themselves.
+    P4 built the same day: `P4_EXAM_TOPICS` (15 topics) + the bot's `canonical_topics.json` `P4` key,
+    `PRIMARY_QLEVELS` = P4/P5/P6, worker law v2026-11-04-p4 §Primary 4 papers (archive
+    `exam-extraction-2026-11-04b`). The inbox name reader was NOT taught P4 (a "P4 EL …" name would read as
+    maths). Chinese is released the same way when its cut finishes. **Still owed: read the first banked
+    English paper (and later the first Chinese one) back against its pages** (`language_items` /
+    `language_texts` by level) and tell Adrian.
   - **English cut 4 Nov 2026: 239 rows held** (P4_EL 82, P5_EL 82, P6_EL 75; 978 MB; staging + page map
     `~/PL-staging/english/`). Every file has its key; only 79 have Paper 1 (the books leave writing out for
     many schools, almost all P4). P6 covers all say Prelim (filed Prelim). 14 recycled copies dropped (the
