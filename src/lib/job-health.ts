@@ -148,6 +148,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
+  'overdue-reminders': { kind: 'monthly', day: 15, graceDays: 1, label: '15th 11am' },
   // Year-end arrears billing (lib/year-end-billing.ts): Oct/Nov/Dec attended
   // lessons billed on the 1st of the next month (Dec+Jan combined on 1 Jan),
   // reminder that evening, sent on the 2nd. vercel.json "… 1 11,12,1 *".

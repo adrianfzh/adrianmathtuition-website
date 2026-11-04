@@ -1,3 +1,5 @@
+import { loadReminderPlan, reminderLines } from '@/lib/overdue-reminders-store';
+import { addDaysISO } from '@/lib/sgt';
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
@@ -40,7 +42,17 @@ export async function GET(req: NextRequest) {
     todayISO: sgtTodayISO(),
     advanceLabel: getInvoiceMonth().label,
   });
-  await notify_money(buildPaymentReminderMessage(mode, monthLabel));
+  // Tomorrow's payment reminders to students with no bill (graduated / left) — listed tonight so
+  // a bill paid but not marked is marked first (4 Nov 2026, lib/overdue-reminders.ts).
+  let reminderNote = '';
+  if (mode === 'advance') {
+    try {
+      const { plan, students } = await loadReminderPlan(addDaysISO(sgtTodayISO(), 1));
+      const lines = reminderLines(plan, students);
+      if (lines.length) reminderNote = `\n\n📨 <b>Payment reminders tomorrow at 11am</b> (no bill for them tomorrow):\n${lines.join('\n')}\nMark any already paid tonight and they won't get one.`;
+    } catch (e) { reminderNote = `\n\n⚠️ Could not list tomorrow's payment reminders: ${(e as Error).message}`; }
+  }
+  await notify_money(buildPaymentReminderMessage(mode, monthLabel) + reminderNote);
   await logJobRun(jobNameFor('payment-reminder', mode), true, 'reminder Telegram sent');
   return NextResponse.json({ ok: true });
 }

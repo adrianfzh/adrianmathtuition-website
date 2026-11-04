@@ -129,6 +129,7 @@ The three year-end invoice jobs use it, since their crons only fire Nov/Dec/Jan
 | `generate-invoices-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8am SGT (Nov, Dec, Jan) |
 | `payment-reminder-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8pm SGT (Nov, Dec, Jan) |
 | `send-invoices-arrears` | `day 2`, grace 1, `months: [1, 11, 12]` | 2nd 10am SGT (Nov, Dec, Jan) |
+| `overdue-reminders` | `day 15`, grace 1 | 15th 11am SGT — payment reminders to students with no bill that day (4 Nov 2026) |
 | `optout-rollup` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 7:30am SGT (Nov, Dec, Jan) |
 
 **`optout-rollup`** (16 Sep 2026) is the odd one in that table: its cron fires

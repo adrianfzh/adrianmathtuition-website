@@ -478,6 +478,26 @@ Draft final-extras bills (`FINAL_EXTRAS_FORMULA`) are copied in as lines (`draft
   under "You are registering for". Adrian, for Chantal: *"put a note saying that in November and
   December lessons will be adhoc lessons, and billed accordingly"*.
 
+## Payment reminders on the 15th for students with no bill (4 Nov 2026)
+
+Adrian: *"so any outstanding is currently also in the next invoice sent on the next 15th — how about
+students who have graduated/discontinued and still have outstanding > let's send reminders on 15th
+as well?"* → "yes, build it". An unpaid bill shows on a student's NEXT bill ("Previous balance",
+`applyPriorBalance`); a student who has left gets no next bill, so nothing reminded their parent.
+
+- **`/api/cron/overdue-reminders`, 15th 11am SGT** (after the 10am bills). For every student with no
+  bill issued that day (`Issue Date` = today) and a bill that is `Sent`/`Overdue`, past its Due Date
+  and not fully paid: ONE email listing every such bill, the total and one PayNow reference
+  (`buildReminderEmail`, signed Adrian, same wording as the invoices page's "Send reminder" button).
+- **Every 15th until paid; after the 3rd, no more emails** — the Telegram lists them with
+  "follow up yourself". The count is the `EmailLog` rows of Type `payment_reminder` (not `failed`)
+  linked to the student's open bills.
+- **The 14th's 8pm "mark payments" Telegram lists tomorrow's reminders** (`loadReminderPlan` for
+  tomorrow — the drafts already carry Issue Date = the 15th), so a bill paid but not marked is marked
+  first.
+- `?dry=1` plans without sending. Rules pure in `lib/overdue-reminders.ts` (tested); Airtable in
+  `lib/overdue-reminders-store.ts`. On 4 Nov: 5 graduated students owed $2,410.
+
 ## Leavers — "Graduated" and the final bill (29 Sep 2026)
 
 Adrian, on Kayla (IP Sec 4, last exam 29 Sep): "the 25 sep [additional lesson] should
