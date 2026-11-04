@@ -95,6 +95,10 @@ no focus, no clear.
 - **Announce and link each part of the question** before its working: the earlier part is done, the
   next part asks …, and how the earlier part helps (`_house.md` §2, 4 Nov 2026). What the part asks is
   WRITTEN on the board (the plan's line for it) as the voice says it.
+- **Speak as a teacher, not in summary-speak** (Adrian, 4 Nov 2026: *"sounds like its the model using
+  its own speak again"*): say what is the same and why it helps, in full sentences ("It is exactly like
+  our bracket, p x squared plus q over x, but with numbers in place of p and q"), never a clipped label
+  ("same shape as ours"). Read each line aloud as Adrian talking to one student.
 - **Which part becomes which: same colour on both lines, same word** (Adrian, 4 Nov 2026) — when the
   voice works a part out, light the part above AND its result below together: two `highlight`s with
   `inside` and the same `tone` (none = yellow, `orange`, `sky`), one colour per part.

@@ -123,6 +123,14 @@ is not how singapore students speak or how teachers in singapore schools speak)"
   and power zero give one": *"can make it clearer without adding in too much stuff"*): "6 choose 0
   is 1." (⁶C₀ lit) — "q over x to the power 0 is also 1: anything to the power 0 is 1." (the 0 lit, a
   short note `anything⁰ = 1` pointing at it) — "So the first term is just p⁶x¹²."
+- **Speak as a teacher to a student, never in summary-speak** (Adrian, 4 Nov 2026, of "Same shape as
+  ours, so we use the expansion we just found": *"sounds like its the model using its own speak again,
+  not as a teacher explaining to a student"*). Say WHAT is the same and WHY it helps, in full
+  sentences a Sec 3 student follows: "It is exactly like our bracket, p x squared plus q over x, but
+  with numbers in place of p and q. So we don't need to expand again." Never a clipped label ("same
+  shape as ours", "match the brackets", "now the hence part") standing in for the explanation. Use
+  his own phrasing from his videos where the bible gives it ("so now for the hence part … we need to
+  make use of the previous part").
 - **Show which part becomes which, line to line, in matching colours** (Adrian, 4 Nov 2026, on
   `(px²)⁵` above `6(p⁵x¹⁰)(q/x)`: *"why not use arrows or colour shading to show exactly which part
   becomes which part in the next line?"*). When a line is worked out from the line above, each part

@@ -221,6 +221,22 @@ his videos and his notes; the voice says them as written, each with the board as
   writes it out: `6 choose 0`.
 - **The first term of the expansion**: "6 choose 0. First term, maximum power, which is 6. Second
   term, lowest power, which is 0."
+- **The second ("use your expansion" / "hence") part — said like a teacher, not a summary** (Adrian,
+  4 Nov 2026, of "Same shape as ours, so we use the expansion we just found": *"can explain clearer?
+  sounds like its the model using its own speak again, not as a teacher explaining to a student"*).
+  His words in his videos: *"So now for the 'hence' part. So we want to find the coefficient of x
+  squared … So we need to make use of the previous two parts."* · *"you can think it's exactly the same
+  as …"*. Required wording, each its own beat:
+  1. "Okay, so now for the second part. We want to find the coefficient of x to the six in this new
+     bracket." (the line "Find the coefficient of x⁶ in (2x² − 3/(2x))⁶" written)
+  2. "To do this, we make use of the first part." (the expansion lit — the look-back)
+  3. "Look at the new bracket. It is exactly like our bracket, p x squared plus q over x, but with
+     numbers in place of p and q." (the two brackets written one under the other)
+  4. "The first term: two x squared is in the place of p x squared. So p is two." (px² and 2x² lit
+     orange) — "The second term: negative three over two x is in the place of q over x. So q is
+     negative three over two." (q/x and −3/(2x) lit sky)
+  5. "So we don't need to expand again. We just sub p equals two and q equals negative three over two
+     into our third term."
 - **Working out a term, part by part, colour-matched to the line above** (Adrian, 4 Nov 2026: *"why
   not use arrows or colour shading to show exactly which part becomes which part in the next line?"*):
   "6 choose 1 is 6" lights ⁶C₁ above and the 6 below YELLOW; "p x squared to the five is p to the five,

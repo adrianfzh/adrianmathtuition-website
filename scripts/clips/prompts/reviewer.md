@@ -115,7 +115,9 @@ You get:
    note a student cannot understand on its own; the topic bible's "Required wording" not used word for
    word; a new part of the question started without saying so, what it asks, and how the earlier part
    helps; two things said in one breath ("six choose zero and power zero give one"); a line worked out
-   from the line above where the parts and what they become are not lit in matching colours.
+   from the line above where the parts and what they become are not lit in matching colours; a line
+   in summary-speak, not a teacher explaining ("same shape as ours", "match the brackets") — Adrian:
+   "sounds like its the model using its own speak again".
 22. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
