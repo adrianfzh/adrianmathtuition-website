@@ -495,6 +495,21 @@ was built after its last commit; if not, the clip fails at once with "the clip s
 the clip player — update it to dev, `next build`, restart …". **After a player change: update the
 clip site the same way.**
 
+### A failed run starts again from where it failed (4 Nov 2026)
+
+Adrian, 4 Nov 2026: *"why does it take so long to make a clip?"* — one run is 15–20 min (plan 2,
+two writers 5, the reader 3, voice + listening back 3, play-through + ~50 pictures read 5), and a
+failure late in the run threw all of it away: on 1–4 Nov about eight remakes failed at the voice
+check or the pictures, each costing a whole new run. He said **"Yes, build it"**:
+- **Checkpoints**: `data/clip-runs/<slug>/checkpoint.json` is written after the clip is written
+  (`written`), voiced (`voiced`) and stored (`stored`), with a hash of the plan and the lesson.
+- **`--resume`** starts after the last checkpoint — only when the plan and lesson on disk still
+  match its hashes; otherwise a full run. Use it after a voice, look or pictures failure, or after a
+  player fix. After a change to the writer's rules or a bible, run WITHOUT it (the words must change).
+- **The voice gets one more try by itself** before the run fails, and only the lines the listener
+  mis-heard are made again (their files are removed; the voice maker skips lines that have one).
+  A resumed run from `written` does the same.
+
 ### Not done / next
 
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.

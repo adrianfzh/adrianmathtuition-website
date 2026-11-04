@@ -4,7 +4,14 @@
 // step 2 — 15 Oct 2026). No hand edits: what fails a check is refused or failed, never
 // patched by a person.
 //
-//   node scripts/clips/question-clip.mjs <questionId> [--base http://localhost:3211] [--from batch]
+//   node scripts/clips/question-clip.mjs <questionId> [--base http://localhost:3211] [--from batch] [--resume]
+//
+// --resume (Adrian, 4 Nov 2026: "why does it take so long to make a clip?" → "yes, build it"): start
+// again from the step after the last one that passed — the written clip (voice → look), the voice
+// (store → look) or the stored clip (look). Only when the plan and the lesson on disk are exactly the
+// ones that checkpoint saw; otherwise a full run. Use it after a voice / look / pictures failure or a
+// player fix. After a change to the writer's rules or a bible, run WITHOUT it (the words must be
+// written again). A failed voice check is also tried once more on its own before the run fails.
 //
 // Needs: .env.local (Supabase service key, MINIMAX_API_KEY, GOOGLE_API_KEY, ADMIN_SESSION_SECRET),
 // the `claude` CLI signed in (the agents are plan-billed Claude Code runs, never the API),
@@ -254,6 +261,22 @@ async function photoGather(origin) {
   return out;
 }
 
+// ── resume point (4 Nov 2026) ───────────────────────────────────────────────
+const CKPT = path.join(RUN, 'checkpoint.json');
+const sha = (f) => { try { return createHash('sha1').update(fs.readFileSync(f)).digest('hex'); } catch { return null; } };
+const STAGES = ['written', 'voiced', 'stored'];
+let resume = null;
+if (args.resume) {
+  const c = readJson(CKPT);
+  if (c && c.question_id === QID && STAGES.includes(c.stage) && c.lesson && c.lesson === sha(LESSON) && c.plan === sha(PLAN)) {
+    resume = c.stage;
+    Object.assign(gate.checks, readJson(path.join(RUN, 'question-gate.json'))?.checks ?? {});
+    log(`resume: from after "${c.stage}" (saved ${c.at})`);
+  } else log('resume: no checkpoint that matches the files on disk — a full run');
+}
+const after = (stage) => resume !== null && STAGES.indexOf(resume) >= STAGES.indexOf(stage);
+const checkpoint = (stage) => fs.writeFileSync(CKPT, JSON.stringify({ stage, question_id: QID, lesson: sha(LESSON), plan: sha(PLAN), at: new Date().toISOString() }, null, 1) + '\n');
+
 // ── 1 gather ────────────────────────────────────────────────────────────────
 const prev = (await rest(`question_clips?question_id=eq.${QID}&select=attempts,status,source,origin`))?.[0];
 const PHOTO = PHOTO_ARG ?? (prev?.source === 'photo' ? prev.origin : null);
@@ -262,6 +285,7 @@ await saveRow({ status: 'making', claimed_by: WORKER, started_at: new Date().toI
   requested_from: prev ? undefined : FROM, finished_at: null, fail_reason: null, refuse_reason: null,
   ...(PHOTO ? { source: 'photo', origin: PHOTO } : {}) });
 
+if (!resume) {
 const q = PHOTO ? await photoGather(PHOTO) : await step('gather', async () => {
   const [row] = await rest(`questions?id=eq.${QID}&select=id,question_text,answer,solution,level,topics,parts,has_image,figure_url,images,image_url,total_marks,legacy_syllabus,national,ai_generated,verified`);
   if (!row) return null;
@@ -428,9 +452,11 @@ const lessonNow = readJson(LESSON);
 const sameBoard = JSON.stringify(lessonNow.scenes.flatMap(sc => sc.steps.map(s => s.tokens))) === JSON.stringify(readJson(PLAN).lines.map(l => l.tokens));
 put('board', sameBoard, sameBoard ? `${plan.lines.length} lines = the checked plan` : 'the clip\'s lines differ from the checked plan');
 if (!sameBoard) await finish('failed', 'board differs from the checked plan');
+checkpoint('written');
+}  // !resume
 
 // ── 6 voice ─────────────────────────────────────────────────────────────────
-const voice = await step('voice', async () => {
+const voiceOnce = async () => {
   voiced = true;
   const g = sh('node', ['scripts/lessons/generate-narration.mjs', SLUG]);
   if (!g.ok) return { ok: false, detail: `voice: ${g.out.trim().slice(-300)}` };
@@ -444,12 +470,29 @@ const voice = await step('voice', async () => {
   const timed = beats.filter(b => b.audio && b.timing).length;
   const ok = timed === beats.length && asr?.worst != null && asr.worst >= 0.85;
   return { ok, detail: `${timed}/${beats.length} beats voiced + timed · speech round trip worst ${asr?.worst != null ? Math.round(asr.worst * 100) + ' %' : 'not scored ' + sc.out.slice(-120)}` };
-});
-put('voice', voice.ok, voice.detail);
-if (!voice.ok) await finish('failed', voice.detail);
+};
+// Only the lines the listener mis-heard are made again: their voice and timing files go, and the
+// voice maker (which skips a line whose file is there) and the timer redo just those.
+function dropMisheard() {
+  const asr = readJson(path.join(RUN, 'asr.json'));
+  const beats = (readJson(LESSON)?.scenes ?? []).flatMap(sc => sc.beats ?? []);
+  const bad = (asr?.lines ?? []).filter(l => l.score < 0.85).map(l => beats[l.beat - 1]).filter(Boolean);
+  for (const b of bad) for (const k of ['audio', 'timing']) if (typeof b[k] === 'string' && b[k].startsWith('/')) fs.rmSync(path.join(ROOT, 'public', b[k]), { force: true });
+  return bad.length;
+}
+if (!after('voiced')) {
+  if (resume) log(`  voice: ${dropMisheard()} mis-heard line(s) to make again`);
+  let voice = await step('voice', voiceOnce);
+  // The voice is made afresh each time: a line the listener mis-heard once usually comes out clean the
+  // second time (4 Nov 2026: eight of ten failed remakes failed here, each throwing away the writing).
+  if (!voice.ok) { log(`  voice: ${voice.detail} — the ${dropMisheard()} mis-heard line(s) once more`); voice = await step('voice-again', voiceOnce); }
+  put('voice', voice.ok, voice.detail);
+  if (!voice.ok) await finish('failed', voice.detail);
+  checkpoint('voiced');
+}
 
 // ── store (status making) ───────────────────────────────────────────────────
-await step('store', async () => {
+if (!after('stored')) await step('store', async () => {
   const lesson = readJson(LESSON);
   for (const sc of lesson.scenes) for (const b of sc.beats) {
     for (const k of ['audio', 'timing']) {
@@ -464,6 +507,7 @@ await step('store', async () => {
     }
   }
   await saveRow({ script: lesson, plan: readJson(PLAN), gate });
+  checkpoint('stored');
 });
 
 // ── 7 look ──────────────────────────────────────────────────────────────────

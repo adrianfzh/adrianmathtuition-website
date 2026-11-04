@@ -598,6 +598,10 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 - **A note between two tall lines hides the next talked-about line on a short laptop window** (20 Oct 2026, Surds clip 1: fractions with surds are tall; under the corner plan a 1280 × 640 window fits about a line, a note and a line). A note also leaves at the end of its beat and the board does not scroll back down for the gap. → In a fraction-heavy clip keep notes OFF a line the next beat pairs with the one below it (put the note on the line above, or say it in the voice), and run the 640-tall look before pushing (`look.mjs --base http://localhost:3000` on the dev server saves a build).
 
 ### The redo recipe (each step, in order)
+(For a QUESTION clip whose run failed at the voice, the look or the pictures, or after a player fix:
+`node scripts/clips/question-clip.mjs <questionId> --resume` starts after the last step that passed —
+SPEC-CLIP-PIPELINE.md §9 "A failed run starts again from where it failed", 4 Nov 2026. After a rule
+or bible change, a full run without `--resume`.)
 1. Change the plan / draft only where asked (`data/clip-plans/<slug>.json`, `data/clip-runs/<slug>/draft-*.json`,
    and `blind-read.json` `fixed_beats` — it overrides the draft, so edit it too).
 2. `assemble.mjs` → `gate.mjs` (must PASS) → the tests (`clip-ask.test.ts` names board lines; catalog
