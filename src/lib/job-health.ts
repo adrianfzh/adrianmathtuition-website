@@ -70,6 +70,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'auto-release-report': { kind: 'interval', hours: 204, label: 'Mondays 8am' },
   // 🔒 The weekly leak test (5 Oct 2026) — vercel.json "0 20 * * 0" UTC = Mondays 4am SGT.
   'leak-test':         { kind: 'interval', hours: 204, label: 'Mondays 4am' },
+  // 🔐 The weekly security-and-privacy check (4 Nov 2026): /api/cron/security-scan, called by the
+  // bot's morning fixer (bot-review §1f) on Mondays 5:45am — silence = the fixer skipped it.
+  'security-scan':     { kind: 'interval', hours: 204, label: 'Mondays 5:45am' },
   // 📏 The weekly shadow read of the consistency set (17 Sep 2026): the papers
   // re-marked on the Mac lane on a Sunday night so Monday can say how far the
   // marking moved. Weekly, so the same 8.5-day grace as the report above.

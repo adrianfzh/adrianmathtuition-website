@@ -603,6 +603,22 @@ quiet when fine, both one plain Telegram line when not, both stamped in `job_run
 with a `JOB_RHYTHMS` line, and both shown on Monday's `auto-release-report` as one
 line each (🔒 / 🗄).
 
+### 🔐 `security-scan` — Mondays 05:45 SGT, run by the bot's morning fixer (4 Nov 2026)
+
+Adrian, 4 Nov 2026: *"do it"* — a weekly security-and-privacy check that tells him only when
+something new or serious appears. Route `/api/cron/security-scan` (admin or cron auth;
+`?dry=1` reads without saving); rules + wording `lib/security-scan.ts` (pure, tested);
+fetching `lib/security-scan-store.ts`. Reads Supabase's security advisors for both projects
+through the Management API (`SUPABASE_ACCESS_TOKEN`, Production scope only — the route
+cannot run on a preview), and really reads every table the anon role is granted, as anon
+(`set role anon`), plus public storage buckets. Compares with the last ok run's
+`meta.keys` and answers `lines[]`: every ERROR, plus any NEW warning / anon-readable table /
+public bucket; INFO is ignored; empty = silence. It sends nothing itself — the bot's
+`bot-review` §1f calls it on Mondays and puts the lines in the ☀️ brief as one 👉 item.
+Report only: nothing here or in the fixer changes a database. Starting list on 4 Nov 2026:
+0 errors · 75 warnings · 17 public tables/folders (maths: subgroups, rubrics, content_snippets,
+sections_meta, technique_tags, question_technique_tags + 10 public buckets; science: 1 bucket).
+
 ### 🔒 `leak-test` — Mondays 04:00 SGT (`0 20 * * 0` UTC)
 
 Route `/api/cron/leak-test`; rules `lib/leak-test.ts` (pure, tested); requests
