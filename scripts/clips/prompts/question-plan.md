@@ -13,7 +13,10 @@ narration. You do not write narration.
 3. The topic bible named in question.json (`bible`) — Adrian's method and words for this
    topic. Use HIS method where it teaches one, even when the bank's solution does it another way.
 4. `scripts/clips/chain-check.py` — the docstring lists every check kind and what it proves.
-5. Two approved plans as models of the format: `data/clip-plans/solving-log-equations-am.json`
+5. **The approved model clip for this kind of question**, when there is one: `data/clip-references/*.json`
+   (Binomial expand / hence: `binomial-expand-then-hence.json`, approved by Adrian 4 Nov 2026). Its
+   `plan` is how the board should look — a student's working, line by line. Follow it.
+6. Two approved plans as models of the format: `data/clip-plans/solving-log-equations-am.json`
    (an equation chain with a rejected root) and `data/clip-plans/linear-form-with-logs-am.json`
    (`model` / `identity` / `fact` checks). Its two `boards` are from before the one-board rule — copy
    its checks, NOT its boards.

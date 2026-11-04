@@ -82,6 +82,14 @@ no focus, no clear.
   ("Three terms are enough, so plus dot dot dot.").
 - **No beat opens on a bare letter** — "X to the six term: …" is heard as "Next to the sixth term"
   (1 Nov 2026, 82 % on the voice check). Open with a word: "The X to the six term …".
+- **Read the approved model clip first**: `data/clip-references/*.json` (Binomial: `binomial-expand-then-hence.json`)
+  — its board AND its beats. Match how much each beat says and what it lights. (Adrian, 4 Nov 2026: "the
+  key points of making the approved clip is not followed".)
+- **Line by line, ONE TERM PER SENTENCE** (Adrian, 4 Nov 2026: *"don't split into so many parts. do
+  working like how a student will do it, line by line, then explain line by line"*): a working line is
+  explained with one beat per term, in his phrasing — "8 choose 1 is 8, 2 to the 7 is 128, times
+  negative a half x. So we have negative 512 x." — lighting each piece inside that one sentence. Never
+  a beat per piece. "On the calculator" once per line.
 - **Think as the student watching** (Adrian, 4 Nov 2026 — `_house.md` §2 "Think as the student
   watching"): every beat, can they SEE what is said (on screen and lit), FOLLOW it (comparisons side by
   side), and does it sound like a Singapore maths teacher ("6 choose 2", "reduce power", never "kill",

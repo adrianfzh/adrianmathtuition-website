@@ -1,0 +1,1220 @@
+{
+ "about": "APPROVED by Adrian 4 Nov 2026 (\"great, this clip is good\") after nine rounds of notes. Question 2aa7610f: expand (px^2+q/x)^6 to the third term, then the coefficient of x^6 in (2x^2-3/(2x))^6 = 540. Model every Binomial clip (and any expand / hence clip) on it: the board (plan) and the beats (lesson) — how much each beat says, what it lights, its notes.",
+ "plan": {
+  "slug": "qc-2aa7610f",
+  "title": "Expand, then find a coefficient",
+  "heading": "Expand, then use it",
+  "intro": "Expand $\\left(px^2+\\frac{q}{x}\\right)^6$ to 3 terms, highest power first ($p,q\\neq0$). Hence the $x^6$ coefficient in $\\left(2x^2-\\frac{3}{2x}\\right)^6$.",
+  "question": "The constants $p$ and $q$ are non-zero. Expand $\\left(px^2 + \\frac{q}{x}\\right)^6$ as far as its third term, starting with the highest power of $x$ and simplifying each term. Use your expansion to find the coefficient of $x^6$ in $\\left(2x^2 - \\frac{3}{2x}\\right)^6$.",
+  "level": "AM",
+  "topic": "Binomial Theorem",
+  "kind": "question",
+  "question_id": "2aa7610f-8272-4bdc-b0a5-668ad7bc0945",
+  "bible": "data/clip-bibles/binomial-theorem-am.md",
+  "scroll": true,
+  "answer": {
+   "bank": "$p^6x^{12} + 6p^5qx^9 + 15p^4q^2x^6 + \\ldots$; $540$",
+   "facts": [
+    "expand((p*x**2 + q/x)**6).coeff(x, 9) = 6*p**5*q",
+    "expand((p*x**2 + q/x)**6).coeff(x, 6) = 540"
+   ],
+   "display": "p^6x^{12}+6p^5qx^9+15p^4q^2x^6+\\cdots;\\;540"
+  },
+  "lines": [
+   {
+    "tokens": [
+     {
+      "tex": "\\left(px^2+\\dfrac qx\\right)^6",
+      "id": "q0"
+     }
+    ],
+    "checks": [
+     {
+      "form": "(p*x**2 + q/x)**6"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "=\\htmlClass{lsn-pc-c0}{\\binom{6}{0}}\\htmlClass{lsn-pc-pa0}{(px^2)^{\\htmlClass{lsn-pc-a0}{6}}}\\htmlClass{lsn-pc-pb0}{\\left(\\tfrac qx\\right)^{\\htmlClass{lsn-pc-b0}{0}}}",
+      "id": "t0"
+     },
+     {
+      "tex": "+\\htmlClass{lsn-pc-c1}{\\binom{6}{1}}\\htmlClass{lsn-pc-pa1}{(px^2)^{\\htmlClass{lsn-pc-a1}{5}}}\\htmlClass{lsn-pc-pb1}{\\left(\\tfrac qx\\right)^{\\htmlClass{lsn-pc-b1}{1}}}",
+      "id": "t1"
+     },
+     {
+      "tex": "+\\htmlClass{lsn-pc-c2}{\\binom{6}{2}}\\htmlClass{lsn-pc-pa2}{(px^2)^{\\htmlClass{lsn-pc-a2}{4}}}\\htmlClass{lsn-pc-pb2}{\\left(\\tfrac qx\\right)^{\\htmlClass{lsn-pc-b2}{2}}}",
+      "id": "t2"
+     },
+     {
+      "tex": "+\\cdots",
+      "id": "t3"
+     }
+    ],
+    "checks": [
+     {
+      "identity": "expand((p*x**2 + q/x)**6) - (binomial(6,0)*(p*x**2)**6*(q/x)**0 + binomial(6,1)*(p*x**2)**5*(q/x)**1 + binomial(6,2)*(p*x**2)**4*(q/x)**2) = 20*p**3*q**3*x**3 + 15*p**2*q**4 + 6*p*q**5/x**3 + q**6/x**6"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "=\\htmlClass{lsn-pc-c0}{1}\\htmlClass{lsn-pc-pa0}{(p^6x^{12})}\\htmlClass{lsn-pc-pb0}{(1)}",
+      "id": "m0"
+     },
+     {
+      "tex": "+\\htmlClass{lsn-pc-c1}{6}\\htmlClass{lsn-pc-pa1}{(p^5\\htmlClass{lsn-pc-x1}{x^{10}})}\\htmlClass{lsn-pc-pb1}{\\left(\\tfrac q{\\htmlClass{lsn-pc-x1}{x}}\\right)}",
+      "id": "m1"
+     },
+     {
+      "tex": "+\\htmlClass{lsn-pc-c2}{15}\\htmlClass{lsn-pc-pa2}{(p^4\\htmlClass{lsn-pc-x2}{x^8})}\\htmlClass{lsn-pc-pb2}{\\left(\\tfrac{q^2}{\\htmlClass{lsn-pc-x2}{x^2}}\\right)}",
+      "id": "m2"
+     },
+     {
+      "tex": "+\\cdots",
+      "id": "m3"
+     }
+    ],
+    "checks": [
+     {
+      "identity": "binomial(6,0)*(p*x**2)**6*(q/x)**0 + binomial(6,1)*(p*x**2)**5*(q/x)**1 + binomial(6,2)*(p*x**2)**4*(q/x)**2 = 1*(p**6*x**12)*(1) + 6*(p**5*x**10)*(q/x) + 15*(p**4*x**8)*(q**2/x**2)"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "=p^6x^{12}",
+      "id": "s0"
+     },
+     {
+      "tex": "+6p^5q\\htmlClass{lsn-pc-x1}{x^9}",
+      "id": "s1"
+     },
+     {
+      "tex": "+15p^4q^2\\htmlClass{lsn-pc-x2}{x^6}",
+      "id": "s2",
+      "hl": "amber"
+     },
+     {
+      "tex": "+\\cdots",
+      "id": "s3"
+     }
+    ],
+    "checks": [
+     {
+      "identity": "1*(p**6*x**12)*(1) + 6*(p**5*x**10)*(q/x) + 15*(p**4*x**8)*(q**2/x**2) = p**6*x**12 + 6*p**5*q*x**9 + 15*p**4*q**2*x**6"
+     },
+     {
+      "identity": "expand((p*x**2 + q/x)**6) - (p**6*x**12 + 6*p**5*q*x**9 + 15*p**4*q**2*x**6) = 20*p**3*q**3*x**3 + 15*p**2*q**4 + 6*p*q**5/x**3 + q**6/x**6"
+     }
+    ]
+   },
+   {
+    "heading": "Second part",
+    "tokens": [
+     {
+      "tex": "\\text{Find the coefficient of }x^6\\text{ in }\\left(2x^2-\\tfrac{3}{2x}\\right)^6",
+      "id": "fq"
+     }
+    ],
+    "checks": [
+     {
+      "form": "(2*x**2 - 3/(2*x))**6"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "(2x^2",
+      "id": "b2p"
+     },
+     {
+      "tex": "-\\dfrac{3}{2x})^6",
+      "id": "b2q"
+     }
+    ],
+    "checks": [
+     {
+      "form": "(2*x**2 - 3/(2*x))**6"
+     },
+     {
+      "identity": "(2*x**2 - 3/(2*x))**6 = (2*x**2 + (-Rational(3, 2))/x)**6"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "(px^2",
+      "id": "b1p"
+     },
+     {
+      "tex": "+\\dfrac qx)^6",
+      "id": "b1q"
+     }
+    ],
+    "checks": [
+     {
+      "form": "(p*x**2 + q/x)**6"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "p=2,",
+      "id": "pv"
+     },
+     {
+      "tex": "\\;q=-\\tfrac32",
+      "id": "qv",
+      "hl": "amber"
+     }
+    ],
+    "checks": [
+     {
+      "given": {
+       "p": 2,
+       "q": "-3/2"
+      }
+     }
+    ]
+   },
+   {
+    "heading": "Coefficient of x⁶",
+    "tokens": [
+     {
+      "tex": "15p^4q^2",
+      "id": "k0"
+     }
+    ],
+    "checks": [
+     {
+      "identity": "expand((p*x**2 + q/x)**6).coeff(x, 6) = 15*p**4*q**2"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "=15(2)^4\\left(-\\tfrac32\\right)^2",
+      "id": "k1"
+     }
+    ],
+    "checks": [
+     {
+      "start_expr": "15*p**4*q**2"
+     },
+     {
+      "step_expr": "15*(2)**4*(-Rational(3, 2))**2"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "=15\\times",
+      "id": "k2a"
+     },
+     {
+      "tex": "16",
+      "id": "k2b"
+     },
+     {
+      "tex": "\\times\\tfrac94",
+      "id": "k2c"
+     }
+    ],
+    "checks": [
+     {
+      "step_expr": "15*16*Rational(9, 4)"
+     }
+    ]
+   },
+   {
+    "tokens": [
+     {
+      "tex": "=540",
+      "id": "k3"
+     }
+    ],
+    "checks": [
+     {
+      "step_expr": "540"
+     }
+    ]
+   },
+   {
+    "heading": "Answer",
+    "tokens": [
+     {
+      "tex": "\\begin{gathered}p^6x^{12}+6p^5qx^9+15p^4q^2x^6+\\cdots\\\\\\text{coefficient of }x^6=540\\end{gathered}",
+      "id": "ans",
+      "hl": "emerald"
+     }
+    ],
+    "checks": [
+     {
+      "fact": "expand((p*x**2 + q/x)**6).coeff(x, 12) = p**6"
+     },
+     {
+      "fact": "expand((p*x**2 + q/x)**6).coeff(x, 6) = 540"
+     }
+    ]
+   }
+  ],
+  "outline": [
+   "Read the question (intro on the board; quote the bracket, 'as far as its third term', 'highest power of x', then the second bracket).",
+   "The plan: expand (px² + q/x)⁶ term by term up to the third term, simplify each term, then see that (2x² − 3/(2x))⁶ has the same shape — so put p = 2, q = −3/2 into the x⁶ term. No formula line, no a/b/n lines (bible §3.1, Adrian 1 Nov).",
+   "Line q0: write the bracket. Name the two terms, each lit: 'The first term is p x squared, and the second term is q over x.'",
+   "Line t0–t3 (ONE line, one token per term): '6 choose 0' — note with arrow under c0: '6 choose 0'. 'First term, maximum power, which is 6' lights a0 orange; 'second term, lowest power, which is 0' lights b0 sky. '6 choose 1. First term reduce power by 1, second term increase power by 1' lights c1, a1 (orange), b1 (sky); same for t2. 'Notice the pattern.' Then '+ ⋯' — 'plus dot dot dot'. Rule note under t0: 'Pattern: first power falls, second power rises'.",
+   "Line m0–m3: work each term out, lighting ONLY that term: (px²)⁶ = p⁶x¹²; '6 choose 1 is 6' lights v1 — note 'use calculator' under m1, calc [ncr]; (px²)⁵ = p⁵x¹⁰. '6 choose 2 is 15' lights v2, calc [ncr]; (px²)⁴ = p⁴x⁸, (q/x)² = q²/x². Rule beside m1: 'Power of a power: multiply the powers'.",
+   "Line s0–s3: multiply out each term, one at a time: x¹⁰ × 1/x = x⁹ (note under s1: '✗ x¹⁰ × q/x ≠ qx¹¹  ✓ = qx⁹' — the trap bites here: adding instead of subtracting the power of x); x⁸ × 1/x² = x⁶. s2 amber: it is the term we come back to.",
+   "Second part, heading 'Second part': 'Okay, so now for the second part. We want to find the coefficient of x to the six in this new bracket.' writes line fq. Then 'To do this, we make use of the first part.' lights the expansion (writes nothing).",
+   "Lines b2p/b2q (the new bracket) and b1p/b1q (our bracket) one under the other, no heading: 'Look at the new bracket. It is exactly like our bracket, p x squared plus q over x, but with numbers in place of p and q.' Then 'The first term: two x squared is in the place of p x squared. So p is two.' (orange, writes pv) and 'The second term: negative three over two x is in the place of q over x. So q is negative three over two.' (sky, note '−3/(2x) = (−3/2) ÷ x', writes qv). Then 'So we don't need to expand again. We just sub p equals two and q equals negative three over two into our third term.' (bible §6 Required wording, steps 1–5).",
+   "Look back, its own beat, writes nothing: 'Look back at the expansion. The x to the six is in the third term.' — light s2 (the board scrolls up to it). Then line k0, heading 'Coefficient of x⁶': 15p⁴q² — the coefficient is the number only, don't take the x.",
+   "Line k1: put p = 2, q = −3/2 in, brackets on both. Line k2: '2 to the power 4 is 16' lights k2b (note 'use calculator', calc [power]); (−3/2)² = 9/4, even power makes it positive (note under k2c). Line k3: 15 × 16 × 9/4 = 540.",
+   "Answer line ans (emerald, boxed): the expansion p⁶x¹² + 6p⁵qx⁹ + 15p⁴q²x⁶ + ⋯ and 'the coefficient of x⁶ is 540' — say both in full."
+  ]
+ },
+ "lesson": {
+  "slug": "qc-2aa7610f",
+  "title": "Expand, then find a coefficient",
+  "level": "AM",
+  "topic": "Binomial Theorem",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "The constants $p$ and $q$ are non-zero. Expand $\\left(px^2 + \\frac{q}{x}\\right)^6$ as far as its third term, starting with the highest power of $x$ and simplifying each term. Use your expansion to find the coefficient of $x^6$ in $\\left(2x^2 - \\frac{3}{2x}\\right)^6$.",
+  "scenes": [
+   {
+    "type": "equation-steps",
+    "heading": "Expand, then use it",
+    "intro": "Expand $\\left(px^2+\\frac{q}{x}\\right)^6$ to 3 terms, highest power first ($p,q\\neq0$). Hence the $x^6$ coefficient in $\\left(2x^2-\\frac{3}{2x}\\right)^6$.",
+    "scroll": true,
+    "steps": [
+     {
+      "tokens": [
+       {
+        "tex": "\\left(px^2+\\dfrac qx\\right)^6",
+        "id": "q0"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "=\\htmlClass{lsn-pc-c0}{\\binom{6}{0}}\\htmlClass{lsn-pc-pa0}{(px^2)^{\\htmlClass{lsn-pc-a0}{6}}}\\htmlClass{lsn-pc-pb0}{\\left(\\tfrac qx\\right)^{\\htmlClass{lsn-pc-b0}{0}}}",
+        "id": "t0"
+       },
+       {
+        "tex": "+\\htmlClass{lsn-pc-c1}{\\binom{6}{1}}\\htmlClass{lsn-pc-pa1}{(px^2)^{\\htmlClass{lsn-pc-a1}{5}}}\\htmlClass{lsn-pc-pb1}{\\left(\\tfrac qx\\right)^{\\htmlClass{lsn-pc-b1}{1}}}",
+        "id": "t1"
+       },
+       {
+        "tex": "+\\htmlClass{lsn-pc-c2}{\\binom{6}{2}}\\htmlClass{lsn-pc-pa2}{(px^2)^{\\htmlClass{lsn-pc-a2}{4}}}\\htmlClass{lsn-pc-pb2}{\\left(\\tfrac qx\\right)^{\\htmlClass{lsn-pc-b2}{2}}}",
+        "id": "t2"
+       },
+       {
+        "tex": "+\\cdots",
+        "id": "t3"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "=\\htmlClass{lsn-pc-c0}{1}\\htmlClass{lsn-pc-pa0}{(p^6x^{12})}\\htmlClass{lsn-pc-pb0}{(1)}",
+        "id": "m0"
+       },
+       {
+        "tex": "+\\htmlClass{lsn-pc-c1}{6}\\htmlClass{lsn-pc-pa1}{(p^5\\htmlClass{lsn-pc-x1}{x^{10}})}\\htmlClass{lsn-pc-pb1}{\\left(\\tfrac q{\\htmlClass{lsn-pc-x1}{x}}\\right)}",
+        "id": "m1"
+       },
+       {
+        "tex": "+\\htmlClass{lsn-pc-c2}{15}\\htmlClass{lsn-pc-pa2}{(p^4\\htmlClass{lsn-pc-x2}{x^8})}\\htmlClass{lsn-pc-pb2}{\\left(\\tfrac{q^2}{\\htmlClass{lsn-pc-x2}{x^2}}\\right)}",
+        "id": "m2"
+       },
+       {
+        "tex": "+\\cdots",
+        "id": "m3"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "=p^6x^{12}",
+        "id": "s0"
+       },
+       {
+        "tex": "+6p^5q\\htmlClass{lsn-pc-x1}{x^9}",
+        "id": "s1"
+       },
+       {
+        "tex": "+15p^4q^2\\htmlClass{lsn-pc-x2}{x^6}",
+        "id": "s2",
+        "hl": "amber"
+       },
+       {
+        "tex": "+\\cdots",
+        "id": "s3"
+       }
+      ]
+     },
+     {
+      "heading": "Second part",
+      "tokens": [
+       {
+        "tex": "\\text{Find the coefficient of }x^6\\text{ in }\\left(2x^2-\\tfrac{3}{2x}\\right)^6",
+        "id": "fq"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "(2x^2",
+        "id": "b2p"
+       },
+       {
+        "tex": "-\\dfrac{3}{2x})^6",
+        "id": "b2q"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "(px^2",
+        "id": "b1p"
+       },
+       {
+        "tex": "+\\dfrac qx)^6",
+        "id": "b1q"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "p=2,",
+        "id": "pv"
+       },
+       {
+        "tex": "\\;q=-\\tfrac32",
+        "id": "qv",
+        "hl": "amber"
+       }
+      ]
+     },
+     {
+      "heading": "Coefficient of x⁶",
+      "tokens": [
+       {
+        "tex": "15p^4q^2",
+        "id": "k0"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "=15(2)^4\\left(-\\tfrac32\\right)^2",
+        "id": "k1"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "=15\\times",
+        "id": "k2a"
+       },
+       {
+        "tex": "16",
+        "id": "k2b"
+       },
+       {
+        "tex": "\\times\\tfrac94",
+        "id": "k2c"
+       }
+      ]
+     },
+     {
+      "tokens": [
+       {
+        "tex": "=540",
+        "id": "k3"
+       }
+      ]
+     },
+     {
+      "heading": "Answer",
+      "tokens": [
+       {
+        "tex": "\\begin{gathered}p^6x^{12}+6p^5qx^9+15p^4q^2x^6+\\cdots\\\\\\text{coefficient of }x^6=540\\end{gathered}",
+        "id": "ans",
+        "hl": "emerald"
+       }
+      ]
+     }
+    ],
+    "beats": [
+     {
+      "say": "Expand P X squared plus Q over X, to the power six.",
+      "asks": [
+       "What does the power six act on?",
+       "What are P and Q?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "step": 0
+       },
+       {
+        "do": "quote",
+        "text": "$\\left(px^2 + \\frac{q}{x}\\right)^6$",
+        "on": "plus Q over X"
+       }
+      ]
+     },
+     {
+      "say": "Expand to the third term, highest power first.",
+      "asks": [
+       "What does as far as its third term mean?",
+       "Which term has the highest power of X?"
+      ],
+      "do": [
+       {
+        "do": "quote",
+        "text": "as far as its third term, starting with the highest power of $x$ and simplifying each term",
+        "on": "to the third term"
+       }
+      ]
+     },
+     {
+      "say": "The first term is P X squared, and the second term is Q over X.",
+      "asks": [
+       "Which one is the first term?",
+       "Does the order of the terms matter?"
+      ],
+      "do": [
+       {
+        "do": "mark",
+        "kind": "underline",
+        "token": "q0",
+        "on": "first term is"
+       }
+      ]
+     },
+     {
+      "say": "The expansion starts with six choose zero. First term, maximum power, which is six. Second term, lowest power, which is zero.",
+      "asks": [
+       "What does six choose zero mean?",
+       "Why is the first power six?",
+       "Why start from power zero?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "t0"
+       },
+       {
+        "do": "highlight",
+        "token": "t0",
+        "inside": "c0",
+        "on": "starts with"
+       },
+       {
+        "do": "note",
+        "text": "6 choose 0",
+        "near": "t0",
+        "inside": "c0",
+        "on": "six choose zero"
+       },
+       {
+        "do": "highlight",
+        "token": "t0",
+        "inside": "a0",
+        "tone": "orange",
+        "on": "which is six"
+       },
+       {
+        "do": "highlight",
+        "token": "t0",
+        "inside": "b0",
+        "tone": "sky",
+        "on": "which is zero"
+       }
+      ]
+     },
+     {
+      "say": "Next term: six choose one. First term reduce power by one, second term increase power by one.",
+      "asks": [
+       "Why does the bottom number go up by one?",
+       "Why do the two powers still add to six?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "t1"
+       },
+       {
+        "do": "highlight",
+        "token": "t1",
+        "inside": "c1",
+        "on": "six choose one"
+       },
+       {
+        "do": "highlight",
+        "token": "t1",
+        "inside": "a1",
+        "tone": "orange",
+        "on": "reduce power"
+       },
+       {
+        "do": "highlight",
+        "token": "t1",
+        "inside": "b1",
+        "tone": "sky",
+        "on": "increase power"
+       }
+      ]
+     },
+     {
+      "say": "Next term: six choose two. First term reduce power by one, second term increase power by one.",
+      "asks": [
+       "Why is it six choose two?",
+       "What are the powers in the third term?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "t2"
+       },
+       {
+        "do": "highlight",
+        "token": "t2",
+        "inside": "c2",
+        "on": "six choose two"
+       },
+       {
+        "do": "highlight",
+        "token": "t2",
+        "inside": "a2",
+        "tone": "orange",
+        "on": "reduce power"
+       },
+       {
+        "do": "highlight",
+        "token": "t2",
+        "inside": "b2",
+        "tone": "sky",
+        "on": "increase power"
+       }
+      ]
+     },
+     {
+      "say": "Notice the pattern: the bottom number goes zero... one... two. Then plus dot dot dot.",
+      "asks": [
+       "Why does the bottom number go up by one each time?",
+       "Why do we stop at three terms?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": "t0",
+        "inside": "c0",
+        "on": "zero"
+       },
+       {
+        "do": "highlight",
+        "token": "t1",
+        "inside": "c1",
+        "on": "one"
+       },
+       {
+        "do": "highlight",
+        "token": "t2",
+        "inside": "c2",
+        "on": "two"
+       },
+       {
+        "do": "write",
+        "token": "t3",
+        "on": "plus dot dot dot"
+       }
+      ]
+     },
+     {
+      "say": "Work out each term. Six choose zero is one.",
+      "asks": [
+       "Why is six choose zero equal to one?",
+       "How do I key in six choose zero?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "m0",
+        "inside": "c0",
+        "on": "Six choose zero"
+       },
+       {
+        "do": "highlight",
+        "token": [
+         "t0",
+         "m0"
+        ],
+        "inside": "c0",
+        "on": "is one"
+       }
+      ]
+     },
+     {
+      "say": "Q over X, to the power zero, is also one: anything to the power zero is one.",
+      "asks": [
+       "Why is anything to the power zero one?",
+       "Does it matter what Q is?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "t0",
+         "m0"
+        ],
+        "inside": "pb0",
+        "tone": "sky"
+       },
+       {
+        "do": "write",
+        "token": "m0",
+        "inside": "pb0",
+        "on": "is also one"
+       },
+       {
+        "do": "note",
+        "text": "anything⁰ = 1",
+        "near": "t0",
+        "inside": "b0",
+        "on": "anything to the power"
+       }
+      ]
+     },
+     {
+      "say": "P X squared, to the six, is P to the six, X to the twelve.",
+      "asks": [
+       "Why is it X to the twelve?",
+       "Why multiply the powers?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "t0",
+         "m0"
+        ],
+        "inside": "pa0",
+        "tone": "orange"
+       },
+       {
+        "do": "write",
+        "token": "m0",
+        "inside": "pa0",
+        "on": "is P to the six"
+       },
+       {
+        "do": "note",
+        "text": "power of a power: multiply",
+        "near": "m0",
+        "inside": "pa0",
+        "on": "X to the twelve"
+       }
+      ]
+     },
+     {
+      "say": "Six choose one is six, from the calculator.",
+      "asks": [
+       "How do I key in six choose one?",
+       "Why is six choose one equal to six?"
+      ],
+      "calc": [
+       "ncr"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "m1",
+        "inside": "c1",
+        "on": "Six choose one"
+       },
+       {
+        "do": "highlight",
+        "token": [
+         "t1",
+         "m1"
+        ],
+        "inside": "c1",
+        "on": "is six"
+       },
+       {
+        "do": "note",
+        "text": "use calculator",
+        "near": "m1",
+        "inside": "c1",
+        "on": "from the calculator"
+       }
+      ]
+     },
+     {
+      "say": "P X squared, to the five, is P to the five, X to the ten. Q over X stays the same.",
+      "asks": [
+       "Why multiply the powers?",
+       "Why does Q over X stay the same?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "t1",
+         "m1"
+        ],
+        "inside": "pa1",
+        "tone": "orange"
+       },
+       {
+        "do": "write",
+        "token": "m1",
+        "inside": "pa1",
+        "on": "is P to the five"
+       },
+       {
+        "do": "highlight",
+        "token": [
+         "t1",
+         "m1"
+        ],
+        "inside": "pb1",
+        "tone": "sky",
+        "on": "Q over X stays"
+       },
+       {
+        "do": "write",
+        "token": "m1",
+        "inside": "pb1",
+        "on": "stays the same"
+       }
+      ]
+     },
+     {
+      "say": "Six choose two is fifteen, from the calculator.",
+      "asks": [
+       "How do I key in six choose two?",
+       "Why fifteen?"
+      ],
+      "calc": [
+       "ncr"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "m2",
+        "inside": "c2",
+        "on": "Six choose two"
+       },
+       {
+        "do": "highlight",
+        "token": [
+         "t2",
+         "m2"
+        ],
+        "inside": "c2",
+        "on": "is fifteen"
+       },
+       {
+        "do": "note",
+        "text": "use calculator",
+        "near": "m2",
+        "inside": "c2",
+        "on": "from the calculator"
+       }
+      ]
+     },
+     {
+      "say": "P X squared, to the four, is P to the four, X to the eight.",
+      "asks": [
+       "Why is it X to the eight?",
+       "Where does the power four come from?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "t2",
+         "m2"
+        ],
+        "inside": "pa2",
+        "tone": "orange"
+       },
+       {
+        "do": "write",
+        "token": "m2",
+        "inside": "pa2",
+        "on": "is P to the four"
+       }
+      ]
+     },
+     {
+      "say": "Q over X, squared, is Q squared over X squared. Plus dot dot dot.",
+      "asks": [
+       "Why is the bottom X squared?",
+       "Does the power two act on Q too?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "t2",
+         "m2"
+        ],
+        "inside": "pb2",
+        "tone": "sky"
+       },
+       {
+        "do": "write",
+        "token": "m2",
+        "inside": "pb2",
+        "on": "is Q squared"
+       },
+       {
+        "do": "write",
+        "token": "m3",
+        "on": "Plus dot dot dot"
+       }
+      ]
+     },
+     {
+      "say": "So the first term is just P to the six, X to the twelve.",
+      "asks": [
+       "Where did the ones go?",
+       "What does simplify each term mean?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": "m0",
+        "on": "the first term"
+       },
+       {
+        "do": "write",
+        "token": "s0",
+        "on": "P to the six"
+       }
+      ]
+     },
+     {
+      "say": "Six P to the five Q. X to the ten over X is X to the nine: subtract powers.",
+      "asks": [
+       "Why X to the nine and not X to the eleven?",
+       "Where does the Q go?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "s1",
+        "on": "Six P to the five"
+       },
+       {
+        "do": "highlight",
+        "token": [
+         "m1",
+         "s1"
+        ],
+        "inside": "x1",
+        "on": "X to the ten over"
+       }
+      ]
+     },
+     {
+      "say": "Fifteen P to the four Q squared. X to the eight over X squared is X to the six.",
+      "asks": [
+       "Why subtract the powers?",
+       "Where do P to the four and Q squared go?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "token": "s2",
+        "on": "Fifteen P to the four"
+       },
+       {
+        "do": "highlight",
+        "token": [
+         "m2",
+         "s2"
+        ],
+        "inside": "x2",
+        "on": "X to the eight over"
+       },
+       {
+        "do": "write",
+        "token": "s3",
+        "on": "is X to the six"
+       }
+      ]
+     },
+     {
+      "say": "So now for the second part. We want to find the coefficient of X to the six in this new bracket.",
+      "asks": [
+       "Is the first part finished?",
+       "What is the new bracket?"
+      ],
+      "do": [
+       {
+        "do": "quote",
+        "text": "find the coefficient of $x^6$ in $\\left(2x^2 - \\frac{3}{2x}\\right)^6$"
+       },
+       {
+        "do": "write",
+        "token": "fq",
+        "on": "coefficient of X"
+       }
+      ]
+     },
+     {
+      "say": "To do this, we make use of the first part.",
+      "asks": [
+       "How does the first part help?",
+       "Do we need to expand again?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "s0",
+         "s1",
+         "s2",
+         "s3"
+        ],
+        "on": "make use of"
+       }
+      ]
+     },
+     {
+      "say": "Look at the new bracket. It is exactly like our bracket, P X squared plus Q over X,",
+      "asks": [
+       "Why write them one under the other?",
+       "Which term matches which?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "step": 5
+       },
+       {
+        "do": "write",
+        "step": 6,
+        "on": "our bracket"
+       }
+      ]
+     },
+     {
+      "say": "but with numbers in place of P and Q.",
+      "asks": [
+       "Which numbers take the place of P and Q?",
+       "Why can we use our expansion?"
+      ],
+      "do": []
+     },
+     {
+      "say": "The first term: two X squared is in the place of P X squared. So P is two.",
+      "asks": [
+       "Why do the X squared parts match?",
+       "Could P be negative two?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "b1p",
+         "b2p"
+        ],
+        "tone": "orange",
+        "on": "The first term"
+       },
+       {
+        "do": "write",
+        "token": "pv",
+        "on": "So P is two"
+       }
+      ]
+     },
+     {
+      "say": "The second term: negative three over two X is in the place of Q over X. So Q is negative three over two.",
+      "asks": [
+       "Why split three over two X like that?",
+       "Where does the minus go?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "b1q",
+         "b2q"
+        ],
+        "tone": "sky",
+        "on": "The second term"
+       },
+       {
+        "do": "note",
+        "text": "−3/(2x) = (−3/2) ÷ x",
+        "near": "b2q",
+        "on": "in the place"
+       },
+       {
+        "do": "write",
+        "token": "qv",
+        "on": "So Q is negative"
+       }
+      ]
+     },
+     {
+      "say": "So there's no need to expand again. We just sub P equals two and Q equals negative three over two into our third term.",
+      "asks": [
+       "Why don't we need to expand again?",
+       "What if I forget the negative sign?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": [
+         "pv",
+         "qv"
+        ],
+        "on": "sub P equals two"
+       }
+      ]
+     },
+     {
+      "say": "Look back: X to the six is in the third term.",
+      "asks": [
+       "Why leave out the X?",
+       "What is the difference between a term and a coefficient?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": "s2",
+        "on": "third term"
+       }
+      ]
+     },
+     {
+      "say": "Its coefficient is fifteen P to the four Q squared. Sub in with brackets: the minus stays with Q.",
+      "asks": [
+       "Why use brackets?",
+       "What if I forget the brackets?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "step": 8,
+        "on": "fifteen P to the four"
+       },
+       {
+        "do": "write",
+        "step": 9,
+        "on": "Sub in with brackets"
+       }
+      ]
+     },
+     {
+      "say": "Two to the four is sixteen, on the calculator.",
+      "asks": [
+       "How do I key in two to the power four?",
+       "Why does fifteen stay the same?"
+      ],
+      "calc": [
+       "power"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "step": 10
+       },
+       {
+        "do": "highlight",
+        "token": "k2b",
+        "on": "is sixteen"
+       },
+       {
+        "do": "note",
+        "text": "use calculator",
+        "near": "k2b",
+        "on": "on the calculator"
+       }
+      ]
+     },
+     {
+      "say": "Negative three over two, squared, is positive nine over four.",
+      "asks": [
+       "Why is it positive?",
+       "What if the power were odd?"
+      ],
+      "do": [
+       {
+        "do": "highlight",
+        "token": "k2c"
+       },
+       {
+        "do": "note",
+        "text": "even power makes it positive",
+        "near": "k2c",
+        "on": "positive nine over"
+       }
+      ]
+     },
+     {
+      "say": "Multiply them: five hundred and forty.",
+      "asks": [
+       "Can I do this on the calculator?",
+       "Why is the answer a whole number?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "step": 11,
+        "on": "five hundred and forty"
+       }
+      ]
+     },
+     {
+      "say": "Answer: these three terms, plus dot dot dot. Coefficient of X to the six: five hundred and forty.",
+      "asks": [
+       "Is the coefficient the same as the term?",
+       "Where did five hundred and forty come from?"
+      ],
+      "do": [
+       {
+        "do": "write",
+        "step": 12
+       },
+       {
+        "do": "mark",
+        "kind": "box",
+        "token": "ans",
+        "on": "five hundred and forty"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

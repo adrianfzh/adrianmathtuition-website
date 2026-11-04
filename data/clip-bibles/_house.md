@@ -82,6 +82,19 @@ the history.
 
 ### Think as the student watching (Adrian, 4 Nov 2026 — binding on every clip)
 
+**Working line by line like a student, then explain it line by line — never chopped into many small
+parts** (Adrian, 4 Nov 2026, after the remakes of "find k" and "find n and b": *"videos are not
+explained clearly, don't split into so many parts. do working like how a student will do it, line by
+line, then explain line by line. basically the key points of making the approved clip is not
+followed"*). The board is a student's working: each line a whole step. The voice explains THAT line,
+ONE TERM PER SENTENCE in his video phrasing — *"7 choose 1 is 7, 2 to the power of 6 is 64, times
+minus x. So we have minus 448x."* — the pieces lit in turn inside that one sentence. Never a beat per
+piece ("Eight choose zero is one." / "Two to the eight is 256, on the calculator." / "Negative a half
+x to the power zero is one." as three stops): "find k" spent 12 beats on one line. Say "on the
+calculator" once for the line, not for every number. **The approved clip is the model** —
+`data/clip-references/binomial-expand-then-hence.json` (its board and its beats): read it before
+writing any clip and match how much each beat says.
+
 *"when creating the video, always make sure you think from students point of view, if they can see
 what you are referring to, if they can understand what you are narrating (if required, put on screen
 as well or highlight for further emphasis or clarity), if they can understand your explanation. and

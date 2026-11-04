@@ -118,7 +118,12 @@ You get:
    from the line above where the parts and what they become are not lit in matching colours; a line
    in summary-speak, not a teacher explaining ("same shape as ours", "match the brackets") — Adrian:
    "sounds like its the model using its own speak again".
-22. Anything else in the house rules this clip breaks.
+22. **Adrian, 4 Nov 2026 — compare with the approved model** (`data/clip-references/*.json`): a line
+   explained in many small beats (one per piece) instead of one sentence per term; working that does
+   not read like a student's, line by line; anything the model does (its wording, its lighting, its
+   notes, its look-backs, its linking of parts) that this clip does not. Quote the model's beat beside
+   this clip's.
+23. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 
