@@ -116,7 +116,9 @@ is not how singapore students speak or how teachers in singapore schools speak)"
   the approved clip, and should be done for all subsequent clips"*): the player used to light only the
   FIRST quote of a sentence, for the whole sentence — so the second part never lit. Fixed in the player
   (`lib/question-quote.ts quoteOfBeat` takes how far the voice is): each quote lights at its own `on`
-  and stays until the next one. Every clip's opening walks through the question this way.
+  and stays until the next one. Every clip's opening walks through the question this way. A quote may
+  be one piece of a longer maths span (`$(1-2x)^n$` inside `$(1-2x)^n = 1 + bx + …$`) — the card cuts
+  the span around it; a quote that is not a piece of the question is an error (it would light nothing).
 - **Light the small piece the voice names** (Adrian, 4 Nov 2026: *"highlight the powers when narrator
   says it, to draw attention to it"* · *"any ways to draw attention to the parts when narrator is
   talking about it?"*): a power, a base, a top or bottom inside a term lights on its own, at the

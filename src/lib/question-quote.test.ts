@@ -47,3 +47,23 @@ describe('quoteIsShort — which pieces jump out', () => {
     expect(quoteIsShort('as far as its third term, starting with the highest power of $x$ and simplifying each term')).toBe(false);
   });
 });
+
+describe('splitQuote — a piece of a longer maths span (5 Nov 2026)', () => {
+  const Q = 'Given that $(1-2x)^n = 1 + bx + 112x^2 + \\dots$, find the value of $n$ and of $b$.';
+  it('lights the bracket alone', () => {
+    const c = splitQuote(Q, '$(1-2x)^n$')!;
+    expect(c.part).toBe('$(1-2x)^n$');
+    expect(c.before).toBe('Given that ');
+    expect(c.after).toBe('$ = 1 + bx + 112x^2 + \\dots$, find the value of $n$ and of $b$.');
+  });
+  it('lights the expansion alone', () => {
+    const c = splitQuote(Q, '$1 + bx + 112x^2 + \\dots$')!;
+    expect(c.before).toBe('Given that $(1-2x)^n = $');
+    expect(c.part).toBe('$1 + bx + 112x^2 + \\dots$');
+    expect(c.after).toBe(', find the value of $n$ and of $b$.');
+  });
+  it('never cuts through braces or a \\left … \\right pair', () => {
+    expect(splitQuote('Find $\\left(2x+1\\right)^5$ now.', '$2x+1$')).toBeNull();
+    expect(splitQuote('Find $\\frac{1}{2x}$ now.', '$2x$')).toBeNull();
+  });
+});

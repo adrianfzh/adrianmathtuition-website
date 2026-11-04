@@ -23,6 +23,7 @@
 
 import { hasBeats, sceneNarration, type LessonScript, type Scene, type GraphMorphScene, type CheckScene } from './lesson-script';
 import { saidNotShown } from './clip-said-shown';
+import { splitQuote } from './question-quote';
 import { estimateSayS, lineKey, paragraphCount, resolveActionTimes, sceneTargets, sceneTokens, targetKeys, tokKey } from './lesson-beats';
 import { getTopicsForPaperLevel } from './canonical-topics';
 import { usableCheckAnswer, type CheckQuestionRow } from './lesson-load';
@@ -800,6 +801,13 @@ export function clipIssues(script: LessonScript): Issue[] {
     if (hasBeats(s)) s.beats.forEach((b, k) => b.do.forEach((a, j) => {
       if (a.do !== 'quote' || a.on) return;
       out.push(issue('warn', `${at}.beats[${k}].do[${j}]`, `a quote with no "on" lights the question card at the start of the line, not when the voice reads it — give it "on" = the words that read "${String((a as { text?: string }).text ?? '').slice(0, 40)}"`));
+    }));
+    // A quote the card cannot find lights nothing (5 Nov 2026: "$(1-2x)^n$" never lit in "find n and b"
+    // and no check noticed). Every quote is a piece of the question card's text.
+    if (hasBeats(s) && script.question) s.beats.forEach((b, k) => b.do.forEach((a, j) => {
+      if (a.do !== 'quote') return;
+      const text = String((a as { text?: string }).text ?? '');
+      if (!splitQuote(script.question!, text)) out.push(issue('error', `${at}.beats[${k}].do[${j}]`, `the quote "${text.slice(0, 50)}" is not a piece of the question card, so nothing lights — copy it exactly from the question`));
     }));
     // Pointing back far up a scrolling board while writing a new line lower down: both cannot be in
     // view at once on a phone, so the old piece slides under the top fade as the voice names it (31 Oct,

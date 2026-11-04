@@ -20,13 +20,43 @@ export function splitQuote(question: string, quote: string | null | undefined): 
   if (at < 0) {
     const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
     const m = new RegExp(esc).exec(question);
-    if (!m) return null;
+    if (!m) return insideMath(question, q);
     at = m.index; len = m[0].length;
   }
   const before = question.slice(0, at);
   const part = question.slice(at, at + len);
-  if (dollars(before) % 2 !== 0 || dollars(part) % 2 !== 0) return null;
+  if (dollars(before) % 2 !== 0 || dollars(part) % 2 !== 0) return insideMath(question, q);
   return { before, part, after: question.slice(at + len) };
+}
+
+const count = (s: string, re: RegExp) => (s.match(re) || []).length;
+const balanced = (tex: string) =>
+  count(tex, /(?<!\\)\{/g) === count(tex, /(?<!\\)\}/g) && count(tex, /\\left\b/g) === count(tex, /\\right\b/g);
+
+/**
+ * A quote that is one piece of a longer `$…$` span ("$(1-2x)^n$" inside "$(1-2x)^n = 1 + bx + …$",
+ * 5 Nov 2026 — it never lit): the span is cut into its own `$…$` spans around the piece, when the
+ * cut falls at a top-level point (braces and \left/\right balanced on every side).
+ */
+function insideMath(question: string, quote: string): QuoteSplit | null {
+  const inner = quote.replace(/^\$/, '').replace(/\$$/, '').trim();
+  if (!inner || inner.includes('$')) return null;
+  const esc = inner.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*');
+  const re = new RegExp(esc, 'g');
+  for (let m = re.exec(question); m; m = re.exec(question)) {
+    const at = m.index, end = at + m[0].length;
+    const head = question.slice(0, at), tail = question.slice(end);
+    if (dollars(head) % 2 !== 1) continue; // not inside a math span
+    const open = head.lastIndexOf('$');
+    const close = tail.search(/(?<!\\)\$/);
+    if (close < 0) continue;
+    const pre = head.slice(open + 1), post = tail.slice(0, close);
+    if (!balanced(pre) || !balanced(m[0]) || !balanced(post)) continue;
+    const before = pre.trim() ? `${head}$` : head.slice(0, open);
+    const after = post.trim() ? `$${tail}` : tail.slice(close + 1);
+    return { before, part: `$${m[0]}$`, after };
+  }
+  return null;
 }
 
 type BeatLike = { do?: { do: string; text?: unknown }[] };

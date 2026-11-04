@@ -169,6 +169,15 @@ describe('the verifier’s new rules', () => {
     ] as { say: string; do: BeatAction[] }[])).map(m => m.where + ' ' + m.message);
     expect(msgs.filter(m => /quote with no "on"/.test(m))).toEqual([expect.stringContaining('beats[0]')]);
   });
+  it('clipIssues: a quote that is not a piece of the question card is an error (5 Nov 2026)', () => {
+    const c = clip([
+      { say: 'The question gives one minus two x, to the power n.', do: [{ do: 'quote', text: '$(1-2x)^n$', on: 'one minus two x' }] },
+      { say: 'We must find the value of n and of b, from here.', do: [{ do: 'quote', text: '$(1+2x)^n$', on: 'find the value' }] },
+    ] as { say: string; do: BeatAction[] }[]);
+    c.question = 'Given that $(1-2x)^n = 1 + bx + 112x^2 + \\dots$, find the value of $n$ and of $b$.';
+    const msgs = clipIssues(c).filter(m => /not a piece of the question card/.test(m.message)).map(m => m.where);
+    expect(msgs).toEqual([expect.stringContaining('beats[1]')]);
+  });
   it('clipIssues: lighting a line far above while writing far below is flagged on a scrolling board (4 Nov 2026)', () => {
     const c = clip([{ say: 'Compare the x terms: b x and negative two n x, so b is negative two n.', do: [{ do: 'highlight', token: 'l0' }, { do: 'write', step: 5, on: 'so b is' }] }]);
     const sc = c.scenes[0] as Extract<LessonScript['scenes'][number], { type: 'equation-steps' }>;
