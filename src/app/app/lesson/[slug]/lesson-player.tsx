@@ -4010,6 +4010,11 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc * { color: var(--lsn-hl-amber); text-shadow: 0 0 8px rgba(252,211,77,0.65); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-orange * { color: #ff9a3c; text-shadow: 0 0 8px rgba(255,154,60,0.6); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-pc-blue, [data-lsn-clip] .lsn-lit-pc-blue * { color: #a8ecfb; text-shadow: 0 0 8px rgba(168,236,251,0.6); transition: color 250ms ease; }
+/* …and it grows for a moment as it lights, so a small power on a long shrunk line catches the eye
+   (Adrian, 4 Nov 2026: "highlight the powers when narrator says it, to draw attention to it"). */
+[data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-blue { display: inline-block; transform-origin: 50% 70%; animation: lsn-pc-pop 900ms ease-out; }
+@keyframes lsn-pc-pop { 0% { transform: scale(1); } 30% { transform: scale(1.8); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { [data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-blue { animation: none; } }
 [data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
 [data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
 [data-lsn-themed] .lsn-hl-emerald { color: var(--lsn-hl-emerald); }
