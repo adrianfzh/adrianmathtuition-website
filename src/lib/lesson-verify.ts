@@ -794,6 +794,13 @@ export function clipIssues(script: LessonScript): Issue[] {
     for (const m of saidNotShown(s, { firstBeatReadsQuestion: i === 0 })) {
       out.push(issue('warn', `${at}.beats[${m.beat}]`, `the voice says "${m.said}" but the board does not show ${m.want} by the end of this beat — write it as it is said`));
     }
+    // The question card lights in time with the voice reading it (Adrian, 4 Nov 2026: "parts of question
+    // not highlighted in sync with narration"): a quote fired at the beat's start lit "is zero" while the
+    // voice was still saying something else. Every quote names the words that read it.
+    if (hasBeats(s)) s.beats.forEach((b, k) => b.do.forEach((a, j) => {
+      if (a.do !== 'quote' || a.on) return;
+      out.push(issue('warn', `${at}.beats[${k}].do[${j}]`, `a quote with no "on" lights the question card at the start of the line, not when the voice reads it — give it "on" = the words that read "${String((a as { text?: string }).text ?? '').slice(0, 40)}"`));
+    }));
     // Pointing back far up a scrolling board while writing a new line lower down: both cannot be in
     // view at once on a phone, so the old piece slides under the top fade as the voice names it (31 Oct,
     // 4 Nov 2026 — three clips failed the look so). The look-back gets a beat of its own.

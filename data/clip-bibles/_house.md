@@ -106,6 +106,12 @@ is not how singapore students speak or how teachers in singapore schools speak)"
 - **Can they follow it?** What is compared is shown side by side ("same shape" → both brackets on
   the board, one under the other, the matching parts lit).
 - **Light only the piece being said** — one term of a long line, never the whole line.
+- **The question card lights in sync with the voice** (Adrian, 4 Nov 2026: *"parts of question not
+  highlighted in sync with narration"*). Each part of the question lights at the words that READ it
+  (`quote` with `on`), never at the start of a line that says something else first; a sentence that
+  reads two parts lights them in turn ("ten plus k x, times two minus a half x, to the power eight" →
+  the expression; "the coefficient of x cubed is zero" → that phrase). The checker refuses a quote
+  without `on`.
 - **Light the small piece the voice names** (Adrian, 4 Nov 2026: *"highlight the powers when narrator
   says it, to draw attention to it"* · *"any ways to draw attention to the parts when narrator is
   talking about it?"*): a power, a base, a top or bottom inside a term lights on its own, at the

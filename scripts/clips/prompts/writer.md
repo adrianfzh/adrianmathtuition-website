@@ -85,6 +85,8 @@ no focus, no clear.
 - **Read the approved model clip first**: `data/clip-references/*.json` (Binomial: `binomial-expand-then-hence.json`)
   — its board AND its beats. Match how much each beat says and what it lights. (Adrian, 4 Nov 2026: "the
   key points of making the approved clip is not followed".)
+- **The question card lights in sync** (Adrian, 4 Nov 2026): every `quote` has `on` = the words that
+  READ that part of the question; a sentence reading two parts has two quotes, each on its own words.
 - **Line by line, ONE TERM PER SENTENCE** (Adrian, 4 Nov 2026: *"don't split into so many parts. do
   working like how a student will do it, line by line, then explain line by line"*): a working line is
   explained with one beat per term, in his phrasing — "8 choose 1 is 8, 2 to the 7 is 128, times

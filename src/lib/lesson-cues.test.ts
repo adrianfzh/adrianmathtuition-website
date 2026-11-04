@@ -162,6 +162,13 @@ describe('the verifier’s new rules', () => {
     delete sc.steps[0].heading;
     expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/two headings stack/);
   });
+  it('clipIssues: a quote with no "on" is flagged — the question card lights as the voice reads it (4 Nov 2026)', () => {
+    const msgs = clipIssues(clip([
+      { say: 'A coefficient is the number only. The coefficient of x cubed is zero.', do: [{ do: 'quote', text: 'is zero' }] },
+      { say: 'The coefficient of x cubed is zero, as the question says.', do: [{ do: 'quote', text: 'is zero', on: 'is zero' }] },
+    ] as { say: string; do: BeatAction[] }[])).map(m => m.where + ' ' + m.message);
+    expect(msgs.filter(m => /quote with no "on"/.test(m))).toEqual([expect.stringContaining('beats[0]')]);
+  });
   it('clipIssues: lighting a line far above while writing far below is flagged on a scrolling board (4 Nov 2026)', () => {
     const c = clip([{ say: 'Compare the x terms: b x and negative two n x, so b is negative two n.', do: [{ do: 'highlight', token: 'l0' }, { do: 'write', step: 5, on: 'so b is' }] }]);
     const sc = c.scenes[0] as Extract<LessonScript['scenes'][number], { type: 'equation-steps' }>;
