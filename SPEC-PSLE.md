@@ -29,6 +29,13 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     + key used; 2023 science Nan Hua's cover says "Preliminary Examination" (filed SA2);
     2018 maths Tao Nan's bookmark was wrong (real pages 1130–1166).
   - Not taken: 2014–2017 books and the 2011–2013 single files (Adrian asked for 2018–2023).
+- **P4 maths + science (4 Nov 2026, Adrian: "yes" — "do we have p4 papers as well?").** Same source zip
+  (`Primary 4 Exam Paper/P4 Math|P4 Science/<year>/`, one vendor book per year), same rules as P5:
+  school end-of-year (SA2) papers 2018–2023, cut by school into `~/P4-staging/`, uploaded as `paper_library`
+  rows with status **`held`** until the P5 queue is empty, then released (`queued`). Needs level `P4` in the
+  name reader, a P4 topic list, `PRIMARY_QLEVELS` + the worker law, like P5. The Fly worker shrinks only
+  after P4 is done too. **English and Chinese (P4–P6) wait** until a primary English or Chinese practice
+  is planned — nothing would use them now (English practice serves only our own passages).
 - **⏰ When the primary extraction finishes → shrink the Fly worker (Adrian, 4 Nov 2026: "let's
   finish the extraction work first. and then later bring cost down to less than US$50 per month").**
   The worker stays on performance-2x / 8 GB (≈ US$114/mo in sin) until the P5 + P6 queue is empty.
