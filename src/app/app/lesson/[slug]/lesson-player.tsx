@@ -1553,6 +1553,19 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
 
   const intro = bitsOf(board, 'text:intro');
   const notes = useMemo(() => (board ? sceneNotes(scene) : []), [board, scene]);
+  // Lines a pairing arc is drawn over / under: they get room for it, so it never runs through the
+  // heading above or the line below (4 Nov 2026, the Binomial "find k" clip).
+  const arcLines = useMemo(() => {
+    const over = new Set<number>(), under = new Set<number>();
+    if (!clip || !hasBeats(scene)) return { over, under };
+    for (const b of scene.beats) for (const a of b.do) {
+      if (a.do !== 'mark' || (a.kind !== 'arc' && a.kind !== 'arc-under')) continue;
+      const id = [a.token].flat()[0];
+      const line = scene.steps.findIndex(st => st.tokens.some(t => t.id === id));
+      if (line >= 0) (a.kind === 'arc' ? over : under).add(line);
+    }
+    return { over, under };
+  }, [clip, scene]);
   // A clip's notes point UP at their token: placed before anything is written (the chalk hand
   // measures a note's letters when it writes them), and again whenever the board reflows.
   useIsoLayoutEffect(() => {
@@ -1589,7 +1602,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
           const ng = groupOf(board, scene, lineKey(i), i);
           return (
             <div key={i} data-line={i} data-key={board ? lineKey(i) : undefined} aria-hidden={!on}
-              className={`lsn-line ${on ? 'on' : ''}${s.corner && clip ? ' lsn-line-corner' : ''}`}>
+              className={`lsn-line ${on ? 'on' : ''}${s.corner && clip ? ' lsn-line-corner' : ''}${arcLines.over.has(i) ? ' lsn-arc-over' : ''}${arcLines.under.has(i) ? ' lsn-arc-under' : ''}`}>
               {s.heading && (
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-1 lsn-step-heading">{s.heading}</p>
               )}
@@ -4113,6 +4126,8 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-note-up .lsn-note-text { display: inline-block; white-space: nowrap; }
 /* A note whose part is over closes up smoothly, so the next note under that line sits right under
    its term, not below an empty gap (4 Nov 2026). */
+[data-lsn-clip] .lsn-arc-over > .lsn-tokrow { margin-top: 1.25rem; }
+[data-lsn-clip] .lsn-arc-under > .lsn-tokrow { margin-bottom: 1.25rem; }
 [data-lsn-clip] .lsn-note-up { max-height: 8em; transition: max-height 350ms cubic-bezier(.4,0,.2,1), opacity 300ms ease; }
 [data-lsn-clip] .lsn-note-up.lsn-note-done { max-height: 0; overflow: hidden; margin: 0; padding-top: 0; padding-bottom: 0; }
 .lsn-sup { font-size: 0.7em; vertical-align: 0.42em; line-height: 0; margin-left: 0.04em; }
