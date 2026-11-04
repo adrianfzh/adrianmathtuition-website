@@ -92,6 +92,11 @@ no focus, no clear.
   meaning, in the voice, at the step where it belongs, in the house style (one plain sentence; the word
   limits still hold). The stand-in reviewer checks each one and sends the clip back naming any it
   cannot hear. A plan without `mustSay` has nothing extra to say.
+- **Announce and link each part of the question** before its working: the earlier part is done, the
+  next part asks …, and how the earlier part helps (`_house.md` §2, 4 Nov 2026).
+- **A note fades when its beat ends** — put it in the beat that talks about it. A note on ONE piece of
+  a term points at it exactly: `{"do": "note", "text": "6 choose 0", "near": "<token>", "inside": "<piece>"}`.
+- **Two values that both become 1 (or 0) are said one at a time, each lit** — never "X and Y give one".
 - **Pointing back at a line that has scrolled away = a beat of its own** ("Look back at the expansion.
   The x to the six is in the third term.") that writes nothing and only lights the piece on that old
   line — the board scrolls back to it. Write the next line in the NEXT beat.

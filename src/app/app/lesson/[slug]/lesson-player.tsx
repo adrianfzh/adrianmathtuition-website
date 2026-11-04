@@ -533,7 +533,10 @@ function placeNotes(cont: HTMLElement, notes: HTMLElement[]) {
     // property words are overlapping").
     const k = raw.width / row.offsetWidth;
     const rr = { left: raw.left / k, width: raw.width / k };
-    const rects = toks.map(t => t.getBoundingClientRect()).filter(r => r.width > 0);
+    // `inside`: the ↑ points at that piece of the token, not the token's middle (4 Nov 2026).
+    const inside = el.dataset.pointInside;
+    const pieces = inside ? toks.flatMap(t => Array.from(t.querySelectorAll<HTMLElement>(`.lsn-pc-${CSS.escape(inside)}`))) : [];
+    const rects = (pieces.length ? pieces : toks).map(t => t.getBoundingClientRect()).filter(r => r.width > 0);
     if (!rects.length) continue;
     const cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2 / k - rr.left;
     let tw = text.getBoundingClientRect().width / k;
@@ -1609,7 +1612,8 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
                     const away = ni >= 0 && tokenGone(board, scene, i, ni);
                     return (
                       <span key={n.id} data-gone={away ? '1' : undefined} className={away ? 'lsn-note-away' : 'contents'}>
-                        <NoteSlotView note={n} board={board} pointAt={keys.length ? keys.join(' ') : undefined} />
+                        <NoteSlotView note={n} board={board} pointAt={keys.length ? keys.join(' ') : undefined}
+                          expired={clip && Number(n.id.split(':')[1]) < (board.beat ?? 0)} />
                       </span>
                     );
                   })}
@@ -2992,7 +2996,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const toggleRead = (s: string) => { if (readOpen === s) { setReadOpen(null); setPaused(false); } else { setPaused(true); setReadOpen(s); } };
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
-  // ⏪ 10 / 10 ⏩: about ten seconds of voice back or forward, landing at the start of that part. A
+  // ⏪ 3 / 3 ⏩ (Adrian, 4 Nov 2026: "can rewind and fast forward be 3 seconds instead?"): about three
+  // seconds of voice back or forward, landing at the start of that part. A
   // part's length is its words at a steady speaking pace (the voice clips load only as they play).
   const partSecs = useMemo(() => stops.map(([si, k]) => {
     const sc = scenes[si];
@@ -3617,8 +3622,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         };
         return (
           <div className="lsn-scrub mt-2 px-0.5 flex items-center gap-1.5">
-            <button type="button" onClick={() => seekTo(jumpSeconds(-5))} aria-label="Back 5 seconds"
-              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">⏪ 5</button>
+            <button type="button" onClick={() => seekTo(jumpSeconds(-3))} aria-label="Back 3 seconds"
+              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">⏪ 3</button>
             <div className="relative flex-1 flex items-center touch-none"
               onPointerDown={e => {
                 if (e.button !== 0) return;
@@ -3650,8 +3655,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
                 onChange={e => { paint(Number(e.target.value)); seekTo(Math.floor(Number(e.target.value))); }}
                 className="lsn-scrub-range flex-1 pointer-events-none" />
             </div>
-            <button type="button" onClick={() => seekTo(jumpSeconds(5))} aria-label="Forward 5 seconds"
-              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">5 ⏩</button>
+            <button type="button" onClick={() => seekTo(jumpSeconds(3))} aria-label="Forward 3 seconds"
+              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">3 ⏩</button>
             <span ref={scrubLabel} className="text-[11px] tabular-nums text-slate-400 w-9 text-right" />
           </div>
         );

@@ -383,6 +383,8 @@ export interface NoteSlot {
   line: number | null;
   /** The tokens whose middle a clip's ↑ points at (else `near`). */
   span?: string[];
+  /** The piece inside `near` the ↑ points at exactly (`\\htmlClass{lsn-pc-<inside>}`). */
+  inside?: string;
 }
 
 /** Every note a scene's beats will ever write, with the line each belongs to. */
@@ -394,7 +396,7 @@ export function sceneNotes(scene: Scene | PlayScene): NoteSlot[] {
     if (a.do !== 'note') return;
     const near = a.near ?? null;
     const ref = near ? tokens.find(r => r.id === near) : undefined;
-    out.push({ id: `note:${k}:${j}`, text: a.text, near, line: ref ? ref.line : null, ...(a.span ? { span: a.span } : {}) });
+    out.push({ id: `note:${k}:${j}`, text: a.text, near, line: ref ? ref.line : null, ...(a.span ? { span: a.span } : {}), ...(a.inside ? { inside: a.inside } : {}) });
   }));
   return out;
 }

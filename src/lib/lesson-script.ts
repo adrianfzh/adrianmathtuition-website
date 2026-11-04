@@ -336,7 +336,7 @@ export type BeatAction =
   /** A hand-drawn underline / circle / box around one or more tokens. */
   | ({ do: 'mark'; kind: MarkKind; token: string | string[]; /** An arc's number, drawn at its peak (①–④ on the Rainbow): one or two characters. */ label?: string } & Timed)
   /** A handwritten aside (inline `$…$` allowed), beside a token or under the working. */
-  | ({ do: 'note'; text: string; near?: string; /** A clip: the tokens (same line) whose MIDDLE the ↑ points at, e.g. both terms a law acts on. */ span?: string[] } & Timed)
+  | ({ do: 'note'; text: string; near?: string; /** A clip: the tokens (same line) whose MIDDLE the ↑ points at, e.g. both terms a law acts on. */ span?: string[]; /** A clip: the ↑ points at this piece inside the `near` token (`\\htmlClass{lsn-pc-<piece>}{…}`), e.g. the ⁶C₀ of a whole term (Adrian, 4 Nov 2026: "make the arrow point exactly at 6 choose 0"). */ inside?: string } & Timed)
   /** Ease the board's view onto the target for `hold` seconds (at 1×; default 2.2), then release. */
   | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)
   /** Wipe the pen layer (default) or the whole board. */
@@ -837,6 +837,7 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       if (a.span !== undefined && (!Array.isArray(a.span) || a.span.length < 2 || a.span.some((t: unknown) => !nonEmptyString(t) || !scope.tokenIds.has(t as string)))) {
         errors.push(`${where}: span is two or more token ids of this scene (the ↑ points at their middle)`);
       }
+      if (a.inside !== undefined && (typeof a.inside !== 'string' || !/^[a-z0-9-]+$/.test(a.inside) || a.near === undefined)) errors.push(`${where}: a note's inside names a piece of its near token (\\htmlClass{lsn-pc-<piece>}{…}) — and needs near`);
       break;
     case 'clear':
       if (a.what !== undefined && !(CLEAR_SCOPES as readonly unknown[]).includes(a.what)) {

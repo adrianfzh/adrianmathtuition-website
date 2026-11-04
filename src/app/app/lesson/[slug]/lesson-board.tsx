@@ -291,8 +291,11 @@ function useWriter(
 }
 
 /** One note slot: laid out from mount, drawn on when its action fires. */
-export function NoteSlotView({ note, board, pointAt }: {
+export function NoteSlotView({ note, board, pointAt, expired = false }: {
   note: NoteSlot; board: BoardState;
+  /** A clip's note whose part is over: it fades, keeping its place (Adrian, 4 Nov 2026: "when you
+   *  move on to another part, can remove it (with the annotation)"). */
+  expired?: boolean;
   /** A clip's note under its line (Adrian, 15 Oct 2026: "← on the next line points to nowhere"):
    *  the board key of the token it explains. The note then starts with an ↑ that the steps view
    *  lines up exactly under that token (any ←/↑/↳ the author wrote is dropped). */
@@ -304,7 +307,7 @@ export function NoteSlotView({ note, board, pointAt }: {
     const text = note.text.replace(/^\s*[←↑↳]\s*/, '');
     const warn = /^\s*✗/.test(text);
     return (
-      <span data-key={note.id} data-prose="1" data-point-at={pointAt} className={`lsn-el lsn-note lsn-note-up${warn ? ' lsn-note-warn' : ''} w ${board.shown.has(note.id) ? 'on' : ''}`}>
+      <span data-key={note.id} data-prose="1" data-point-at={pointAt} data-point-inside={note.inside} className={`lsn-el lsn-note lsn-note-up${warn ? ' lsn-note-warn' : ''} w ${board.shown.has(note.id) && !expired ? 'on' : ''}`}>
         <span className="lsn-note-arrow">↑</span>{' '}<span className="lsn-note-text"><MathText text={text} /></span>
       </span>
     );

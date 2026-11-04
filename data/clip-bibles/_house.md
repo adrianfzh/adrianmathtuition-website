@@ -104,6 +104,21 @@ is not how singapore students speak or how teachers in singapore schools speak)"
 - **Say it the way a Singapore maths teacher says it**: "6 choose 2", "first term", "second term",
   "reduce power", "increase power", "plus dot dot dot", "bring the negative over". Never "kill",
   "C two", "falls / rises", "flies", slang or American classroom words.
+- **Each part of the question is announced and linked** (Adrian, 4 Nov 2026: *"for the next part of
+  the question > it is too abrupt, it didn't even say it is doing the next part, and didn't explain and
+  link to the first part"*). Before any new working: say the part is done ("That's the first part:
+  the expansion."), name the next part and what it asks ("Now the second part: the coefficient of x⁶
+  in (2x² − 3/(2x))⁶."), and say how the earlier part helps ("It has the same shape as our bracket, so
+  we can use the expansion we just found."). The board gets a heading for the new part.
+- **A note points exactly at what it explains and stays only for its part** (Adrian, 4 Nov 2026:
+  *"make the arrow point exactly at 6 choose 0? then when you move on to another part, can remove it
+  (with the annotation)"*): a note on a piece of a term uses `inside` (the ↑ sits under that piece);
+  every note fades by itself when the next part (beat) starts — so put it in the beat that talks
+  about it.
+- **"Two things are 1" is said one at a time, each lit** (Adrian, 4 Nov 2026, of "six choose zero
+  and power zero give one": *"can make it clearer without adding in too much stuff"*): "6 choose 0
+  is 1." (⁶C₀ lit) — "q over x to the power 0 is also 1: anything to the power 0 is 1." (the 0 lit, a
+  short note `anything⁰ = 1` pointing at it) — "So the first term is just p⁶x¹²."
 - **No shortcut words**: "the x⁶ term is the third" → "the x⁶ term is the third term". Full words.
 - **A ✗ note must make sense on its own** (Adrian, 4 Nov 2026, on "✗ Common mistake: x¹⁰ × q/x =
   qx¹¹": *"i don't understand the pink line"*). Write the wrong step AND the right one, short:
