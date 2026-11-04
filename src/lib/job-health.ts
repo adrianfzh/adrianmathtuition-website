@@ -73,6 +73,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 🔐 The weekly security-and-privacy check (4 Nov 2026): /api/cron/security-scan, called by the
   // bot's morning fixer (bot-review §1f) on Mondays 5:45am — silence = the fixer skipped it.
   'security-scan':     { kind: 'interval', hours: 204, label: 'Mondays 5:45am' },
+  // 💸 The daily Supabase cost check (4 Nov 2026): /api/cron/supabase-cost, called by the bot's
+  // morning fixer (bot-review §1g) every day at 5:45am — silence = the fixer skipped it.
+  'supabase-cost':     { kind: 'interval', hours: 30, label: 'daily 5:45am' },
   // 📏 The weekly shadow read of the consistency set (17 Sep 2026): the papers
   // re-marked on the Mac lane on a Sunday night so Monday can say how far the
   // marking moved. Weekly, so the same 8.5-day grace as the report above.

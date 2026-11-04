@@ -621,6 +621,42 @@ Report only: nothing here or in the fixer changes a database. Starting list on 4
 0 errors · 75 warnings · 17 public tables/folders (maths: subgroups, rubrics, content_snippets,
 sections_meta, technique_tags, question_technique_tags + 10 public buckets; science: 1 bucket).
 
+### 💸 `supabase-cost` — daily 05:45 SGT, run by the bot's morning fixer (4 Nov 2026)
+
+Adrian, 4 Nov 2026: *"give me warning if supabase costs exceeds a certain amount, so I don't get a
+shock at the bill"* — after the organisation went over its 250 GB data-out allowance two cycles
+running (grace period to 23 Nov 2026; he turned the spend cap off himself). Route
+`/api/cron/supabase-cost` (admin or cron auth; `?dry=1` = work it out, save nothing, and also
+answer `all` = every warning today's numbers justify); rules, prices and wording
+`lib/supabase-cost.ts` (pure, tested); fetching `lib/supabase-cost-store.ts`. The bot's
+`bot-review` §1g calls it every morning and puts `lines` in the ☀️ brief. It speaks only when the
+projected EXTRA cost passes **US$25** (again at US$50, US$75 …), or a quota (data out, cached data
+out, file storage) is projected over 100 % or has passed 90 % — each once per billing cycle
+(job_runs `supabase-cost` meta.sent + cycle_start).
+
+- **⚙️ The setting**: `ALERT_EXTRA_USD = 25` in `lib/supabase-cost.ts`; `SUPABASE_COST_ALERT_USD` on
+  Vercel (Production) wins. Adrian: tell any session "set the Supabase cost warning to US$40".
+- **Prices** (`PRICES`): copied from supabase.com/docs/guides/platform/manage-your-usage/ on 4 Nov
+  2026 — plan US$25; US$10 compute credit; data out 250 GB then US$0.09/GB (cached 250 GB then
+  US$0.03); file storage 100 GB then US$0.0213/GB-month (GB-hours = the cycle's average); compute
+  per hour per size. "Usual" bill = plan + every project's server − credit (3 Micro ≈ US$44).
+- **Where the numbers come from**: the public Management API has NO organisation-usage endpoint.
+  The store first asks the dashboard's own one (`/platform/organizations/{slug}/usage`, not a
+  published API) — exact when Supabase accepts the login there. Otherwise it ESTIMATES: file
+  storage exact (`storage.objects`, all three projects), "data out" = the last 24 h of FILE
+  downloads × days so far — **a lower bound**: database reads are not counted (the logs do not
+  record their size), and the brief says so in one bracket line. The stamp's
+  `meta.platform_error` says which path ran. The token may need **Analytics: Read** (logs) and
+  billing read on top of the security check's scopes — the first live run will say.
+- Billing cycle: 27th → 27th (`BILLING_ANCHOR_DAY`), or Supabase's own when the subscription answers.
+- **Dry run, 4 Nov 2026** (Adrian's Usage page: 129.95 GB on day 8–9, 93.3 GB storage):
+  `📈 Supabase data sent out: 130 GB of the 250 GB included so far (52%), on course for about 476 GB
+  by the end of the month.` + `⚠️ Supabase file storage has passed 90% of what the plan includes: 93
+  GB of 100 GB.` (projected bill ~US$65 = US$44 usual + ~US$20 extra → under US$25, no 💸 line).
+  At the 29 Oct–1 Nov peak pace: `💸 Supabase: on course for about US$81 this month (US$44 usual +
+  ~US$36 extra data). Mostly the science project. Nothing to do unless you want me to cut it.`
+- Why the data out was so high, and what was cut: bot repo `docs/OPS.md` §Supabase egress.
+
 ### 🔒 `leak-test` — Mondays 04:00 SGT (`0 20 * * 0` UTC)
 
 Route `/api/cron/leak-test`; rules `lib/leak-test.ts` (pure, tested); requests
