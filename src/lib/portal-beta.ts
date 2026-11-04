@@ -633,7 +633,7 @@ export async function spotErrorVisible(identity?: string | null): Promise<boolea
 // five things a week — a recent topic in a new costume, a stretch question, an older
 // topic, a spot-the-mistake card, and a guess-first prompt — on Home and /app/stretch.
 // ADMIN + the preview student until Adrian has looked at example sets and said yes.
-export const STRETCH_SET_OPEN_TO_STUDENTS = false;
+export const STRETCH_SET_OPEN_TO_STUDENTS = true; // Adrian, 4 Nov 2026: "the example sets are okay"
 export async function stretchSetVisible(identity?: string | null): Promise<boolean> {
   if (STRETCH_SET_OPEN_TO_STUDENTS) return true;
   if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;

@@ -6,9 +6,10 @@ older topics, spotting a mistake, and guessing before solving. This joins parts 
 (practice flow, Challenge pilot, spot-the-error cards, Notebook, difficulty job) into one thing a
 student actually receives each week.
 
-**State (4 Nov 2026): BUILT on dev, switched OFF for students** (`STRETCH_SET_OPEN_TO_STUDENTS = false`
-in `src/lib/portal-beta.ts`; Adrian's admin cookie and the preview student see it). Not announced
-anywhere yet — the bot's weekly message line is a proposal waiting for Adrian (§6).
+**State (4 Nov 2026): BUILT and switched ON** (`STRETCH_SET_OPEN_TO_STUDENTS = true` in
+`src/lib/portal-beta.ts`). Adrian looked at two example sets on `/admin/stretch` (Rainie Cheng, A Math;
+Chloe Gng, E Math) and said *"the example sets are okay"*. Students see it once `dev` is promoted. Not
+announced anywhere yet — the bot's Monday line is a proposal waiting for Adrian (§6).
 
 ## 1. What a student gets — five things a week, each a different idea
 
@@ -69,7 +70,7 @@ Level of the set: A Math before E Math (an A Math student sits both), then JC, S
   mistakes still waiting on `/admin/spot-error` → E Math students get no spot card yet.
 
 ## 6. Open for Adrian
-1. Look at example sets on `/admin/stretch`, then say yes to open `STRETCH_SET_OPEN_TO_STUDENTS`.
+1. ~~Look at example sets, say yes~~ — done 4 Nov 2026 ("the example sets are okay"); promote to put it live.
 2. **Announcement (proposal, not built):** one line in the bot's Monday message to each student —
    "🧩 This week's stretch set is ready — 5 questions that look different from the usual." with a
    link to `/app/stretch`. Ask Adrian before building it.
