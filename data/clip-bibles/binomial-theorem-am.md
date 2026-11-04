@@ -52,6 +52,10 @@ Exact answers stay exact (fractions like minus sixty-three over eight); estimate
 - Rule notes: `Pattern: first power falls, second power rises` (never "a's" / "b's" — an expansion clip names no a and b, 1 Nov 2026); `odd power keeps the minus, even power makes it positive`.
 - Traps: (−2x)³ = −8x³, not −2x³ (112.01, pitfall); "The minus sign belongs to b" (112.035);
   a coefficient line that does not match the expansion it produces (112.06 — cross-check).
+- **"Find the coefficient of xᵏ" (one term, or one term of a product like (10 + kx)(2 − ½x)⁸, and
+  the question does not say expand) = the general term T(r+1) is fine** (Adrian, 5 Nov 2026, on the
+  "find k" clip: "yes" to keeping the formula method). The "expand" rule below is for a question that
+  asks for the first terms.
 - **"Expand as far as the third term" (or "the first N terms") = expand TERM BY TERM, never the
   general term** (Adrian, 31 Oct 2026: *"for this question, we should expand term by term all the
   way to the third term (instead of using the general term formula), and dot dot dot at the end"*).
