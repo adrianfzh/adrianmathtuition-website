@@ -37,8 +37,29 @@ export interface SpotPayload extends AutopsyPayload {
   key: string;
 }
 
-/** The kinds worth a spot-the-error card: a visible wrong LINE. Not 'incomplete' (no line), 'misread' (the question, not a line), 'units' or 'keywords'. */
-export const SPOT_KINDS: readonly ErrorKind[] = ['concept', 'careless', 'sign', 'arithmetic', 'transfer', 'rounding'];
+/**
+ * The kinds worth a card from a MARKED paper: a mistake of METHOD or
+ * UNDERSTANDING on a visible line (Adrian, 4 Nov 2026: "copying the formula is
+ * not a good choice for spot-error (there is no need to practice copying the
+ * formula)" … "the spot errors for E Math seems too easy"). So never 'transfer'
+ * (copied wrongly), 'rounding' or 'arithmetic' (calculator / one-step slips),
+ * nor 'incomplete', 'misread', 'units', 'keywords'. 'careless' stays only for a
+ * slip inside a method (a dropped term, a lost factor) — the author judges that.
+ */
+export const SPOT_KINDS: readonly ErrorKind[] = ['concept', 'sign', 'careless'];
+
+/** Real-world cards (a video's or an article's slip) may also be plain arithmetic. */
+export const REAL_WORLD_KINDS: readonly ErrorKind[] = ['concept', 'sign', 'careless', 'arithmetic'];
+
+/**
+ * Casual or dramatic words a Singapore teacher would not use on a worksheet
+ * (Adrian, 4 Nov 2026: "don't put words like 'loses' -> it's not how
+ * singaporean teachers speak"). Titles are plain: "Spot the error: standard form".
+ */
+export const BANNED_WORDS = ['loses', 'lose', 'lost a', 'blows up', 'sneaks', 'sneaky', 'giveaway', 'quietly', 'trap', 'oops', 'sneak', 'joining'];
+
+/** An E Math card from a marked paper must be a multi-step question: at least this many working lines. */
+export const EM_MIN_LINES = 4;
 
 export function isSpotPayload(p: unknown): p is SpotPayload {
   return !!p && typeof p === 'object' && (p as Record<string, unknown>).origin === SPOT_ORIGIN;
@@ -189,7 +210,10 @@ export function draftProblems(d: SpotDraft, spineTopics: ReadonlySet<string>): s
   if (!d.title?.trim()) out.push('title missing');
   if (!p || p.origin !== SPOT_ORIGIN) out.push(`payload.origin must be "${SPOT_ORIGIN}"`);
   if (p?.source !== 'marked' && p?.source !== 'real-world') out.push('payload.source must be marked | real-world');
-  if (!isErrorKind(p?.error_kind) || !SPOT_KINDS.includes(p.error_kind)) out.push(`error_kind "${p?.error_kind}" is not a spot kind`);
+  const kinds = p?.source === 'real-world' ? REAL_WORLD_KINDS : SPOT_KINDS;
+  if (!isErrorKind(p?.error_kind) || !kinds.includes(p.error_kind)) out.push(`error_kind "${p?.error_kind}" is not a spot kind (method or understanding only — no copying, rounding or calculator slips)`);
+  if (!/^Spot the error: [a-z0-9]/i.test(d.title ?? '')) out.push('title must read "Spot the error: <topic in plain words>"');
+  if (p?.source === 'marked' && d.subject === 'EM' && (p.working?.length ?? 0) < EM_MIN_LINES) out.push(`E Math cards need a multi-step question (at least ${EM_MIN_LINES} working lines)`);
   if (!/^[0-9a-z-]{6,40}$/.test(p?.key ?? '')) out.push('key missing or malformed');
   if (!str(p?.problem_md)) out.push('problem_md missing');
   if (!Array.isArray(p?.working) || p.working.length < 2 || p.working.length > 8) out.push('working must have 2–8 lines');
@@ -201,6 +225,9 @@ export function draftProblems(d: SpotDraft, spineTopics: ReadonlySet<string>): s
   const all = [p?.problem_md, ...(p?.working ?? []), p?.why_md, p?.fix_md].join('\n');
   if (/\b(student|your friend|classmate|he wrote|she wrote)\b/i.test(all)) out.push('text points at a person — keep it to "this working"');
   if (/\bAdrian\b/.test(all)) out.push('never name the tutor in student text');
+  const lower = `${d.title}\n${all}`.toLowerCase();
+  const casual = BANNED_WORDS.filter(w => new RegExp(`\\b${w}\\b`).test(lower));
+  if (casual.length) out.push(`casual wording a teacher would not use: ${casual.join(', ')}`);
   return out;
 }
 

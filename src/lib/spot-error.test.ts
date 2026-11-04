@@ -32,11 +32,11 @@ describe('briefsFromRun', () => {
     line('euros = 780/1.5953 = 488.9363'),
     line('euros in SG = 489.9363'),
     line('rate = 489.9363/780 = 0.62812'),
-    line('Answer: 0.63 euros', 'wrong', { error_type: 'rounding', correction: { text_plain: 'to 3 s.f.: 0.628' } }),
+    line('Answer: 0.63 euros', 'wrong', { error_type: 'concept', correction: { text_plain: 'to 3 s.f.: 0.628' } }),
   ];
   it('keeps one clear wrong line, with no ids, names or notes', () => {
     const [b] = briefsFromRun(run(good));
-    expect(b.error_kind).toBe('rounding');
+    expect(b.error_kind).toBe('concept');
     expect(b.wrong_line).toBe(4);
     expect(b.correction).toBe('to 3 s.f.: 0.628');
     expect(b.key).toBe(briefKey('run-1', '9'));
@@ -45,7 +45,7 @@ describe('briefsFromRun', () => {
   it('drops runs with two wrong lines, knock-ons only count once', () => {
     const two = [...good.slice(0, 2), line('x', 'wrong', { error_type: 'careless' }), good[3]];
     expect(briefsFromRun(run(two))).toEqual([]);
-    const knockOn = [...good, line('so 0.63 × 2 = 1.26', 'wrong', { error_type: 'rounding', follows_wrong: true })];
+    const knockOn = [...good, line('so 0.63 × 2 = 1.26', 'wrong', { error_type: 'concept', follows_wrong: true })];
     expect(briefsFromRun(run(knockOn))).toHaveLength(1);
   });
   it('drops science runs, sketches, short working and non-line kinds', () => {
@@ -54,6 +54,12 @@ describe('briefsFromRun', () => {
     expect(briefsFromRun(run(good.slice(2)))).toEqual([]);
     const incomplete = [...good.slice(0, 3), line('stopped', 'wrong', { error_type: 'incomplete' })];
     expect(briefsFromRun(run(incomplete))).toEqual([]);
+  });
+  it('drops copying, rounding and calculator slips (Adrian, 4 Nov 2026)', () => {
+    for (const k of ['transfer', 'rounding', 'arithmetic']) {
+      const slip = [...good.slice(0, 3), line('x', 'wrong', { error_type: k })];
+      expect(briefsFromRun(run(slip))).toEqual([]);
+    }
   });
   it("Adrian's override kind wins over the marker's", () => {
     const r = run(good);
@@ -66,7 +72,7 @@ describe('rankBriefs', () => {
   const b = (key: string, kind: SpotBrief['error_kind'], topic: string): SpotBrief =>
     ({ key, error_kind: kind, topic, level: null, prompt: '', lines: [], wrong_line: 1, correction: null, reason: null });
   it('frequent kinds first, round-robin, a new topic before a repeat, skips used keys', () => {
-    const all = [b('1', 'sign', 'A'), b('2', 'sign', 'A'), b('3', 'sign', 'B'), b('4', 'rounding', 'C'), b('5', 'concept', 'D')];
+    const all = [b('1', 'sign', 'A'), b('2', 'sign', 'A'), b('3', 'sign', 'B'), b('4', 'careless', 'C'), b('5', 'concept', 'D')];
     const out = rankBriefs(all, 4, new Set(['5']));
     expect(out.map(x => x.key)).toEqual(['1', '4', '3', '2']);
     expect(out[0].kind_count).toBe(3);
@@ -77,9 +83,9 @@ const draft = (over: Partial<SpotDraft['payload']> = {}, d: Partial<SpotDraft> =
   subject: 'EM', topic: 'Math In Real World Context', title: 'Spot the error: exchange rate',
   ...d,
   payload: {
-    origin: SPOT_ORIGIN, source: 'marked', error_kind: 'rounding', key: 'abc123def4567890',
+    origin: SPOT_ORIGIN, source: 'marked', error_kind: 'concept', key: 'abc123def4567890',
     problem_md: 'Change $640$ dollars into yen at 1 yen = $0.0093.',
-    working: ['$640 \\div 0.0093 = 68817.2$', 'Rate $= 0.6$ yen'],
+    working: ['$640 \\div 0.0093 = 68817.2$', 'Rate $= 0.6$ yen', 'line 3', 'line 4'],
     wrong_line: 2, why_md: 'Rounded to 1 s.f.', fix_md: 'Give 3 s.f.',
     ...over,
   },
@@ -90,10 +96,18 @@ describe('draftProblems', () => {
   it('a good draft passes', () => { expect(draftProblems(draft(), spine)).toEqual([]); });
   it('catches a wrong topic, a bad wrong_line, a person, the tutor', () => {
     expect(draftProblems(draft({}, { topic: 'Nope' }), spine)[0]).toMatch(/topic_spine/);
-    expect(draftProblems(draft({ wrong_line: 3 }), spine)).toContain('wrong_line out of range');
+    expect(draftProblems(draft({ wrong_line: 5 }), spine)).toContain('wrong_line out of range');
     expect(draftProblems(draft({ why_md: 'Your classmate rounded early' }), spine).join()).toMatch(/person/);
     expect(draftProblems(draft({ fix_md: 'Adrian says 3 s.f.' }), spine).join()).toMatch(/tutor/);
     expect(draftProblems(draft({ error_kind: 'incomplete' }), spine).join()).toMatch(/spot kind/);
+  });
+  it("Adrian's 4 Nov rules: no copying/rounding kinds, plain wording, multi-step E Math", () => {
+    expect(draftProblems(draft({ error_kind: 'transfer' }), spine).join()).toMatch(/spot kind/);
+    expect(draftProblems(draft({ error_kind: 'rounding' }), spine).join()).toMatch(/spot kind/);
+    expect(draftProblems(draft({ error_kind: 'arithmetic', source: 'real-world' }), spine)).toEqual([]);
+    expect(draftProblems(draft({}, { title: 'Spot the error: standard form loses a figure' }), spine).join()).toMatch(/loses/);
+    expect(draftProblems(draft({}, { title: 'Half a resident' }), spine).join()).toMatch(/Spot the error:/);
+    expect(draftProblems(draft({ working: ['a', 'b', 'c'], wrong_line: 2 }), spine).join()).toMatch(/multi-step/);
   });
 });
 

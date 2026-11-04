@@ -18,11 +18,31 @@ other students' mistakes.
 - No person in the text ("a student wrote", "your classmate") and never "Adrian". Say "this working".
 - Briefs hold re-typed working: keep them in the scratchpad, never in the repo.
 
+## What makes a good card (Adrian, 4 Nov 2026 — after reading the first 11)
+*"copying the formula is not a good choice for spot-error (there is no need to practice copying
+the formula) / don't put words like "loses" -> it's not how singaporean teachers speak / the spot
+errors for E Math seems too easy"*
+1. **Method or understanding only.** A wrong rule applied, a wrong algebra step, a sign error from a
+   misunderstood law, the wrong formula chosen, a condition misread, a case missed, a root wrongly
+   kept or rejected. **Never** a copying slip (a number, formula or calculator display copied
+   wrongly), a dropped figure, a rounding or s.f. slip, or a calculator/arithmetic slip. The
+   harvester only offers `concept`, `sign`, `careless`; a `careless` brief is used only when the slip
+   is inside a method (a dropped term, a lost factor).
+2. **Plain Singapore-classroom wording.** Title `Spot the error: <topic in plain words>` ("Spot the
+   error: standard form", "Spot the error: similar triangles"). No casual or dramatic words
+   ("loses", "blows up", "sneaks in", "the giveaway", "quietly"); `BANNED_WORDS` in
+   `lib/spot-error.ts` refuses them. Why/fix read like a teacher's margin note: what is wrong, the
+   rule, the correct line.
+3. **E Math at real exam difficulty.** Multi-step questions (at least 4 working lines, enforced):
+   algebraic fractions, quadratic equations and graphs, coordinate geometry, trigonometry and
+   bearings, mensuration, probability, vectors — where the slip is one a good student could make.
+   No one-step rounding or calculator cards.
+
 ## Steps
 1. **Harvest** (most common mistake kinds first, spread across topics; keys already used are skipped):
    `npx tsx scripts/spot-error/harvest.mts --out <scratchpad>/briefs.json --limit 12 [--kind sign]`
-2. **Pick** the briefs that make a clean card: one clear wrong line, a question that reads without a
-   diagram, a level that is in `topic_spine` (S1, S2, EM, AM — JC has no spine yet, skip JC).
+2. **Pick** the briefs that make a clean card (the three rules above): one clear wrong line of METHOD, a
+   question that reads without a diagram, a level that is in `topic_spine` (S1, S2, EM, AM — JC has no spine yet, skip JC).
 3. **Re-write** each (Opus — this session or Opus subagents) into a `SpotDraft` (`src/lib/spot-error.ts`):
    `{subject, topic, title, payload:{origin:'spot-error', source:'marked', error_kind, key:<brief key>,
    problem_md, working[], wrong_line, why_md, fix_md}}`. `topic` must be a `topic_spine` topic.

@@ -12,7 +12,7 @@ import type { AutopsyPayload } from '@/lib/learn-types';
 import 'katex/dist/katex.min.css';
 
 const Md = ({ text, className }: { text: string; className?: string }) => (
-  <div className={`[&_p]:my-0 [&_.katex-display]:my-1 ${className ?? ''}`}>
+  <div className={`[&_p]:my-0 [&_p+p]:mt-2 [&_p]:leading-[1.9] [&_.katex-display]:my-1 ${className ?? ''}`}>
     <MathMarkdown content={text} />
   </div>
 );

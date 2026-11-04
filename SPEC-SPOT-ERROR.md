@@ -28,6 +28,24 @@ use — so every place that shows autopsy units shows these too.
   so it is not their personal data. This holds only while the re-write rules above hold — a card
   that copies from a script would need the page changed first.
 
+### 2a. What makes a good card (Adrian, 4 Nov 2026, after reading the first 11)
+*"copying the formula is not a good choice for spot-error (there is no need to practice copying
+the formula) / don't put words like "loses" -> it's not how singaporean teachers speak / the spot
+errors for E Math seems too easy"*
+- **Method or understanding only** — never copying, dropped figures, rounding or calculator slips.
+  `SPOT_KINDS` = concept, sign, careless (a slip inside a method). Real-world cards may also be
+  arithmetic.
+- **Plain classroom wording** — titles "Spot the error: <topic>"; `BANNED_WORDS` refuses casual
+  words ("loses", "blows up", "sneaks", "the giveaway", "quietly").
+- **E Math at exam difficulty** — multi-step (≥ 4 working lines, `EM_MIN_LINES`), in topics such as
+  algebraic fractions, quadratics and graphs, coordinate geometry, trigonometry/bearings,
+  mensuration, probability, vectors.
+- First batch re-checked the same day: 5 of the 11 rejected (standard form s.f., the new mean,
+  copying a formula, copying a sign, rounding a percentage), 6 kept with plain titles. 5 new E Math
+  cards written to these rules (combined events, similar solids, gradient and angle, turning
+  point, inequalities), re-checked by a fresh Opus agent. Fractions use `\dfrac` so they read on a
+  phone. 16 cards in all: 11 waiting, 5 rejected.
+
 ## 3. Approval — nothing reaches a student first
 - `scripts/spot-error/insert-drafts.mts` saves cards as `learning_units` rows, `kind 'autopsy'`,
   `status 'pending'`, `payload.origin 'spot-error'` (+ `source`, `error_kind`, `key`), at the end
