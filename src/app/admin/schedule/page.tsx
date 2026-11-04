@@ -117,7 +117,7 @@ interface ScheduleData {
   /** Every loaded season's entries (active + next + Prelim/Promo, incl. No-Exam markers) — the dialog switches between them. */
   examAllEntriesByStudent?: Record<string, ExamEntry[]>;
   /** Which season the chip shows + whether an exam is still ahead (lib/exam-season pickDisplaySeason). */
-  examSeasonByStudent?: Record<string, { examType: string; upcoming: boolean }>;
+  examSeasonByStudent?: Record<string, { examType: string; upcoming: boolean; closed: boolean }>;
   currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
   nextTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
   upcomingLessonsByStudent?: Record<string, { date: string; slotId: string | null }[]>;
@@ -1177,7 +1177,7 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
         )}
         {/* Nothing recorded at all — muted nudge (the name opens the sheet). */}
         {showExamInfo && !lesson.examAssessment && !chipHasExam && lesson.examDate !== 'NO_EXAM' && !lesson.currentTopic && !lesson.nextTopic && (
-          <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>no exam / topic yet</span>
+          <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>{lesson.activeExamType ? 'no exam / topic yet' : 'no topic yet'}</span>
         )}
         {/* Regular-work lines — labelled, shown alongside exam info
             (Adrian 2026-07-26: "Working on:" / "Next lesson:"). */}
@@ -1653,8 +1653,14 @@ export default function SchedulePage() {
       const currentTopic = lesson.studentId
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
-      const examEntries = lesson.studentId ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, nextTopic, nextLessonLabel, doubleBooked: doubleBookedIds.has(lesson.id) };
+      // Season closed for this student (EOY after 10 Nov): the chip drops every
+      // exam line — the ✅ done pill, dated / TBC lines, the No-Exam and PW/AA
+      // notes — and shows lesson lines only (Adrian, 4 Nov 2026: "all the EOYs
+      // and promos are done"). The name-tap sheet still reads the saved rows
+      // from the data maps, so nothing is lost. lib/exam-season seasonClosed.
+      const seasonClosed = lesson.studentId ? data.examSeasonByStudent?.[lesson.studentId]?.closed === true : false;
+      const examEntries = lesson.studentId && !seasonClosed ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
+      return { ...lesson, studentName, studentLevel, examDate: seasonClosed ? null : examDate, examTopics: seasonClosed ? null : examTopics, examApprox: seasonClosed ? false : examApprox, examAssessment: seasonClosed ? null : examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, nextTopic, nextLessonLabel, doubleBooked: doubleBookedIds.has(lesson.id) };
     });
   }, [data]);
 
@@ -3083,7 +3089,7 @@ export default function SchedulePage() {
   // next season's info while the current one wraps up, 2026-08-22); level
   // adjusted (Sec 4 / JC2 → Prelim in WA3, JC1 → Promo in EOY). lib/exam-season.
   function editExamTypeFor(sid: string, level: string): string {
-    const pick = data?.examSeasonByStudent?.[sid] ?? { examType: null, upcoming: false };
+    const pick = data?.examSeasonByStudent?.[sid] ?? { examType: null, upcoming: false, closed: false };
     const active = (data?.activeExamType as ExamType | null | undefined) ?? null;
     return levelSpecificExamType(defaultEditExamType(pick, active), level) || data?.nextExamType || 'WA3';
   }

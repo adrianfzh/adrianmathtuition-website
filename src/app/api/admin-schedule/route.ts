@@ -468,7 +468,7 @@ export async function GET(req: NextRequest) {
   // Which season each student's chip shows + whether it still has an exam
   // ahead. Two seasons can be loaded at once (WA3 wrapping up, EOY being
   // entered); pickDisplaySeason chooses the upcoming one (lib/exam-season).
-  const examSeasonByStudent: Record<string, { examType: string; upcoming: boolean }> = {};
+  const examSeasonByStudent: Record<string, { examType: string; upcoming: boolean; closed: boolean }> = {};
   const upcomingExamType = nextExamType(resolvedExamType);
 
   try {
@@ -500,7 +500,7 @@ export async function GET(req: NextRequest) {
           recs.map(r => ({ examType: (r.fields['Exam Type'] as string) || '', examDate: (r.fields['Exam Date'] as string) || null, noExam: r.fields['No Exam'] === true })),
           activeExamType, sgtToday,
         );
-        if (pick.examType) examSeasonByStudent[sid] = { examType: pick.examType, upcoming: pick.upcoming };
+        if (pick.examType) examSeasonByStudent[sid] = { examType: pick.examType, upcoming: pick.upcoming, closed: pick.closed };
         for (const r of recs) {
           if (r.fields['No Exam'] === true) {
             // No-Exam marker (raw notes keep the PWAA: label for the dialog).

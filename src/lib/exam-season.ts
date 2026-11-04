@@ -170,28 +170,61 @@ export interface SeasonPick {
   examType: string | null;
   /** True when that season still has an exam ahead (or a date-less TBC row). */
   upcoming: boolean;
+  /**
+   * True once that season's calendar window has closed for the year (EOY after
+   * 10 Nov). The schedule chip then drops its exam lines — the "✅ EOY done"
+   * pill and the nudge are only for the season in progress (Adrian, 4 Nov 2026:
+   * "all the EOYs and promos are done").
+   */
+  closed: boolean;
+}
+
+/**
+ * The calendar window an Exam Type belongs to: Sec 4 / JC2 Prelims sit in the
+ * WA3 window, the JC1 Promo in the EOY window; Custom has none.
+ */
+export function seasonWindowType(examType: string | null | undefined): ExamType | null {
+  if (examType === 'Prelim') return 'WA3';
+  if (examType === 'Promo') return 'EOY';
+  return EXAM_WINDOWS.some(w => w.type === examType) ? (examType as ExamType) : null;
+}
+
+/**
+ * Has this season's window already ended this calendar year? `today` is an ISO
+ * date (SGT). Only "after the end" counts: before the window opens the rows are
+ * next season's, entered early (EOY typed in during WA3), and must stay live.
+ * A type with no window (Custom) never closes.
+ */
+export function seasonClosed(examType: string | null | undefined, today: string): boolean {
+  const t = seasonWindowType(examType);
+  if (!t) return false;
+  const w = EXAM_WINDOWS.find(x => x.type === t)!;
+  return today.slice(5, 10) > w.end;
 }
 
 /**
  * A student may now have records from two seasons loaded. Pick the one to
  * display: the season with the earliest exam still ahead (a date-less, non
- * No-Exam row counts as "TBC" = ahead); failing that the active season (so the
- * chip can say "✅ WA3 done" / keep its No-Exam marker); failing that the
- * season with the latest date. `today` is an ISO date (SGT).
+ * No-Exam row counts as "TBC" = ahead — unless that season's window has
+ * already closed: an exam nobody dated in a finished season is over, not
+ * pending); failing that the active season (so the chip can say "✅ WA3 done"
+ * / keep its No-Exam marker); failing that the season with the latest date.
+ * `today` is an ISO date (SGT).
  */
 export function pickDisplaySeason(
   records: { examType: string; examDate: string | null; noExam?: boolean }[],
   active: ExamType | null,
   today: string,
 ): SeasonPick {
-  if (!records.length) return { examType: null, upcoming: false };
+  if (!records.length) return { examType: null, upcoming: false, closed: false };
   const byType = new Map<string, { earliestAhead: string | null; latest: string }>();
   for (const r of records) {
     const t = r.examType || '';
     const cur = byType.get(t) ?? { earliestAhead: null, latest: '' };
     if (!r.noExam) {
-      const d = r.examDate || '9999-12-31'; // TBC sorts last but still "ahead"
-      if (d >= today && (cur.earliestAhead === null || d < cur.earliestAhead)) cur.earliestAhead = d;
+      // TBC sorts last but still "ahead" — while the season is still on.
+      const d = r.examDate || (seasonClosed(t, today) ? '' : '9999-12-31');
+      if (d && d >= today && (cur.earliestAhead === null || d < cur.earliestAhead)) cur.earliestAhead = d;
     }
     if ((r.examDate || '') > cur.latest) cur.latest = r.examDate || '';
     byType.set(t, cur);
@@ -201,11 +234,11 @@ export function pickDisplaySeason(
   for (const [t, s] of byType) {
     if (s.earliestAhead !== null && (bestDate === null || s.earliestAhead < bestDate)) { best = t; bestDate = s.earliestAhead; }
   }
-  if (best) return { examType: best, upcoming: true };
-  if (active && byType.has(active)) return { examType: active, upcoming: false };
+  if (best) return { examType: best, upcoming: true, closed: seasonClosed(best, today) };
+  if (active && byType.has(active)) return { examType: active, upcoming: false, closed: seasonClosed(active, today) };
   let latestType: string | null = null; let latest = '';
   for (const [t, s] of byType) if (latestType === null || s.latest > latest) { latestType = t; latest = s.latest; }
-  return { examType: latestType, upcoming: false };
+  return { examType: latestType, upcoming: false, closed: seasonClosed(latestType, today) };
 }
 
 /**
