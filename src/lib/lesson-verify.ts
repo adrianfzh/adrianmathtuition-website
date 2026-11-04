@@ -794,6 +794,22 @@ export function clipIssues(script: LessonScript): Issue[] {
     for (const m of saidNotShown(s, { firstBeatReadsQuestion: i === 0 })) {
       out.push(issue('warn', `${at}.beats[${m.beat}]`, `the voice says "${m.said}" but the board does not show ${m.want} by the end of this beat — write it as it is said`));
     }
+    // Pointing back far up a scrolling board while writing a new line lower down: both cannot be in
+    // view at once on a phone, so the old piece slides under the top fade as the voice names it (31 Oct,
+    // 4 Nov 2026 — three clips failed the look so). The look-back gets a beat of its own.
+    if (s.type === 'equation-steps' && s.scroll) {
+      const lineOf = (id: unknown) => typeof id === 'string' ? s.steps.findIndex(st => st.tokens.some(t => t.id === id)) : -1;
+      s.beats.forEach((b, k) => {
+        const pointed = b.do.filter(a => a.do === 'highlight' || a.do === 'mark').flatMap(a => [(a as { token: string | string[] }).token].flat()).map(lineOf).filter(l => l >= 0);
+        const written = b.do.filter(a => a.do === 'write').map(a => {
+          const r = a as { token?: string | string[]; step?: number };
+          return typeof r.step === 'number' ? r.step : Math.max(-1, ...[r.token ?? []].flat().map(lineOf));
+        }).filter(l => l >= 0);
+        if (!pointed.length || !written.length) return;
+        const gap = Math.max(...written) - Math.min(...pointed);
+        if (gap >= 4) out.push(issue('warn', `${at}.beats[${k}]`, `lights line ${Math.min(...pointed) + 1} while writing line ${Math.max(...written) + 1} — too far apart to be seen together on a phone; point back in a beat of its own that writes nothing ("Look back at …"), then write in the next beat`));
+      });
+    }
     // Two notes under one line IN ONE BEAT stack: the second sits under the first and its ↑ points at
     // the first note's words (4 Nov 2026). A note fades when its beat ends, so notes of different beats
     // under one line are fine.

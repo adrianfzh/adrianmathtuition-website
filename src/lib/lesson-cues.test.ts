@@ -162,6 +162,15 @@ describe('the verifier’s new rules', () => {
     delete sc.steps[0].heading;
     expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/two headings stack/);
   });
+  it('clipIssues: lighting a line far above while writing far below is flagged on a scrolling board (4 Nov 2026)', () => {
+    const c = clip([{ say: 'Compare the x terms: b x and negative two n x, so b is negative two n.', do: [{ do: 'highlight', token: 'l0' }, { do: 'write', step: 5, on: 'so b is' }] }]);
+    const sc = c.scenes[0] as Extract<LessonScript['scenes'][number], { type: 'equation-steps' }>;
+    sc.scroll = true;
+    sc.steps = Array.from({ length: 6 }, (_, i) => ({ tokens: [{ tex: `x_${i}`, id: `l${i}` }] }));
+    expect(clipIssues(c).map(m => m.message).join(' | ')).toMatch(/point back in a beat of its own/);
+    sc.beats![0].do = [{ do: 'highlight', token: 'l4' }, { do: 'write', step: 5, on: 'so b is' }];
+    expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/point back in a beat of its own/);
+  });
   it('clipIssues: two notes under one line in ONE beat are flagged; in two beats they are not (4 Nov 2026)', () => {
     const msgs = clipIssues(clip([
       { say: 'Multiply x by x to get x squared here.', do: [{ do: 'note', text: 'first note', near: 'a' }, { do: 'note', text: 'second note', near: 'b', on: 'squared here' }] },
