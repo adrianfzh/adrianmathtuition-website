@@ -364,6 +364,16 @@ export const P5_EXAM_TOPICS: TopicCategory[] = P6_EXAM_TOPICS
   .map(c => ({ ...c, topics: c.topics.filter(t => !P6_ONLY_TOPICS.has(t)) }))
   .filter(c => c.topics.length > 0);
 
+// ─── Primary 4 Mathematics (4 Nov 2026, SPEC-PSLE.md) ──────────────────────
+// The bank's level 'P4'. The P5 list without the topics first taught in P5: Percentage, Ratio,
+// Rate, Average, Area of Triangle, Volume of Cube and Cuboid, Triangles. Special Quadrilaterals
+// stays — P4 learns the properties of squares and rectangles.
+// Mirrors the bot's extraction/canonical_topics.json "P4" key — change both.
+const P5_ONLY_TOPICS = new Set(['Percentage', 'Ratio', 'Rate', 'Average', 'Area of Triangle', 'Volume of Cube and Cuboid', 'Triangles']);
+export const P4_EXAM_TOPICS: TopicCategory[] = P5_EXAM_TOPICS
+  .map(c => ({ ...c, topics: c.topics.filter(t => !P5_ONLY_TOPICS.has(t)) }))
+  .filter(c => c.topics.length > 0);
+
 // ─── Legacy flat arrays (used for topic chip lookups) ─────────────────────────
 const _s1Flat = S1_EXAM_TOPICS.flatMap(c => c.topics);
 const _s2Flat = S2_OWN_TOPICS.flatMap(c => c.topics);
@@ -425,6 +435,7 @@ export function getTopicsForPaperLevel(level: string): TopicCategory[] {
     case 'S2_NA': return S2_EXAM_TOPICS;
     case 'P6': return P6_EXAM_TOPICS;                 // Primary 6 / PSLE (23 Oct 2026)
     case 'P5': return P5_EXAM_TOPICS;                 // Primary 5 (3 Nov 2026)
+    case 'P4': return P4_EXAM_TOPICS;                 // Primary 4 (4 Nov 2026)
     default: return [];
   }
 }

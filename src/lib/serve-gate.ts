@@ -50,8 +50,8 @@ export interface GateContext {
   primaryOpen?: boolean;
 }
 
-/** Primary-school bank levels (23 Oct 2026, SPEC-PSLE.md; P5 3 Nov 2026): closed to students until the switch opens. */
-export const PRIMARY_QLEVELS: readonly string[] = ['P5', 'P6'];
+/** Primary-school bank levels (23 Oct 2026, SPEC-PSLE.md; P5 3 Nov 2026; P4 4 Nov 2026): closed to students until the switch opens. */
+export const PRIMARY_QLEVELS: readonly string[] = ['P4', 'P5', 'P6'];
 
 export type Refusal = 'removed' | 'national' | 'unverified' | 'flagged' | 'legacy' | 'level';
 
