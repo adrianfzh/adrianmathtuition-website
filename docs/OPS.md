@@ -355,7 +355,12 @@ the queue at once instead of after the 3-hour lease, and ship requests the resta
 reset instead of retrying each minute; one row when a wait starts, one when it ends),
 `disk-clean` (`/data` past 85 %: old work files deleted; `ok=false` = still ≥ 90 % after, and
 Adrian got a Telegram line) and `disk-check` (the daily heartbeat of the disk check — the only
-one with a `JOB_RHYTHMS` line). Routine fixes reach Adrian as ONE line in the bot-review digest
+one with a `JOB_RHYTHMS` line). **The hub's Disk ring (4 Nov 2026):** the volume is the Fly
+worker's 20 GB `/data`; the ring is green under 85 % (the cleaner's own line — 80–84 % used to
+show amber "Filling" for days while the cleaner was simply doing its job), amber 85–89 % or a
+reading over two days old, red from 90 %; it reads the freshest of `disk-check` and `disk-clean`.
+On a heavy extraction day (219 papers on 4 Nov) the cleaner fires several times and the volume
+sits at 84–86 %; if it reaches 90 % more than once a week, grow the volume (`fly volumes extend`). Routine fixes reach Adrian as ONE line in the bot-review digest
 ("The worker fixed itself: …"); he gets his own message only when a fix did not work. A deploy
 run that fails is rerun once by GitHub (bot `.github/workflows/rerun-failed-deploy.yml`); a
 second failure sends one Telegram line naming the failing tests. A ship whose gate ran out of

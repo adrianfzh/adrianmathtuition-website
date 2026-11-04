@@ -8,6 +8,8 @@
 // sometimes a 7-day trend. A fact that could not be read is null and its tile
 // says "No reading" in grey — never a made-up zero.
 
+import { subjectLine } from './subject-labels';
+
 export type Tone = 'green' | 'amber' | 'red' | 'grey';
 
 export interface Tile {
@@ -78,10 +80,12 @@ export interface GlanceFacts {
   lessonsToday: LessonLink[] | null;
   lessonsToLog: number | null;
   marked: { today: number; perDay: number[]; list?: { id: string; student: string | null; paper: string | null }[] } | null;
-  /** Practice questions real students answered (lib/dash-counts.ts): today, who, and the 7-day strip. */
-  practice: { students: number; questions: number; perDay: number[] } | null;
-  /** Papers real students handed in (lib/dash-counts.ts): today and the 7-day strip. Optional so older callers still build. */
-  handedIn?: { today: number; perDay: number[] } | null;
+  /** Practice questions real students answered (lib/dash-counts.ts): today, who, the 7-day strip, and the week's subjects. */
+  practice: { students: number; questions: number; perDay: number[]; bySubject?: Record<string, number> } | null;
+  /** Papers real students handed in (lib/dash-counts.ts): today, the 7-day strip, and the week's subjects. Optional so older callers still build. */
+  handedIn?: { today: number; perDay: number[]; bySubject?: Record<string, number> } | null;
+  /** Questions the bot answered (lib/dash-counts.ts countBotAsks): today, the 7-day strip, and the week's subjects (4 Nov 2026). */
+  botAsks?: { today: number; perDay: number[]; bySubject?: Record<string, number> } | null;
   // The machine
   queue: { waiting: number; marking: number; oldestMinutes: number | null; list?: { student: string | null; paper: string; phase: string; waitingMinutes: number; pagesDone: number | null; pagesTotal: number | null }[] } | null;
   extraction: { waiting: number; working: number; held: number; doneToday: number; done24h: number; perDay: number[]; workingOn?: string[] } | null;
@@ -253,16 +257,26 @@ function todayTiles(f: GlanceFacts, now: number): Tile[] {
     tone: 'green', status: f.marked.today ? 'Going out' : 'Quiet', href: '/admin/mark-paper', trend: f.marked.perDay,
     ...capRows((f.marked.list ?? []).map((p) => ({ ...who(p.student, p.paper), href: `/admin/mark-paper?run=${p.id}` })), f.marked.today, 4),
   });
+  // The three number tiles at the top of /admin. `sub` is the week's subjects in one line
+  // ("E Math 6 · A Math 4 · Chem 3", 4 Nov 2026) — empty when nothing came in.
   if (f.handedIn == null) out.push(NO_READING('handed-in', 'Papers handed in', '/admin/papers'));
   else out.push({
     id: 'handed-in', label: 'Papers handed in', value: String(f.handedIn.today),
+    sub: subjectLine(f.handedIn.bySubject ?? {}) || undefined,
     tone: 'green', status: f.handedIn.today ? 'Coming in' : 'Quiet', href: '/admin/papers', trend: f.handedIn.perDay,
   });
   if (f.practice == null) out.push(NO_READING('practice', 'Practice questions done', '/admin/students'));
   else out.push({
     id: 'practice', label: 'Practice questions done', value: String(f.practice.questions),
-    sub: `${plural(f.practice.students, 'student')}`,
+    sub: subjectLine(f.practice.bySubject ?? {}) || `${plural(f.practice.students, 'student')}`,
     tone: 'green', status: f.practice.questions ? 'Practising' : 'Quiet', href: '/admin/students', trend: f.practice.perDay,
+  });
+  if (f.botAsks === undefined) { /* an older caller: no tile */ }
+  else if (f.botAsks == null) out.push(NO_READING('bot-asks', 'Bot questions asked', '/admin/bot-analytics'));
+  else out.push({
+    id: 'bot-asks', label: 'Bot questions asked', value: String(f.botAsks.today),
+    sub: subjectLine(f.botAsks.bySubject ?? {}) || undefined,
+    tone: 'green', status: f.botAsks.today ? 'Asking' : 'Quiet', href: '/admin/bot-analytics', trend: f.botAsks.perDay,
   });
   return out;
 }
@@ -369,11 +383,15 @@ function machineTiles(f: GlanceFacts, now: number): Tile[] {
   // Disk
   if (!f.disk) out.push(NO_READING('disk', 'Worker disk', '/admin/ops'));
   else {
+    // The Fly worker's /data volume. The worker cleans itself past 85 % (OPS.md §self-fixes),
+    // so anything under that line is normal — green. Amber = the cleaner is not keeping up
+    // (85–89 %) or the reading is old; red = 90 % and the lanes may die (4 Nov 2026 — the
+    // dial sat amber at 80–84 % for days, which was the cleaner doing its job).
     const p = f.disk.pct;
     const stale = now - Date.parse(f.disk.at) > 2 * DAY;
     out.push({
-      id: 'disk', label: 'Worker disk', value: `${Math.round(p)} %`, sub: `read ${ageLabel(now - Date.parse(f.disk.at))} ago · cleans at 85 %`,
-      tone: p >= 90 ? 'red' : p >= 80 || stale ? 'amber' : 'green', status: p >= 90 ? 'Full' : p >= 80 ? 'Filling' : stale ? 'Old reading' : 'Room left',
+      id: 'disk', label: 'Worker disk', value: `${Math.round(p)} %`, sub: `read ${ageLabel(now - Date.parse(f.disk.at))} ago · cleans itself at 85 %`,
+      tone: p >= 90 ? 'red' : p >= 85 || stale ? 'amber' : 'green', status: p >= 90 ? 'Full' : p >= 85 ? 'Cleaning' : stale ? 'Old reading' : 'Room left',
       href: '/admin/ops',
     });
   }

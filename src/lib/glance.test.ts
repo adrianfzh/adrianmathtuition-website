@@ -114,6 +114,13 @@ describe('buildGlance', () => {
     expect(t.rows!.map((r) => r.tone)).toEqual(['red', 'amber', 'grey']);
   });
 
+  it('disk is green under the cleaner\'s 85 % line, amber while it cleans, red past 90 %', () => {
+    // 4 Nov 2026: the dial sat amber at 81 % for days — the worker cleans itself past 85 %, so that is normal
+    expect(tile(buildGlance(facts({ disk: { pct: 81, at: ago(1) } }), NOW), 'disk')).toMatchObject({ tone: 'green', status: 'Room left' });
+    expect(tile(buildGlance(facts({ disk: { pct: 86, at: ago(1) } }), NOW), 'disk')).toMatchObject({ tone: 'amber', status: 'Cleaning' });
+    expect(tile(buildGlance(facts({ disk: { pct: 60, at: ago(60) } }), NOW), 'disk')).toMatchObject({ tone: 'amber', status: 'Old reading' });
+  });
+
   it('disk past 90 % is red', () => {
     expect(tile(buildGlance(facts({ disk: { pct: 92, at: ago(1) } }), NOW), 'disk').tone).toBe('red');
   });
@@ -219,5 +226,18 @@ describe('the two number tiles (9 Oct 2026)', () => {
     const down = buildGlance(facts({ handedIn: null, practice: null }), NOW);
     expect(tile(down, 'handed-in')).toMatchObject({ value: '—', tone: 'grey' });
     expect(tile(down, 'practice')).toMatchObject({ value: '—', tone: 'grey' });
+  });
+
+  it('bot questions asked is the third number, with the week\'s subjects on every number tile (4 Nov 2026)', () => {
+    const g = buildGlance(facts({
+      botAsks: { today: 12, perDay: [20, 32, 4, 14, 0, 6, 12], bySubject: { Maths: 70, Chem: 12, Phys: 6 } },
+      handedIn: { today: 1, perDay: [2, 0, 1, 4, 0, 5, 1], bySubject: { 'E Math': 6, 'A Math': 4, Chem: 3 } },
+      practice: { students: 0, questions: 0, perDay: [0, 0, 0, 0, 0, 0, 0], bySubject: {} },
+    }), NOW);
+    expect(tile(g, 'bot-asks')).toMatchObject({ label: 'Bot questions asked', value: '12', trend: [20, 32, 4, 14, 0, 6, 12], sub: 'Maths 70 · Chem 12 · Phys 6', tone: 'green', status: 'Asking' });
+    expect(tile(g, 'handed-in').sub).toBe('E Math 6 · A Math 4 · Chem 3');
+    expect(tile(g, 'practice').sub).toBe('0 students'); // nothing this week: the old line stands
+    expect(tile(buildGlance(facts({ botAsks: null }), NOW), 'bot-asks')).toMatchObject({ value: '—', tone: 'grey' });
+    expect(tile(buildGlance(facts({ botAsks: undefined }), NOW), 'bot-asks')).toBeUndefined(); // an older caller
   });
 });

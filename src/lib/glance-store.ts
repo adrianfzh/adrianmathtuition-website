@@ -20,7 +20,7 @@ import { localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
 import { isScience, type StuckSubject } from '@/lib/stuck-topics';
 import { TWINS_PER_SKILL, mathGapSummary, type MathTwinUnit } from '@/lib/twin-gates';
 import { perDay, sumPerDay, type GlanceFacts, type JobLine, type LessonLink } from '@/lib/glance';
-import { countHandins, countPractice, type HandinRow, type PracticeRow } from '@/lib/dash-counts';
+import { countBotAsks, countHandins, countPractice, subjectLabel, type AskRow, type HandinRow, type PracticeRow } from '@/lib/dash-counts';
 
 const BOT_HEALTH_URL = 'https://adrianmath-telegram-math-bot.fly.dev/health';
 /** The levels the twins lanes write for (as scripts/ops-status.mjs counts them). */
@@ -269,29 +269,54 @@ async function tabsWeek(sb: Sb, now: number) {
  */
 async function handedIn(sb: Sb, weekAgo: string, now: number) {
   const [rows, replaced] = await Promise.all([
-    all<HandinRow>((a, b) => sb.from('paper_marking_runs').select('id, created_at, student_id, paper_name').gte('created_at', weekAgo).order('created_at', { ascending: false }).range(a, b), 3000),
+    all<HandinRow & { paper_subject?: string | null }>((a, b) => sb.from('paper_marking_runs').select('id, created_at, student_id, paper_name, paper_subject').gte('created_at', weekAgo).order('created_at', { ascending: false }).range(a, b), 3000),
     all<{ superseded_by: string | null }>((a, b) => sb.from('paper_marking_runs').select('superseded_by').not('superseded_by', 'is', null).gte('created_at', new Date(now - 90 * 86400_000).toISOString()).range(a, b), 3000),
   ]);
-  const c = countHandins(rows, replaced.map((r) => r.superseded_by).filter((x): x is string => !!x), TREND_DAYS, now);
-  return { today: c.today, perDay: c.perDay };
+  const c = countHandins(rows.map((r) => ({ ...r, subject: r.paper_subject ?? null })), replaced.map((r) => r.superseded_by).filter((x): x is string => !!x), TREND_DAYS, now);
+  return { today: c.today, perDay: c.perDay, bySubject: c.bySubject };
 }
 
 /**
- * Practice questions real students answered, per Singapore day: maths practice
- * (`student_attempts`), English practice and the H2 tools. One row = one question.
+ * Practice questions real students answered, per Singapore day: maths practice and the
+ * science MCQs (`student_attempts` — a maths row joins its question's level, a science MCQ
+ * row carries its subject in `marking_json.science`), English practice and the H2 tools.
+ * One row = one question. The subject is for the tile's one-line split (4 Nov 2026).
  */
 async function practiceDone(sb: Sb, weekAgo: string, now: number) {
+  type MathsRow = { airtable_student_id: string | null; attempted_at: string; questions: { level: string | null } | { level: string | null }[] | null; science: string | null };
   const [maths, english, h2] = await Promise.all([
-    all<{ airtable_student_id: string | null; attempted_at: string }>((a, b) => sb.from('student_attempts').select('airtable_student_id, attempted_at').gte('attempted_at', weekAgo).range(a, b), 5000),
+    all<MathsRow>((a, b) => sb.from('student_attempts').select('airtable_student_id, attempted_at, questions(level), science:marking_json->science->>subject').gte('attempted_at', weekAgo).range(a, b), 5000),
     all<{ identity: string | null; created_at: string }>((a, b) => sb.from('english_practice_attempts').select('identity, created_at').gte('created_at', weekAgo).range(a, b), 5000),
     all<{ identity: string | null; created_at: string }>((a, b) => sb.from('h2_tool_attempts').select('identity, created_at').gte('created_at', weekAgo).range(a, b), 5000),
   ]);
+  const level = (q: MathsRow['questions']) => (Array.isArray(q) ? q[0]?.level : q?.level) ?? null;
   const rows: PracticeRow[] = [
-    ...maths.map((r) => ({ at: r.attempted_at, who: r.airtable_student_id })),
-    ...[...english, ...h2].map((r) => ({ at: r.created_at, who: r.identity })),
+    ...maths.map((r) => ({ at: r.attempted_at, who: r.airtable_student_id, subject: r.science ? subjectLabel(r.science) : level(r.questions) })),
+    ...english.map((r) => ({ at: r.created_at, who: r.identity, subject: 'English' })),
+    ...h2.map((r) => ({ at: r.created_at, who: r.identity, subject: 'H2 Math' })),
   ];
   const c = countPractice(rows, TREND_DAYS, now);
-  return { students: c.studentsToday, questions: c.today, perDay: c.perDay };
+  return { students: c.studentsToday, questions: c.today, perDay: c.perDay, bySubject: c.bySubject };
+}
+
+/**
+ * Questions the bot answered, per Singapore day (4 Nov 2026): the Airtable `Questions` log
+ * — one row per answer, every channel (the bot's lib/question-log.js). Four short fields,
+ * nothing a student wrote. The admin's own Telegram chat (the alert chat he tests from)
+ * is left out (lib/dash-counts.ts countBotAsks).
+ */
+async function botAsks(weekAgo: string, now: number) {
+  const formula = `IS_AFTER({Timestamp}, '${weekAgo}')`;
+  const fields = ['Timestamp', 'Subject', 'Chat ID', 'Student'].map((f) => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
+  const { records } = await airtableRequestAll('Questions', `?filterByFormula=${encodeURIComponent(formula)}&${fields}`);
+  const rows: AskRow[] = (records as { fields: Record<string, unknown> }[]).map((r) => ({
+    at: String(r.fields['Timestamp'] || ''),
+    chatId: r.fields['Chat ID'] != null ? String(r.fields['Chat ID']) : null,
+    who: Array.isArray(r.fields['Student']) ? String((r.fields['Student'] as unknown[])[0] ?? '') || null : null,
+    subject: typeof r.fields['Subject'] === 'string' ? (r.fields['Subject'] as string) : null,
+  }));
+  const c = countBotAsks(rows, [process.env.TELEGRAM_CHAT_ID || ''], TREND_DAYS, now);
+  return { today: c.today, perDay: c.perDay, bySubject: c.bySubject };
 }
 
 export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
@@ -303,7 +328,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const [
     questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew,
     shipsList, flaggedList, proposalLevels,
-    lessons, toLog, marked, practice, handed,
+    lessons, toLog, marked, practice, handed, asks,
     q, ext, tw, jb, lg, disk, bot, fileBackup, backupCheck, leakTest,
     st, cs, tb,
   ] = await Promise.all([
@@ -342,15 +367,21 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
     }),
     safe(() => practiceDone(sb, weekAgo, now)),
     safe(() => handedIn(sb, weekAgo, now)),
+    safe(() => botAsks(weekAgo, now)),
     safe(() => queue(sb)),
     safe(() => extraction(sb, midnight, now)),
     safe(() => twins(sb, midnight, now)),
     safe(() => jobs(sb)),
     safe(() => logins()),
     safe(async () => {
-      const r = await lastJob(sb, 'disk-check');
-      const pct = Number((r?.meta as { pct?: unknown } | null)?.pct);
-      return r && Number.isFinite(pct) ? { pct, at: r.at } : null;
+      // The freshest reading: the daily disk-check's `pct`, or a later disk-clean's `after`
+      // (4 Nov 2026 — on a busy day the cleaner runs hourly and the daily figure is stale).
+      const [check, clean] = await Promise.all([lastJob(sb, 'disk-check'), lastJob(sb, 'disk-clean')]);
+      const reads = [
+        check && { pct: Number((check.meta as { pct?: unknown } | null)?.pct), at: check.at },
+        clean && { pct: Number((clean.meta as { after?: unknown } | null)?.after), at: clean.at },
+      ].filter((r): r is { pct: number; at: string } => !!r && Number.isFinite(r.pct)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+      return reads[0] ?? null;
     }),
     botUp(),
     job('file-backup'), job('backup-check'), job('leak-test'),
@@ -363,7 +394,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   return {
     questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins, suggestionsNew,
     shipsFailedList: shipsList, extractionFlaggedList: flaggedList, questionProposalsByLevel: proposalLevels,
-    lessonsToday: lessons, lessonsToLog: toLog?.total ?? null, lessonsToLogDays: toLog?.days ?? null, marked, practice, handedIn: handed,
+    lessonsToday: lessons, lessonsToLog: toLog?.total ?? null, lessonsToLogDays: toLog?.days ?? null, marked, practice, handedIn: handed, botAsks: asks,
     queue: q, extraction: ext, twins: tw, jobs: jb, logins: lg, disk,
     deploys: {
       website: process.env.VERCEL_GIT_COMMIT_SHA ? { sha: process.env.VERCEL_GIT_COMMIT_SHA, message: (process.env.VERCEL_GIT_COMMIT_MESSAGE || '').split('\n')[0].slice(0, 80) || null } : null,

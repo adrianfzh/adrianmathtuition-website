@@ -54,8 +54,19 @@ export async function blockedIds(ids: string[]): Promise<Set<string>> {
 
 export type HealthSettings = { on: boolean; changedAt: string | null; changedBy: string | null };
 
+/**
+ * True when the error says a question-health table does not exist. The check is PARKED
+ * (SPEC-QUESTION-HEALTH, 14 Oct 2026) and `migrations/question_health.sql` was never
+ * applied, so until it is, "no table" means "switched off" — not a failure. The Monday
+ * job stamped `ok=false` every week for this and kept the hub's Jobs dial red (4 Nov 2026).
+ */
+export function isMissingTable(message: string | null | undefined): boolean {
+  return /could not find the table|does not exist|schema cache/i.test(message || '');
+}
+
 export async function getSettings(): Promise<HealthSettings> {
   const { data, error } = await db().from('question_health_settings').select('is_on, changed_at, changed_by').eq('id', 1).maybeSingle();
+  if (error && isMissingTable(error.message)) return { on: false, changedAt: null, changedBy: null };
   if (error) throw new Error(error.message);
   return { on: data?.is_on === true, changedAt: data?.changed_at ?? null, changedBy: data?.changed_by ?? null };
 }
@@ -193,6 +204,11 @@ export async function weekCounts(): Promise<WeekCounts> {
     return count ?? 0;
   };
   const settings = await getSettings();
+  // No tables yet (the check is parked): nothing was checked, nothing waits.
+  const probe = await base();
+  if (probe.error && isMissingTable(probe.error.message)) {
+    return { on: false, checked: 0, passed: 0, fixed: 0, paused: 0, pausedWaiting: 0, retired: 0, queued: 0, oldestQueuedHours: null };
+  }
   const [checked, passed, paused, pausedWaiting, retired, queued] = await Promise.all([
     c((q) => q.gte('checked_at', since)),
     c((q) => q.gte('checked_at', since).eq('status', 'passed')),

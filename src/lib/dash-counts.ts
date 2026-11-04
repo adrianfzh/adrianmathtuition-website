@@ -17,9 +17,21 @@
 // PRACTICE QUESTIONS DONE — one per question a real student answered, on the Singapore
 // day of the answer. Left out: the preview student, the admin's own tries (identity
 // 'admin'), and a row with nobody on it.
+//
+// BOT QUESTIONS ASKED (4 Nov 2026, Adrian: "I would also like the number of bot questions
+// asked … and show the breakdown of subjects as well") — one per answer the bot gave, on
+// the Singapore day it was asked: the Airtable `Questions` log, which every channel writes
+// (Telegram, the website's chat, the app's chat). Left out: the admin's own chat (the
+// Telegram alert chat he tests from) and the preview student.
+//
+// SUBJECTS — every count also carries how many of the window's rows were which subject
+// (`bySubject`), so each tile can show one short line: "E Math 6 · A Math 4 · Chem 3".
 
 import { sgtDateISO, sgtDaysAgoISO } from './sgt';
 import { SCIENCE_PREVIEW_IDENTITIES } from './portal-beta';
+import { subjectLabel } from './subject-labels';
+
+export { subjectLabel, subjectLine } from './subject-labels';
 
 /** The preview student (portal-teste@example.com) — never a real hand-in or answer. */
 export const PREVIEW_STUDENT_IDS: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
@@ -35,6 +47,8 @@ export interface DayCount {
   total: number;
   /** How many different students are behind today's count. */
   studentsToday: number;
+  /** The window's rows per subject label (lib/dash-counts subjectLabel), most first. */
+  bySubject: Record<string, number>;
 }
 
 export interface HandinRow {
@@ -42,6 +56,8 @@ export interface HandinRow {
   created_at: string;
   student_id: string | null;
   paper_name?: string | null;
+  /** `paper_subject` on the run ("E Math", "Chemistry", …), when known. */
+  subject?: string | null;
 }
 
 export interface PracticeRow {
@@ -49,6 +65,19 @@ export interface PracticeRow {
   at: string;
   /** The student's id (Airtable record id / portal identity), or null. */
   who: string | null;
+  /** The subject label (see subjectLabel), when known. */
+  subject?: string | null;
+}
+
+export interface AskRow {
+  /** When the bot was asked. */
+  at: string;
+  /** The chat the question came from (a Telegram chat id or a web chat key). */
+  chatId: string | null;
+  /** The linked student, when the bot knew one. */
+  who?: string | null;
+  /** The Questions log's Subject: Math · Chemistry · Physics · Biology. */
+  subject?: string | null;
 }
 
 /** True for someone we count: a student id that is not the preview student or the admin. */
@@ -64,12 +93,13 @@ export function isHandin(row: HandinRow, replacementIds: ReadonlySet<string>): b
   return true;
 }
 
-/** Bucket (instant, student) pairs into the last `days` Singapore days, today last. */
-function bucket(items: { at: string; who: string }[], days: number, now: number): DayCount {
+/** Bucket (instant, student, subject) rows into the last `days` Singapore days, today last. */
+function bucket(items: { at: string; who: string; subject?: string | null }[], days: number, now: number): DayCount {
   const labels = Array.from({ length: days }, (_, i) => sgtDaysAgoISO(days - 1 - i, now));
   const index = new Map(labels.map((d, i) => [d, i]));
   const perDay = new Array<number>(days).fill(0);
   const todayWho = new Set<string>();
+  const bySubject: Record<string, number> = {};
   for (const it of items) {
     const t = Date.parse(it.at);
     if (!Number.isFinite(t)) continue;
@@ -77,8 +107,10 @@ function bucket(items: { at: string; who: string }[], days: number, now: number)
     if (i == null) continue;
     perDay[i] += 1;
     if (i === days - 1) todayWho.add(it.who);
+    const label = subjectLabel(it.subject);
+    bySubject[label] = (bySubject[label] ?? 0) + 1;
   }
-  return { today: perDay[days - 1] ?? 0, perDay, total: perDay.reduce((a, b) => a + b, 0), studentsToday: todayWho.size };
+  return { today: perDay[days - 1] ?? 0, perDay, total: perDay.reduce((a, b) => a + b, 0), studentsToday: todayWho.size, bySubject };
 }
 
 /**
@@ -88,16 +120,30 @@ function bucket(items: { at: string; who: string }[], days: number, now: number)
 export function countHandins(rows: HandinRow[], replacementIds: Iterable<string>, days: number, now: number): DayCount {
   const repl = replacementIds instanceof Set ? (replacementIds as Set<string>) : new Set(replacementIds);
   const seen = new Set<string>();
-  const items: { at: string; who: string }[] = [];
+  const items: { at: string; who: string; subject?: string | null }[] = [];
   for (const r of rows) {
     if (seen.has(r.id) || !isHandin(r, repl)) continue;
     seen.add(r.id);
-    items.push({ at: r.created_at, who: r.student_id as string });
+    items.push({ at: r.created_at, who: r.student_id as string, subject: r.subject });
   }
   return bucket(items, days, now);
 }
 
 /** Practice questions answered per Singapore day, real students only. */
 export function countPractice(rows: PracticeRow[], days: number, now: number): DayCount {
-  return bucket(rows.filter((r) => isRealStudent(r.who)).map((r) => ({ at: r.at, who: r.who as string })), days, now);
+  return bucket(rows.filter((r) => isRealStudent(r.who)).map((r) => ({ at: r.at, who: r.who as string, subject: r.subject })), days, now);
+}
+
+/**
+ * Questions the bot answered per Singapore day. `excludeChats` = the admin's own chats
+ * (his Telegram alert chat); a row linked to the preview student is left out too. A web
+ * visitor with no student still counts — the question was asked. `studentsToday` counts
+ * distinct chats, since most web chats carry no student.
+ */
+export function countBotAsks(rows: AskRow[], excludeChats: Iterable<string>, days: number, now: number): DayCount {
+  const skip = new Set([...excludeChats].map((c) => String(c).trim()).filter(Boolean));
+  const items = rows
+    .filter((r) => !(r.chatId && skip.has(String(r.chatId).trim())) && !(r.who && PREVIEW_STUDENT_IDS.includes(r.who)))
+    .map((r) => ({ at: r.at, who: r.chatId || r.who || '?', subject: r.subject }));
+  return bucket(items, days, now);
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { countHandins, countPractice, isHandin, isRealStudent, PREVIEW_STUDENT_IDS, type HandinRow } from './dash-counts';
+import { countBotAsks, countHandins, countPractice, isHandin, isRealStudent, subjectLabel, subjectLine, PREVIEW_STUDENT_IDS, type HandinRow } from './dash-counts';
 
 // 9 Oct 2026, 10:00 in Singapore
 const NOW = Date.parse('2026-10-09T02:00:00Z');
@@ -47,7 +47,49 @@ describe('countHandins', () => {
   });
 
   it('nothing in is all zeros, never a gap', () => {
-    expect(countHandins([], [], 7, NOW)).toEqual({ today: 0, perDay: [0, 0, 0, 0, 0, 0, 0], total: 0, studentsToday: 0 });
+    expect(countHandins([], [], 7, NOW)).toEqual({ today: 0, perDay: [0, 0, 0, 0, 0, 0, 0], total: 0, studentsToday: 0, bySubject: {} });
+  });
+
+  it('counts the week per subject, in the tile words', () => {
+    const out = countHandins([
+      { ...row('1', '2026-10-09T01:00:00Z'), subject: 'E Math' },
+      { ...row('2', '2026-10-08T01:00:00Z'), subject: 'Chemistry' },
+      { ...row('3', '2026-10-07T01:00:00Z'), subject: 'E Math' },
+      { ...row('4', '2026-10-07T01:00:00Z'), subject: null },
+      { ...row('5', '2026-10-01T01:00:00Z'), subject: 'Physics' }, // outside the week
+    ], [], 7, NOW);
+    expect(out.bySubject).toEqual({ 'E Math': 2, Chem: 1, Other: 1 });
+    expect(subjectLine(out.bySubject)).toBe('E Math 2 · Chem 1 · Other 1');
+  });
+});
+
+describe('countBotAsks', () => {
+  it('counts every answer by Singapore day, per subject, leaving out the admin chat and the preview student', () => {
+    const out = countBotAsks([
+      { at: '2026-10-09T01:00:00Z', chatId: '123', subject: 'Math' },
+      { at: '2026-10-09T01:10:00Z', chatId: '123', subject: 'Math' },
+      { at: '2026-10-09T02:00:00Z', chatId: 'web-abc', subject: 'Chemistry' },   // a web visitor, no student
+      { at: '2026-10-08T02:00:00Z', chatId: 'portal-1', who: 'recB', subject: 'Physics' },
+      { at: '2026-10-09T02:00:00Z', chatId: '999', subject: 'Math' },             // the admin's own chat
+      { at: '2026-10-09T02:00:00Z', chatId: 'web-x', who: PREVIEW, subject: 'Math' },
+    ], ['999'], 7, NOW);
+    expect(out.perDay).toEqual([0, 0, 0, 0, 0, 1, 3]);
+    expect(out.today).toBe(3);
+    expect(out.studentsToday).toBe(2); // two chats
+    expect(out.bySubject).toEqual({ Maths: 2, Chem: 1, Phys: 1 });
+    expect(subjectLine(out.bySubject)).toBe('Maths 2 · Chem 1 · Phys 1');
+  });
+});
+
+describe('subjectLabel + subjectLine', () => {
+  it('one short word per subject whatever the source stores', () => {
+    expect(['EM', 'E Math', 'AM', 'JC', 'JC2', 'S2', 'Math', 'Chemistry', 'physics', 'Biology', 'English', 'science', '', null].map(subjectLabel))
+      .toEqual(['E Math', 'E Math', 'A Math', 'H2 Math', 'H2 Math', 'Sec 2', 'Maths', 'Chem', 'Phys', 'Bio', 'English', 'Science', 'Other', 'Other']);
+  });
+  it('the four biggest, the rest as one count, biggest first', () => {
+    expect(subjectLine({ Bio: 1, Chem: 3, 'E Math': 9, Phys: 2, 'A Math': 4, 'H2 Math': 2 })).toBe('E Math 9 · A Math 4 · Chem 3 · H2 Math 2 · 3 more');
+    expect(subjectLine({})).toBe('');
+    expect(subjectLine({ Maths: 0 })).toBe('');
   });
 });
 

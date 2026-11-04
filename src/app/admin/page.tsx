@@ -16,6 +16,10 @@
 // practice questions done (then a number)" … "be visual"): TWO NUMBERS sit above
 // everything — today's count, large; seven small bars under it (today last, darkest);
 // one quiet line with the seven-day total. The counting rule is lib/dash-counts.ts.
+// 4 Nov 2026 (Adrian: "I would also like the number of bot questions asked … and show the
+// breakdown of subjects as well"): a THIRD number — questions the bot answered (the
+// Airtable Questions log, every channel) — and under each of the three a one-line subject
+// split for the week ("E Math 6 · A Math 4 · Chem 3").
 // A thin line of chips under the lights carries anything waiting on him ("Needs you").
 // One read (GET /api/admin/glance, 60 s cache), refreshed every minute while visible.
 // Every other page is in "All tools"; the old launcher grid is /admin/classic.
@@ -47,10 +51,11 @@ const CHARTS: { id: string; title: string; unit: string; light: string; dark: st
   { id: 'marked', title: 'Papers marked', unit: 'today', light: '#a7e3cf', dark: '#11795e' },
   { id: 'cost', title: 'Marking cost', unit: 'a paper', light: '#f8d08c', dark: '#96590c' },
 ];
-/** The two numbers at the very top: the glance tile each reads, and its bar colours (past days · today). */
+/** The three numbers at the very top: the glance tile each reads, and its bar colours (past days · today). */
 const NUMBERS: { id: string; title: string; light: string; dark: string }[] = [
   { id: 'handed-in', title: 'Papers handed in', light: '#b9d3f0', dark: '#1c64b0' },
   { id: 'practice', title: 'Practice questions done', light: '#cdc9f3', dark: '#5b50c4' },
+  { id: 'bot-asks', title: 'Bot questions asked', light: '#f3d4a6', dark: '#b45309' },
 ];
 /** Not on this page (his list, 6 Oct 2026) — the read still carries them for whoever wants them. */
 const NEEDS_HIDDEN = new Set(['papers-to-check']);
@@ -265,7 +270,7 @@ function Light({ name, ring, t }: { name: string; ring?: boolean; t?: Tile }) {
 }
 
 const DAY_LETTER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-/** One number, large: today's count. Under it seven small bars (today last) and the seven-day total. */
+/** One number, large: today's count. Under it seven small bars (today last), the seven-day total, and the week's subjects. */
 function NumberTile({ n, t, today }: { n: { title: string; light: string; dark: string }; t?: Tile; today: number }) {
   const values = t?.trend ?? [];
   const max = Math.max(...values, 0);
@@ -285,9 +290,10 @@ function NumberTile({ n, t, today }: { n: { title: string; light: string; dark: 
               </div>
             ))}
           </div>
-          <div className="gl-num-w">last {values.length} days · {total} in all</div>
+          <div className="gl-num-w">{values.length} days · {total} in all</div>
         </>
       )}
+      {t?.sub && <div className="gl-num-s" title={t.sub}>{t.sub}</div>}
     </>
   );
   return t?.href ? <Link href={t.href} className="gl-num">{body}</Link> : <div className="gl-num">{body}</div>;
@@ -334,23 +340,26 @@ const CSS = `
 .gl-body { max-width: 1120px; margin: 0 auto; padding: 14px 16px 8px; }
 .gl-error { background: #fef2f2; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
 .gl-wait { color: #6b7280; font-size: 14px; padding: 40px 0; text-align: center; }
-.gl-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
-.gl-num { display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 12px 12px 10px; text-decoration: none; color: inherit; min-width: 0; }
-.gl-num-t { font-size: 12px; font-weight: 600; color: #4b5563; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gl-num-v { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; margin-top: 6px; }
+.gl-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.gl-num { display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 12px 10px 10px; text-decoration: none; color: inherit; min-width: 0; }
+.gl-num-t { font-size: 12px; font-weight: 600; color: #4b5563; line-height: 1.25; min-height: 2.5em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gl-num-v { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; margin-top: 6px; }
 .gl-num-u { font-size: 12px; color: #6b7280; margin-top: 2px; }
 .gl-num-bars { display: flex; align-items: stretch; gap: 4px; height: 46px; margin-top: 10px; }
 .gl-num-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .gl-num-box { flex: 1; display: flex; align-items: flex-end; min-height: 0; }
 .gl-num-bar { width: 100%; border-radius: 3px 3px 0 0; }
 .gl-num-col span { font-size: 10px; color: #9ca3af; text-align: center; padding-top: 2px; flex: none; line-height: 1.2; }
-.gl-num-w { font-size: 11.5px; color: #6b7280; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gl-num-w { font-size: 11.5px; color: #6b7280; margin-top: 6px; line-height: 1.3; }
+.gl-num-s { font-size: 11.5px; color: #374151; margin-top: 3px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 @media (min-width: 760px) {
+  .gl-nums { gap: 10px; }
   .gl-num { padding: 16px 20px 14px; }
-  .gl-num-t { font-size: 13.5px; }
+  .gl-num-t { font-size: 13.5px; min-height: 0; display: block; white-space: nowrap; text-overflow: ellipsis; }
   .gl-num-v { font-size: 64px; }
   .gl-num-bars { height: 56px; max-width: 360px; gap: 6px; }
-  .gl-num-w { font-size: 12.5px; }
+  .gl-num-w { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gl-num-s { font-size: 12.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 .gl-ships { margin-top: 18px; }
 .gl-ships-h { font-size: 16px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
