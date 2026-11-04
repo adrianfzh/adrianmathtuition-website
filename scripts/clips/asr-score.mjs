@@ -63,6 +63,9 @@ export function numberWordsToDigits(text) {
 // "times" → *, "cubed" → "cube". Both sides go through the same map, so a misheard word still costs.
 const SPOKEN_SYMBOLS = [
   [/\b(a|one) half\b/g, ' 1/2 '], [/\b(a|one) third\b/g, ' 1/3 '], [/\b(a|one) quarter\b/g, ' 1/4 '],
+  // 4 Nov 2026: "eight choose two" written "H22" / "8C2" — "choose" and C read alike, and the
+  // transcriber's "H" (aitch) at a number is "eight choose".
+  [/\bchoose\b/g, ' c '], [/\bh\s?(\d)/g, ' 8 c $1'],
   // 4 Nov 2026: "negative an eighth" written "-1/8".
   [/\b(a|an|one) fifth\b/g, ' 1/5 '], [/\b(a|an|one) sixth\b/g, ' 1/6 '], [/\b(a|an|one) seventh\b/g, ' 1/7 '], [/\b(a|an|one) eighth\b/g, ' 1/8 '], [/\b(a|an|one) ninth\b/g, ' 1/9 '], [/\b(a|an|one) tenth\b/g, ' 1/10 '],
   [/\btimes\b|×|\*/g, ' x '], [/\bcubed\b/g, ' cube '], [/\bsquared\b/g, ' square '],
