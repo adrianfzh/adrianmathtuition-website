@@ -120,13 +120,21 @@ const DIAGRAM_ZOOM_SCRIPT = () => `<script>
   // Zoomed in, the page keeps its width and grows past the frame (slide sideways), like a
   // real pinch; re-wrapping into the narrow panel squashed every vector row. Zoomed out it
   // re-wraps to use the room.
+  // A visual scale (transform), NOT CSS zoom (4 Nov 2026). Under CSS zoom, iPad Safari sized
+  // the "=" rows that hold a tall vector or fraction too short, so the rows ate into each
+  // other ("the lines eat into each other") — the Mac's Chrome, at zoom 1, never showed it.
+  // A transform leaves the layout at its natural size and only scales the picture.
   function setZoom(v){
     z = Math.min(2.5, Math.max(0.6, v));
-    var b = document.body, big = z > 1;
+    var b = document.body, big = z > 1, w = document.documentElement.clientWidth;
     b.style.boxSizing = 'border-box';
-    b.style.width = big ? document.documentElement.clientWidth + 'px' : '';
+    b.style.zoom = '';
+    b.style.transformOrigin = '0 0';
+    b.style.transform = z === 1 ? '' : 'scale(' + z + ')';
+    // zoomed in: keep the width, grow past the frame (slide sideways); zoomed out: re-wrap to use the room
+    b.style.width = z === 1 ? '' : (big ? w : w / z) + 'px';
     b.style.overflowX = big ? 'visible' : '';
-    b.style.zoom = String(z);
+    window.__solZoom = z;
   }
   setZoom(z);
   var start = null;
@@ -197,6 +205,27 @@ const PAGES_SCRIPT = (runId: string) => `<script>
     };
   }
   var typesetDone = {};
+  // 📏 What the rows look like ON THIS DEVICE (4 Nov 2026: Adrian's iPad showed rows eating
+  // into each other that the Mac's Chrome did not). For the page just shown: each line's box
+  // against the maths it holds; posted to annotate_ink_log as kind 'log' so the next fix is
+  // measured, not guessed. Only rows whose maths sticks out, plus the zoom and the widths.
+  function reportLayout(sec, key){
+    try {
+      var rows = [], over = 0;
+      Array.prototype.forEach.call(sec.querySelectorAll('.sol-line, .sol-align, .sol-check, .sol-final'), function(el){
+        var b = el.getBoundingClientRect(), top = Infinity, bottom = -Infinity, n = 0;
+        Array.prototype.forEach.call(el.querySelectorAll('.katex'), function(k){
+          Array.prototype.forEach.call(k.querySelectorAll('.vlist-t, .base'), function(part){ var r = part.getBoundingClientRect(); if (r.height) { top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom); n++; } });
+        });
+        var out = n ? Math.max(0, b.top - top, bottom - b.bottom) : 0;
+        if (out > 3) over++;
+        if (out > 3 || rows.length < 3) rows.push({ cls: el.className, h: Math.round(b.height), mathTop: n ? Math.round(top - b.top) : null, mathH: n ? Math.round(bottom - top) : null, out: Math.round(out), text: (el.textContent || '').trim().slice(0, 30) });
+      });
+      var cs = getComputedStyle(document.body);
+      fetch('/api/admin/annotate-log', { method: 'POST', credentials: 'include', keepalive: true, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runId: ${JSON.stringify(runId)}, kind: 'log', ua: navigator.userAgent, payload: { solutionsLayout: { page: key, zoom: window.__solZoom || 1, transform: cs.transform, bodyZoom: cs.zoom, width: document.documentElement.clientWidth, inner: window.innerWidth + 'x' + window.innerHeight, dpr: window.devicePixelRatio, fontsReady: !!(document.fonts && document.fonts.check('12px KaTeX_Main')), rowsOver: over, rows: rows.slice(0, 12) } } }) }).catch(function(){});
+    } catch (e) {}
+  }
   function showPage(n){
     var key = String(n), sec = null;
     sections.forEach(function(s){ var on = s.getAttribute('data-page') === key; s.hidden = !on; if (on) sec = s; });
@@ -207,6 +236,7 @@ const PAGES_SCRIPT = (runId: string) => `<script>
     if (sec && !typesetDone[key]) {
       typesetDone[key] = true;
       try { renderMathInElement(sec, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false, strict: false, trust: true }); } catch (e) {}
+      setTimeout(function(){ reportLayout(sec, key); }, 700);
     }
     if (!sec || started[key]) return;
     started[key] = true;
