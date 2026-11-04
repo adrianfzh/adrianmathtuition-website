@@ -38,7 +38,19 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
   auto set up such that if usage ramps up, capacity ramps up as well?"* — the bot is already at its normal
   post-split size (app shared-1x/2 GB, marker shared-2x/4 GB since 10 Sep); the proposal is a marker that
   sleeps when no paper waits and is woken like the worker (`lib/fly-worker.js`), plus spare machines that
-  wake when a queue grows. Awaiting his go-ahead.
+  wake when a queue grows. **Agreed 4 Nov 2026 (Adrian: "yes / but do it after all extractions and twins
+  are done"; he expects little usage in the coming months).** The lean plan, in this order, ONLY once the
+  P5 + P6 queue is empty AND the science twins have reached 5 a sub-skill:
+  1. marker sleeps after 10 idle minutes, the bot wakes it on a hand-in (reuse `lib/fly-worker.js`);
+  2. the bot's app machine 2 GB → 1 GB, after Adrian's ▶ Mark / desk redraw draw on the marker (bot `fly.toml` note);
+  3. worker → shared-cpu-2x / 4 GB, sleeping between its daily jobs;
+  4. spare marker + spare worker kept stopped, woken when ≥ 3 papers still wait after 10 min, one Telegram
+     line to Adrian each time; they sleep again after 10 quiet minutes.
+  Target ≈ US$30–40/mo in all (trading-signals' US$8 included), from ≈ US$170. Ask Adrian then whether
+  twin writing may pause once science reaches 5.
+- **Faster extraction (4 Nov 2026, Adrian: "can we make the extraction faster since we have capacity
+  now?"):** bot `fly.worker.toml` EXTRACT_LANES 2 → 4, SCI_TWINS_LANES 5 → 2 (8ed4e794). Put the twins back
+  to more lanes if they still owe twins when extraction ends.
 - **Skill labels:** primary has no sub-skill list (`subgroups` has no P5/P6 rows), so the filer
   leaves P5/P6 questions with topics only. Plan (3 Nov 2026): build the primary skill list
   from the banked questions once ~100 P6 papers are in.
