@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { extractFlagged } from '@/lib/mark-triage';
 import { triageReminderMessage, type WaitingRun } from '@/lib/triage-reminder';
@@ -9,6 +8,7 @@ import { isQuiet } from '@/lib/quiet-messages';
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { cronAuth } from '@/lib/cron-auth';
 
 // ─── Daily triage nag (cron 0 0 * * * = 08:00 SGT) ──────────────────────────
 //
@@ -25,13 +25,7 @@ export const runtime = 'nodejs';
 const WINDOW_DAYS = 14;
 
 function checkAuth(req: NextRequest): boolean {
-  // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
-  // standard admin auth (signed session cookie or legacy ADMIN_PASSWORD Bearer).
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get('authorization');
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
-  return verifyAdminAuth(req);
+  return cronAuth(req) || verifyAdminAuth(req);
 }
 
 export async function GET(req: NextRequest) {

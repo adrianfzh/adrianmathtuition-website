@@ -33,7 +33,6 @@
 // claim_extraction_paper RPC directly) — docs/EXTRACTION-QUEUE.md.
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'node:crypto';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { dropboxConfigured, ensureFolder, listFolder, downloadFile, movePath } from '@/lib/dropbox';
@@ -46,6 +45,7 @@ import { splitBook, type BookRead } from '@/lib/paper-book-split-io';
 import { describeParts, partFileName } from '@/lib/paper-book-split';
 import { sendTelegram } from '@/lib/telegram';
 import { sweepHandoffs, deleteFinishedStudentWorkSources } from '@/lib/handin-extraction-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -58,12 +58,7 @@ const PER_TICK = 20;
 const TICK_BUDGET_MS = 200_000;
 const MAX_BYTES = 60 * 1024 * 1024;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 async function moveTo(entry: InboxEntry, sub: 'queued' | 'rejected' | 'split'): Promise<string | null> {
   try {

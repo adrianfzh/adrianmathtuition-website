@@ -29,7 +29,6 @@
 // Stamps job_runs 'scan-inbox' every tick (JOB_RHYTHMS alarms by absence).
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { dropboxConfigured, ensureFolder, listFolder, downloadFile, movePath } from '@/lib/dropbox';
@@ -41,6 +40,7 @@ import { sweepAutoTag, type AutoTagResult } from '@/lib/auto-tag-sweep';
 import { sweepUnfiledPapers, fileCatchupLine, type FileCatchupResult } from '@/lib/file-catchup';
 import { sendTelegram } from '@/lib/telegram';
 import { unlessQuiet } from '@/lib/quiet-messages';
+import { cronAuth } from '@/lib/cron-auth';
 import {
   buildScanPaperName, isPdf, isSettled, matchStudent, parseScanFilename, scanLine,
   type CoverReading, type RosterStudent, type ScanEntry,
@@ -55,12 +55,7 @@ const MAX_PDF_BYTES = 80 * 1024 * 1024;
 const MAX_PAGES = 40;
 const PAGE_SCALE = 1.7;           // ~1450px wide at A4 — what the marker reads at
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 async function bot(phase: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const base = process.env.BOT_BASE_URL, secret = process.env.BOT_INTERNAL_SECRET;

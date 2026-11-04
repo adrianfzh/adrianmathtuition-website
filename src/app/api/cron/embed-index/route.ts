@@ -10,22 +10,15 @@
 //
 // Cron: `40 18 * * *` UTC = 02:40 SGT, after the evening's twins and before the 3am sweeps.
 // Cost: a normal day's few hundred questions is a fraction of a cent.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

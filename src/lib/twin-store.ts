@@ -186,6 +186,8 @@ export async function mathQueue(level: string, n: number, opts: { focusOnly?: bo
   const per = opts.per ?? TWINS_PER_SKILL;
   const units = await mathUnits(level, per);
   const have = haveFromUnits(units);
+  // twin_queue is a MATERIALIZED view since 4 Nov 2026 (pg_cron refreshes it every 5 min; the recipe is
+  // twin_queue_live) — migrations/twin_queue_materialized.sql. Reading it is now cheap; it may be ≤5 min stale.
   const rows = await pageAll((a, b) => sb.from('twin_queue').select('source_id, level, subgroup_id, subgroup, topic, draws_90d, total_marks, has_image')
     .in('level', lv).gt('text_len', 40).eq('has_any_twin', false).not('subgroup_id', 'is', null).order('draws_90d', { ascending: false }).order('source_id').range(a, b));
   const focus = await stuckFocus();

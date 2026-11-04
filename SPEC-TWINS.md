@@ -152,6 +152,12 @@ is built from what students actually receive:
 
 A view `twin_queue` (source id, level, sub-skill, draws in 90 days, has a
 verified twin?) is the whole scheduler; the batch takes the top rows.
+**Since 4 Nov 2026 it is a MATERIALIZED view** refreshed every 5 min by pg_cron on the maths
+database (`migrations/twin_queue_materialized.sql`; the recipe lives on as the plain view
+`twin_queue_live`; `job_runs` `twin-queue-refresh`, `docs/OPS.md`). Why: every read recomputed the
+whole thing (≈0.9 s), and one lane `queue` paged it 52 times — the database's top query by far
+(`docs/REVIEW-2026-11-04.md` A2). A seed may be offered once more inside the 5-min window after its
+twin lands — one extra twin on a sub-skill, never a wrong one.
 
 **A hidden sub-skill is never asked for twins (9 Oct 2026).** `migrations/twin_queue_hidden_subgroups.sql`
 re-creates the view so a seed's sub-skill is its best OPEN filing (`subgroups.visibility` 'all' or 'ip';

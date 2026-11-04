@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_money = async (text: string) => {
@@ -11,17 +10,12 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { advanceRunNote } from '@/lib/year-end-billing';
 import { fileForBrief } from '@/lib/staff-inbox';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 
 function checkAuth(req: NextRequest): boolean {
-  // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
-  // standard admin auth (signed session cookie or legacy ADMIN_PASSWORD Bearer).
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get('authorization');
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
-  return verifyAdminAuth(req);
+  return cronAuth(req) || verifyAdminAuth(req);
 }
 
 export async function GET(req: NextRequest) {

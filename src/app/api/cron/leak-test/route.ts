@@ -4,25 +4,19 @@
 // Quiet when nothing leaks (job_runs `leak-test` ok=true). ANY leak → ok=false and
 // one Telegram line to Adrian's main chat (not a topic — this one he must see).
 // ?base=<origin> points the door checks at another deployment (default: this one).
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { leakTestLine } from '@/lib/leak-test';
 import { controlProblems, mintTestSession, otherStudentProbes, probeLeaks, tableLeaks } from '@/lib/leak-test-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

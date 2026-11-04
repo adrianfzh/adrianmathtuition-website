@@ -11,23 +11,17 @@
 //
 // Stamps job_runs `supabase-cost` with meta { cycle_start, sent[], projection } — so a warning is
 // given once per cycle. A failure stamps ok=false and answers 500 with a plain error.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { alertExtraUsd, briefLines, costSummary, newWarnings, project, warnings } from '@/lib/supabase-cost';
 import { lastSent, readUsage } from '@/lib/supabase-cost-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

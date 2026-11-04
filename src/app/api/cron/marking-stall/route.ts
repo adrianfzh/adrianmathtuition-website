@@ -8,9 +8,8 @@
 //      steps to sign it in again (signinWarnings).
 // Runs on the site, not the worker, so it speaks even when the worker is asleep or down.
 // Memory: the Settings row marking_alarms. Stamps job_runs 'marking-stall'.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer. ?dry=1 sends nothing.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026). ?dry=1 sends nothing.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
@@ -18,18 +17,12 @@ import { slotAccountRows } from '@/lib/slot-accounts';
 import { getSlotAccounts, getSlotUsage, getMarkingAlarms, setMarkingAlarms } from '@/lib/slot-accounts-store';
 import { loginHealths, signinWarnings, stallDecision, type QueuedPaper, type SigninTold, type StallState } from '@/lib/marking-stall';
 import { isBenchRun } from '@/lib/desk-state';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 

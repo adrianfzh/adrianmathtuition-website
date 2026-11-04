@@ -28,7 +28,6 @@
 // past or future day with no ?now = every lesson that day).
 // Stamps job_runs 'lesson-end' on every non-dry run.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { addDaysISO, sgtClock, sgtTodayISO } from '@/lib/sgt';
@@ -37,16 +36,12 @@ import { escapeTelegramHtml } from '@/lib/telegram-html';
 import { okCallback, type AutoLog } from '@/lib/lesson-autolog';
 import { groupKey, pingDue, pingText, type PingStudent } from '@/lib/lesson-voice';
 import { composeForPack, lessonLineOn, lessonsBetween, loadStudent, upsertPack, writeAutoLog, type NextLessonPlan, type PackRow } from '@/lib/next-lesson-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

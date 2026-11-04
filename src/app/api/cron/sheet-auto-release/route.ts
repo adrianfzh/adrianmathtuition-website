@@ -6,27 +6,20 @@
 // choice of PDF, the assignment, and the release stamp are one code path.
 // A release the route cannot do on its own (ambiguous PDF, missing folder)
 // clears the schedule and tells Adrian — nothing is guessed. Stamps job_runs.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
 import { coveredRunIds } from '@/lib/sheet-queue';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { releasedWithWatchLine, heldByPaperLine } from '@/lib/sheet-auto-release';
 import { computeAutoHold } from '@/lib/mark-triage';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

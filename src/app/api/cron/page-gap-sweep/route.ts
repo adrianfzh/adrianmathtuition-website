@@ -44,11 +44,11 @@
 // Stamps `job_runs` every run — quiet weeks included — so a dead monitor alarms
 // by absence rather than by silence (docs/OPS.md, JOB_RHYTHMS 'page-gap-sweep').
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { rebuildRunPdfs } from '@/lib/rebuild-run-pdfs';
+import { cronAuth } from '@/lib/cron-auth';
 import {
   gapsForRun, gapPageNumbers, pageGapAlert, repairPageGaps, alreadyReported, gapCheckStamp,
   type GapRunRow,
@@ -65,12 +65,7 @@ const BUDGET_MS = 210_000;
 const MAX_RUNS = 12;
 const SITE = 'https://www.adrianmathtuition.com';
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 type Row = GapRunRow & { created_at: string };
 

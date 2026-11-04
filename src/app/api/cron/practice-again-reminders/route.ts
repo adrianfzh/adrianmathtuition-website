@@ -7,27 +7,20 @@
 // push. Rule + wording: lib/practice-again-reminders (pure, tested). Stamps
 // reminded_at / reminder_count on every nudge, Telegrams Adrian one summary
 // line, and stamps job_runs even on a quiet day so a dead cron alarms by absence.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer. ?dry=1 lists without sending.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026). ?dry=1 lists without sending.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram, sendTelegramTo } from '@/lib/telegram';
 import { sendPushToStudent } from '@/lib/portal-push';
 import { resolveRecipient } from '@/lib/student-recipient';
 import { REMINDERS_PAUSED, pickDue, nudgeText, nudgePush, nudgeSummaryLine, FIRST_NUDGE_AFTER_DAYS, type RequiredSheetRow, type NudgeSent } from '@/lib/practice-again-reminders';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

@@ -11,12 +11,11 @@
 //     Same, but consolidates the term's lesson logs + the exam result
 //     (Score/Total/%/grade if recorded) into a fuller <250-word report.
 //
-// Auth: x-vercel-cron header, CRON_SECRET bearer, or standard admin auth
+// Auth: the scheduler header header, CRON_SECRET bearer, or standard admin auth
 // (signed session cookie / ADMIN_PASSWORD bearer) — same as payment-reminder.
 // Regenerating replaces existing DRAFTS for the same (student, period, label);
 // rows already marked 'sent' are never touched.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
@@ -32,16 +31,13 @@ import {
   type DigestLesson,
 } from '@/lib/progress-digest';
 import { buildReportFacts, type ReportFacts, type ReportPaper } from '@/lib/report-facts';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // month/term generate one AI call per student
 
 function checkAuth(req: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get('authorization');
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
-  return verifyAdminAuth(req);
+  return cronAuth(req) || verifyAdminAuth(req);
 }
 
 export async function GET(req: NextRequest) {

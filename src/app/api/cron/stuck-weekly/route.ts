@@ -21,7 +21,6 @@
 // ?now=ISO    → replay a past week (dry runs only)
 // Stamps job_runs 'stuck-weekly' on every non-dry run, quiet weeks included.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegramButtonsTo } from '@/lib/telegram';
@@ -30,18 +29,14 @@ import { loadStuckInput } from '@/lib/stuck-store';
 import { buildStuckPicture, planMaterials, stuckMessage, twinFocusFor, SHEET_COUNT, WEEK_DAYS, type MaterialPlan, type PreparedMaterial } from '@/lib/stuck-picture';
 import { sendCallback, worksheetLevel } from '@/lib/stuck-send';
 import { fileForBrief } from '@/lib/staff-inbox';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 const SITE = 'https://www.adrianmathtuition.com';
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 /** Draw the sheet through the /ws worksheet route; a chapter sheet falls back to its first topic. */
 async function prepare(plan: MaterialPlan): Promise<PreparedMaterial> {

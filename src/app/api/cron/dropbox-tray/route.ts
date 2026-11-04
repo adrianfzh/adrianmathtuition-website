@@ -11,24 +11,19 @@
 //   - each folder once (result_json.tray_deleted_at); ≤ 25 per run.
 // ?dry=1 lists what would go. Stamps job_runs 'dropbox-tray'.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { deletePath, dropboxConfigured, listFolder, movePath } from '@/lib/dropbox';
 import { ARCHIVE_FOLDER, paperFolder, STUDENTS_ROOT, UNTAGGED_FOLDER } from '@/lib/paper-folder';
 import { sendTelegram } from '@/lib/telegram';
 import { unlessQuiet } from '@/lib/quiet-messages';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 export const TRAY_DAYS = 30;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

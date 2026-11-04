@@ -11,12 +11,12 @@
 // 2026-07-16 via GEN_WORKER_DISABLE in fly.toml. Briefly removed from
 // vercel.json on 2026-08-21 on a wrong "this is nightly API spend" premise —
 // restored the same day: removing it just starves the plan worker's queue.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { type Tier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
+import { cronAuth } from '@/lib/cron-auth';
 
 // Kiosk offers Standard/Advanced/Mixed — no Basic shelf to stock.
 const STOCK_TIERS: readonly Tier[] = ['standard', 'advanced'];
@@ -52,13 +52,7 @@ const EXCLUDED_TOPICS = new Set(['Modulus Functions']);   // skip run if this ma
 // bank questions are valid seeds and the request is tagged figure_mode:'graph'.
 const GRAPH_TOPICS = new Set(['Integration (Area)', 'Coordinate Geometry', 'Linear Law', 'Trigonometry (Graphs)']);
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

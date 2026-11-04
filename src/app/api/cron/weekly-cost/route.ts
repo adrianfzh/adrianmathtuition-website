@@ -8,26 +8,19 @@
 // levers). Pure message: lib/weekly-cost.ts; loader: lib/weekly-cost-store.ts. Stamps
 // job_runs either way. Nothing here flips a switch.
 // ?dry=1 returns the message without sending it. Auth: CRON_SECRET bearer,
-// x-vercel-cron, or ADMIN_PASSWORD bearer.
+// the scheduler header, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { buildWeeklyCost, weeklyCostMessage } from '@/lib/weekly-cost';
 import { loadWeeklyCost } from '@/lib/weekly-cost-store';
 import { fileForBrief } from '@/lib/staff-inbox';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

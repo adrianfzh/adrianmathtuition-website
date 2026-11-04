@@ -8,27 +8,20 @@
 //   2. Reminder: once per period, from 14 days before it starts, a Telegram to
 //      Adrian listing each student and date to arrange a make-up for. The day it
 //      went out is stored on the period (remindedOn) so it is sent once.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer. ?dry=1 changes nothing.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026). ?dry=1 changes nothing.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { sgtTodayISO } from '@/lib/sgt';
 import { fetchBlockedRecord, saveBlockedRanges } from '@/lib/blocked-dates';
 import { liveRanges, reminderDue, reminderMessage, rangeLabel } from '@/lib/away-lessons';
 import { markAwayLessons, awayLessonsFor } from '@/lib/away-lessons-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
@@ -28,6 +27,7 @@ import {
 import { additionalLessonLines, attendedLessonLines, descriptionBase, projectedLessonLines, sumLineRates, type SlotLine } from '@/lib/arrears-lines';
 import { fetchArrearsPool, fetchInvoicedMonthsByStudent, fetchSweepAdditionalPool, fetchUnmarkedArrearsPool } from '@/lib/arrears-fetch';
 import { jobNameFor, resolveRunMode } from '@/lib/invoice-run-mode';
+import { cronAuth } from '@/lib/cron-auth';
 
 /** "Tue 6 Oct" — for Telegram lines; UTC-pinned so an ISO date never skews a day. */
 const shortDate = (iso: string) =>
@@ -83,13 +83,7 @@ interface InvoiceMonth {
 // billing-math.test.ts.
 
 function checkAuth(req: NextRequest): boolean {
-  // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
-  // standard admin auth (signed session cookie or legacy ADMIN_PASSWORD Bearer).
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get('authorization');
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
-  return verifyAdminAuth(req);
+  return cronAuth(req) || verifyAdminAuth(req);
 }
 
 export async function POST(req: NextRequest) {

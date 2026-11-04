@@ -231,6 +231,8 @@ async function queue() {
   const per = Number(argOf('--per-skill', String(PER_SKILL)));
   const levels = familyOf(level);
   const { units, have } = await twinCounts(env, level, per);
+  // twin_queue is a MATERIALIZED view since 4 Nov 2026 (refreshed every 5 min by pg_cron; the recipe is the
+  // plain view twin_queue_live) — migrations/twin_queue_materialized.sql. Paging it no longer recomputes anything.
   const all = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&subgroup_id=not.is.null&order=draws_90d.desc,source_id.asc`);
   const seedTwins = await seedTwinCounts(env, levels);
   const eligible = new Map(); for (const r of all) eligible.set(r.subgroup_id, (eligible.get(r.subgroup_id) ?? 0) + 1);

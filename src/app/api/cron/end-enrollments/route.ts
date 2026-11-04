@@ -25,9 +25,8 @@
 // 08:15 SGT, that one monthly on the 2nd at 03:30 SGT, and its 30-day grace
 // means an enrollment ended this morning cannot offboard an account today.
 //
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer. ?dry=1 lists without writing.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026). ?dry=1 lists without writing.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
@@ -42,18 +41,12 @@ import {
 } from '@/lib/enrollment-end';
 import { leavingStatus } from '@/lib/graduation';
 import { draftFinalExtrasInvoice, fetchExtrasPool, setLeavingStatus } from '@/lib/final-extras-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

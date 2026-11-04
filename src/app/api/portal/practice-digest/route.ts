@@ -2,19 +2,13 @@
 // Replaces the per-grade ping: automation shouldn't page the human per event.
 // Flags low scores so Adrian knows which grades to spot-check first.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { createServiceClient } from '@/lib/supabase-server';
 import { sendTelegram } from '@/lib/telegram';
+import { cronAuth } from '@/lib/cron-auth';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
 
-function cronAuthorized(req: NextRequest): boolean {
-  if (req.headers.get('x-vercel-cron')) return true;
-  const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
-  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
-  return false;
-}
+const cronAuthorized = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!cronAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequestAll } from '@/lib/airtable';
 import { sendTelegramWithButtons } from '@/lib/telegram';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { fileForBrief } from '@/lib/staff-inbox';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 
@@ -12,11 +12,7 @@ export const runtime = 'nodejs';
 // nothing when there are no open follow-ups (quiet by default).
 
 function checkAuth(req: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get('authorization');
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
-  return verifyAdminAuth(req);
+  return cronAuth(req) || verifyAdminAuth(req);
 }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

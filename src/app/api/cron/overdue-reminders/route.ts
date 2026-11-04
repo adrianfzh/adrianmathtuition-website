@@ -6,27 +6,20 @@
 // after the 3rd, no more emails and Adrian is told (lib/overdue-reminders.ts). The 14th's 8pm
 // "mark payments" Telegram lists who will be reminded, so a paid-but-unmarked bill is caught first.
 //
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer. ?dry=1 plans without sending.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026). ?dry=1 plans without sending.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { airtableRequest } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { sgtTodayISO } from '@/lib/sgt';
 import { buildReminderEmail } from '@/lib/overdue-reminders';
 import { loadReminderPlan, reminderLines, REMINDER_LOG_TYPE } from '@/lib/overdue-reminders-store';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (cron && safeEqual(auth, `Bearer ${cron}`)) return true;
-  if (admin && safeEqual(auth, `Bearer ${admin}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

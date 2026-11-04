@@ -19,25 +19,20 @@
 // one Telegram line when there's anything to report, and stamps `job_runs`
 // every run (empty or not) so a dead cron alarms by absence.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { runPaperFields } from '@/lib/extraction-inbox';
 import { groupMissingPapers, missingPapersLine, missingPaperKey, type MissingPaperRun, type MissingPaperGroup } from '@/lib/missing-papers';
 import { fileForBrief } from '@/lib/staff-inbox';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const WINDOW_DAYS = 7;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (req.headers.get('x-vercel-cron')) return true;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
-}
+const authed = cronAuth;
 
 /**
  * Whether a candidate paper is already held, checked the same way for both

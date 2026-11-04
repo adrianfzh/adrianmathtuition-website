@@ -16,9 +16,8 @@
 // Blob files are deleted BEFORE their rows: if a blob delete fails, the rows
 // stay and next month's run retries — nothing is ever orphaned unreachable.
 // ?dry=1 reports what WOULD be purged without deleting anything.
-// Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { del } from '@vercel/blob';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -28,19 +27,14 @@ import { RETENTION_MONTHS, retentionCutoffIso, latestActivityIso, isExpired } fr
 import { sweepNotebooks } from '@/lib/retention-notebook-store';
 import { LOGIN_TROUBLE_KEEP_DAYS, LOGIN_TROUBLE_KINDS } from '@/lib/login-trouble';
 import { sendTelegram } from '@/lib/telegram';
+import { cronAuth } from '@/lib/cron-auth';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_ops = (text: string) => sendTelegram(text, 'ops');
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 // PostgREST caps responses at 1000 rows silently — page everything.
 async function allRows<T>(

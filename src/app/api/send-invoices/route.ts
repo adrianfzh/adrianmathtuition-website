@@ -22,18 +22,13 @@ import { adhocDatesText } from '@/lib/adhoc-billing';
 import { FINAL_EXTRAS_FORMULA, isFinalExtrasInvoice } from '@/lib/graduation';
 import { isCleanAdhocInvoice, previousMonthLabel } from '@/lib/adhoc-billing';
 import { getPriorBalance } from '@/lib/invoice-consolidate';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 function checkAuth(req: NextRequest): boolean {
-  // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
-  // standard admin auth (signed session cookie or legacy ADMIN_PASSWORD Bearer).
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get('authorization');
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
-  return verifyAdminAuth(req);
+  return cronAuth(req) || verifyAdminAuth(req);
 }
 
 // ── Self-service footer (shared by regular / first-invoice / amended emails) ──
@@ -523,11 +518,11 @@ export async function POST(req: NextRequest) {
     let invoiceRecords: any[];
     // Conservative auto-send: invoices the classifier holds back for manual review (cron only).
     let heldForReview: any[] = [];
-    // True cron: called by Vercel scheduler (x-vercel-cron header) or CRON_SECRET
+    // True cron: called by Vercel scheduler (the scheduler header header) or CRON_SECRET
     // Manual send from admin UI uses ADMIN_PASSWORD — pause flag should NOT block it
     const cronSecret = process.env.CRON_SECRET;
     const authHeader = req.headers.get('authorization');
-    const isActualCron = req.headers.get('x-vercel-cron') === '1' ||
+    const isActualCron =
       !!(cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`));
 
     if (Array.isArray(recordIds) && recordIds.length) {

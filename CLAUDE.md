@@ -294,7 +294,7 @@ Money and date logic lives as pure functions in `src/lib/` with a sibling `.test
 - **Admin pages:** Cookie-based auth (30-day expiry, `ADMIN_PASSWORD`)
 - **Admin API routes:** `Authorization: Bearer ADMIN_PASSWORD` header; verified via `verifyAdminAuth(req)` in `lib/schedule-helpers.ts`
 - **Scoped agent tokens (17 Sep 2026):** `AGENT_TOKEN_RELEASE|SHEETS|REINSTATE|SWITCHES|PAPERS|ASSIGN` — one per action family, accepted only by that family's routes beside the admin check (`lib/agent-auth.ts verifyAgentAuth`), every use logged to `agent_actions`; how a cloud session acts without the admin password → `docs/CLOUD.md` §Step 2
-- **Cron jobs:** `CRON_SECRET` in Bearer token, or `x-vercel-cron: 1` header, or `ADMIN_PASSWORD`
+- **Cron jobs:** `cronAuth(req)` from `lib/cron-auth.ts` — `CRON_SECRET` or `ADMIN_PASSWORD` bearer only. The `x-vercel-cron` header is NOT proof (anyone can send it; 4 Nov 2026) and a test refuses it
 - **Signup:** HMAC-SHA256 signature using `SIGNUP_SECRET` — validates slotId + level + subjects + expires
 - **Kiosk students:** signed HMAC token (`x-kiosk-student`) → `docs/KIOSK.md`
 

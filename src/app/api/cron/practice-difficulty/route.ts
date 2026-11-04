@@ -12,20 +12,14 @@ import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getScienceClient, scienceConfigured } from '@/lib/science-bank';
 import { logJobRun } from '@/lib/job-log';
-import { safeEqual } from '@/lib/safe-equal';
 import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
 import { tallyFirstAttempts, resultsRows, tallySummary, MIN_FIRST_ATTEMPTS, type McqAttempt } from '@/lib/practice-difficulty';
+import { cronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: Request): boolean {
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!bearer) return false;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return (!!cron && safeEqual(bearer, cron)) || (!!admin && safeEqual(bearer, admin));
-}
+const authed = cronAuth;
 
 type Row = { user_id: string | null; airtable_student_id: string | null; attempted_at: string; marking_verdict: string | null; qid: string | null };
 

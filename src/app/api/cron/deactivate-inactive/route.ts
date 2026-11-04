@@ -24,14 +24,13 @@
 // Telegram, no job_runs stamp.
 //
 // Schedule (vercel.json): "30 19 2 * *" = 19:30 UTC on the 2nd = 03:30 SGT on
-// the 3rd. Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
+// the 3rd. Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 //
 // Health-check: deliberately NO new probe — the job_runs rhythm line
 // ('deactivate-inactive', monthly day 3 in lib/job-health.ts JOB_RHYTHMS)
 // already alarms by absence if this cron dies, and the route touches no
 // parent/student-facing surface a synthetic probe could exercise.
 import { NextRequest, NextResponse } from 'next/server';
-import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequestAll } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { logJobRun } from '@/lib/job-log';
@@ -39,6 +38,7 @@ import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_ops = (text: string) => sendTelegram(text, 'ops');
+import { cronAuth } from '@/lib/cron-auth';
 import {
   decideDeactivation,
   groupEnrollmentsByStudent,
@@ -49,13 +49,7 @@ import {
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-function authed(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
-  if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
-  return false;
-}
+const authed = cronAuth;
 
 // PostgREST caps responses at 1000 rows silently — page everything.
 async function allRows<T>(

@@ -22,6 +22,10 @@ export type Rhythm =
   | { kind: 'monthly'; day: number; graceDays: number; label: string; months?: number[] };
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
+  // 👯 The saved twins queue (4 Nov 2026, migrations/twin_queue_materialized.sql): pg_cron on the maths
+  // database refreshes the twin_queue materialized view every 5 min and stamps here — silence = the
+  // twins lane and /admin/generated are reading a stale queue.
+  'twin-queue-refresh': { kind: 'interval', hours: 1, label: 'every 5 min (pg_cron, maths database)' },
   // 🎬 The question-clip queue runner (15 Oct 2026, SPEC-CLIP-PIPELINE.md §9): stamps at most once an
   // hour, idle or not (scripts/clips/question-clip-worker.mjs) — silence = the worker is down.
   // Each finished clip also stamps 'question-clips' (on demand, no rhythm).

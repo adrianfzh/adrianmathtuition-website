@@ -15,9 +15,9 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { logJobRun } from '@/lib/job-log';
-import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
 import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
+import { cronAuth } from '@/lib/cron-auth';
 import {
   tallyMathFirstAttempts, tallySummary, planMathLevel, mathWeeklyLine, MIN_FIRST_ATTEMPTS,
   type MathAttempt, type MathDifficultyStored, type MathChange,
@@ -26,13 +26,7 @@ import {
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-function authed(req: Request): boolean {
-  if (req.headers.get('x-vercel-cron') === '1') return true;
-  const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!bearer) return false;
-  const cron = process.env.CRON_SECRET, admin = process.env.ADMIN_PASSWORD;
-  return (!!cron && safeEqual(bearer, cron)) || (!!admin && safeEqual(bearer, admin));
-}
+const authed = cronAuth;
 
 type AttemptRow = {
   user_id: string | null; airtable_student_id: string | null; question_id: string; attempted_at: string;
