@@ -175,6 +175,10 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   content reads well too. The daily page reader counts a hard-to-read note as a finding (bot
   `.claude/skills/marking-review/SKILL.md` §D).
 
+## 🧹 An alert that fixes itself is deleted (Adrian, 4 Nov 2026: "Yes, as a rule")
+
+Any Telegram alert to Adrian about a state that can end by itself (waiting, stuck, down, full, failing) keeps the sent message's id and **deletes it when the state ends** (Telegram allows 48 h; older → one short "▶ … again" line). Both repos; the reference build is the bot's `lib/worker-idle.js resumeAction` → bot `CLAUDE.md`.
+
 ## 🚫 No disclaimers, no model names on student screens (Adrian, 5 Oct 2026)
 
 - **No disclaimers or plumbing notes** on student-facing screens ("AI-marked — not always perfect", "marking is off once you've seen the solution"). If behaviour needs explaining, make it just work (grey out, hide). The one exception is the Science Home "Dear students" notice.
