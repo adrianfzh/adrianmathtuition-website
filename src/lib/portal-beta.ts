@@ -766,7 +766,7 @@ export async function questionClipsAdmin(): Promise<boolean> {
 // the bank), a closed drop-down with a second method and one line on which is better here. Only
 // rows Adrian approved on /admin/another-way are ever served. ADMIN + the preview student until he
 // has looked at the pilot — flip to show approved rows to every student.
-export const ANOTHER_WAY_OPEN_TO_STUDENTS = false;
+export const ANOTHER_WAY_OPEN_TO_STUDENTS = true; // Adrian, 4 Nov 2026: "open it" — only rows he approves on /admin/another-way are served
 export async function anotherWayVisible(identity?: string | null): Promise<boolean> {
   if (ANOTHER_WAY_OPEN_TO_STUDENTS) return true;
   if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;

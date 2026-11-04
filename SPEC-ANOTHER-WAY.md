@@ -7,13 +7,15 @@ confused. That rule stays: this is a website-only extra, closed until tapped.
 
 ## Where it stands (4 Nov 2026)
 
-- **Built, switched off for students** (`ANOTHER_WAY_OPEN_TO_STUDENTS = false` in
-  `src/lib/portal-beta.ts`). Adrian's admin login and the preview student see it.
+- **Open to students since 4 Nov 2026** (Adrian: "open it"; `ANOTHER_WAY_OPEN_TO_STUDENTS = true`
+  in `src/lib/portal-beta.ts`), promoted the same day. A student sees a drop-down only for a row
+  Adrian has APPROVED — opened with all 23 pilot rows still waiting, so each one goes live the
+  moment he presses Approve.
 - **Pilot: 23 rows waiting for Adrian** on `/admin/another-way` (30 questions tried; 6 had no
   genuinely different method and were skipped by the writer; 1 used sum of roots, which is not in
   the syllabus, and the checker refused it). **Nothing is approved yet** — approval is his.
-- To open it to students: Adrian approves the rows he likes, then flip the switch (one line) and
-  update `docs/SWITCHES.md`.
+- Suggested from the phone check: reject f78bba8f (circle tangent) and 19257f3f ("always negative")
+  — correct but crowded on a phone.
 
 ## 1. What a student sees
 
