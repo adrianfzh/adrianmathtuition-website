@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { portalIdentity } from '@/lib/portal-auth';
-import { checkTypedAnswer, applyVerdict, sgtToday } from '@/lib/notebook';
+import { checkTypedAnswer, applyVerdict, sgtToday, isComebackDue } from '@/lib/notebook';
 import { loadPapersAndNotebook, type NotebookEntryRow } from '@/lib/notebook-data';
 import { computeMastery } from '@/lib/mastery';
 import { fullPortalVisible } from '@/lib/portal-beta';
@@ -96,7 +96,10 @@ async function workedSolution(
   }
 }
 
-function toClient(e: EntryRow) {
+function toClient(e: EntryRow, today: string = sgtToday()) {
+  // A conquered entry whose 30-day comeback has arrived reads as live (with the
+  // flag) so the page offers the attempt like any due card.
+  const comeback = isComebackDue(e, today);
   const attempts = (Array.isArray(e.attempts) ? e.attempts : []) as Attempt[];
   const last = attempts.length ? attempts[attempts.length - 1] : null;
   return {
@@ -113,7 +116,8 @@ function toClient(e: EntryRow) {
     variantQuestion: e.variant_question,
     variantOrigin: e.variant_origin,
     hasVariantAnswer: !!e.variant_answer,
-    status: e.status,
+    status: comeback ? 'live' : e.status,
+    comeback,
     streak: e.streak,
     nextDue: e.next_due,
     attemptCount: attempts.length,
@@ -144,15 +148,15 @@ export async function GET() {
   const { papers, entries: rows } = res;
 
   const live = rows
-    .filter(e => e.status === 'live')
+    .filter(e => e.status === 'live' || isComebackDue(e, today))
     .sort((a, b) =>
       String(a.next_due ?? '9999').localeCompare(String(b.next_due ?? '9999')) ||
       String(b.paper_date ?? '').localeCompare(String(a.paper_date ?? '')))
-    .map(toClient);
+    .map(e => toClient(e, today));
   const archived = rows
-    .filter(e => e.status === 'archived')
+    .filter(e => e.status === 'archived' && !isComebackDue(e, today))
     .sort((a, b) => String(b.archived_at ?? '').localeCompare(String(a.archived_at ?? '')))
-    .map(toClient);
+    .map(e => toClient(e, today));
 
   // The re-mark loop closes here: every recorded re-attempt (live OR archived
   // entry) feeds the same per-topic estimate the marked papers feed, so a win
@@ -204,7 +208,8 @@ export async function POST(req: NextRequest) {
     .eq('airtable_student_id', sid) // ownership — see header
     .single<EntryRow>();
   if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (entry.status === 'archived') {
+  // A conquered entry takes one more attempt only when its 30-day comeback is due.
+  if (entry.status === 'archived' && !isComebackDue(entry, sgtToday())) {
     return NextResponse.json({ error: 'Already conquered' }, { status: 409 });
   }
 
@@ -259,7 +264,8 @@ export async function POST(req: NextRequest) {
       streak: sched.streak,
       status: sched.status,
       next_due: sched.next_due,
-      archived_at: sched.status === 'archived' ? new Date().toISOString() : null,
+      // A passed comeback keeps the day it was first conquered.
+      archived_at: sched.status === 'archived' ? (entry.archived_at ?? new Date().toISOString()) : null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', entry.id)

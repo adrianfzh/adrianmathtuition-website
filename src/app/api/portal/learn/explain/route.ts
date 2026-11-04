@@ -9,7 +9,7 @@
 // Rate limit: 20 judged sentences/day per student, counted on unit_events
 // explain_* rows in the last 24h.
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { judgeExplanation, explainSystem, EXPLAIN_MAX_ANSWER, type ExplainVerdict } from '@/lib/explain-judge';
 import { practiceAuth } from '@/lib/practice';
 import { learnClosedResponse } from '@/lib/learn-gate';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -20,12 +20,11 @@ import type { UnitPayload } from '@/lib/learn-types';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const MODEL = 'claude-opus-5-5';
 const DAILY_CAP = 20;
-const MAX_ANSWER = 200;
+const MAX_ANSWER = EXPLAIN_MAX_ANSWER;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Verdict = 'pass' | 'close' | 'miss';
+type Verdict = ExplainVerdict;
 
 // Flatten a unit payload into the plain text the judge is allowed to use.
 function payloadText(kind: string, payload: UnitPayload): string {
@@ -97,44 +96,17 @@ export async function POST(req: NextRequest) {
 
   const notes = payloadText(kind, payload);
 
-  const system = `You are Adrian, a warm and encouraging Singapore maths tutor. A student has just finished a lesson unit on "${topic}" and is telling you, in one sentence, when or why you use this idea.
-
-Judge their sentence ONLY against the lesson content below — do not use outside knowledge, and do not penalise them for anything the lesson didn't teach. Reward the core intuition; small imprecision is fine.
-
-Return STRICT JSON only, no prose, no code fences:
-{"verdict":"pass"|"close"|"miss","feedback":"<25 words, warm, second-person, Adrian's voice>"}
-
-- "pass": they've got the key idea.
-- "close": right instinct, missing or muddling one thing — nudge them.
-- "miss": not the right idea — point them gently back.
-
---- LESSON CONTENT (the ONLY thing you may judge against) ---
-${notes}
---- END LESSON CONTENT ---`;
-
-  let verdict: Verdict = 'close';
-  let feedback = '';
+  let verdict: Verdict;
+  let feedback: string;
   try {
-    const msg = await new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }).messages.create({
-      model: MODEL,
-      max_tokens: 400,
-      system,
-      messages: [{ role: 'user', content: answer }],
-    });
-    const text = msg.content
-      .filter(b => b.type === 'text')
-      .map(b => (b as { text: string }).text)
-      .join('')
-      .trim();
-    const m = text.match(/\{[\s\S]*\}/);
-    const parsed = m ? JSON.parse(m[0]) : JSON.parse(text);
-    const v = String(parsed.verdict || '').toLowerCase();
-    verdict = v === 'pass' || v === 'miss' ? (v as Verdict) : 'close';
-    feedback = String(parsed.feedback || '').slice(0, 200).trim();
+    ({ verdict, feedback } = await judgeExplanation(
+      explainSystem('finished a lesson unit on', topic, notes),
+      answer,
+      'Not quite — take another look at the lesson.',
+    ));
   } catch {
     return NextResponse.json({ error: 'Could not check that right now — try again in a moment.' }, { status: 502 });
   }
-  if (!feedback) feedback = verdict === 'miss' ? 'Not quite — take another look at the lesson.' : 'Good thinking.';
 
   // Record the outcome (pass/close → explain_pass, miss → explain_fail).
   // Students only — admin (Adrian testing) has no account to attribute it to.

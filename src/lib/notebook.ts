@@ -19,6 +19,13 @@ export const ARCHIVE_STREAK = 2;
 export const DUE_AFTER_CORRECT_DAYS = 7;
 /** A wrong attempt brings the entry back sooner. */
 export const DUE_AFTER_WRONG_DAYS = 3;
+/**
+ * One more look after it is conquered (Adrian, 4 Nov 2026: "make it stick").
+ * Archiving schedules a single comeback this many days out; right then → done
+ * for good, wrong → live again on the 3-day clock. Entries archived before this
+ * change have no date and never come back.
+ */
+export const COMEBACK_AFTER_DAYS = 30;
 
 export type Verdict = 'correct' | 'wrong' | 'unclear';
 
@@ -191,15 +198,28 @@ export interface ScheduleState {
   next_due: string | null;
 }
 
+/** An archived entry whose one 30-day comeback has arrived — it shows with the due ones again. */
+export function isComebackDue(
+  e: { status: string; next_due: string | null },
+  today: string,
+): boolean {
+  return e.status === 'archived' && !!e.next_due && e.next_due <= today;
+}
+
 /** Fold one recorded verdict into an entry's streak/status/due date. */
 export function applyVerdict(
-  prev: { streak: number },
+  prev: { streak: number; status?: string },
   verdict: 'correct' | 'wrong',
   today: string,
 ): ScheduleState {
+  // The comeback attempt on a conquered entry: right → done for good.
+  if (prev.status === 'archived') {
+    if (verdict === 'correct') return { streak: prev.streak + 1, status: 'archived', next_due: null };
+    return { streak: 0, status: 'live', next_due: addDaysIso(today, DUE_AFTER_WRONG_DAYS) };
+  }
   if (verdict === 'correct') {
     const streak = prev.streak + 1;
-    if (streak >= ARCHIVE_STREAK) return { streak, status: 'archived', next_due: null };
+    if (streak >= ARCHIVE_STREAK) return { streak, status: 'archived', next_due: addDaysIso(today, COMEBACK_AFTER_DAYS) };
     return { streak, status: 'live', next_due: addDaysIso(today, DUE_AFTER_CORRECT_DAYS) };
   }
   return { streak: 0, status: 'live', next_due: addDaysIso(today, DUE_AFTER_WRONG_DAYS) };

@@ -32,7 +32,10 @@
 // never calls the gate (lib/portal-beta.ts).
 import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
-import { explainClipVisible } from '@/lib/portal-beta';
+import { explainClipVisible, spotErrorVisible } from '@/lib/portal-beta';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { pickSpotUnit, SPOT_ORIGIN, type SpotUnitRef } from '@/lib/spot-error';
+import type { NotebookGroups } from '@/lib/notebook-groups';
 import { loadNotebook, type NotebookSubjectPanel } from '@/lib/notebook-load';
 import { OPEN_GROUPS, type NotebookFamily } from '@/lib/notebook-groups';
 import NotebookMistakes, { type CompareNodes } from './mistakes';
@@ -55,6 +58,32 @@ function compareNodes(p: NotebookSubjectPanel, all: boolean, explain: boolean): 
       const q = paper.dropped.find(x => x.questionNumber === c.questionNumber);
       if (q) out[c.key] = <MistakeCompare q={q} runId={paper.id} explain={explain} />;
     }
+  }
+  return out;
+}
+
+/** Approved 🔍 spot-the-error cards (SPEC-SPOT-ERROR.md) — the few fields the picker needs. Empty on any error: a missing link is fine. */
+async function approvedSpotUnits(): Promise<SpotUnitRef[]> {
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from('learning_units')
+      .select('id, subject, topic, error_kind:payload->>error_kind')
+      .eq('kind', 'autopsy')
+      .eq('status', 'approved')
+      .eq('payload->>origin', SPOT_ORIGIN)
+      .limit(500);
+    return ((data ?? []) as unknown as SpotUnitRef[]).filter(u => typeof u.error_kind === 'string');
+  } catch { return []; }
+}
+
+/** Mistake id → the card to practise spotting it on. Live mistakes only. */
+function spotLinks(groups: NotebookGroups, units: SpotUnitRef[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!units.length) return out;
+  for (const g of groups.groups) for (const m of g.mistakes) {
+    if (!m.live) continue;
+    const u = pickSpotUnit({ error_kind: m.errorKind ?? null, topic: m.topic ?? null, subject: m.subject }, units);
+    if (u) out[m.id] = u.id;
   }
   return out;
 }
@@ -93,6 +122,8 @@ export default async function MyNotebookPage({ searchParams, family = 'math' }: 
 
   const { subjects, defaultSubject, groups, weakest } = await loadNotebook(account, sid, family);
   const explain = await explainClipVisible(sid);
+  // 🔍 Spot the mistake links — maths only, behind SPOT_ERROR_OPEN_TO_STUDENTS.
+  const spotUnits = family === 'math' && (await spotErrorVisible(sid)) ? await approvedSpotUnits() : [];
   // One tab per subject (30 Sep 2026), the Papers tab's own switcher; one subject → no tabs.
   const panels: SubjectPanel[] = subjects.map(p => ({
     key: p.subject,
@@ -100,7 +131,7 @@ export default async function MyNotebookPage({ searchParams, family = 'math' }: 
     label: subjects.length > 3 ? (subjectPill(p.subject)?.text ?? p.subject) : p.subject,
     tone: subjectPill(p.subject)?.tone ?? 'other',
     count: p.groups.groups.reduce((n, g) => n + g.mistakes.length, 0),
-    content: <NotebookMistakes initial={p.groups} cardGroups={p.cardGroups} compare={compareNodes(p, showEarlier, explain)} showEarlier={showEarlier} weakest={p.weakest} />,
+    content: <NotebookMistakes initial={p.groups} cardGroups={p.cardGroups} compare={compareNodes(p, showEarlier, explain)} showEarlier={showEarlier} weakest={p.weakest} spot={spotLinks(p.groups, spotUnits)} />,
   }));
 
   return (
@@ -113,7 +144,7 @@ export default async function MyNotebookPage({ searchParams, family = 'math' }: 
       </div>
       {panels.length > 0
         ? <SubjectPanels panels={panels} defaultKey={defaultSubject ?? panels[0].key} rememberKey={family === 'science' ? 'portal_notebook_science_subject' : 'portal_notebook_subject'} />
-        : <NotebookMistakes initial={groups} cardGroups={[]} compare={{}} showEarlier={showEarlier} weakest={weakest} base={base} />}
+        : <NotebookMistakes initial={groups} cardGroups={[]} compare={{}} showEarlier={showEarlier} weakest={weakest} base={base} spot={spotLinks(groups, spotUnits)} />}
     </div>
   );
 }

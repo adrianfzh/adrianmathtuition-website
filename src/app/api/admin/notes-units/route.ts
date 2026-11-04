@@ -35,7 +35,11 @@ export async function POST(req: Request) {
       .eq('status', 'pending')
       // Checks never render on /notes, so approve-all must not sign them off
       // sight-unseen — they stay pending for the Learn player's own review.
-      .neq('kind', 'check');
+      .neq('kind', 'check')
+      // 🔍 Spot-the-error cards re-written from students' marked papers are
+      // approved one by one on /admin/spot-error (SPEC-SPOT-ERROR.md) — never
+      // swept up by approve-all. `or` because a NULL origin must still match.
+      .or('payload->>origin.is.null,payload->>origin.neq.spot-error');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true, approved: count ?? 0 });

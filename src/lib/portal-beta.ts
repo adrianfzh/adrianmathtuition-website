@@ -614,6 +614,21 @@ export async function explainClipVisible(identity?: string | null): Promise<bool
   return admin && !(await viewingAsStudent());
 }
 
+// 🔍 Spot the mistake (4 Nov 2026, SPEC-SPOT-ERROR.md, Adrian: "we need to build
+// this"): a My Notebook mistake links to an approved card — someone else's working
+// (re-written, never copied) with the same kind of mistake — at /app/spot/<id>.
+// ADMIN + the preview student until Adrian has approved enough cards and tried
+// one on his phone; flip this to show the link to every student.
+export const SPOT_ERROR_OPEN_TO_STUDENTS = false;
+export async function spotErrorVisible(identity?: string | null): Promise<boolean> {
+  if (SPOT_ERROR_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // 🎬 Video extras around the chalk board (docs/LESSONS.md § Video extras, 13 Oct 2026,
 // Adrian: "yes"): Completing the Square opens with a real-life clip and the tutor's
 // hello, and the tutor cheers after a right answer (lib/lesson-extras). ADMIN + the

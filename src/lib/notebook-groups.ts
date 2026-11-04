@@ -32,6 +32,9 @@ export interface NotebookMistake {
   practice: { id: string; title: string }[];
   /** The paper's subject ('A Math' … 'Chemistry'); the card shows a pill for a science one (24 Sep 2026). */
   subject: string | null;
+  /** The mistake's kind (error-kinds.ts) and topic — what the 🔍 Spot-the-mistake link matches on (lib/spot-error pickSpotUnit). */
+  errorKind?: string | null;
+  topic?: string | null;
 }
 
 export interface NotebookGroup {
@@ -98,6 +101,7 @@ export function groupMistakes<T extends Row>(
       live: m.state === 'dark' || m.state === 'light',
       where: seen?.label ?? null, seen: m.seen_count, cameBack: m.came_back, practice: practiceFor(m),
       subject: m.subject ?? null,
+      errorKind: m.error_kind ?? null, topic: m.topic ?? null,
     });
   }
   const groups = [...byKey.values()].sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : a.title.localeCompare(b.title)));

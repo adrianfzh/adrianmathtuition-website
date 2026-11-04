@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { mathHtml } from '@/lib/math-inline';
-import { portalFetch } from '@/lib/portal-fetch';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import 'katex/dist/katex.min.css';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -30,6 +30,8 @@ interface Entry {
   variantOrigin: string | null;
   hasVariantAnswer: boolean;
   status: 'live' | 'archived';
+  /** Conquered, and its one 30-day comeback has arrived (lib/notebook COMEBACK_AFTER_DAYS). */
+  comeback?: boolean;
   streak: number;
   nextDue: string | null;
   attemptCount: number;
@@ -297,7 +299,9 @@ function EntryCard({ entry, today, onUpdated }: {
           </p>
         </div>
         <div className="shrink-0 flex items-center gap-2">
-          {due && !conquered && (
+          {entry.comeback && !conquered ? (
+            <span className="text-[11px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5">one more look</span>
+          ) : due && !conquered && (
             <span className="text-[11px] font-bold uppercase tracking-wide bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">due</span>
           )}
           <span className="text-sm font-bold rounded-full px-3 py-1 bg-rose-100 text-rose-800">−{lost}</span>
@@ -328,14 +332,18 @@ function EntryCard({ entry, today, onUpdated }: {
       {conquered ? (
         <p className="text-sm text-emerald-800 mt-3">🏆 Conquered — two clean hits. This mistake is officially beaten.</p>
       ) : result ? (
-        <ResultPanel result={result} confident={confident} />
+        <>
+          <ResultPanel result={result} confident={confident} comeback={!!entry.comeback} />
+          <ExplainBack entryId={entry.id} />
+        </>
       ) : (
         <div className="mt-3 rounded-xl border border-gray-100 bg-[hsl(45,100%,98%)] p-3">
           {entry.variantQuestion ? (
             <>
               <p className="text-[11px] font-bold text-amber-800 mb-1">
                 ✏️ Beat it — a fresh twin of this question
-                {entry.streak > 0 && <span className="font-medium text-emerald-700"> · 1 hit down, 1 to go</span>}
+                {entry.comeback && <span className="font-medium text-emerald-700"> · beaten a month ago — still got it?</span>}
+                {!entry.comeback && entry.streak > 0 && <span className="font-medium text-emerald-700"> · 1 hit down, 1 to go</span>}
                 {entry.variantOrigin && <span className="font-medium text-amber-700/70"> · {entry.variantOrigin}</span>}
               </p>
               <MathText text={entry.variantQuestion} className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed" />
@@ -490,14 +498,16 @@ function ConfettiBurst() {
   );
 }
 
-function ResultPanel({ result, confident }: { result: AttemptResult; confident: boolean | null }) {
+function ResultPanel({ result, confident, comeback }: { result: AttemptResult; confident: boolean | null; comeback: boolean }) {
   if (result.verdict === 'correct') {
     return (
       <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
         {result.conquered && <ConfettiBurst />}
         <p className="text-sm font-semibold text-emerald-800">
-          {result.conquered
-            ? '🏆 Conquered! Two clean hits — this mistake is officially beaten.'
+          {comeback
+            ? '🏆 Still got it a month later — this one is done for good.'
+            : result.conquered
+            ? '🏆 Conquered! Two clean hits. It comes back once in a month, just to check it stuck.'
             : '✅ Correct! It comes back once more in a week — one more clean hit and it’s conquered.'}
         </p>
         {result.official && (
@@ -528,5 +538,64 @@ function ResultPanel({ result, confident }: { result: AttemptResult; confident: 
         </p>
       )}
     </div>
+  );
+}
+
+// 🧠 Explain it back (Adrian, 4 Nov 2026: "make it stick") — after any
+// re-attempt, one optional sentence: when or why do you use this method? The
+// same warm judge as the Learn units (lib/explain-judge), judged only against
+// this question's own answer and solution. Never blocks anything: skip it and
+// nothing changes.
+function ExplainBack({ entryId }: { entryId: string }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [out, setOut] = useState<{ verdict: 'pass' | 'close' | 'miss'; feedback: string } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function send() {
+    setBusy(true); setErr(null);
+    try {
+      setOut(await portalFetch<{ verdict: 'pass' | 'close' | 'miss'; feedback: string }>(
+        '/api/portal/notebook/explain', { json: { entryId, answer: text } }));
+    } catch (e) {
+      setErr(portalMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (out) {
+    const tone = out.verdict === 'pass' ? 'border-emerald-100 bg-emerald-50 text-emerald-900'
+      : out.verdict === 'close' ? 'border-amber-100 bg-amber-50 text-amber-900'
+      : 'border-gray-200 bg-gray-50 text-gray-800';
+    return (
+      <div className={`mt-2 rounded-xl border p-3 text-sm ${tone}`}>
+        <span className="font-semibold">{out.verdict === 'pass' ? '🧠 Spot on. ' : out.verdict === 'close' ? '🧠 Nearly. ' : '🧠 Not quite. '}</span>
+        {out.feedback}
+      </div>
+    );
+  }
+  return (
+    <details className="mt-2 rounded-xl border border-gray-100 bg-white p-3">
+      <summary className="cursor-pointer text-xs font-semibold text-navy list-none">🧠 Explain it back (optional)</summary>
+      <p className="text-[13px] text-gray-600 mt-1.5">In one sentence: when or why do you use this method?</p>
+      <textarea
+        value={text}
+        onChange={e => setText(e.target.value.slice(0, 200))}
+        rows={2}
+        placeholder="I use this when…"
+        className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30"
+      />
+      <div className="flex items-center gap-2 mt-2">
+        <button
+          disabled={busy || text.trim().length < 8}
+          onClick={() => void send()}
+          className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-lg px-3.5 py-1.5 hover:opacity-90 disabled:opacity-40"
+        >
+          {busy ? 'Reading…' : 'Check my sentence'}
+        </button>
+        {err && <span className="text-[12px] text-rose-700">{err}</span>}
+      </div>
+    </details>
   );
 }

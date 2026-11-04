@@ -3,6 +3,7 @@ import {
   normalizeAnswer, numbersMatch, checkTypedAnswer, applyVerdict,
   buildEntriesFromPapers, entryKey, sgtToday, addDaysIso, retryOrder,
   ARCHIVE_STREAK, DUE_AFTER_CORRECT_DAYS, DUE_AFTER_WRONG_DAYS,
+  COMEBACK_AFTER_DAYS, isComebackDue,
   type RetrySource,
 } from './notebook';
 import type { StudentPaper, StudentQuestion, StudentPracticeItem } from './portal-marking';
@@ -87,10 +88,26 @@ describe('applyVerdict scheduling', () => {
       streak: 1, status: 'live', next_due: addDaysIso(today, DUE_AFTER_CORRECT_DAYS),
     });
   });
-  it(`correct at streak ${ARCHIVE_STREAK - 1}: archived`, () => {
+  it(`correct at streak ${ARCHIVE_STREAK - 1}: archived, one comeback booked 30 days out`, () => {
     expect(applyVerdict({ streak: ARCHIVE_STREAK - 1 }, 'correct', today)).toEqual({
-      streak: ARCHIVE_STREAK, status: 'archived', next_due: null,
+      streak: ARCHIVE_STREAK, status: 'archived', next_due: addDaysIso(today, COMEBACK_AFTER_DAYS),
     });
+  });
+  it('comeback answered right: done for good (no date)', () => {
+    expect(applyVerdict({ streak: 2, status: 'archived' }, 'correct', today)).toEqual({
+      streak: 3, status: 'archived', next_due: null,
+    });
+  });
+  it('comeback answered wrong: live again on the 3-day clock', () => {
+    expect(applyVerdict({ streak: 2, status: 'archived' }, 'wrong', today)).toEqual({
+      streak: 0, status: 'live', next_due: addDaysIso(today, DUE_AFTER_WRONG_DAYS),
+    });
+  });
+  it('isComebackDue: only an archived entry whose date has arrived', () => {
+    expect(isComebackDue({ status: 'archived', next_due: '2026-08-23' }, today)).toBe(true);
+    expect(isComebackDue({ status: 'archived', next_due: '2026-08-24' }, today)).toBe(false);
+    expect(isComebackDue({ status: 'archived', next_due: null }, today)).toBe(false);
+    expect(isComebackDue({ status: 'live', next_due: '2026-08-01' }, today)).toBe(false);
   });
   it('wrong resets the streak and comes back sooner', () => {
     expect(applyVerdict({ streak: 1 }, 'wrong', today)).toEqual({

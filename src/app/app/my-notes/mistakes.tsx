@@ -15,12 +15,19 @@ import PaperSubjectPill from '@/components/PaperSubjectPill';
 import { isScienceSubject } from '@/lib/portal-subjects';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
+
+/** 🔍 Find the same kind of mistake in someone else's working (SPEC-SPOT-ERROR.md). */
+const SpotLink = ({ id }: { id: string }) => (
+  <Link href={`/app/spot/${id}`} className="text-[12px] font-semibold bg-sky-50 text-sky-800 rounded-full px-3 py-1">🔍 Spot this mistake</Link>
+);
 const TONE = { rose: 'bg-rose-50 text-rose-700', amber: 'bg-amber-50 text-amber-800' } as const;
 
 /** `${runId}:${questionNumber}` → the server-rendered comparison. Missing = the group is folded. */
 export type CompareNodes = Record<string, ReactNode>;
 
-export default function NotebookMistakes({ initial, cardGroups, compare, showEarlier, weakest, base = '/app/my-notes' }: {
+export default function NotebookMistakes({ initial, cardGroups, compare, showEarlier, weakest, base = '/app/my-notes', spot = {} }: {
+  /** Mistake id → an approved 🔍 spot-the-error card with the same kind of mistake (SPEC-SPOT-ERROR.md). */
+  spot?: Record<string, string>;
   initial: NotebookGroups;
   /** This Notebook's own route — /app/my-notes or /app/science/my-notes (1 Oct 2026). */
   base?: string;
@@ -60,6 +67,7 @@ export default function NotebookMistakes({ initial, cardGroups, compare, showEar
           {m.practice.map(p => (
             <Link key={p.id} href={`/app/assignments/${p.id}`} className="text-[12px] font-semibold bg-amber-50 text-amber-800 rounded-full px-3 py-1">✏️ {p.title}</Link>
           ))}
+          {spot[m.id] && <SpotLink id={spot[m.id]} />}
           <span className="basis-full" />
           {m.live && <CorrectedButton id={m.id} />}
           <RemoveButton id={m.id} onRemoved={() => drop(m.id)} />
@@ -82,9 +90,10 @@ export default function NotebookMistakes({ initial, cardGroups, compare, showEar
         </div>
         <span className={`shrink-0 text-[11px] rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ${TONE[m.tone]}`}>{m.stateText}</span>
       </div>
-      {m.practice.length > 0 && (
+      {(m.practice.length > 0 || spot[m.id]) && (
         <div className="flex flex-wrap gap-2 mt-2">
           {m.practice.map(p => <Link key={p.id} href={`/app/assignments/${p.id}`} className="text-[12px] font-semibold bg-amber-50 text-amber-800 rounded-full px-3 py-1">✏️ {p.title}</Link>)}
+          {spot[m.id] && <SpotLink id={spot[m.id]} />}
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2 mt-2.5" data-mistake-actions>
