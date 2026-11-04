@@ -31,10 +31,23 @@ export function splitQuote(question: string, quote: string | null | undefined): 
 
 type BeatLike = { do?: { do: string; text?: unknown }[] };
 
-/** The quote the beat on screen carries, or null. */
-export function quoteOfBeat(beats: BeatLike[] | undefined, step: number): string | null {
-  const a = (beats?.[step]?.do ?? []).find(x => x.do === 'quote');
-  return a && typeof a.text === 'string' && a.text.trim() ? a.text : null;
+/**
+ * The quote lit on the card for the beat on screen, or null. With `fired` (how many of the beat's
+ * actions the voice has reached), it is the LATEST quote already reached — so a beat that reads two
+ * pieces of the question lights each at its own words (Adrian, 5 Nov 2026: "when the narrator first
+ * explains the question, the relevant parts in the question should be highlighted to follow the
+ * narrator's explanation"). Before this, only the beat's first quote ever lit, for the whole beat.
+ * Without `fired`, the beat's first quote (the old behaviour, for callers with no clock).
+ */
+export function quoteOfBeat(beats: BeatLike[] | undefined, step: number, fired?: number): string | null {
+  const acts = beats?.[step]?.do ?? [];
+  const ok = (x: { do: string; text?: unknown }) => x.do === 'quote' && typeof x.text === 'string' && x.text.trim() !== '';
+  if (fired === undefined) {
+    const a = acts.find(ok);
+    return a ? (a.text as string) : null;
+  }
+  for (let j = Math.min(fired, acts.length) - 1; j >= 0; j--) if (ok(acts[j])) return acts[j].text as string;
+  return null;
 }
 
 /**

@@ -29,6 +29,15 @@ describe('quoteOfBeat', () => {
     expect(quoteOfBeat(beats, 1)).toBeNull();
     expect(quoteOfBeat(undefined, 0)).toBeNull();
   });
+  it('two pieces read in one beat each light at their own words (5 Nov 2026)', () => {
+    // "find k": "ten plus k x …" then "the coefficient of x cubed" — the second never lit before.
+    const beats = [{ do: [{ do: 'quote', text: 'A' }, { do: 'write' }, { do: 'quote', text: 'B' }] }];
+    expect(quoteOfBeat(beats, 0, 0)).toBeNull();   // the voice has not reached it: nothing lit yet
+    expect(quoteOfBeat(beats, 0, 1)).toBe('A');
+    expect(quoteOfBeat(beats, 0, 2)).toBe('A');
+    expect(quoteOfBeat(beats, 0, 3)).toBe('B');
+    expect(quoteOfBeat(beats, 0, 9)).toBe('B');
+  });
 });
 
 describe('quoteIsShort — which pieces jump out', () => {

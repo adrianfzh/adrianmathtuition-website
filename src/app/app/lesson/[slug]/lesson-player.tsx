@@ -2735,8 +2735,6 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   });
   const [sceneIdx, setSceneIdx] = useState(startStop.si);
   const [step, setStep] = useState(startStop.k);
-  // 🔦 The beat on screen lights a piece of the question card (a question clip only).
-  const quote = clip && question ? quoteOfBeat((scenes[sceneIdx] as { beats?: { do?: { do: string; text?: unknown }[] }[] } | undefined)?.beats, step) : null;
   const [done, setDone] = useState(false);
   const [auto, setAuto] = useState(startAuto);
   const [paused, setPaused] = useState(false);
@@ -2909,6 +2907,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     cardRef, scene, sceneIdx, step, done, pacing, locked: narration.locked, reduced, rate,
     clip: narration.clock, beatClock,
   });
+  // 🔦 The beat on screen lights a piece of the question card (a question clip only) — the latest
+  // quote the voice has reached, so two pieces read in one beat each light at their own words.
+  const quote = clip && question ? quoteOfBeat((scenes[sceneIdx] as { beats?: { do?: { do: string; text?: unknown }[] }[] } | undefined)?.beats, step, fired) : null;
   const board = useMemo(() => {
     if (!hasBeats(scene)) return null;
     const b = boardStateAt(scene, step, fired);

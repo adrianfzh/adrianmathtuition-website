@@ -111,7 +111,12 @@ is not how singapore students speak or how teachers in singapore schools speak)"
   (`quote` with `on`), never at the start of a line that says something else first; a sentence that
   reads two parts lights them in turn ("ten plus k x, times two minus a half x, to the power eight" →
   the expression; "the coefficient of x cubed is zero" → that phrase). The checker refuses a quote
-  without `on`.
+  without `on`. **5 Nov 2026** (Adrian: *"when the narrator first explains the question, the relevant
+  parts in the question should be highlighted to follow the narrator's explanation. this was done for
+  the approved clip, and should be done for all subsequent clips"*): the player used to light only the
+  FIRST quote of a sentence, for the whole sentence — so the second part never lit. Fixed in the player
+  (`lib/question-quote.ts quoteOfBeat` takes how far the voice is): each quote lights at its own `on`
+  and stays until the next one. Every clip's opening walks through the question this way.
 - **Light the small piece the voice names** (Adrian, 4 Nov 2026: *"highlight the powers when narrator
   says it, to draw attention to it"* · *"any ways to draw attention to the parts when narrator is
   talking about it?"*): a power, a base, a top or bottom inside a term lights on its own, at the
