@@ -1261,6 +1261,13 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🧩 Weekly stretch set (SPEC-STRETCH-SET.md, 4 Nov 2026) — the student's set
+    // and their guesses sit behind the session: anonymous GET is 401.
+    timed('portal-stretch', async () => {
+      const r = await fetch(`${base}/api/portal/stretch`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 💡 Method hint (/api/portal/practice/hint, the teaching-knowledge layer,
     // 2026-09-03) — Adrian's method for a question's topic, student-facing on
     // /app/practice. Anonymous GET must be 401, never a method note.

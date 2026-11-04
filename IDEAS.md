@@ -7,6 +7,9 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 🧩 Weekly stretch set (Adrian, 4 Nov 2026: "Yes, build it") — 🔨 BUILT on dev, switched off for students → `SPEC-STRETCH-SET.md`
+Five things a week per student (new costume · stretch · older topic · spot the mistake · guess first). Preview any student on `/admin/stretch`. Open: Adrian's yes to `STRETCH_SET_OPEN_TO_STUDENTS`; the Monday bot line (proposal); approve the waiting spot cards; write the first new-costume questions.
+
 ## 🔍 Review of both repos — 4 Nov 2026 → `docs/REVIEW-2026-11-04.md` — 📐 awaiting Adrian's go
 
 Adrian: *"do a review of the website repo and bot repo, any optimization or improvement works that can be done?"*

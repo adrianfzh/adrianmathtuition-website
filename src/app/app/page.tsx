@@ -25,6 +25,7 @@ import PortalIcon from '@/components/PortalIcon';
 import ExamCountdown from './exam-countdown';
 import { examTitle } from '@/lib/portal-exams';
 import { installCardWindowOpen } from '@/lib/install-prompt';
+import { stretchSetVisible } from '@/lib/portal-beta';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +68,7 @@ export default async function DashboardPage() {
   // streams in via the two <Suspense> islands below and the shell paints
   // immediately after login (Adrian, 2026-08-28: "still taking a bit of time
   // to load initially"). Everything awaited here is fast Supabase.
-  const [todayCards, assignments, counts, passNudge, fixit, tgState] = await Promise.all([
+  const [todayCards, assignments, counts, passNudge, fixit, tgState, stretchOn] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero;
     // gated to the account's subjects (SPEC-PORTAL-V2 §2).
@@ -100,6 +101,9 @@ export default async function DashboardPage() {
     // 📨 Telegram link nudge (8 Sep 2026): 'unlinked' shows the one-tap card;
     // 'unknown' (Airtable down) hides it — never nag someone who may be linked.
     ensureTelegramLinked(account).catch(() => 'unknown' as const),
+    // 🧩 This week's stretch set (SPEC-STRETCH-SET.md) — a link only; the set is
+    // built when the student opens it, never on Home.
+    stretchSetVisible(sid).catch(() => false),
   ]);
   // Only what Adrian sent: the student's own finds (/app/find, source 'find')
   // live in Practice, never under "From Adrian".
@@ -192,6 +196,18 @@ export default async function DashboardPage() {
             </Link>
           )}
         </div>
+      )}
+
+      {/* 🧩 This week's stretch set (SPEC-STRETCH-SET.md) — behind STRETCH_SET_OPEN_TO_STUDENTS. */}
+      {stretchOn && (
+        <Link href="/app/stretch" className="flex items-center gap-3 bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] px-5 py-4 hover:opacity-90 active:scale-[0.99] transition">
+          <span aria-hidden className="text-2xl">🧩</span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-semibold text-navy">This week’s stretch set</span>
+            <span className="block text-[13px] text-slate-500">5 questions that look different from the usual · new every Monday</span>
+          </span>
+          <span className="shrink-0 text-slate-400">›</span>
+        </Link>
       )}
 
       {/* 🎯 Fix-it plan — the targeted remediation lane (SPEC-REMEDIATION.md).

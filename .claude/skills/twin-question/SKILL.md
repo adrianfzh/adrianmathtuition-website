@@ -8,6 +8,8 @@ description: Write OUR OWN twin of one school question in the bank (same sub-ski
 Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic half is
 `scripts/twins/twin.mjs`; the writing is agents you spawn. One run dir per source.
 
+> **Not a twin: a new costume.** A question that changes WHICH quantity is unknown, or swaps a diagram for words, is a *new costume* (`gen_meta.kind = 'costume'`), written by `generate-similar-questions` §New costumes for the 🧩 weekly stretch set (`SPEC-STRETCH-SET.md`). It does not count toward `math_twin_units` and is saved unverified for Adrian's approval.
+
 ## Steps
 
 1. **Pick sources** — `node scripts/twins/twin.mjs queue --level EM --limit 20`

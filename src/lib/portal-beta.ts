@@ -629,6 +629,20 @@ export async function spotErrorVisible(identity?: string | null): Promise<boolea
   return admin && !(await viewingAsStudent());
 }
 
+// 🧩 This week's stretch set (4 Nov 2026, SPEC-STRETCH-SET.md, Adrian: "Yes, build it"):
+// five things a week — a recent topic in a new costume, a stretch question, an older
+// topic, a spot-the-mistake card, and a guess-first prompt — on Home and /app/stretch.
+// ADMIN + the preview student until Adrian has looked at example sets and said yes.
+export const STRETCH_SET_OPEN_TO_STUDENTS = false;
+export async function stretchSetVisible(identity?: string | null): Promise<boolean> {
+  if (STRETCH_SET_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // 🎬 Video extras around the chalk board (docs/LESSONS.md § Video extras, 13 Oct 2026,
 // Adrian: "yes"): Completing the Square opens with a real-life clip and the tutor's
 // hello, and the tutor cheers after a right answer (lib/lesson-extras). ADMIN + the

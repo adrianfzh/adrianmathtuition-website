@@ -26,6 +26,7 @@ function sourceChip(meta: Record<string, unknown>, twinOf: string | null): strin
   if (kind === 'practice-photo') return '📷 Practice photo';
   if (kind === 'find') return '🔍 Find a question';
   if (kind === 'challenge-pilot') return '🔥 Challenge pilot';
+  if (kind === 'costume') return `🎭 New costume${meta.variation === 'unknown-swap' ? ' · unknown swapped' : meta.variation === 'diagram-swap' ? ' · diagram ↔ words' : ''}`;
   if (kind === 'science-twin') return `🧪 Science twin${typeof meta.level_written === 'string' ? ` · ${meta.level_written[0].toUpperCase()}${meta.level_written.slice(1)}` : ''}${typeof meta.pool === 'string' && meta.pool.startsWith('CS_') ? ' · Combined' : ''}`;
   if (kind) return kind;
   return twinOf ? '🌙 top-up twin' : 'generated';
@@ -130,7 +131,7 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
           <button key={d} disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'verify', d); setBusy(false); }}
             className={`text-xs rounded-lg px-3 py-1 ${d === 'Challenging' ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>✓ Approve as {d === 'Challenging' ? 'Challenge' : 'Advanced'}</button>
         ))}
-        {!retired && r.twin_of && !pilot && !r.verified && (
+        {!retired && (r.twin_of || meta.kind === 'costume') && !pilot && !r.verified && (
           <button disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'verify'); setBusy(false); }}
             className="text-xs rounded-lg bg-emerald-600 text-white px-3 py-1 hover:bg-emerald-700">✓ Verify — serve it</button>
         )}

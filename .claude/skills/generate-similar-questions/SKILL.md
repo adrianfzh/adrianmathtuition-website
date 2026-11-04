@@ -28,6 +28,34 @@ each with a verified answer (and worked solution if asked).
 Adrian may also say things like "80% similar" — map: ≥90% → clone, ~70–80% →
 re-skin, ~50% → same-skills, "harder/stretch" → harder.
 
+## New costumes — two variation kinds (Adrian, 4 Nov 2026: "Yes, build it")
+
+For the weekly 🧩 stretch set (`SPEC-STRETCH-SET.md` slot 1): the SAME maths in a new
+costume, so a student learns to recognise a topic when the question does not look like
+the ones they practised. Use on "new costume", "change the unknown", "diagram version",
+"words version", or when filling the stretch set's costume gaps (`/admin/stretch` lists them).
+
+| Kind | `gen_meta.variation` | What changes | What stays |
+|---|---|---|---|
+| **change the unknown** | `unknown-swap` | which quantity is unknown: the source's given becomes the answer and its answer becomes a given ("area → side", "find the angle" → "given the angle, find the length", "find the sum" → "given the sum, find n") | the topic, the relationship being used, the level; about the same marks |
+| **diagram ↔ words** | `diagram-swap` | a word problem becomes a labelled diagram, or a diagram question becomes words only | every number, every relationship, the answer |
+
+Rules for both:
+- **Diagram ↔ words only where the figure can be drawn EXACTLY** — the bot's figure library
+  (`lib/figures/`, verify-then-render, fails closed) or a figure helper that computes every
+  coordinate. **Never an AI-drawn figure for maths** (the house rule: image and video models
+  never draw the maths). No exact figure → do not write a diagram-swap; use unknown-swap.
+- A words version must say everything the diagram showed (no "see figure" left behind).
+- An unknown-swap must have ONE answer (or say how many): check the reversed problem is
+  well-posed (e.g. a side from an area takes the positive root; a sine-rule angle may be ambiguous).
+- The verification gate (step 5) is the same: re-solve blind, recompute in Python, discard on a second fail.
+- Insert (step 7) with `gen_meta = {"kind": "costume", "variation": "unknown-swap" | "diagram-swap", "source_id": <source uuid>}`,
+  `ai_generated = true`, **`verified = false`**. Adrian approves each on `/admin/generated`
+  (🎭 New costume chip → **✓ Verify — serve it**). Only then can the stretch set serve it
+  (`lib/serve-gate.ts`: an unverified AI row never reaches a student).
+- Pick sources from topics students met in the last three weeks (the stretch set looks
+  for a costume question on each student's recent topics first).
+
 ## Pipeline
 
 1. **Get the source.** If a bank reference is given, fetch the full row

@@ -17,7 +17,7 @@ const Md = ({ text, className }: { text: string; className?: string }) => (
   </div>
 );
 
-export default function SpotErrorCard({ payload, revealed = false }: { payload: AutopsyPayload; revealed?: boolean }) {
+export default function SpotErrorCard({ payload, revealed = false, onPick }: { payload: AutopsyPayload; revealed?: boolean; /** The stretch set records the first tap (right or not). */ onPick?: (right: boolean) => void }) {
   const [picked, setPicked] = useState<number | null>(null);
   const wrong = payload.wrong_line - 1;
   const done = revealed || picked !== null;
@@ -37,7 +37,7 @@ export default function SpotErrorCard({ payload, revealed = false }: { payload: 
               <button
                 type="button"
                 disabled={done}
-                onClick={() => setPicked(i)}
+                onClick={() => { setPicked(i); onPick?.(i === wrong); }}
                 className={`w-full text-left flex items-start gap-3 rounded-xl border px-3 py-2 transition-colors ${
                   isWrong ? 'border-rose-300 bg-rose-50'
                     : missed ? 'border-gray-300 bg-gray-50'

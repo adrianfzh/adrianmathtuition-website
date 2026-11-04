@@ -63,6 +63,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | One PART of a question out of syllabus (part marks) — any new surface that reads the bank goes through `lib/part-syllabus.ts` | [`SPEC-PART-SYLLABUS.md`](SPEC-PART-SYLLABUS.md) |
 | Primary 6 / PSLE papers in the bank (level `P6`, maths + science, filenames, the off switch, what is in Dropbox) | [`SPEC-PSLE.md`](SPEC-PSLE.md) |
 | 🔍 Spot the error from real marked mistakes (`/admin/spot-error`, `/app/spot`, `lib/spot-error.ts`) · Notebook 30-day comeback + Explain it back | [`SPEC-SPOT-ERROR.md`](SPEC-SPOT-ERROR.md) |
+| 🧩 Weekly stretch set (`/app/stretch`, `/admin/stretch`, `stretch_sets`, the generator's new-costume kinds) | [`SPEC-STRETCH-SET.md`](SPEC-STRETCH-SET.md) |
 | Telegram `/ws` worksheet menu | [`SPEC-WORKSHEET-MENU.md`](SPEC-WORKSHEET-MENU.md) |
 | School exam tracker (📝 inside Overview's Exams box: scan a school-marked exam, marks lost by topic, exam vs last exam, parent note) — BUILT 15 Oct | [`SPEC-EXAM-TRACKER.md`](SPEC-EXAM-TRACKER.md) |
 | Paid WhatsApp trials (`/trial/pay`, `trial_bookings`, the parent fact sheet, the trial fee off the first bill) | [`SPEC-TRIAL-BOOKING.md`](SPEC-TRIAL-BOOKING.md) |
