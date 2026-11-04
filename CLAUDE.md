@@ -166,6 +166,10 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   - Read every number, label and total on it against where it came from.
   - Say in one line what you checked ("Checked at phone size: totals, labels, nothing cut off").
   - A page that is correct but hard to read is NOT done.
+  - **A fault he sees on his iPad or phone: make it happen in your check BEFORE you fix it**
+    (4 Nov 2026; Adrian, after three iPad fixes in one evening: *"Still refreshes"*). Why: a
+    check that never showed the fault cannot show the fix. Cannot make it happen → say so
+    plainly ("my check could not show the refresh; please try it on your iPad"), never "done".
 - **Fix at the source, keep the renderer's net.** Writers (gce-paper, the sheet worker, the
   marker, the notes miners) write clean content; the renderers also clean what reaches them
   (`lib/render-solutions-pdf.ts` `splitSolution` / `markNotesToCodes`, 29 Sep 2026), so old
