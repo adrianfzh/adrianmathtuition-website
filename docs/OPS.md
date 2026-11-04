@@ -620,6 +620,9 @@ public bucket; INFO is ignored; empty = silence. It sends nothing itself — the
 Report only: nothing here or in the fixer changes a database. Starting list on 4 Nov 2026:
 0 errors · 75 warnings · 17 public tables/folders (maths: subgroups, rubrics, content_snippets,
 sections_meta, technique_tags, question_technique_tags + 10 public buckets; science: 1 bucket).
+Same evening (Adrian: "lock the sub-skill names table") `subgroups` went server-only
+(migrations/2026-11-04-lock-subgroups.sql; the /revise pages and notes tree read it with the server
+key) — next Monday's run counts it as fixed. The leak test now treats a readable `subgroups` as a leak.
 
 ### 💸 `supabase-cost` — daily 05:45 SGT, run by the bot's morning fixer (4 Nov 2026)
 
