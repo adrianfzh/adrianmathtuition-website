@@ -21,9 +21,9 @@ describe('sgtStartOfDayIso', () => {
     const after = new Date('2026-08-20T16:01:00Z');  // 00:01 SGT, 21 Aug
     expect(sgtStartOfDayIso(before)).not.toBe(sgtStartOfDayIso(after));
   });
-  it('the tuition cap is lifted (22 Sep 2026): null = no ceiling; science keeps 2 a day', () => {
+  it('no daily ceiling for tuition maths (22 Sep 2026) or science (4 Nov 2026): null = no ceiling', () => {
     expect(DAILY_SUBMIT_CAP).toBeNull();
-    expect(DAILY_SCIENCE_SUBMIT_CAP).toBe(2);
+    expect(DAILY_SCIENCE_SUBMIT_CAP).toBeNull();
   });
 });
 

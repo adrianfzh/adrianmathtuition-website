@@ -2926,7 +2926,7 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   `subject`, and `schemeUrls` from either family; the subject is `resolveScienceSubject` (any student,
   no enrolment check — the maths gate `resolveHandinSubject` is untouched); the run is stamped
   `paper_subject` = Physics | Chemistry | Biology (`paperSubjectForMarkSubject`; CHECK widened by
-  `migrations/paper_subject_science.sql`). Own daily slot: `countHandinsToday(…, 'science')` =
+  `migrations/paper_subject_science.sql`). Own daily slot (LIFTED 4 Nov 2026, Adrian: "make it like math marking" — `DAILY_SCIENCE_SUBMIT_CAP` = null, no cap and no waiting list, as maths; was): `countHandinsToday(…, 'science')` =
   runs with `subject <> 'math'` (`DAILY_SCIENCE_SUBMIT_CAP`); the bot's `/handin` count is
   maths-only. A science hand-in never spends a stranger's pass meter.
 - **The waiting list (24 Sep 2026, SPEC-PRACTICE-PHOTO §14 — Adrian: "If they upload more than 2,
