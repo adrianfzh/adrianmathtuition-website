@@ -213,6 +213,24 @@ all twelve, plus item 13. The quotes are his words as transcribed. Private — n
     the power needed ("I just need x square, so I don't need x cube"). Use `mark` kind `arc`.
 12. **The final answer is boxed or double-underlined.**
 
+**Required wording — expanding (Adrian, 4 Nov 2026, after watching the remake).** His words, from
+his videos and his notes; the voice says them as written, each with the board as described:
+- **Name the two terms first**: "The first term is p x squared, and the second term is q over x." —
+  each lit as it is said.
+- **ⁿCᵣ is said "6 choose 0"** — never "six C zero". The first time, a note with an arrow under ⁶C₀
+  writes it out: `6 choose 0`.
+- **The first term of the expansion**: "6 choose 0. First term, maximum power, which is 6. Second
+  term, lowest power, which is 0."
+- **Each next term**: "6 choose 1. First term reduce power by 1, second term increase power by 1." —
+  never "falls to" / "rises to". After the third term: "Notice the pattern." Then "plus dot dot dot".
+- **Working each term out ("6 choose 1 is 6, …")**: light THAT term only (its own token), never the
+  whole line — so the simplified line has one token per term too.
+- **Matching the second bracket ("same shape")**: write `\left(px^2+\frac qx\right)^6` and the new
+  bracket one under the other, and light the matching parts as they are said (px² ↔ 2x², q/x ↔ −3/(2x)).
+- **Which term holds x⁶**: say "the third term", never "the x⁶ term is the third"; light the third
+  term ON the expansion line (the board scrolls back to show it), so the student sees where x⁶ comes
+  from — or write that term again beside the working.
+
 **13. Calculator values (Adrian, 1 Nov 2026)** — in the videos he reads values straight off the
 calculator ("7 choose 2 is 21, 2 to the power of 5 is 32"). The clips keep the 31 Oct in-between
 simplification line, and when the voice says such a value: *"highlight the words and put a side note

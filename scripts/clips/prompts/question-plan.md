@@ -53,7 +53,11 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   **Except a Binomial expansion: each `=` line of it stays ONE board line** (Adrian, 1 Nov 2026,
   on a three-line ⁶C₀ / ⁶C₁ / ⁶C₂ expansion: *"can you write the expansion in one line? easier to
   see"*) — one token per term (`\binom{6}{0}(px^2)^6\left(\tfrac qx\right)^0` …, then `+\cdots`);
-  the board shrinks a long line to fit the phone by itself. The simplified line is one line too. The
+  the board shrinks a long line to fit the phone by itself. The simplified line is one line too.
+  **One token per term on BOTH lines** (Adrian, 4 Nov 2026: *"when saying the calculation term by
+  term, highlight that term only"*) — the voice lights one term at a time. When the question then
+  matches a second bracket ("same shape"), plan a line that writes the two brackets one under the
+  other, each part its own token, so the matching parts can be lit side by side. The
   same holds for maths inside an `intro`: a long identity goes on the board as a line, not in the intro.
 - **A result used later is written again where it is used** (31 Oct 2026: two Binomial clips failed
   the look — "talked about but hidden" — because `−224x³` and the long expansion line had scrolled

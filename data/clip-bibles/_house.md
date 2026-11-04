@@ -80,6 +80,27 @@ reads — on every Claude account, because it lives in the repo.
 Quotes are his. Rules a later watch replaced are gone from this list; SPEC-CLIP-PIPELINE.md §8 keeps
 the history.
 
+### Think as the student watching (Adrian, 4 Nov 2026 — binding on every clip)
+
+*"when creating the video, always make sure you think from students point of view, if they can see
+what you are referring to, if they can understand what you are narrating (if required, put on screen
+as well or highlight for further emphasis or clarity), if they can understand your explanation. and
+remember to speak in a way that singaporean students understand > avoid words like "kill" etc (this
+is not how singapore students speak or how teachers in singapore schools speak)"*. For EVERY beat:
+- **Can they see it?** Whatever the voice talks about is on screen at that moment — and lit. When it
+  points back at a line that has scrolled off (where x⁶ came from), the board scrolls back to it or
+  it is written again beside.
+- **Can they follow it?** What is compared is shown side by side ("same shape" → both brackets on
+  the board, one under the other, the matching parts lit).
+- **Light only the piece being said** — one term of a long line, never the whole line.
+- **Say it the way a Singapore maths teacher says it**: "6 choose 2", "first term", "second term",
+  "reduce power", "increase power", "plus dot dot dot", "bring the negative over". Never "kill",
+  "C two", "falls / rises", "flies", slang or American classroom words.
+- **No shortcut words**: "the x⁶ term is the third" → "the x⁶ term is the third term". Full words.
+- **A ✗ note must make sense on its own** (Adrian, 4 Nov 2026, on "✗ Common mistake: x¹⁰ × q/x =
+  qx¹¹": *"i don't understand the pink line"*). Write the wrong step AND the right one, short:
+  `✗ x¹⁰ × q/x ≠ qx¹¹  ✓ = qx⁹`. If it still needs the voice to explain, leave it out.
+
 ### Pace
 - **Explain every part, don't rush** (Herbert Gross: "he explains each part very clearly (he doesn't
   rush)"). Assume the student does not know WHY: each move gets its reason, in its own short sentence.
@@ -209,6 +230,10 @@ never copied into a clip). Habits that hold for every topic: a negative in brack
 negative with you"); "+ ⋯" on an unfinished expansion; never cancel a letter that can be 0 —
 factorise and reject with the reason; a coefficient is the number only, last line
 `∴ coefficient of … = …`; the answer boxed.
+**Copy his WORDS, not only his steps** (Adrian, 4 Nov 2026: *"are you copying the style from my
+videos faithfully?"* — the clip said "six C two" and "falls to power five" where he says "6 choose 2"
+and "first term reduce power"). A topic bible's §6 lists his exact phrases as REQUIRED wording; the
+writer uses them word for word and the reviewer checks them.
 
 ### Values read off the calculator: light, note, 🧮 card (Adrian, 1 Nov 2026)
 

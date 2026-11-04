@@ -108,7 +108,13 @@ You get:
    moving object (an oscillation, a particle) shown only as algebra — the object must be ANIMATED while
    its x–t graph draws out (the `swing` figure), and the unknowns read off that graph (highest point =
    amplitude, one full wave = period) — "that's the most important understanding part".
-21. Anything else in the house rules this clip breaks.
+21. **Adrian, 4 Nov 2026 — the student's view** (`_house.md` §2 "Think as the student watching"):
+   a beat whose subject is not on screen and lit when it is said; a comparison ("same shape") not shown
+   side by side; a whole line lit when only one term is being worked on; words a Singapore teacher would
+   not say ("kill", "six C two", "falls to power five"); a shortcut ("the x⁶ term is the third"); a ✗
+   note a student cannot understand on its own; the topic bible's "Required wording" not used word for
+   word.
+22. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 

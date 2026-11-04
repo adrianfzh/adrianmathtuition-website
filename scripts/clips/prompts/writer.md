@@ -82,6 +82,12 @@ no focus, no clear.
   ("Three terms are enough, so plus dot dot dot.").
 - **No beat opens on a bare letter** — "X to the six term: …" is heard as "Next to the sixth term"
   (1 Nov 2026, 82 % on the voice check). Open with a word: "The X to the six term …".
+- **Think as the student watching** (Adrian, 4 Nov 2026 — `_house.md` §2 "Think as the student
+  watching"): every beat, can they SEE what is said (on screen and lit), FOLLOW it (comparisons side by
+  side), and does it sound like a Singapore maths teacher ("6 choose 2", "reduce power", never "kill",
+  "C two", "falls")? Light only the term being worked on, never the whole line. No shortcut words. A ✗
+  note shows the wrong step AND the right one, or is left out.
+- **The topic bible's "Required wording" is said word for word** — it is Adrian's own phrasing.
 - **One new thing per beat** (two at most) plus at most one pointing mark.
 - **The trap: one plain sentence, at the step where it bites**, with a `circle` on the
   token it is about. Not a warning speech before it.

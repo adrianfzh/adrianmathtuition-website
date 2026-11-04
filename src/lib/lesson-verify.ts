@@ -682,6 +682,9 @@ const FILLER: [RegExp, string][] = [
   [/\b(see\?|see it\?|right\?|simple, right|easy\.|easy marks|that's (it|all it is)\.|just sitting there|you've got this|don't believe me|hmm\b|nothing more\.|no working at all)/i, 'a cheer or a filler line — it explains nothing; cut it'],
   [/\b(as you can see|on the screen|on the board|shown here|look at the screen)\b/i, 'restates the screen — the board already shows it; say what we do and why'],
   // Adrian, 1 Nov 2026: "do not say 'kill'" ("an even power kills the minus").
+  // Adrian, 4 Nov 2026: he says "6 choose 2" and "first term reduce power" — never "six C two" or "falls to power five".
+  [/\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+c\s+(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+|r)\b/i, "says 'six C two' — say 'six choose two', as Adrian does"],
+  [/\b(falls|rises|drops|climbs) to (the )?power\b/i, "say 'first term reduce power by 1' / 'second term increase power by 1', as Adrian does"],
   [/\bkill(s|ed|ing)?\b/i, "says 'kill' — say what happens instead: 'makes it positive', 'makes it zero', 'rules it out'"],
 ];
 

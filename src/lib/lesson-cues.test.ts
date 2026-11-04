@@ -120,6 +120,16 @@ describe('the verifier’s new rules', () => {
     expect(msgs.filter(m => m.where.endsWith('beats[4].say'))).toEqual([]);
     expect(msgs.every(m => m.severity === 'warn')).toBe(true);
   });
+  it("directIssues: 'six C two' and 'falls to power' are flagged; 'six choose two' is not (4 Nov 2026)", () => {
+    const msgs = directIssues(clip([
+      { say: 'Six C two is fifteen on the calculator.', do: [] },
+      { say: 'P X squared falls to power five here.', do: [] },
+      { say: 'Six choose two is fifteen. First term reduce power by one.', do: [] },
+    ]));
+    expect(msgs.filter(m => m.where.endsWith('beats[0].say')).length).toBe(1);
+    expect(msgs.filter(m => m.where.endsWith('beats[1].say')).length).toBe(1);
+    expect(msgs.filter(m => m.where.endsWith('beats[2].say'))).toEqual([]);
+  });
   it("directIssues: 'kill' is flagged (Adrian, 1 Nov 2026), 'skill' is not", () => {
     const msgs = directIssues(clip([
       { say: 'An even power kills the minus.', do: [] },
