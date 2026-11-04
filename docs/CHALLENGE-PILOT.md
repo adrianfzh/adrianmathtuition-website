@@ -33,7 +33,12 @@ for the wrong reason (ugly numbers, long algebra); a wrong difficulty label.
 26 written (13 A Math, 13 E Math), 26/26 passed both blind solves, 6 dropped by the session as
 not hard enough or repeating another, **20 saved hidden**: A Math 9 Challenge + 1 Advanced
 (Nature of Roots / Quadratic Functions, Max–Min, Logarithms); E Math 5 Challenge + 5 Advanced
-(Number Patterns, quadratics in context, Coordinate Geometry). Waiting for Adrian's review.
+(Number Patterns, quadratics in context, Coordinate Geometry).
+**All 20 APPROVED 4 Nov 2026** at the proposed labels — Adrian: *"approve all as you recommend"*
+(18 set by the session, EM-12 and EM-13 by his own Approve taps a few minutes earlier;
+`gen_meta.approved_at/approved_by/approved_label`). All 20 are in `practice_pool` for AM / EM
+students: 14 behind 🔥 Challenge, 6 behind 🔥 Advanced. One fix after review: EM-12's solution
+now opens with "Let D = (0, q)".
 
 ## After approval — how real results check the label
 The nightly `/api/cron/math-practice-difficulty` (SPEC-TWINS §12) moves **Standard ↔ Advanced**
