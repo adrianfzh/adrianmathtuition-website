@@ -190,11 +190,18 @@ const PAGES_SCRIPT = (runId: string) => `<script>
         .catch(function(){});
     };
   }
+  var typesetDone = {};
   function showPage(n){
     var key = String(n), sec = null;
     sections.forEach(function(s){ var on = s.getAttribute('data-page') === key; s.hidden = !on; if (on) sec = s; });
     if (none) none.hidden = !!sec;
     window.scrollTo(0, 0);
+    // The maths of a page is typeset the first time the page is shown (4 Nov 2026) — the
+    // whole paper at load was 17 pages of KaTeX on the iPad before the first one appeared.
+    if (sec && !typesetDone[key]) {
+      typesetDone[key] = true;
+      try { renderMathInElement(sec, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false, strict: false, trust: true }); } catch (e) {}
+    }
     if (!sec || started[key]) return;
     started[key] = true;
     Array.prototype.forEach.call(sec.querySelectorAll('.sol-gen[data-gen]'), function(el){ queue.push(diagramJob(el)); });
@@ -251,9 +258,10 @@ export async function GET(req: NextRequest) {
   if (all) {
     const pageIdxs = Object.keys(sideInfo(run).byPage).map(Number).filter((n) => Number.isInteger(n) && n >= 0).sort((a, b) => a - b);
     const sections: { page: number; title: string; make: string[]; items: SolutionsItem[] }[] = [];
-    // four pages at a time: each one reads the bank
-    for (let i = 0; i < pageIdxs.length; i += 4) {
-      const built = await Promise.all(pageIdxs.slice(i, i + 4).map(async (p) => {
+    // eight pages at a time (was four, 4 Nov 2026 — a 17-page paper took five rounds of
+    // bank reads, 1–2 s before the first byte): each one reads the bank
+    for (let i = 0; i < pageIdxs.length; i += 8) {
+      const built = await Promise.all(pageIdxs.slice(i, i + 8).map(async (p) => {
         const raw = await sideSolutionItems(run, p);
         const kept = await Promise.all(raw.items.map((it) => (it.qnum ? readSideExtras(runId, it.qnum) : Promise.resolve(null))));
         const items = raw.items.map((it, j) => applyExtras(it, kept[j]));
@@ -263,7 +271,7 @@ export async function GET(req: NextRequest) {
       }));
       sections.push(...built.filter((b) => b.items.length));
     }
-    const html = buildSolutionsHTML({ title: run.paper_name || 'This paper', items: [], sections, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + DIAGRAM_ZOOM_SCRIPT() + PAGES_SCRIPT(runId) });
+    const html = buildSolutionsHTML({ title: run.paper_name || 'This paper', items: [], sections, meta: 'Worked solutions', screen: true, screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + DIAGRAM_ZOOM_SCRIPT() + PAGES_SCRIPT(runId) });
     return new NextResponse(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   }
   const raw = await sideSolutionItems(run, page);
@@ -275,7 +283,7 @@ export async function GET(req: NextRequest) {
   const toMake = raw.items.filter((it, i) => it.qnum && !kept[i]).map((it) => it.qnum as string);
   const title = questions.length ? `Page ${page + 1} · Q${questions.join(', Q')}` : `Page ${page + 1}`;
   const html = items.length
-    ? buildSolutionsHTML({ title, items, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + DIAGRAM_SCRIPT(runId) + EXTRAS_SCRIPT(runId, toMake) })
-    : buildSolutionsHTML({ title, items: [], meta: '', screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + '<div class="sol-empty">No question was marked on this page.</div>' });
+    ? buildSolutionsHTML({ title, items, meta: 'Worked solutions', screen: true, screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + DIAGRAM_SCRIPT(runId) + EXTRAS_SCRIPT(runId, toMake) })
+    : buildSolutionsHTML({ title, items: [], meta: '', screen: true, screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + '<div class="sol-empty">No question was marked on this page.</div>' });
   return new NextResponse(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 }

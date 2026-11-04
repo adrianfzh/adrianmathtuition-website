@@ -87,6 +87,23 @@ export function katexInlineHead(): string {
   return cachedHead;
 }
 
+/**
+ * HTML for `<head>` on a SCREEN document (the ✏️ Annotate side panel, 4 Nov 2026): the same
+ * stylesheet, katex.min.js and auto-render, LINKED from the jsDelivr CDN at the installed
+ * version instead of inlined. The inline head is right for a Puppeteer PDF, which must need
+ * nothing over the wire; on the iPad it meant every open of the pen shipped ~700 KB
+ * (twenty base64 fonts + the typesetter) in a `no-store` document — 350 KB gzipped, 5–7 s on
+ * a slow afternoon. Linked, the browser fetches them once and keeps them for a year.
+ */
+export function katexLinkedHead(): string {
+  let version = '0.16.45';
+  try { version = (require('katex/package.json') as { version: string }).version || version; } catch { /* bundled: keep the pinned one */ }
+  const base = `https://cdn.jsdelivr.net/npm/katex@${version}/dist`;
+  return `<link rel="stylesheet" href="${base}/katex.min.css" crossorigin="anonymous">
+<script src="${base}/katex.min.js" crossorigin="anonymous"></script>
+<script src="${base}/contrib/auto-render.min.js" crossorigin="anonymous"></script>`;
+}
+
 /** Inline `<script>` for just before `</body>`: runs auto-render over
  * `document.body` with the house delimiter set, then stamps
  * `window.__katexDone = true` (even on error) so `waitForPageReady` has a

@@ -16,7 +16,7 @@
 import { getBrowser } from '@/lib/generate-pdf';
 import { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine, stepLines, solutionLines, alignView, hasDisplayMath } from '@/lib/solution-readability';
 export { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine };
-import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
+import { katexInlineHead, katexLinkedHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 
 const NAVY = '#1c3a5e';
 const ANSWER_ORANGE = '#843C0C';
@@ -72,6 +72,10 @@ export interface SolutionsInput {
   /** One document for a whole paper (the ✏️ Annotate side panel, 3 Nov 2026): a hidden
    *  <section data-page> per marked page instead of the one list; the page script shows one. */
   sections?: { page: number; title: string; make: string[]; items: SolutionsItem[] }[];
+  /** A document for a browser, not a PDF (4 Nov 2026): KaTeX linked from the CDN (cached)
+   *  instead of inlined, and with `sections` the maths is typeset one page at a time as the
+   *  page script shows it, not the whole paper at load. */
+  screen?: boolean;
 }
 
 function esc(s: string): string {
@@ -256,7 +260,7 @@ export function buildSolutionsHTML(input: SolutionsInput): string {
 <head>
 <meta charset="UTF-8">
 <title>${esc(input.title)} — Solutions</title>
-${katexInlineHead()}
+${input.screen ? katexLinkedHead() : katexInlineHead()}
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
@@ -327,7 +331,7 @@ ${s.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n
 ${input.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n')}
   </ol>`}
 
-${katexAutoRenderScript()}
+${input.screen && input.sections ? '' : katexAutoRenderScript()}
 ${input.extraBody ?? ''}
 </body>
 </html>`;
