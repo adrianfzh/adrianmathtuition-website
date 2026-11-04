@@ -82,11 +82,13 @@ export async function GET(req: NextRequest) {
   }
   const reportedOnly = req.nextUrl.searchParams.get('reported') === '1';
   const pilotOnly = req.nextUrl.searchParams.get('pilot') === '1';
-  const limit = Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 60));
+  // The pilot tab holds a few hundred rows (round 2 = 209): show them all, the ones waiting first.
+  const limit = pilotOnly ? 400 : Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 60));
   const sb = getSupabaseAdmin();
   let q = sb.from('questions').select(COLUMNS).eq('ai_generated', true)
-    .or('twin_of.not.is.null,gen_meta.not.is.null')
-    .order('created_at', { ascending: false }).limit(limit);
+    .or('twin_of.not.is.null,gen_meta.not.is.null');
+  if (pilotOnly) q = q.order('verified', { ascending: true });
+  q = q.order('created_at', { ascending: false }).limit(limit);
   if (reportedOnly) q = q.not('reported_at', 'is', null);
   if (pilotOnly) q = q.eq('gen_meta->>kind', 'challenge-pilot');
   const { data, error } = await q;
