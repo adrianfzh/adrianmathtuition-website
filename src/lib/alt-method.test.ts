@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { altDraftProblems, checkProblems, altServable, altView, type AltDraft, type AltChecks, type AltRow } from './alt-method';
+import { splitAltWorking, altDraftProblems, checkProblems, altServable, altView, type AltDraft, type AltChecks, type AltRow } from './alt-method';
 
 const good: AltDraft = {
   question_id: '142097ff-2167-41c7-a28a-408596b00d0b',
@@ -70,5 +70,15 @@ describe('checkProblems / altServable', () => {
     expect(altView({ ...row, status: 'pending', checks: { ...passed, working_ok: false } }, true)).toBeNull();
     expect(altView({ ...row, status: 'rejected' }, true)).toBeNull();
     expect(altView(row, true)?.waiting).toBeUndefined();
+  });
+});
+
+describe('splitAltWorking', () => {
+  it('splits off the bold Answer line and drops the stars elsewhere', () => {
+    expect(splitAltWorking('**(b)**\n$x = 2$\n**Answer:** $x = 2$')).toEqual({ body: '(b)\n$x = 2$', answer: '$x = 2$' });
+  });
+  it('a plain "Answer:" line works too; no answer line → null', () => {
+    expect(splitAltWorking('$x=1$\nAnswer: $x=1$').answer).toBe('$x=1$');
+    expect(splitAltWorking('$x=1$').answer).toBeNull();
   });
 });

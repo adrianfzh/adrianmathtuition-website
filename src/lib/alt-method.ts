@@ -139,3 +139,19 @@ export function altView(row: AltRow | null | undefined, preview = false): AltVie
     ...(waiting ? { waiting: true } : {}),
   };
 }
+
+/**
+ * The working as the house renderer (components/SolutionText) wants it: the last "**Answer:** …"
+ * line split off (SolutionText prints it as its own bold Answer line), and markdown bold markers
+ * removed from the rest (SolutionText draws part labels like "(b)" bold by itself; it does not read
+ * "**" — the first phone check, 4 Nov 2026, showed the stars).
+ */
+export function splitAltWorking(working: string): { body: string; answer: string | null } {
+  const lines = working.trim().split('\n');
+  let answer: string | null = null;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const m = lines[i].trim().match(/^\*\*\s*Answer:?\s*\*\*:?\s*(.*)$/i) ?? lines[i].trim().match(/^Answer:\s*(.*)$/i);
+    if (m) { answer = m[1].replace(/\*\*/g, '').trim() || null; lines.splice(i, 1); break; }
+  }
+  return { body: lines.map(l => l.replace(/\*\*/g, '')).join('\n').trim(), answer };
+}
