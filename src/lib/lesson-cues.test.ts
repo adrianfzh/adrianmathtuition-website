@@ -162,6 +162,15 @@ describe('the verifier’s new rules', () => {
     sc.steps[0].heading = 'Work out each power';
     expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/repeats the scene heading/);
   });
+  it('clipIssues: a second note under the same line is flagged (4 Nov 2026)', () => {
+    const msgs = clipIssues(clip([
+      { say: 'Multiply x by x to get x squared here.', do: [{ do: 'note', text: 'first note', near: 'a' }] },
+      { say: 'Then add three to the x squared term.', do: [{ do: 'note', text: 'second note', near: 'b' }] },
+      { say: 'Equals sign on the next line of working.', do: [{ do: 'note', text: 'other line', near: 'c' }] },
+    ])).map(m => m.message).join(' | ');
+    expect(msgs).toMatch(/a second note under line 1/);
+    expect(msgs).not.toMatch(/under line 2/);
+  });
   it('narrationIssues: a clip beat of five words or fewer is too short to voice (1 Nov 2026)', () => {
     const msgs = narrationIssues(clip([{ say: 'Plus dot dot dot again.', do: [] }, { say: 'Three terms are enough, so plus dot dot dot.', do: [] }]));
     expect(msgs.filter(m => /too thin/.test(m.message)).map(m => m.where)).toEqual(['scenes[0].beats[0].say']);

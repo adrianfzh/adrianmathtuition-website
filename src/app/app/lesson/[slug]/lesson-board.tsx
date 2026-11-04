@@ -79,8 +79,18 @@ export function offsetRect(el: HTMLElement, container: HTMLElement) {
 // Inline prose with $…$ math — plain strings never enter markdown, so nothing
 // gets accidentally italicised (the practice-flow MathText guard).
 const INLINE_P = { p: ({ children }: { children?: React.ReactNode }) => <>{children}</> };
+// A power typed as Unicode (x¹⁰) in the chalk hand font: its small digits are drawn at different
+// heights, so "x¹⁰" read as "x₁⁰" (Adrian's screenshot, 4 Nov 2026). Runs of them become a real
+// superscript of ordinary digits.
+const SUP_DIGITS: Record<string, string> = { '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁻': '−', '⁺': '+' };
+function withSups(text: string): React.ReactNode {
+  if (!/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]/.test(text)) return text;
+  return text.split(/([⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]+)/).map((part, i) => i % 2
+    ? <sup key={i} className="lsn-sup">{Array.from(part).map(c => SUP_DIGITS[c] ?? c).join('')}</sup>
+    : part);
+}
 export function MathText({ text }: { text: string }) {
-  if (!text.includes('$') && !text.includes('**')) return <>{text}</>;
+  if (!text.includes('$') && !text.includes('**')) return <>{withSups(text)}</>;
   return <MathMarkdown content={text} components={INLINE_P} />;
 }
 

@@ -795,6 +795,19 @@ export function clipIssues(script: LessonScript): Issue[] {
     for (const m of saidNotShown(s, { firstBeatReadsQuestion: i === 0 })) {
       out.push(issue('warn', `${at}.beats[${m.beat}]`, `the voice says "${m.said}" but the board does not show ${m.want} by the end of this beat — write it as it is said`));
     }
+    // Two notes under one line stack: the second sits under the first and its ↑ points at the first
+    // note's words, not its own term (4 Nov 2026, Binomial: "use calculator" under "Power of a power").
+    if (s.type === 'equation-steps') {
+      const lineOf = (id?: string) => id === undefined ? -1 : s.steps.findIndex(st => st.tokens.some(t => t.id === id));
+      const seen = new Map<number, number>();
+      s.beats.forEach((b, k) => b.do.forEach(a => {
+        if (a.do !== 'note') return;
+        const line = lineOf(a.near ?? a.span?.[0]);
+        if (line < 0) return;
+        if (seen.has(line)) out.push(issue('warn', `${at}.beats[${k}]`, `a second note under line ${line + 1} (the first is in beat ${seen.get(line)! + 1}) — its arrow would point at that note; put one note per line, or say it instead`));
+        else seen.set(line, k);
+      }));
+    }
     s.beats.forEach((b, k) => {
       const w = wordCount(b.say);
       words += w;

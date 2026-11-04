@@ -4092,6 +4092,7 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-note-up .lsn-note-arrow { font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
 [data-lsn-clip] .lsn-note-up .katex { font-size: 0.98em; }
 [data-lsn-clip] .lsn-note-up .lsn-note-text { display: inline-block; white-space: nowrap; }
+.lsn-sup { font-size: 0.62em; vertical-align: 0.6em; line-height: 0; }
 [data-lsn-clip] .lsn-note-up.stack .lsn-note-arrow { display: block; width: max-content; }
 [data-lsn-clip] .lsn-note-up.stack .lsn-note-text { display: block; width: max-content; }
 /* A mistake shown on the board (a note starting with ✗): red chalk. */
