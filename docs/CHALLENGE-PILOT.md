@@ -49,7 +49,8 @@ each topics."* Read as: every AM / EM practice topic (≥ 20 questions served) g
   queried it the same evening; the repo treats it as current Sec 3 E Math (`docs/LOWER-SEC-SYLLABUS-SPLIT.md`),
   so Matrices still needed its 3 Challenge questions. Lesson: check a syllabus claim against the repo first.
   **Done the same evening** (Adrian: *"Yes, do Matrices"*): batches 20–21 → 4 saved hidden (B20-01, B20-06,
-  B21-01 Challenge; B20-05 Advanced), waiting for his approval. E Math matrices = build/interpret/multiply,
+  B21-01 Challenge; B20-05 Advanced), **approved 4 Nov 2026** (Adrian: *"Approve all 4"*).
+  Totals: 233 pilot questions, all approved and serving (round 1 20 + round 2 209 + Matrices 4). E Math matrices = build/interpret/multiply,
   no determinants, inverses or Aⁿ patterns.
 - How: 19 batches (14 main + 5 top-up), each = one Opus writer (need + 1 drafts, top-ups need + 2/3) →
   two blind Opus solves → one Opus moderator per pair of batches (key agrees with both blinds, 4049/4052
