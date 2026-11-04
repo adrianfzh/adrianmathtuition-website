@@ -15,7 +15,9 @@
 //              round trip (generate-narration --verify) heard ≥ 85 % of the words.
 //   · look   — data/clip-runs/<slug>/look.json (scripts/clips/look.mjs) passed.
 //   · review — data/clip-runs/<slug>/review.json (scripts/clips/review.mjs, the stand-in for
-//              Adrian) has no "must" note and is newer than the lesson.
+//              Adrian) has no "must" note and is newer than the lesson. When the plan has a
+//              must-say list (scripts/clips/must-say.mjs), the review judged every item and
+//              every item was said; a plan without the list skips this.
 //
 // Writes data/clip-runs/<slug>/gate.json; prints one line per check. Exit 1 if any fails.
 
@@ -23,6 +25,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { ROOT, parseArgs } from '../lessons/shared.mjs';
+import { mustSayItems } from './must-say.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 if (!args._.length) { console.error('usage: node scripts/clips/gate.mjs <slug…> [--voice]'); process.exit(2); }
@@ -88,7 +91,12 @@ for (const slug of args._) {
   const lessonAt = fs.existsSync(path.join(ROOT, 'data/lessons', `${slug}.json`)) ? fs.statSync(path.join(ROOT, 'data/lessons', `${slug}.json`)).mtimeMs : 0;
   if (rv && Date.parse(rv.at) >= lessonAt - 1000) {
     const musts = (rv.findings ?? []).filter(f => f.severity === 'must');
-    put('review', musts.length === 0, `${musts.length} must, ${(rv.findings ?? []).length - musts.length} should · ${rv.frames} frames${musts.length ? ' · ' + musts.map(f => `b${f.beat} ${f.problem}`).join(' | ') : ''}`);
+    // The must-say list: a review made before the list was on the plan never judged it.
+    const must = mustSayItems(plan).map(m => m.say);
+    const judged = JSON.stringify(rv.mustSayItems ?? []) === JSON.stringify(must);
+    const said = must.length ? (rv.mustSay ?? []).filter(m => m.said === true).length : 0;
+    const mustOk = !must.length || judged;
+    put('review', musts.length === 0 && mustOk, `${musts.length} must, ${(rv.findings ?? []).length - musts.length} should · ${rv.frames} frames${must.length ? ` · must-say ${judged ? `${said}/${must.length} said` : 'not judged against this list — run scripts/clips/review.mjs again'}` : ''}${musts.length ? ' · ' + musts.map(f => `b${f.beat} ${f.problem}`).join(' | ') : ''}`);
   } else put('review', false, rv ? 'reviewed before the clip last changed — run scripts/clips/review.mjs again' : 'not reviewed yet (scripts/clips/review.mjs)');
 
   out.pass = Object.values(out.checks).every(c => c.ok);

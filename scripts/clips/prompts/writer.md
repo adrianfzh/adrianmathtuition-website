@@ -88,6 +88,10 @@ no focus, no clear.
   "C two", "falls")? Light only the term being worked on, never the whole line. No shortcut words. A ✗
   note shows the wrong step AND the right one, or is left out.
 - **The topic bible's "Required wording" is said word for word** — it is Adrian's own phrasing.
+- **Every `mustSay` item of the plan is said** (4 Nov 2026, house rules §2 "The must-say list") — its
+  meaning, in the voice, at the step where it belongs, in the house style (one plain sentence; the word
+  limits still hold). The stand-in reviewer checks each one and sends the clip back naming any it
+  cannot hear. A plan without `mustSay` has nothing extra to say.
 - **Pointing back at a line that has scrolled away = a beat of its own** ("Look back at the expansion.
   The x to the six is in the third term.") that writes nothing and only lights the piece on that old
   line — the board scrolls back to it. Write the next line in the NEXT beat.

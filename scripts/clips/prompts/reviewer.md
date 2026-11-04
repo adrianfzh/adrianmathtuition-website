@@ -118,6 +118,17 @@ You get:
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?
 
+## The must-say list (only when the clip has one — 4 Nov 2026)
+
+Some clips end with **"The must-say list"**: 1–3 things the plan says the narration MUST say for
+THIS question (the trap, why the first move is the move, a property that must be named). Judge each
+item on its own: is its MEANING said in the voice (or written in a margin note), clearly enough that a
+student hears it? Other words for the same idea count; a hint of it, or the idea on the board but never
+said or explained, does not. The pre-check line under an item only reports whether some key words
+appear — a hint, never the verdict: judge the meaning. Give one entry per item in `mustSay` (below).
+Do not also list a missing item in `findings` — the code turns each `"said": false` into a must.
+No list → leave `mustSay` out.
+
 ## Output — JSON only, no prose around it
 
 ```json
@@ -125,7 +136,10 @@ Judge as a student who does NOT already know the topic: would they follow each s
   "findings": [
     { "beat": 3, "rule": "said = shown", "severity": "must" | "should",
       "problem": "one plain sentence: what a student would miss or be confused by",
-      "fix": "one plain sentence: exactly what to add or change on the board / in the voice" } ] }
+      "fix": "one plain sentence: exactly what to add or change on the board / in the voice" } ],
+  "mustSay": [ { "item": 1, "said": true | false, "beat": 12,
+      "quote": "the words that say it (when said)",
+      "why": "when not said: one plain sentence on what is missing" } ] }
 ```
 
 - `beat` is 1-based (the first beat is 1). `must` = Adrian would send it back; `should` = he might.

@@ -349,5 +349,25 @@
         }
       ]
     }
+  ],
+  "mustSay": [
+    {
+      "say": "a is the highest value of x because sin nt always lies between −1 and 1.",
+      "keys": [
+        "between negative one and one"
+      ]
+    },
+    {
+      "say": "One full wave of the graph is one oscillation, and for sin nt one wave takes 2π/n, so 2π/n = 6.",
+      "keys": [
+        "two pi over n"
+      ]
+    },
+    {
+      "say": "At A, x = 60, so sin(πt/3) = 1: that is the value the acceleration needs.",
+      "keys": [
+        "is one"
+      ]
+    }
   ]
 }

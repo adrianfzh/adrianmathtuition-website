@@ -39,7 +39,8 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   "question_id": "<id>", "bible": "data/clip-bibles/<file>.md",
   "answer": { "bank": "<the bank's answer, VERBATIM>", "facts": ["x = 12"], "display": "x = 12" },
   "lines": [ { "tokens": [{"tex": "…", "id": "…"}], "checks": [ … ] } ],
-  "outline": [ "Read the question (intro on the board).", "The plan first: …", "…" ] }
+  "outline": [ "Read the question (intro on the board).", "The plan first: …", "…" ],
+  "mustSay": [ { "say": "<one plain sentence>", "keys": ["<spoken words>"] } ] }
 ```
 
 - **A clip is ONE board — never `boards`, never `"board"` on a line** (Adrian, 16–17 Oct 2026:
@@ -86,6 +87,17 @@ Never refuse because it is hard. Never invent a check that does not prove the li
 - `outline`: the order of ideas for the writer, one line each; the second item is the plan
   (the aim, in a sentence); name the rule used beside each line; name the trap and the line it
   bites on.
+- **`mustSay`: the 1–3 things the narration MUST say for THIS question** (Adrian, 4 Nov 2026 — the
+  clip's "must keep" list; house rules §2 "The must-say list"). Pick only what a student would lose
+  marks or understanding without: the trap students fall into HERE, WHY the first move is the move,
+  a property that must be named (sin lies between −1 and 1; x + 1 > 0 since x > −1). Take them from
+  the topic bible (its traps and "Required wording"), the house rules and the question itself. Each
+  `say` is ONE plain sentence. `keys`: 1–3 short runs of words the voice will SAY when it says the
+  item, written as spoken ("negative one", "two pi over n", "never touches") — a cheap pre-check, not
+  the judge. Every item must also be in the outline at the step where it is said. Not a list of every
+  step: three at most, and fewer is fine. **One point per item, nothing tacked on** (4 Nov 2026, the
+  first test: "At A, x = 60, so sin = 1 — we do not need to find t" failed an approved clip on the
+  tacked-on half, which that clip rightly keeps in a 💡 drop-down): a side remark is not a must.
 
 ## Checks — every line has at least one, in sympy syntax (never TeX)
 

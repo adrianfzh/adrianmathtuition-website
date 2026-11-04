@@ -6,6 +6,13 @@
 // after it passes.
 //
 //   node scripts/clips/review.mjs <slug | lesson.json> [--frames <dir>] [--no-frames] [--model id] [--out file]
+//                                  [--prompt-out file] [--reply file]
+//
+// The must-say list (4 Nov 2026, scripts/clips/must-say.mjs): when the plan
+// (data/clip-plans/<slug>.json) has `mustSay`, the reviewer judges each item — said or not — and an
+// item not said is a "must" naming it. A plan without the list is reviewed exactly as before.
+// --prompt-out writes the reviewer's whole brief to a file and stops (no API call), so a plan-billed
+// agent can be the reviewer; --reply reads that agent's JSON reply and scores it the same way.
 //
 // Frames default to look.mjs's folder (<tmp>/clip-look/<slug>) when it exists. Writes
 // data/clip-runs/<slug>/review.json (or --out) and prints the findings. Exit 1 on "fix".
@@ -15,6 +22,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { ROOT, loadTs, parseArgs } from '../lessons/shared.mjs';
+import { mustSayItems, precheck, mustSayFindings } from './must-say.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const target = args._[0];
@@ -23,6 +31,10 @@ const file = target.endsWith('.json') ? path.resolve(target) : path.join(ROOT, '
 const lesson = JSON.parse(fs.readFileSync(file, 'utf8'));
 const slug = lesson.slug ?? path.basename(file, '.json');
 const MODEL = String(args.model || 'claude-opus-5-5');
+const planFile = path.join(ROOT, 'data/clip-plans', `${slug}.json`);
+const plan = fs.existsSync(planFile) ? JSON.parse(fs.readFileSync(planFile, 'utf8')) : null;
+const MUST = mustSayItems(plan);
+const pre = precheck(MUST, lesson);
 
 const { boardTextAfter } = await loadTs('src/lib/clip-said-shown.ts');
 const { boardStateAt } = await loadTs('src/lib/lesson-beats.ts');
@@ -84,30 +96,53 @@ function frames() {
 const rules = fs.readFileSync(path.join(ROOT, 'data/clip-bibles/_house.md'), 'utf8');
 const brief = fs.readFileSync(path.join(ROOT, 'scripts/clips/prompts/reviewer.md'), 'utf8');
 const imgs = frames();
+// The must-say list, with the pre-check's hints (keys not found in the words) — the reviewer judges.
+const mustBlock = MUST.length ? `\n\n---\n\n# The must-say list (from the plan — judge EVERY item, see "The must-say list" in your brief)\n\n${pre.map(p => `${p.item}. ${p.say}${p.keys.length ? `\n   pre-check (key words, a hint only): ${p.missing.length ? `NOT found: ${p.missing.map(k => `"${k}"`).join(', ')}` : 'all found'}` : ''}`).join('\n')}` : '';
 const content = [
-  { type: 'text', text: `${brief}\n\n---\n\n# The house rules\n\n${rules}\n\n---\n\n# The clip: ${lesson.title} (${lesson.level} ${lesson.topic})\n\nThe question (shown above the clip): ${lesson.question ?? '(none)'}\n\n${storyboard()}` },
+  { type: 'text', text: `${brief}\n\n---\n\n# The house rules\n\n${rules}\n\n---\n\n# The clip: ${lesson.title} (${lesson.level} ${lesson.topic})\n\nThe question (shown above the clip): ${lesson.question ?? '(none)'}\n\n${storyboard()}${mustBlock}` },
   ...(imgs.length ? [{ type: 'text', text: `\n\n${imgs.length} phone screenshots follow, in order; each is named <n>-b<beat>-<action>.` }] : []),
   ...imgs.flatMap(im => [{ type: 'text', text: im.name }, { type: 'image', source: { type: 'base64', media_type: 'image/png', data: im.data } }]),
   { type: 'text', text: '\n\nGive your notes as the JSON object, nothing else.' },
 ];
 
-const key = (process.env.ANTHROPIC_API_KEY || '').replace(/^["']|["']$/g, '').trim();
-if (!key) { console.error('ANTHROPIC_API_KEY is not set (source .env.local)'); process.exit(2); }
-const res = await fetch('https://api.anthropic.com/v1/messages', {
-  method: 'POST',
-  headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-  body: JSON.stringify({ model: MODEL, max_tokens: 16000, messages: [{ role: 'user', content }] }),
-});
-const j = await res.json();
-if (!res.ok) { console.error(`review: ${res.status} ${JSON.stringify(j).slice(0, 400)}`); process.exit(2); }
-const text = (j.content ?? []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+if (MUST.length) for (const p of pre) console.log(`   must-say ${p.item}: ${p.keys.length ? (p.missing.length ? `key words not found: ${p.missing.join(', ')}` : 'key words found') : 'no key words'} — ${p.say}`);
+
+// --prompt-out: the brief as text (frames listed by path, for an agent to open) — no API call.
+if (args['prompt-out']) {
+  const dir = args.frames ? path.resolve(String(args.frames)) : path.join(os.tmpdir(), 'clip-look', slug);
+  const txt = content.filter(c => c.type === 'text').map(c => c.text).join('\n') + (imgs.length ? `\n\nThe screenshots are files in ${dir}: ${imgs.map(im => im.name).join(', ')}` : '');
+  fs.writeFileSync(path.resolve(String(args['prompt-out'])), txt);
+  console.log(`prompt written: ${args['prompt-out']} (${txt.length} chars, ${imgs.length} frames listed)`);
+  process.exit(0);
+}
+
+let text, j = {};
+if (args.reply) text = fs.readFileSync(path.resolve(String(args.reply)), 'utf8');
+else {
+  const key = (process.env.ANTHROPIC_API_KEY || '').replace(/^["']|["']$/g, '').trim();
+  if (!key) { console.error('ANTHROPIC_API_KEY is not set (source .env.local)'); process.exit(2); }
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({ model: MODEL, max_tokens: 16000, messages: [{ role: 'user', content }] }),
+  });
+  j = await res.json();
+  if (!res.ok) { console.error(`review: ${res.status} ${JSON.stringify(j).slice(0, 400)}`); process.exit(2); }
+  text = (j.content ?? []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+}
 const m = text.match(/\{[\s\S]*\}/);
 let review;
 try { review = JSON.parse(m ? m[0] : text); } catch { console.error('review: no JSON in the reply:\n' + text.slice(0, 800)); process.exit(2); }
 
+// The must-say list: each item not said (or not judged) is a must, named, whatever the model's own
+// findings say — the code holds the line, the model only judges "said or not".
+if (MUST.length) {
+  review.findings = [...(review.findings ?? []).filter(f => f.rule !== 'must say'), ...mustSayFindings(MUST, review.mustSay)];
+  review.mustSayItems = MUST.map(m => m.say);
+}
 // The verdict follows the notes: a "must" sends it back, "should"s alone do not.
 review.verdict = (review.findings ?? []).some(f => f.severity === 'must') ? 'fix' : 'pass';
-const record = { slug, at: new Date().toISOString(), model: MODEL, frames: imgs.length, usage: j.usage, ...review };
+const record = { slug, at: new Date().toISOString(), model: args.reply ? `reply:${path.basename(String(args.reply))}` : MODEL, frames: imgs.length, usage: j.usage, ...review };
 const outFile = args.out ? path.resolve(String(args.out)) : path.join(ROOT, 'data/clip-runs', slug, 'review.json');
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, JSON.stringify(record, null, 1) + '\n');

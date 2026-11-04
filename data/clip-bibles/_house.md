@@ -109,6 +109,21 @@ is not how singapore students speak or how teachers in singapore schools speak)"
   qx¹¹": *"i don't understand the pink line"*). Write the wrong step AND the right one, short:
   `✗ x¹⁰ × q/x ≠ qx¹¹  ✓ = qx⁹`. If it still needs the voice to explain, leave it out.
 
+### The must-say list (Adrian, 4 Nov 2026 — every new question clip)
+
+After a video on AI short-drama pipelines that keep a "must keep" list so the key moments are never
+cut, Adrian said yes to the clip version. The bibles cover a topic's traps in general; nothing checked
+them per question. Now:
+- **The plan names 1–3 things the voice MUST say for THIS question** (`mustSay` in
+  `data/clip-plans/<slug>.json`): the trap students fall into here, WHY the first move is the move, a
+  property that must be named. One plain sentence each, taken from the topic bible, these rules and the
+  question. Three at most — not every step.
+- **The writer says each one**, in its meaning, at the step where it belongs, inside the word limits.
+- **The stand-in reviewer judges each one** (`scripts/clips/review.mjs`): an item not said is a
+  "must" that names it, and the gate fails until it is said. A few key words per item are a cheap
+  pre-check (`scripts/clips/must-say.mjs`) — a hint to the reviewer, never the verdict.
+- **A plan without the list** (every clip made before 4 Nov 2026) is checked exactly as before.
+
 ### Pace
 - **Explain every part, don't rush** (Herbert Gross: "he explains each part very clearly (he doesn't
   rush)"). Assume the student does not know WHY: each move gets its reason, in its own short sentence.

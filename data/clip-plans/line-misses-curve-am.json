@@ -235,5 +235,27 @@
         }
       ]
     }
+  ],
+  "mustSay": [
+    {
+      "say": "Since x > −1, x + 1 is positive, so −2/(x + 1) is negative and y is always less than 4.",
+      "keys": [
+        "greater than zero",
+        "less than four"
+      ]
+    },
+    {
+      "say": "c = 4 is allowed because the curve never reaches y = 4 — it only gets closer and closer.",
+      "keys": [
+        "never touches",
+        "allowed"
+      ]
+    },
+    {
+      "say": "We use long division first because the question asks for the form a + b/(x + 1).",
+      "keys": [
+        "long division"
+      ]
+    }
   ]
 }
