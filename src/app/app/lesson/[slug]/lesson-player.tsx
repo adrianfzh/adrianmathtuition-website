@@ -4093,6 +4093,8 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-note-up .katex { font-size: 0.98em; }
 [data-lsn-clip] .lsn-note-up .lsn-note-text { display: inline-block; white-space: nowrap; }
 .lsn-sup { font-size: 0.7em; vertical-align: 0.42em; line-height: 0; margin-left: 0.04em; }
+/* A note with a raised number has room for it under the ↑ (4 Nov 2026: the ↑ sat on the ² of x²). */
+[data-lsn-clip] .lsn-note-up .lsn-note-text:has(.lsn-sup) { padding-top: 0.35em; }
 [data-lsn-clip] .lsn-note-up.stack .lsn-note-arrow { display: block; width: max-content; }
 [data-lsn-clip] .lsn-note-up.stack .lsn-note-text { display: block; width: max-content; }
 /* A mistake shown on the board (a note starting with ✗): red chalk. */
