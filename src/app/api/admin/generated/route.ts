@@ -10,7 +10,10 @@
 // ?bank=science (5 Oct 2026) → the SCIENCE bank's twins (school AdrianMath, exam_type Twin,
 //   written by the Fly worker's science-twins lane, SPEC-TWINS §11). Same row shape; a science
 //   row has no report/retire columns, so Retire there = practice_hidden + verified=false.
-// POST { id, action: 'restore' | 'retire' | 'verify', bank? }
+// ?pilot=1 (4 Nov 2026) → only the Challenge pilot rows (gen_meta.kind 'challenge-pilot': AI-written
+//   Advanced/Challenge questions, saved unverified so no student sees one until Adrian approves it).
+// POST { id, action: 'restore' | 'retire' | 'verify', bank?, difficulty? }
+//   difficulty ('Advanced' | 'Challenging', maths only, with verify) = the tier Adrian approves it at
 //   verify  = Adrian's read of a twin: verified=true (SPEC-TWINS §7 — the serving doors refuse an unverified ai_generated row)
 //   restore = clear the report so it can be served/seeded again
 //   retire  = set deleted_at (never served, never a seed; the row stays for the ledger)
@@ -78,12 +81,14 @@ export async function GET(req: NextRequest) {
     } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
   }
   const reportedOnly = req.nextUrl.searchParams.get('reported') === '1';
+  const pilotOnly = req.nextUrl.searchParams.get('pilot') === '1';
   const limit = Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 60));
   const sb = getSupabaseAdmin();
   let q = sb.from('questions').select(COLUMNS).eq('ai_generated', true)
     .or('twin_of.not.is.null,gen_meta.not.is.null')
     .order('created_at', { ascending: false }).limit(limit);
   if (reportedOnly) q = q.not('reported_at', 'is', null);
+  if (pilotOnly) q = q.eq('gen_meta->>kind', 'challenge-pilot');
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const rows = (data ?? []) as GeneratedRow[];
@@ -115,7 +120,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => null) as { id?: string; action?: string; bank?: string } | null;
+  const body = await req.json().catch(() => null) as { id?: string; action?: string; bank?: string; difficulty?: string } | null;
   const id = typeof body?.id === 'string' ? body.id : '';
   const action = body?.action;
   if (!id || (action !== 'restore' && action !== 'retire' && action !== 'verify')) return NextResponse.json({ error: 'id + action (restore|retire|verify) required' }, { status: 400 });
@@ -130,7 +135,7 @@ export async function POST(req: NextRequest) {
   const sb = getSupabaseAdmin();
   const patch = action === 'restore'
     ? { reported_at: null, reported_by: null, report_reason: null, deleted_at: null }
-    : action === 'verify' ? { verified: true }
+    : action === 'verify' ? (body?.difficulty === 'Advanced' || body?.difficulty === 'Challenging' ? { verified: true, difficulty: body.difficulty } : { verified: true })
     : { deleted_at: new Date().toISOString(), verified: false };
   const { error } = await sb.from('questions').update(patch).eq('id', id).eq('ai_generated', true);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

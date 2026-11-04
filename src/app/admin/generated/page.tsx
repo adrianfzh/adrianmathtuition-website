@@ -25,6 +25,7 @@ function sourceChip(meta: Record<string, unknown>, twinOf: string | null): strin
   if (kind === 'gce-set') return `📚 Set ${meta.set ?? '?'} · ${meta.key ?? ''}${meta.slot != null ? ` slot ${meta.slot}` : ''}`;
   if (kind === 'practice-photo') return '📷 Practice photo';
   if (kind === 'find') return '🔍 Find a question';
+  if (kind === 'challenge-pilot') return '🔥 Challenge pilot';
   if (kind === 'science-twin') return `🧪 Science twin${typeof meta.level_written === 'string' ? ` · ${meta.level_written[0].toUpperCase()}${meta.level_written.slice(1)}` : ''}${typeof meta.pool === 'string' && meta.pool.startsWith('CS_') ? ' · Combined' : ''}`;
   if (kind) return kind;
   return twinOf ? '🌙 top-up twin' : 'generated';
@@ -41,13 +42,17 @@ function partAnswers(parts: unknown, depth = 0): string {
   }).filter(Boolean).join('\n\n');
 }
 
-function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action: 'restore' | 'retire' | 'verify') => Promise<void> }) {
+type Action = 'restore' | 'retire' | 'verify';
+const HOW: Record<string, string> = { combine: 'combines two topics', unscaffold: 'scaffolding removed', reverse: 'reversed direction', unfamiliar: 'unfamiliar setting' };
+
+function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action: Action, difficulty?: string) => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const retired = Boolean(r.deleted_at);
   const reported = Boolean(r.reported_at);
   const meta = r.gen_meta ?? {};
   const reskin = meta.reskin === true || Boolean(r.twin_of);
+  const pilot = meta.kind === 'challenge-pilot';
   // The bank's own renderer: stem images + text + the parts tree with marks.
   const bq: BankQuestion = {
     id: r.id, question_text: r.question_text, parts: Array.isArray(r.parts) ? (r.parts as BankPart[]) : null,
@@ -65,9 +70,10 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
         {r.topics?.length ? <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.topics.join(" · ")}</span> : null}
         {typeof meta.subgroup === 'string' && <span className="rounded-full bg-sky-50 text-sky-700 px-2 py-0.5">{meta.subgroup}</span>}
         {r.total_marks != null && <span>[{r.total_marks}]</span>}
-        {r.twin_of && (r.verified ? <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5">✓ verified</span> : <span className="rounded-full bg-amber-50 text-amber-700 px-2 py-0.5">unverified — not served</span>)}
+        {(r.twin_of || pilot) && (r.verified ? <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5">✓ verified</span> : <span className="rounded-full bg-amber-50 text-amber-700 px-2 py-0.5">unverified — not served</span>)}
         <span className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5">{sourceChip(meta, r.twin_of)}</span>
-        <span className={`rounded-full px-2 py-0.5 ${reskin ? 'bg-violet-50 text-violet-700' : 'bg-amber-50 text-amber-700'}`}>{reskin ? 're-skin' : 'from scratch'}</span>
+        {pilot ? <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5">{r.verified ? (r.difficulty === 'Challenging' ? 'Challenge' : r.difficulty) : `proposed: ${String(meta.proposed_label ?? '')}`}</span>
+          : <span className={`rounded-full px-2 py-0.5 ${reskin ? 'bg-violet-50 text-violet-700' : 'bg-amber-50 text-amber-700'}`}>{reskin ? 're-skin' : 'from scratch'}</span>}
         {r.student && <span>for <b>{r.student}</b></span>}
         {retired && <span className="rounded-full bg-neutral-200 px-2 py-0.5">retired</span>}
       </div>
@@ -83,6 +89,13 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
         )}
         <MathMarkdown content={questionMarkdown(bq) || '(no text)'} />
       </div>
+      {pilot && (
+        <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900 space-y-1">
+          <div><b>Key step:</b> <MathMarkdown content={String(meta.key_step ?? '—')} /></div>
+          <div className="text-xs text-amber-800">Harder because: {HOW[String(meta.harder_by)] ?? String(meta.harder_by ?? '—')}{typeof meta.harder_how === 'string' ? ` — ${meta.harder_how}` : ''}</div>
+          {Array.isArray(meta.methods) && <div className="text-xs text-amber-800">Methods: {(meta.methods as string[]).join(' · ')}</div>}
+        </div>
+      )}
       <button onClick={() => setOpen(o => !o)} className="mt-3 text-xs text-neutral-500 hover:text-neutral-800">{open ? '▾ Hide' : '▸ Solution + seed'}</button>
       {open && (
         <div className="mt-2 space-y-3 text-sm">
@@ -96,10 +109,13 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
           </div>
           <div className="rounded-lg bg-neutral-50 p-3">
             <div className="text-[11px] uppercase tracking-wider text-neutral-400 mb-1">
-              Seed {r.seed ? `· ${[r.seed.school, r.seed.year, r.seed.paper].filter(Boolean).join(' ')}${r.seed.total_marks != null ? ` [${r.seed.total_marks}]` : ''}` : '· none (written from scratch)'}
+              {pilot && typeof meta.seed_ref === 'string' ? `Shape taken from · ${meta.seed_ref}` : <>Seed {r.seed ? `· ${[r.seed.school, r.seed.year, r.seed.paper].filter(Boolean).join(' ')}${r.seed.total_marks != null ? ` [${r.seed.total_marks}]` : ''}` : '· none (written from scratch)'}</>}
             </div>
             {r.seed && <MathMarkdown content={r.seed.question_text || ''} />}
           </div>
+          {pilot && typeof meta.mark_scheme === 'string' && (
+            <div className="rounded-lg bg-neutral-50 p-3"><div className="text-[11px] uppercase tracking-wider text-neutral-400 mb-1">Mark scheme (for you only)</div><MathMarkdown content={meta.mark_scheme} /></div>
+          )}
           {typeof meta.gates === 'object' && meta.gates && (
             <div className="text-xs text-neutral-500">Gates: <code>{JSON.stringify(meta.gates)}</code></div>
           )}
@@ -110,7 +126,11 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
           <button disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'restore'); setBusy(false); }}
             className="text-xs rounded-lg border border-emerald-300 text-emerald-700 px-3 py-1 hover:bg-emerald-50">Restore</button>
         )}
-        {!retired && r.twin_of && !r.verified && (
+        {!retired && pilot && !r.verified && (['Challenging', 'Advanced'] as const).map(d => (
+          <button key={d} disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'verify', d); setBusy(false); }}
+            className={`text-xs rounded-lg px-3 py-1 ${d === 'Challenging' ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>✓ Approve as {d === 'Challenging' ? 'Challenge' : 'Advanced'}</button>
+        ))}
+        {!retired && r.twin_of && !pilot && !r.verified && (
           <button disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'verify'); setBusy(false); }}
             className="text-xs rounded-lg bg-emerald-600 text-white px-3 py-1 hover:bg-emerald-700">✓ Verify — serve it</button>
         )}
@@ -133,10 +153,10 @@ export default function GeneratedPage() {
   const [loading, setLoading] = useState(false);
   const [reportedOnly, setReportedOnly] = useState(false);
   // Maths | Science (5 Oct 2026): the science bank's twins live in the science project
-  const [bank, setBank] = useState<'math' | 'science' | 'figures'>(() => {
+  const [bank, setBank] = useState<'math' | 'pilot' | 'science' | 'figures'>(() => {
     if (typeof window === 'undefined') return 'math';
     const sp = new URLSearchParams(window.location.search);
-    return sp.get('tab') === 'figures' ? 'figures' : sp.get('bank') === 'science' ? 'science' : 'math';
+    return sp.get('tab') === 'figures' ? 'figures' : sp.get('tab') === 'pilot' ? 'pilot' : sp.get('bank') === 'science' ? 'science' : 'math';
   });
   // 🖼 Figures we need (5 Oct 2026): what twins needed that no figure family draws, by shape
   type NeedGroup = { shape: string; count: number; ready: boolean; banks: string[]; subjects: string[]; topics: string[]; examples: string[]; newThisWeek: number };
@@ -151,7 +171,7 @@ export default function GeneratedPage() {
         if (!f.ok) throw new Error(fd.error || `HTTP ${f.status}`);
         setNeeds(fd); setRows([]); return;
       }
-      const qs = bank === 'science' ? '?bank=science' : reportedOnly ? '?reported=1' : '';
+      const qs = bank === 'science' ? '?bank=science' : bank === 'pilot' ? '?pilot=1' : reportedOnly ? '?reported=1' : '';
       const r = await fetch(`/api/admin/generated${qs}`);
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
@@ -163,8 +183,8 @@ export default function GeneratedPage() {
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
 
-  async function onAction(id: string, action: 'restore' | 'retire' | 'verify') {
-    const r = await fetch('/api/admin/generated', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, bank }) });
+  async function onAction(id: string, action: Action, difficulty?: string) {
+    const r = await fetch('/api/admin/generated', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, bank: bank === 'science' ? 'science' : undefined, difficulty }) });
     if (!r.ok) { setErr(`${action} failed: HTTP ${r.status}`); return; }
     await load();
   }
@@ -197,10 +217,10 @@ export default function GeneratedPage() {
           A student’s report stops a question being served or used as a seed; <b>Restore</b> clears it, <b>Retire</b> removes it for good.
         </p>
         <div className="flex gap-2 px-1">
-          {(['math', 'science', 'figures'] as const).map(b => (
+          {(['math', 'pilot', 'science', 'figures'] as const).map(b => (
             <button key={b} onClick={() => setBank(b)}
               className={`text-sm rounded-full px-3 py-1 border ${bank === b ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-700 border-neutral-300'}`}>
-              {b === 'math' ? 'Maths' : b === 'science' ? '🧪 Science twins' : '🖼 Figures we need'}
+              {b === 'math' ? 'Maths' : b === 'pilot' ? '🔥 Challenge pilot' : b === 'science' ? '🧪 Science twins' : '🖼 Figures we need'}
             </button>
           ))}
         </div>
@@ -225,6 +245,9 @@ export default function GeneratedPage() {
               </div>
             )}
           </div>
+        )}
+        {bank === 'pilot' && (
+          <p className="text-sm text-neutral-600 px-1">Harder questions we wrote (Nov 2026 pilot). Each passed two separate blind solves and a syllabus check. <b>None is shown to students</b> until you tap Approve — pick Challenge or Advanced. <b>Retire</b> throws one away.</p>
         )}
         {bank === 'figures' && (
           <div className="space-y-2 px-1">
