@@ -47,13 +47,37 @@ for (const it of items) {
   const { data: exists } = await sb.from('questions').select('id').eq('gen_meta->>pilot_item', item).limit(1);
   if (exists?.length) { console.log(`${it.cid}: already saved (${exists[0].id})`); continue; }
   const seed = typeof it.seed_id === 'string' && /^[0-9a-f-]{36}$/.test(it.seed_id) ? it.seed_id : null;
+  // Filing: explicit `subgroups` win; else the seed's filings inside THIS question's first topic;
+  // else the busiest sub-skill of that topic (so an approved question lands under the right Practice topic).
   let filing = [];
+  const topic = it.topics?.[0];
+  const { data: topicSgs } = await sb.from('subgroups').select('id').eq('level', it.level).eq('topic', topic);
+  const inTopic = new Set((topicSgs ?? []).map((r) => r.id));
   if (seed) {
     const { data } = await sb.from('question_subgroups').select('subgroup_id, is_primary').eq('question_id', seed);
-    filing = (data ?? []).filter((f) => f.is_primary);
-    if (!filing.length) filing = (data ?? []).slice(0, 1);
+    const mine = (data ?? []).filter((f) => inTopic.has(f.subgroup_id));
+    filing = mine.filter((f) => f.is_primary).length ? mine.filter((f) => f.is_primary) : mine.slice(0, 1);
+  }
+  if (!filing.length && inTopic.size) {
+    let best = null, bestN = -1;
+    for (const id of inTopic) {
+      const { count } = await sb.from('question_subgroups').select('question_id', { count: 'exact', head: true }).eq('subgroup_id', id);
+      if ((count ?? 0) > bestN) { bestN = count ?? 0; best = id; }
+    }
+    if (best != null) filing = [{ subgroup_id: best, is_primary: true }];
   }
   if (Array.isArray(it.subgroups) && it.subgroups.length) filing = it.subgroups.map((id, i) => ({ subgroup_id: id, is_primary: i === 0 }));
+  // A draft sometimes carries a literal backslash-n where a line break was meant (a LaTeX command
+  // starting \\n — \\neq, \\ne, \\nu — is always followed by a lower-case letter).
+  const nl = (t) => (typeof t === 'string' ? t.replace(/\\n(?![a-z])/g, '\n').replace(/\\"/g, '"') : t);
+  it.stem = nl(it.stem); it.answer = nl(it.answer); it.solution = nl(it.solution);
+  for (const p of it.parts ?? []) { p.text = nl(p.text); p.answer = nl(p.answer); }
+  // A part with no letter is not a part: fold it into the stem (it would print as "()").
+  for (const p of (it.parts ?? []).filter((p) => !String(p.label ?? '').replace(/[()\s]/g, ''))) {
+    it.stem = [it.stem, p.text].filter(Boolean).join('\n\n');
+    if (!it.answer && p.answer) it.answer = p.answer;
+  }
+  it.parts = (it.parts ?? []).filter((p) => String(p.label ?? '').replace(/[()\s]/g, ''));
   const parts = (it.parts ?? []).map((p) => ({ label: String(p.label).replace(/^\(|\)$/g, ''), text: p.text, marks: Number(p.marks) || 0, ...(p.answer ? { answer: p.answer } : {}) }));
   const now = new Date().toISOString();
   const row = {

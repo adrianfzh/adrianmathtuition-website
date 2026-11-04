@@ -40,6 +40,30 @@ not hard enough or repeating another, **20 saved hidden**: A Math 9 Challenge + 
 students: 14 behind 🔥 Challenge, 6 behind 🔥 Advanced. One fix after review: EM-12's solution
 now opens with "Let D = (0, q)".
 
+## Round 2 — fill every topic to 3 Challenge questions (4 Nov 2026)
+Adrian, 4 Nov 2026, after round 1: *"Yes, next 20"* → *"just keep going until there are 3 questions for
+each topics."* Read as: every AM / EM practice topic (≥ 20 questions served) gets at least 3
+**Challenge** questions, counting ones waiting for his approval.
+- Left out on purpose: EM **Matrices** (not in 4052), **Geometrical Constructions** and **Algebra (Graph
+  on Graph Paper)** (need drawing on paper) — still 0 Challenge each.
+- How: 19 batches (14 main + 5 top-up), each = one Opus writer (need + 1 drafts, top-ups need + 2/3) →
+  two blind Opus solves → one Opus moderator per pair of batches (key agrees with both blinds, 4049/4052
+  only, a genuine unsignposted gate, one reading, picks the best per topic). Briefs and every draft,
+  blind answer and verdict: the session's scratchpad `pilot/` folder (`brief-r2.md`, `brief-mod.md`,
+  `drafts-B*.json`, `review-B*.json`, `final-B*.json`).
+- Result: **209 saved hidden** (`gen_meta.pilot_item` `pilot-challenge-2026-11-B<n>-<k>`): 170 Challenge,
+  39 Advanced (main-round moderators filled short topics with good Advanced ones; the top-ups took
+  Challenge only). With these approved, every included topic has ≥ 3 Challenge.
+- What the gates caught (none reached the saved set): wrong keys in a last part (both blinds caught
+  them), keys that hang on an unstated boundary ("does k = −1 count?"), off-syllabus steps (∫ln x,
+  integration by parts, the converse of angles in the same segment, remainder arguments in EM), two
+  readings (degrees vs radians, chords on the same side?, a map distance not said to be horizontal),
+  stems that never ask anything, and repeats of a saved key step.
+- Writer glitches the save step repairs (`scripts/challenge-pilot/insert.mjs`): a part with no letter
+  folds into the stem; a literal backslash-n becomes a line break; `\"` becomes `"`. Money is `\$`.
+- Review copy for Adrian: `Challenge questions - 209 to check.pdf` (grouped by subject → topic; key step,
+  answer, worked solution, mark scheme per question).
+
 ## After approval — how real results check the label
 The nightly `/api/cron/math-practice-difficulty` (SPEC-TWINS §12) moves **Standard ↔ Advanced**
 from students' first tries, so an approved **Advanced** pilot question gets confirmed or demoted
