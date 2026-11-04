@@ -114,7 +114,8 @@ You get:
    not say ("kill", "six C two", "falls to power five"); a shortcut ("the x⁶ term is the third"); a ✗
    note a student cannot understand on its own; the topic bible's "Required wording" not used word for
    word; a new part of the question started without saying so, what it asks, and how the earlier part
-   helps; two things said in one breath ("six choose zero and power zero give one").
+   helps; two things said in one breath ("six choose zero and power zero give one"); a line worked out
+   from the line above where the parts and what they become are not lit in matching colours.
 22. Anything else in the house rules this clip breaks.
 
 Judge as a student who does NOT already know the topic: would they follow each step, and know why?

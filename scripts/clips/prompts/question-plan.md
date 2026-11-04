@@ -59,6 +59,9 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   term, highlight that term only"*) — the voice lights one term at a time. When the question then
   matches a second bracket ("same shape"), plan a line that writes the two brackets one under the
   other, each part its own token, so the matching parts can be lit side by side.
+  **A line worked out from the line above has its parts wrapped on BOTH lines** (4 Nov 2026: *"show
+  exactly which part becomes which part in the next line"*) — each part above and what it becomes
+  below are pieces, so they can light in the same colour together (⁶C₁ and 6, (px²)⁵ and p⁵x¹⁰).
   **Every piece the voice will name inside a term is wrapped so it can light on its own** (Adrian,
   4 Nov 2026: *"highlight the powers when narrator says it"*): `\htmlClass{lsn-pc-<name>}{…}` round
   each power, base, top or bottom the bible's wording says aloud — on the expansion line, every

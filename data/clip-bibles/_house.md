@@ -119,6 +119,13 @@ is not how singapore students speak or how teachers in singapore schools speak)"
   and power zero give one": *"can make it clearer without adding in too much stuff"*): "6 choose 0
   is 1." (⁶C₀ lit) — "q over x to the power 0 is also 1: anything to the power 0 is 1." (the 0 lit, a
   short note `anything⁰ = 1` pointing at it) — "So the first term is just p⁶x¹²."
+- **Show which part becomes which, line to line, in matching colours** (Adrian, 4 Nov 2026, on
+  `(px²)⁵` above `6(p⁵x¹⁰)(q/x)`: *"why not use arrows or colour shading to show exactly which part
+  becomes which part in the next line?"*). When a line is worked out from the line above, each part
+  above and what it becomes below light in the SAME colour at the same word — yellow, orange, sky
+  (⁶C₁ → 6 yellow, (px²)⁵ → p⁵x¹⁰ orange, (q/x)¹ → q/x sky). Colour, not arrows: three arrows between
+  two long lines cross and crowd a phone. A single piece that simply moves down may use the move
+  animation instead (`from` / `into`, the 19 Oct reference move).
 - **No shortcut words**: "the x⁶ term is the third" → "the x⁶ term is the third term". Full words.
 - **A ✗ note must make sense on its own** (Adrian, 4 Nov 2026, on "✗ Common mistake: x¹⁰ × q/x =
   qx¹¹": *"i don't understand the pink line"*). Write the wrong step AND the right one, short:

@@ -94,6 +94,9 @@ no focus, no clear.
   cannot hear. A plan without `mustSay` has nothing extra to say.
 - **Announce and link each part of the question** before its working: the earlier part is done, the
   next part asks …, and how the earlier part helps (`_house.md` §2, 4 Nov 2026).
+- **Which part becomes which: same colour on both lines, same word** (Adrian, 4 Nov 2026) — when the
+  voice works a part out, light the part above AND its result below together: two `highlight`s with
+  `inside` and the same `tone` (none = yellow, `orange`, `sky`), one colour per part.
 - **A note fades when its beat ends** — put it in the beat that talks about it. A note on ONE piece of
   a term points at it exactly: `{"do": "note", "text": "6 choose 0", "near": "<token>", "inside": "<piece>"}`.
 - **Two values that both become 1 (or 0) are said one at a time, each lit** — never "X and Y give one".

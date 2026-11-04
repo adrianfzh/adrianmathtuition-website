@@ -221,6 +221,11 @@ his videos and his notes; the voice says them as written, each with the board as
   writes it out: `6 choose 0`.
 - **The first term of the expansion**: "6 choose 0. First term, maximum power, which is 6. Second
   term, lowest power, which is 0."
+- **Working out a term, part by part, colour-matched to the line above** (Adrian, 4 Nov 2026: *"why
+  not use arrows or colour shading to show exactly which part becomes which part in the next line?"*):
+  "6 choose 1 is 6" lights ⁶C₁ above and the 6 below YELLOW; "p x squared to the five is p to the five,
+  x to the ten" lights `(px²)⁵` above and `p⁵x¹⁰` below ORANGE; "q over x to the one is q over x" lights
+  both SKY. The plan wraps each part on BOTH lines as a piece (`\htmlClass{lsn-pc-…}`).
 - **The powers light as they are said** (Adrian, 4 Nov 2026: *"highlight the powers when narrator says
   it"*): on the expansion line each power is its own piece — `(px^2)^{\htmlClass{lsn-pc-a0}{6}}
   \left(\tfrac qx\right)^{\htmlClass{lsn-pc-b0}{0}}`, `a1`/`b1`, `a2`/`b2` … — and "maximum power, which
