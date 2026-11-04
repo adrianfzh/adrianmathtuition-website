@@ -174,7 +174,7 @@ export const FOCUS_HOLD_S = 2.2;
 
 // ── Board state ──────────────────────────────────────────────────────────────
 
-export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number; label?: string }
+export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number; label?: string; /** The beat it was drawn in. */ beat?: number }
 export interface BoardNote { id: ElementKey; text: string; near: string | null; seq: number }
 /** `beat` = the beat it fired in (a clip keeps the last highlight lit through that beat and the next). */
 export interface BoardPulse { tokens: string[]; seq: number; beat?: number; /** `sub` = only the subscript (a log's base) is lit. */ part?: 'sub' | 'num' | 'den'; /** Only the token's `\\htmlClass{lsn-pc-<piece>}` pieces are lit. */ inside?: string; tone?: 'orange' | 'sky' }
@@ -308,7 +308,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       board.pulses.push({ tokens: asList(action.token), seq, beat: Number(slot.split(':')[0]) || 0, ...(action.part ? { part: action.part } : {}), ...(action.inside ? { inside: action.inside } : {}), ...(action.tone ? { tone: action.tone } : {}) });
       break;
     case 'mark':
-      board.marks.push({ kind: action.kind, tokens: asList(action.token), seq, ...(action.label ? { label: action.label.trim() } : {}) });
+      board.marks.push({ kind: action.kind, tokens: asList(action.token), seq, beat: Number(slot.split(':')[0]) || 0, ...(action.label ? { label: action.label.trim() } : {}) });
       break;
     case 'note': {
       const id = `note:${slot}`;

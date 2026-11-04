@@ -168,7 +168,7 @@ describe('boardStateAt — the recipe scene', () => {
 
   it('a from-token with a move action waits for the move; an explicit reveal of its line does not fly it', () => {
     let b = boardStateAt(scene, 3, 2); // mark + focus fired, move not yet
-    expect(b.marks).toEqual([{ kind: 'underline', tokens: ['sq'], seq: 7 }]);
+    expect(b.marks).toEqual([expect.objectContaining({ kind: 'underline', tokens: ['sq'], seq: 7 })]);
     expect(b.focus).toMatchObject({ key: 'tok:0:2', hold: FOCUS_HOLD_S });
     expect(lineOn(b, 1)).toBe(false);
     b = boardStateAt(scene, 3, 3);     // move sq

@@ -2896,7 +2896,14 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     cardRef, scene, sceneIdx, step, done, pacing, locked: narration.locked, reduced, rate,
     clip: narration.clock, beatClock,
   });
-  const board = useMemo(() => (hasBeats(scene) ? boardStateAt(scene, step, fired) : null), [scene, step, fired]);
+  const board = useMemo(() => {
+    if (!hasBeats(scene)) return null;
+    const b = boardStateAt(scene, step, fired);
+    // A clip's pairing arcs are for that moment: they fade once the next part after them is done
+    // (4 Nov 2026 — arcs left on the board cut through the lines written below them).
+    if (clip) b.marks = b.marks.filter(m => (m.kind !== 'arc' && m.kind !== 'arc-under') || (m.beat ?? 0) >= step - 1);
+    return b;
+  }, [scene, step, fired, clip]);
   // The character: the script's word first; otherwise a board theme with posed beats.
   const posed = useMemo(() => scenesHaveCharacter(scenes), [scenes]);
   const characterOn = character !== undefined ? character !== 'none' : theme !== 'slide' && posed;

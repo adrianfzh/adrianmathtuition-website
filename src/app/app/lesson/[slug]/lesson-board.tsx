@@ -185,12 +185,16 @@ export function markPath(kind: Exclude<BoardMark['kind'], 'arc' | 'arc-under'>, 
  * arrows be smoother (for arrows don't make it hand drawn)"): one quadratic
  * Bézier with a straight-barbed arrowhead turned along the curve's own end.
  */
+const arcHeight = (x0: number, x1: number) => Math.min(17, 8 + Math.abs(x1 - x0) * 0.06);
+
 export function arcPath(a: Box, b: Box, under: boolean): string {
   const x0 = (a.x0 + a.x1) / 2, x1 = (b.x0 + b.x1) / 2;
   const y = under ? Math.max(a.y1, b.y1) + 3 : Math.min(a.y0, b.y0) - 3;
   const dir = under ? 1 : -1;
-  // Taller for a longer reach, so two arcs from one token nest instead of crossing.
-  const h = Math.min(30, 10 + Math.abs(x1 - x0) * 0.13);
+  // Taller for a longer reach, so two arcs from one token nest instead of crossing — but kept inside
+  // the gap between lines: at 30 px a long arc ran through the heading above and the line below
+  // (4 Nov 2026, the Binomial "find k" clip).
+  const h = arcHeight(x0, x1);
   const cx = (x0 + x1) / 2, cy = y + dir * 2 * h;       // the curve's peak sits h from the row
   // The arrowhead: two barbs swung ±27° off the direction the curve arrives in.
   const ang = Math.atan2(y - cy, x1 - cx);
@@ -203,7 +207,7 @@ export function arcPath(a: Box, b: Box, under: boolean): string {
 export function arcLabelAt(a: Box, b: Box, under: boolean): { x: number; y: number } {
   const x0 = (a.x0 + a.x1) / 2, x1 = (b.x0 + b.x1) / 2;
   const y = under ? Math.max(a.y1, b.y1) + 3 : Math.min(a.y0, b.y0) - 3;
-  const h = Math.min(30, 10 + Math.abs(x1 - x0) * 0.13);
+  const h = arcHeight(x0, x1);
   // Past the peak, toward the arrowhead: two arcs leaving one token end apart, so their numbers do too.
   const t = 0.64;
   return { x: x0 + (x1 - x0) * t, y: y + (under ? 1 : -1) * h * 4 * t * (1 - t) };
@@ -536,7 +540,13 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     if (svg) {
       const live = new Set(board.marks.map(m => m.seq));
       for (const [seq, path] of marksDrawn.current) {
-        if (!live.has(seq)) { path.remove(); marksDrawn.current.delete(seq); labelsDrawn.current.get(seq)?.remove(); labelsDrawn.current.delete(seq); }
+        if (!live.has(seq)) {
+          // A mark whose part is over fades out (sleek, 4 Nov 2026), never blinks off.
+          const label = labelsDrawn.current.get(seq);
+          for (const el of [path, label]) if (el) { el.style.transition = 'opacity 300ms ease'; el.style.opacity = '0'; }
+          setTimeout(() => { path.remove(); label?.remove(); }, 320);
+          marksDrawn.current.delete(seq); labelsDrawn.current.delete(seq);
+        }
       }
       let markCursor = Math.max(now, cursor);
       for (const m of board.marks) {
