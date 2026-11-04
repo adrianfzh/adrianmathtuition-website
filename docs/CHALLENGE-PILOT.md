@@ -44,14 +44,17 @@ now opens with "Let D = (0, q)".
 Adrian, 4 Nov 2026, after round 1: *"Yes, next 20"* → *"just keep going until there are 3 questions for
 each topics."* Read as: every AM / EM practice topic (≥ 20 questions served) gets at least 3
 **Challenge** questions, counting ones waiting for his approval.
-- Left out on purpose: EM **Matrices** (not in 4052), **Geometrical Constructions** and **Algebra (Graph
-  on Graph Paper)** (need drawing on paper) — still 0 Challenge each.
+- Left out: **Geometrical Constructions** and **Algebra (Graph on Graph Paper)** (need drawing on paper) and
+  EM **Matrices** — the session wrongly said Matrices is not in 4052 (from memory, unchecked). Adrian
+  queried it the same evening; the repo treats it as current Sec 3 E Math (`docs/LOWER-SEC-SYLLABUS-SPLIT.md`),
+  so Matrices still needs its 3 Challenge questions. Lesson: check a syllabus claim against the repo first.
 - How: 19 batches (14 main + 5 top-up), each = one Opus writer (need + 1 drafts, top-ups need + 2/3) →
   two blind Opus solves → one Opus moderator per pair of batches (key agrees with both blinds, 4049/4052
   only, a genuine unsignposted gate, one reading, picks the best per topic). Briefs and every draft,
   blind answer and verdict: the session's scratchpad `pilot/` folder (`brief-r2.md`, `brief-mod.md`,
   `drafts-B*.json`, `review-B*.json`, `final-B*.json`).
-- Result: **209 saved hidden** (`gen_meta.pilot_item` `pilot-challenge-2026-11-B<n>-<k>`): 170 Challenge,
+- Result: **209 saved** (hidden, then **all approved 4 Nov 2026**, Adrian: *"Approve all 209"* — every
+  pilot row is now verified and in `practice_pool`) (`gen_meta.pilot_item` `pilot-challenge-2026-11-B<n>-<k>`): 170 Challenge,
   39 Advanced (main-round moderators filled short topics with good Advanced ones; the top-ups took
   Challenge only). With these approved, every included topic has ≥ 3 Challenge.
 - What the gates caught (none reached the saved set): wrong keys in a last part (both blinds caught
