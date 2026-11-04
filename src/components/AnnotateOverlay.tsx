@@ -3020,7 +3020,68 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     document.body.style.overscrollBehavior = 'none';
     // A reload is not a kill: the note is stamped on the way out, so the next open's
     // diedMidMarking says `unloaded` for a reload and nothing for a page that was killed.
-    const onPageHide = () => { try { const n = localStorage.getItem(ALIVE_KEY); if (n) localStorage.setItem(ALIVE_KEY, JSON.stringify({ ...JSON.parse(n), unloaded: Date.now() })); } catch { /* diagnostics only */ } };
+    // 🧾 The last touches before a reload (4 Nov 2026, 09:41: the note came back stamped
+    // `unloaded`, so Safari reloaded the page by itself and the CSS fences above did not
+    // hold it). The last eight inputs — what was touched, where, how many fingers, whether
+    // a scroller under the finger could still move — and the page's scroll position ride
+    // the alive note, so the next note says WHICH swipe did it.
+    type InputMark = { t: number; k: string; on: string; x: number; y: number; n: number; sc?: string };
+    const lastInputs: InputMark[] = [];
+    const describe = (el: EventTarget | null): string => {
+      const e = el as HTMLElement | null;
+      if (!e || !e.tagName) return '?';
+      const tag = e.tagName.toLowerCase();
+      const title = e.getAttribute?.('title') || e.getAttribute?.('aria-label') || '';
+      const txt = tag === 'button' ? (e.textContent || '').trim().slice(0, 12) : '';
+      return `${tag}${title ? `[${title.slice(0, 16)}]` : txt ? `[${txt}]` : ''}`;
+    };
+    /** The nearest box above `el` that scrolls on its own, and whether it can still move the finger's way. */
+    const scrollerUnder = (el: EventTarget | null, dy: number): { el: HTMLElement; canTake: boolean } | null => {
+      let e = el as HTMLElement | null;
+      while (e && e !== document.body && e !== document.documentElement) {
+        const cs = getComputedStyle(e);
+        if (/(auto|scroll)/.test(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) {
+          const atTop = e.scrollTop <= 0, atBottom = e.scrollTop + e.clientHeight >= e.scrollHeight - 1;
+          return { el: e, canTake: (dy > 0 && !atTop) || (dy < 0 && !atBottom) || dy === 0 };
+        }
+        e = e.parentElement;
+      }
+      return null;
+    };
+    const mark = (k: string, target: EventTarget | null, x: number, y: number, n: number, sc?: string) => {
+      lastInputs.push({ t: Date.now() - openedAt, k, on: describe(target), x: Math.round(x), y: Math.round(y), n, ...(sc ? { sc } : {}) });
+      if (lastInputs.length > 8) lastInputs.shift();
+    };
+    let touchY0 = 0, touchMoves = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      touchY0 = e.touches[0]?.clientY ?? 0; touchMoves = 0;
+      const s = scrollerUnder(e.target, 0);
+      mark('ts', e.target, e.touches[0]?.clientX ?? 0, touchY0, e.touches.length, s ? `${describe(s.el)}@${Math.round(s.el.scrollTop)}` : undefined);
+    };
+    // 🚧 The fence that holds (the known iOS trick): a one-finger touch move that no
+    // scroller under the finger can take is cancelled here, before Safari can pan the
+    // document, bounce it at the top and read that as pull-to-refresh. A scroller that
+    // can still move keeps its move; two or more fingers are left to the zoom handlers.
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const y = e.touches[0].clientY, dy = y - touchY0;
+      const s = scrollerUnder(e.target, dy);
+      if (touchMoves++ === 0) mark('tm', e.target, e.touches[0].clientX, y, 1, s ? `${s.canTake ? 'take' : 'full'}:${describe(s.el)}` : 'none');
+      if (s?.canTake) return;
+      if (e.cancelable) e.preventDefault();
+    };
+    const onTouchEnd = (e: TouchEvent) => mark('te', e.target, e.changedTouches[0]?.clientX ?? 0, e.changedTouches[0]?.clientY ?? 0, e.touches.length);
+    const onWheel = (e: WheelEvent) => { if (lastInputs[lastInputs.length - 1]?.k !== 'wh') mark('wh', e.target, e.clientX, e.clientY, 0, `${Math.round(e.deltaY)}`); };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    document.addEventListener('wheel', onWheel, { passive: true });
+    const onPageHide = () => {
+      try {
+        const n = localStorage.getItem(ALIVE_KEY);
+        if (n) localStorage.setItem(ALIVE_KEY, JSON.stringify({ ...JSON.parse(n), unloaded: Date.now(), hideScrollY: window.scrollY, hideVv: Math.round(window.visualViewport?.pageTop ?? -1), inputs: lastInputs }));
+      } catch { /* diagnostics only */ }
+    };
     window.addEventListener('pagehide', onPageHide);
     // iPad Safari: a page that was pinch-zoomed BEFORE the pen opened keeps that zoom,
     // which pushes this fixed toolbar off screen and leaves only the canvas, at 2×,
@@ -3064,6 +3125,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       built: pageBaseRef.current.filter(Boolean).length,
       seen: seenPagesRef.current.size,
       screen: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio}`,
+      scrollY: window.scrollY, vv: Math.round(window.visualViewport?.pageTop ?? -1),
+      inputs: lastInputs,
     });
     try {
       const died = JSON.parse(localStorage.getItem(ALIVE_KEY) || 'null');
@@ -3093,6 +3156,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       document.documentElement.style.overscrollBehavior = prevOverscroll[0];
       document.body.style.overscrollBehavior = prevOverscroll[1];
       window.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('wheel', onWheel);
       if (savedScrollY) requestAnimationFrame(() => window.scrollTo(0, savedScrollY));
       if (viewportMeta) viewportMeta.setAttribute('content', prevViewport ?? 'width=device-width, initial-scale=1');
       else lockMeta.remove();

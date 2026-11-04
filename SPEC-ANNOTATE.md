@@ -857,3 +857,14 @@ allow pinch to zoom in/out"*.
   `overscroll-behavior: contain` on the side panel's two scrollers, and the same inside the
   Solutions frame's document. A `pagehide` listener now stamps the alive note with `unloaded`, so
   the next death note tells a reload (stamped) from a kill (not stamped).
+  **Still refreshes (Adrian, 4 Nov 2026, 09:41) — and the note came back STAMPED `unloaded`**:
+  Safari reloaded the page by itself, so the CSS fences (`overscroll-behavior`, `touch-action`
+  on the root) did not hold the gesture. Two more belts: (1) the known iOS fence — a document
+  `touchmove` listener (`passive: false`) cancels any one-finger move that no scroller under
+  the finger can take, before Safari can pan the document and bounce it; the same script runs
+  inside the Solutions frame (`BOUNCE_GUARD_SCRIPT` in `api/admin/annotate-side/solutions`);
+  two or more fingers are left to the zoom handlers. (2) The alive note now carries the last
+  eight inputs (`inputs[]`: `ts`/`tm`/`te`/`wh`, what was under the finger, x/y, fingers, the
+  scroller under it and whether it could still move) plus `scrollY` and the visual viewport's
+  top, and the `pagehide` stamp adds `hideScrollY`/`hideVv`/`inputs` — so the next reload
+  names the swipe that did it.

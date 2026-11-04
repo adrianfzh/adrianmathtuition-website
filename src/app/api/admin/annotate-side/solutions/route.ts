@@ -72,6 +72,36 @@ const DIAGRAM_SCRIPT = (runId: string) => `<script>
 </script>` + DIAGRAM_ZOOM_SCRIPT();
 
 // Two fingers zoom the solutions; the browser's own pinch stays off.
+/**
+ * The fence against Safari's pull-to-refresh, inside the frame (4 Nov 2026): a one-finger move
+ * that this document, or a scroller under the finger, cannot take is cancelled before it can
+ * reach the marking page underneath and bounce it. Two fingers are the zoom's.
+ */
+const BOUNCE_GUARD_SCRIPT = `<script>
+(function(){
+  var y0 = 0;
+  function scroller(el, dy){
+    while (el && el !== document.body && el !== document.documentElement) {
+      var cs = getComputedStyle(el);
+      if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+        var atTop = el.scrollTop <= 0, atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+        return (dy > 0 && !atTop) || (dy < 0 && !atBottom);
+      }
+      el = el.parentElement;
+    }
+    var d = document.scrollingElement || document.documentElement;
+    var top = d.scrollTop <= 0, bottom = d.scrollTop + d.clientHeight >= d.scrollHeight - 1;
+    return (dy > 0 && !top) || (dy < 0 && !bottom);
+  }
+  document.addEventListener('touchstart', function(e){ y0 = e.touches[0] ? e.touches[0].clientY : 0; }, { passive: true });
+  document.addEventListener('touchmove', function(e){
+    if (e.touches.length !== 1) return;
+    if (scroller(e.target, e.touches[0].clientY - y0)) return;
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+})();
+</script>`;
+
 const DIAGRAM_ZOOM_SCRIPT = () => `<script>
 (function(){
   // A pinch in this frame would zoom the whole marking page on the iPad (2 Nov 2026), so the
@@ -233,7 +263,7 @@ export async function GET(req: NextRequest) {
       }));
       sections.push(...built.filter((b) => b.items.length));
     }
-    const html = buildSolutionsHTML({ title: run.paper_name || 'This paper', items: [], sections, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: DIAGRAM_ZOOM_SCRIPT() + PAGES_SCRIPT(runId) });
+    const html = buildSolutionsHTML({ title: run.paper_name || 'This paper', items: [], sections, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + DIAGRAM_ZOOM_SCRIPT() + PAGES_SCRIPT(runId) });
     return new NextResponse(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   }
   const raw = await sideSolutionItems(run, page);
@@ -245,7 +275,7 @@ export async function GET(req: NextRequest) {
   const toMake = raw.items.filter((it, i) => it.qnum && !kept[i]).map((it) => it.qnum as string);
   const title = questions.length ? `Page ${page + 1} · Q${questions.join(', Q')}` : `Page ${page + 1}`;
   const html = items.length
-    ? buildSolutionsHTML({ title, items, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: DIAGRAM_SCRIPT(runId) + EXTRAS_SCRIPT(runId, toMake) })
-    : buildSolutionsHTML({ title, items: [], meta: '', screenCss: SCREEN_CSS, extraBody: '<div class="sol-empty">No question was marked on this page.</div>' });
+    ? buildSolutionsHTML({ title, items, meta: 'Worked solutions', screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + DIAGRAM_SCRIPT(runId) + EXTRAS_SCRIPT(runId, toMake) })
+    : buildSolutionsHTML({ title, items: [], meta: '', screenCss: SCREEN_CSS, extraBody: BOUNCE_GUARD_SCRIPT + '<div class="sol-empty">No question was marked on this page.</div>' });
   return new NextResponse(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 }
