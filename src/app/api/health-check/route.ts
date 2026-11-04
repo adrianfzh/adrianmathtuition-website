@@ -1533,6 +1533,21 @@ export async function GET(req: NextRequest) {
     return 'no queue lag';
   }));
 
+  // 👪 Weekly parent report (SPEC-PARENT-REPORT.md): its tables answer, and no
+  // report from last Sunday sat unsent for a link that is still active.
+  results.push(await timed('parent-report', async () => {
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const sb = getSupabaseAdmin();
+    const { count, error } = await sb.from('parent_links').select('id', { count: 'exact', head: true }).eq('status', 'active');
+    if (error) throw new Error(`parent_links read failed: ${error.message}`);
+    const since = new Date(Date.now() - 8 * 86400e3).toISOString();
+    const { data: unsent, error: e2 } = await sb.from('parent_reports').select('id, created_at, link:parent_links!inner(status)')
+      .is('emailed_at', null).eq('link.status', 'active').gte('created_at', since).lte('created_at', new Date(Date.now() - 2 * 3600e3).toISOString()).limit(5);
+    if (e2) throw new Error(`parent_reports read failed: ${e2.message}`);
+    if (unsent?.length) throw new Error(`${unsent.length} weekly parent report(s) built but not emailed`);
+    return `${count ?? 0} parent link(s) active`;
+  }));
+
   // marking-queue-lag skips parked papers (a cancelled bench script held it red
   // for good), so a STUDENT's paper parked by the crash budget went unseen: Sophie
   // Tan's 19-page E Math, 14 Oct 2026, marked by the Mac but never drawn, while

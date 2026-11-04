@@ -18,6 +18,7 @@ const EXEMPT: Record<string, string> = {
   'app/admin/watch-it/page.tsx': 'admin view',
   'app/api/admin/pc-coach/route.ts': 'admin view (🎲 P&C coach try-it page: Adrian picks a bank part to test the counter; nothing reaches a student)',
   'lib/app-check-page-server.ts': 'Check this page: the answer key of a question already printed on the student’s own worksheet goes to the marker only, never shown to the student',
+  'lib/parent-report-store.ts': 'weekly parent report: reads only the topic names of questions already tried; the 10-minute set is drawn through stretch-set-store nextOnTopic (practice_next + studentRow)',
   'lib/annotate-side-store.ts': 'admin view (the ✏️ Annotate side panel: the solutions of a paper he is marking, every part)',
   'app/admin/question-clips/page.tsx': 'admin view (question text beside each clip)',
   'lib/my-definitions-store.ts': 'science bank text is background for the definition writer only, never shown to a student',

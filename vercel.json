@@ -156,6 +156,10 @@
       "schedule": "0 1 * * 1"
     },
     {
+      "path": "/api/cron/parent-report",
+      "schedule": "0 11 * * 0"
+    },
+    {
       "path": "/api/health-check",
       "schedule": "0 */6 * * *"
     },

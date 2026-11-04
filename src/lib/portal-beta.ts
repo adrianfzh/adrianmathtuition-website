@@ -792,3 +792,19 @@ export const APP_CHECK_PAGE_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREV
 // app ships; flip with APP_CHECK_PAGE_OPEN_TO_STUDENTS.
 export const APP_NOTEBOOK_BACKUP_OPEN_TO_STUDENTS = false;
 export const APP_NOTEBOOK_BACKUP_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+// 👪 Weekly parent report (4 Nov 2026, SPEC-PARENT-REPORT.md, Adrian: "yes build it
+// FOR THE APP"): Settings → "Weekly report for a parent" lets a student send a
+// parent a link; the parent confirms and gets a short report every Sunday evening.
+// ADMIN + the preview student until Adrian has seen example reports and said yes —
+// flip this to show the Settings card (and so allow new links) to every student.
+// Links already confirmed keep getting reports either way.
+export const PARENT_REPORT_OPEN_TO_STUDENTS = false;
+export async function parentReportVisible(identity?: string | null): Promise<boolean> {
+  if (PARENT_REPORT_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}

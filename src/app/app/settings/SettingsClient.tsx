@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
+import ParentLinkCard from './ParentLinkCard';
 import InstallCard from '@/components/InstallCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
 import SuggestCard from '@/components/SuggestCard';
@@ -134,6 +135,8 @@ export default function SettingsClient({
       <TelegramLinkCard variant="settings" linked={telegramLinked} chatId={telegramChatId} />
 
       <PushToggle />
+
+      <ParentLinkCard />
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Show me around</p>

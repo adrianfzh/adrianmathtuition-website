@@ -116,7 +116,7 @@ const SOURCE_META: Record<NonNullable<InitialAssignment['source']>, { label: str
 // follow-up after grading.
 export type FixedQuestion = {
   question: Question;
-  from: 'marked' | 'photo' | 'search' | 'generated' | 'notebook' | 'timed' | 'stretch' | null;
+  from: 'marked' | 'photo' | 'search' | 'generated' | 'notebook' | 'timed' | 'stretch' | 'focus' | null;
   topic: string | null;
 };
 
@@ -128,6 +128,7 @@ const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: s
   generated: { label: '✨ Made for you', blurb: 'A fresh question written for you and checked to solve correctly. Work it here and get it marked.' },
   timed: { label: '⏱ From your timed set', blurb: 'Redo it without the clock — work it here and get it marked.' },
   stretch: { label: '🧩 From this week’s stretch set', blurb: 'Work it here and get it marked — then go back to the set to see how your guess compared.' },
+  focus: { label: '🎯 From your 10-minute set', blurb: 'Work it here and get it marked — then go back to the set for the next one.' },
   link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
 };
 

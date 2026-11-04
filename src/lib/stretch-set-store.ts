@@ -113,9 +113,9 @@ async function gatherHistory(sb: SupabaseClient, account: PortalAccount, identit
 
 // ── drawing questions through the serving doors ──────────────────────────────
 
-type Ctx = { sb: SupabaseClient; levelKey: string; account: PortalAccount; exclude: string[] };
+export type Ctx = { sb: SupabaseClient; levelKey: string; account: PortalAccount; exclude: string[] };
 
-async function nextOnTopic(ctx: Ctx, topic: string, tier: string | null): Promise<string | null> {
+export async function nextOnTopic(ctx: Ctx, topic: string, tier: string | null): Promise<string | null> {
   const scope = bankScope(ctx.levelKey);
   for (let guard = 0; guard < 3; guard++) {
     const { data, error } = await ctx.sb.rpc('practice_next', {

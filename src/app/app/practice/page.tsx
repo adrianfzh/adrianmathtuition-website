@@ -78,7 +78,7 @@ async function qidAudienceOk(qid: string, account: { level: string | null; subje
 
 export const dynamic = 'force-dynamic';
 
-const QID_FROM = ['marked', 'photo', 'search', 'generated', 'notebook', 'timed', 'stretch'] as const;
+const QID_FROM = ['marked', 'photo', 'search', 'generated', 'notebook', 'timed', 'stretch', 'focus'] as const;
 
 export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string; level?: string; topic?: string; qid?: string; from?: string }> }) {
   const { assignment: assignmentId, level: targetLevel, topic: targetTopic, qid, from } = await searchParams;

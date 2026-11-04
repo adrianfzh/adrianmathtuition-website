@@ -101,6 +101,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // gaps, sheets prepared, ONE Telegram message (Vercel cron Sundays 7pm SGT). Stamps
   // every week, quiet ones included.
   'stuck-weekly':       { kind: 'interval', hours: 204, label: 'Sundays 7pm' },
+  'parent-report':      { kind: 'interval', hours: 204, label: 'Sundays 7pm' },
   // 🖼 Figures we need (5 Oct 2026): the Sunday message of figures twins needed that no family draws.
   'figure-needs-weekly': { kind: 'interval', hours: 204, label: 'Sundays 6pm' },
   // 🩺 Question check (14 Oct 2026, SPEC-QUESTION-HEALTH.md): the Monday counts message; stamps every run, off or on.

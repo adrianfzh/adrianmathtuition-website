@@ -65,6 +65,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | 🔍 Spot the error from real marked mistakes (`/admin/spot-error`, `/app/spot`, `lib/spot-error.ts`) · Notebook 30-day comeback + Explain it back | [`SPEC-SPOT-ERROR.md`](SPEC-SPOT-ERROR.md) |
 | 🔀 Another way to solve this (second method in a closed drop-down; `/admin/another-way`, `question_alt_methods`, `lib/alt-method.ts`) | [`SPEC-ANOTHER-WAY.md`](SPEC-ANOTHER-WAY.md) |
 | 🧩 Weekly stretch set (`/app/stretch`, `/admin/stretch`, `stretch_sets`, the generator's new-costume kinds) | [`SPEC-STRETCH-SET.md`](SPEC-STRETCH-SET.md) |
+| 👪 Weekly parent report (`/parent/*`, `/app/focus`, `/admin/parent-report`, `parent_links`, `parent_reports`, `consent_records`) | [`SPEC-PARENT-REPORT.md`](SPEC-PARENT-REPORT.md) |
 | Telegram `/ws` worksheet menu | [`SPEC-WORKSHEET-MENU.md`](SPEC-WORKSHEET-MENU.md) |
 | School exam tracker (📝 inside Overview's Exams box: scan a school-marked exam, marks lost by topic, exam vs last exam, parent note) — BUILT 15 Oct | [`SPEC-EXAM-TRACKER.md`](SPEC-EXAM-TRACKER.md) |
 | Paid WhatsApp trials (`/trial/pay`, `trial_bookings`, the parent fact sheet, the trial fee off the first bill) | [`SPEC-TRIAL-BOOKING.md`](SPEC-TRIAL-BOOKING.md) |
