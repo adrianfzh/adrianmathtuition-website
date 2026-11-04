@@ -221,6 +221,12 @@ his videos and his notes; the voice says them as written, each with the board as
   writes it out: `6 choose 0`.
 - **The first term of the expansion**: "6 choose 0. First term, maximum power, which is 6. Second
   term, lowest power, which is 0."
+- **The powers light as they are said** (Adrian, 4 Nov 2026: *"highlight the powers when narrator says
+  it"*): on the expansion line each power is its own piece — `(px^2)^{\htmlClass{lsn-pc-a0}{6}}
+  \left(\tfrac qx\right)^{\htmlClass{lsn-pc-b0}{0}}`, `a1`/`b1`, `a2`/`b2` … — and "maximum power, which
+  is 6" lights `a0` ORANGE, "lowest power, which is 0" lights `b0` SKY; "reduce power by 1" lights the
+  next orange power, "increase power by 1" the next sky one. Orange = first term's power, sky = second
+  term's, the whole clip. "6 choose 0" lights the ⁶C₀ (`lsn-pc-c0`).
 - **Each next term**: "6 choose 1. First term reduce power by 1, second term increase power by 1." —
   never "falls to" / "rises to". After the third term: "Notice the pattern." Then "plus dot dot dot".
 - **Working each term out ("6 choose 1 is 6, …")**: light THAT term only (its own token), never the

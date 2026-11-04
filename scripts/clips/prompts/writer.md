@@ -195,6 +195,10 @@ no focus, no clear.
 - **One equation, line by line** (Adrian, 19 Oct 2026): each move rewrites the whole equation on the
   next line, its reason in the voice and a note under it — no side line working on one piece, no
   section titles, unless the concept is really complex.
+- **When the voice names a piece inside a term (a power, a base, ⁿCᵣ), light THAT piece at the word**
+  (Adrian, 4 Nov 2026: *"highlight the powers when narrator says it, to draw attention to it"*) —
+  `{"do": "highlight", "token": "<id>", "inside": "<piece>", "tone": …}`, the plan's tex already wraps
+  it. One colour per role for the whole clip (the bible says which).
 - **Pieces inside one token** (a fraction's a over a, b over b): wrap each in `\htmlClass{lsn-pc-<name>}{…}`
   in the plan's tex and light it with `{"do": "highlight", "token": "<id>", "inside": "<name>", "tone": "orange"|"sky"}`.
 - **Light the question as the voice describes it** (Adrian, 31 Oct 2026: "highlight the part (and make it

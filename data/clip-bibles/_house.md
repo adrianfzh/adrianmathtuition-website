@@ -93,6 +93,14 @@ is not how singapore students speak or how teachers in singapore schools speak)"
 - **Can they follow it?** What is compared is shown side by side ("same shape" → both brackets on
   the board, one under the other, the matching parts lit).
 - **Light only the piece being said** — one term of a long line, never the whole line.
+- **Light the small piece the voice names** (Adrian, 4 Nov 2026: *"highlight the powers when narrator
+  says it, to draw attention to it"* · *"any ways to draw attention to the parts when narrator is
+  talking about it?"*): a power, a base, a top or bottom inside a term lights on its own, at the
+  word, in its colour — the board's tools for this: light a piece inside a term (`highlight` with
+  `inside` + `tone`), light a term, circle / underline / box, an arrow with a note, and everything
+  else dimmed while a line is worked on. The plan wraps every piece the voice will name in
+  `\htmlClass{lsn-pc-<name>}{…}` so it CAN be lit. One colour per role, kept the whole clip
+  (Binomial: the first term's power orange, the second term's power sky).
 - **Say it the way a Singapore maths teacher says it**: "6 choose 2", "first term", "second term",
   "reduce power", "increase power", "plus dot dot dot", "bring the negative over". Never "kill",
   "C two", "falls / rises", "flies", slang or American classroom words.

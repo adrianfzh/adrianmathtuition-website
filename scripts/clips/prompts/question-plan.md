@@ -58,6 +58,10 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   term, highlight that term only"*) — the voice lights one term at a time. When the question then
   matches a second bracket ("same shape"), plan a line that writes the two brackets one under the
   other, each part its own token, so the matching parts can be lit side by side.
+  **Every piece the voice will name inside a term is wrapped so it can light on its own** (Adrian,
+  4 Nov 2026: *"highlight the powers when narrator says it"*): `\htmlClass{lsn-pc-<name>}{…}` round
+  each power, base, top or bottom the bible's wording says aloud — on the expansion line, every
+  ⁿCᵣ (`c0`, `c1` …), the first term's power (`a0`, `a1` …) and the second term's (`b0`, `b1` …).
   **A bracket's own ( and ) stay in the token of the part beside them** (`\left(px^2` · `+\dfrac qx\right)^6`
   is wrong too — use `(px^2` and `+\frac qx)^6` with plain brackets): a lone `(` token leaves a wide gap
   on the board ("( px²  + q/x )⁶", 4 Nov 2026). **No line heading on the first line when the scene has a
