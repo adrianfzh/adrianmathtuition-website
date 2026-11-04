@@ -7,6 +7,13 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 🔍 Review of both repos — 4 Nov 2026 → `docs/REVIEW-2026-11-04.md` — 📐 awaiting Adrian's go
+
+Adrian: *"do a review of the website repo and bot repo, any optimization or improvement works that can be done?"*
+Five review agents + the Supabase advisors. Ranked list with evidence and effort in the doc; tick items there as they
+ship. Top three: (A1) the cron routes trust a header anyone can send — verified live; (A2) the twins queue view is
+recomputed on every read, ~1.7 h of database CPU a day; (A3) ~16 GB of dead git packs / worktrees / `.next` on the Mac.
+
 ## ✏️ Annotate: paper + solutions beside the page — 🔨 on the test site (27 Oct 2026) — live: c8a68be0 + a8a0bece are on `main`
 
 Adrian, 27 Oct 2026: *"Able to have the question paper or the solution side by side when annotating?
