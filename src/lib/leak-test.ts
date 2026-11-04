@@ -18,7 +18,8 @@
 export const PUBLIC_READ: readonly string[] = [
   'content_snippets', // published swipe cards
   'sections_meta',
-  'subgroups',
+  // 'subgroups' left this list on 4 Nov 2026: the sub-skill table is server-only now (it held
+  // hidden and IP-only names), so a stranger reading it again is a leak.
   'technique_tags',
   'question_technique_tags',
   'rubrics',

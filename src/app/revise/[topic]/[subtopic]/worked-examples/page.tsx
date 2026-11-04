@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SwipeApp from './SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 import { orderDeckCards } from '@/lib/deck-order';
 import { PUBLIC_VISIBILITY_FILTER } from '@/lib/subgroup-visibility';
 
@@ -11,8 +11,8 @@ const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
 // Public page, no account: only the 'all' audience exists here. 'ip' and
 // 'hidden' sub-groups (and their cards) never render — lib/subgroup-visibility.
 async function findCanonicalTopic(level: string, slug: string): Promise<string | null> {
-  const supa = getSupabase();
-  const { data } = await supa
+  // The sub-skill table is server-only since 4 Nov 2026 (security check) — read it with the server key.
+  const { data } = await getSupabaseAdmin()
     .from('subgroups')
     .select('topic')
     .eq('level', level.toUpperCase())
@@ -94,7 +94,7 @@ export default async function Page({
   type Card = { id: string; subgroup_id: number; display_group: string | null; order_index: number; card_title: string; content: string; content_kind: string };
   const allSgIds = [...new Set((cardsRaw as Card[]).map(c => c.subgroup_id))];
   const [{ data: sgs }, { data: sectionsMeta }] = await Promise.all([
-    supa.from('subgroups').select('id, name, description, order_index').in('id', allSgIds).or(PUBLIC_VISIBILITY_FILTER),
+    getSupabaseAdmin().from('subgroups').select('id, name, description, order_index').in('id', allSgIds).or(PUBLIC_VISIBILITY_FILTER),
     supa
       .from('sections_meta')
       .select('name, order_index')

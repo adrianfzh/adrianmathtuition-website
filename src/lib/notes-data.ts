@@ -100,7 +100,7 @@ function notesCache<T>(keyParts: (string | number)[], fn: () => Promise<T>): Pro
  */
 const loadSubgroupRows = cache((level: string): Promise<SubgroupRow[]> =>
   notesCache(['subgroup-rows', level], async () => {
-    const supa = getSupabase();
+    const supa = getSupabaseAdmin(); // the sub-skill table is server-only since 4 Nov 2026
     const lv = level.toUpperCase();
     const rows = await fetchAllRows<SubgroupRow>((from, to) =>
       supa

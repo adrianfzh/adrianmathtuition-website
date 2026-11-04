@@ -6,7 +6,7 @@
 import { notFound } from 'next/navigation';
 import SwipeApp from '../worked-examples/SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 import { PUBLIC_VISIBILITY_FILTER } from '@/lib/subgroup-visibility';
 
 const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
@@ -14,8 +14,8 @@ const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
 // Public page, no account: a topic exists here only through its 'all'
 // sub-groups (lib/subgroup-visibility) — recall cards hang off the topic.
 async function findCanonicalTopic(level: string, slug: string): Promise<string | null> {
-  const supa = getSupabase();
-  const { data } = await supa
+  // The sub-skill table is server-only since 4 Nov 2026 (security check) — read it with the server key.
+  const { data } = await getSupabaseAdmin()
     .from('subgroups')
     .select('topic')
     .eq('level', level.toUpperCase())

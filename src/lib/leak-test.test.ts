@@ -8,7 +8,10 @@ describe('judgeTableRead', () => {
     expect(judgeTableRead('paper_marking_runs', [], null)).toBeNull();
   });
   it('public content may be read by anyone', () => {
-    expect(judgeTableRead('subgroups', [{ id: 1 }], null)).toBeNull();
+    expect(judgeTableRead('sections_meta', [{ id: 1 }], null)).toBeNull();
+  });
+  it('the sub-skill table is server-only since 4 Nov 2026 — a stranger reading it is a leak', () => {
+    expect(judgeTableRead('subgroups', [{ id: 1 }], null)).toMatch(/signed-out visitor/);
   });
   it('any student row readable signed out is a leak', () => {
     expect(judgeTableRead('student_attempts', [{ user_id: 'u-2' }], null)).toMatch(/signed-out visitor/);

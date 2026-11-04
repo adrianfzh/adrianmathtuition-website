@@ -181,7 +181,7 @@ export async function controlProblems(admin: SupabaseClient, base: string, sessi
   const out: string[] = [];
   const own = await readAs('portal_accounts', session.accessToken);
   if (!own.some((r) => r.id === session.self.uid)) out.push('control: the test student could not read their own account — the test is blind');
-  const pub = await readAs('subgroups', anonKey());
+  const pub = await readAs('sections_meta', anonKey()); // public section titles (was subgroups until 4 Nov 2026 — now server-only)
   if (!pub.length) out.push('control: public content did not read with the public key — the test is blind');
   const { data: run } = await admin.from('paper_marking_runs').select('id').eq('student_id', session.self.identity)
     .not('released_at', 'is', null).order('created_at', { ascending: false }).limit(1).maybeSingle();
