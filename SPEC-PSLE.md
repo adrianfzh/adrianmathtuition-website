@@ -29,6 +29,11 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     + key used; 2023 science Nan Hua's cover says "Preliminary Examination" (filed SA2);
     2018 maths Tao Nan's bookmark was wrong (real pages 1130–1166).
   - Not taken: 2014–2017 books and the 2011–2013 single files (Adrian asked for 2018–2023).
+- **⏰ When the primary extraction finishes → shrink the Fly worker (Adrian, 4 Nov 2026: "let's
+  finish the extraction work first. and then later bring cost down to less than US$50 per month").**
+  The worker stays on performance-2x / 8 GB (≈ US$114/mo in sin) until the P5 + P6 queue is empty.
+  Then tell Adrian, and propose a size under US$50/mo for the worker (shared CPUs; exams are over, so
+  marking is light). History of every size and why: bot `fly.worker.toml` `[[vm]] size` comment.
 - **Skill labels:** primary has no sub-skill list (`subgroups` has no P5/P6 rows), so the filer
   leaves P5/P6 questions with topics only. Plan (3 Nov 2026): build the primary skill list
   from the banked questions once ~100 P6 papers are in.
