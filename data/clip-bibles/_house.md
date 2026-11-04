@@ -269,6 +269,12 @@ in-between simplification line (31 Oct) stays.
   give the beat an `aside` with `read` lines that explain why. Never stop the main working for it.
 
 ### Animation (the teacher's finger)
+
+**Sleek, professional — never exaggerated** (Adrian, 4 Nov 2026, on a power that grew to 1.8× as it
+lit: *"the popup is too exaggerated. make it sleek. make all animations sleek, professional"*). On the
+board: a lit piece swells at most 15 % and settles in about half a second; a lit term at most 4 %; no
+bounce or overshoot (no easing past 1); glows soft (a few px), colour flashes mild. Calm fades and
+glides carry the motion — the colour change does the pointing, not the size.
 - **When a piece moves in the maths, move it on the board** ("its an animation right? you should take
   advantage of the animation … like a teacher physically can use fingers to point"): a coefficient
   goes up into the power (`from` + `move`, the power `tight`), the insides come out of the logs, the

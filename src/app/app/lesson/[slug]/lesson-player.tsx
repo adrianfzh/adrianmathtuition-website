@@ -3719,13 +3719,13 @@ const CHALK_GRAIN =
 const PLAYER_CSS = `
 @keyframes lsnSceneIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes lsnRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@keyframes lsnHlPulse { from { filter: saturate(1.9) brightness(0.96); } to { filter: none; } }
+@keyframes lsnHlPulse { from { filter: saturate(1.25); } to { filter: none; } }
 @keyframes lsnConnDraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
-@keyframes lsnDotIn { from { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
+@keyframes lsnDotIn { from { opacity: 0; transform: scale(0.75); } to { opacity: 1; transform: none; } }
 @keyframes lsnFade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes lsnPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 var(--lsn-pen-soft, rgba(245,158,11,0.25)); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px var(--lsn-pen-soft, rgba(245,158,11,0.25)); } 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
+@keyframes lsnPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 var(--lsn-pen-soft, rgba(245,158,11,0.2)); } 40% { transform: scale(1.04); box-shadow: 0 0 0 3px var(--lsn-pen-soft, rgba(245,158,11,0.2)); } 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
 /* On a board a token is not pulsed, it is gone over again with a fresh stick. */
-@keyframes lsnGlow { 0% { transform: scale(1); } 35% { transform: scale(1.06); text-shadow: 0 0 16px currentColor, 0 0 4px currentColor; } 100% { transform: scale(1); } }
+@keyframes lsnGlow { 0% { transform: scale(1); } 40% { transform: scale(1.03); text-shadow: 0 0 6px currentColor; } 100% { transform: scale(1); } }
 /* Typeset maths arrives as a puff of chalk dust — it is never written. */
 @keyframes lsnDust { 0% { opacity: 0; filter: blur(3px); } 55% { opacity: 1; } 100% { opacity: 1; filter: none; } }
 .lsn-scene { animation: lsnSceneIn 300ms ${EASE} both; }
@@ -4010,10 +4010,12 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc * { color: var(--lsn-hl-amber); text-shadow: 0 0 8px rgba(252,211,77,0.65); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-orange * { color: #ff9a3c; text-shadow: 0 0 8px rgba(255,154,60,0.6); transition: color 250ms ease; }
 [data-lsn-clip] .lsn-lit-pc-blue, [data-lsn-clip] .lsn-lit-pc-blue * { color: #a8ecfb; text-shadow: 0 0 8px rgba(168,236,251,0.6); transition: color 250ms ease; }
-/* …and it grows for a moment as it lights, so a small power on a long shrunk line catches the eye
+/* Sleek, never bouncy (Adrian, 4 Nov 2026: "the popup is too exaggerated. make it sleek. make all
+   animations sleek, professional"): a lit piece swells 15 % and settles; nothing on the board grows
+   more than that or overshoots. …and it grows for a moment as it lights, so a small power on a long shrunk line catches the eye
    (Adrian, 4 Nov 2026: "highlight the powers when narrator says it, to draw attention to it"). */
-[data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-blue { display: inline-block; transform-origin: 50% 70%; animation: lsn-pc-pop 900ms ease-out; }
-@keyframes lsn-pc-pop { 0% { transform: scale(1); } 30% { transform: scale(1.8); } 100% { transform: scale(1); } }
+[data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-blue { display: inline-block; transform-origin: 50% 70%; animation: lsn-pc-pop 600ms cubic-bezier(.4,0,.2,1); }
+@keyframes lsn-pc-pop { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { [data-lsn-clip] .lsn-lit-pc, [data-lsn-clip] .lsn-lit-pc-orange, [data-lsn-clip] .lsn-lit-pc-blue { animation: none; } }
 [data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
 [data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
@@ -4079,10 +4081,10 @@ const PLAYER_CSS = `
 .lsn-quote-pop { display: inline-block; transform-origin: center; box-shadow: 0 0 0 2px rgb(251 191 36 / 0.55); }
 @media (prefers-reduced-motion: no-preference) {
   .lsn-quote { animation: lsnQuoteLight 0.6s ease-out both; }
-  .lsn-quote-pop { animation: lsnQuotePop 0.75s cubic-bezier(.2,.9,.3,1.25) both; }
+  .lsn-quote-pop { animation: lsnQuotePop 0.5s cubic-bezier(.4,0,.2,1) both; }
 }
 @keyframes lsnQuoteLight { 0% { background: rgb(253 230 138 / 0); } 40% { background: rgb(252 211 77); } 100% { background: rgb(253 230 138); } }
-@keyframes lsnQuotePop { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes lsnQuotePop { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
 [data-lsn-themed] .lsn-question { background-color: var(--lsn-board); background-image: var(--lsn-texture); background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend); color: var(--lsn-ink, #f8fafc); box-shadow: inset 0 0 0 1px var(--lsn-edge); }
 [data-lsn-themed] .lsn-question-kicker { color: var(--lsn-ribbon); }
 .lsn-scrub-range { -webkit-appearance: none; appearance: none; height: 28px; background: transparent; touch-action: none; }
@@ -4162,7 +4164,7 @@ const PLAYER_CSS = `
 .lsn-zoom[data-focus] [data-focused] { transition: filter 320ms ${EASE}; }
 [data-lsn-themed] .lsn-zoom[data-focus] [data-focused] { filter: brightness(1.1); }
 /* The tap gesture: the glyph a video player flashes when you tap to pause. */
-@keyframes lsnGesture { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); } 18% { opacity: 0.92; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+@keyframes lsnGesture { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } 20% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); } }
 .lsn-read-chip { animation: lsnFade 240ms ease both; }
 /* The 💡 Why? chip owns the top corner; the Paused chip steps left of it. */
 .lsn-scene:has([data-aside-read-chip]) .lsn-paused-chip { right: 6rem; }
