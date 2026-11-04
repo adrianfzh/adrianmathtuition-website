@@ -698,6 +698,25 @@ writing it again — about half the time; SPEC-CLIP-PIPELINE.md §9, 4 Nov 2026.
 5. Write Adrian's note into §2 here, dated, his words — same commit. Tell him the link, the login
    (admin) and where to tap.
 
+### The reference for a question with a "hence" part: Binomial — expand to the third term, then use it (Adrian, 4 Nov 2026: "great, this clip is good")
+
+Question clip `qc-2aa7610f` (bank question `2aa7610f-8272-4bdc-b0a5-668ad7bc0945`: expand (px² + q/x)⁶ to
+the third term; use it for the coefficient of x⁶ in (2x² − 3/(2x))⁶ → 540). Approved after nine rounds
+of his notes on 1–4 Nov 2026. Copy it for any question with an expansion or a "hence" part:
+- **His own words, not paraphrase**: "6 choose 0. First term, maximum power, which is 6. Second term,
+  lowest power, which is 0." · "First term reduce power by 1, second term increase power by 1." ·
+  "Notice the pattern" — `binomial-theorem-am.md` "Required wording".
+- **The expansion on ONE line**, from ⁿC₀ with both powers; no formula, no a/b/n lines.
+- **Light the small piece being said**: ⁿCᵣ, the first term's power ORANGE, the second's SKY.
+- **Which part becomes which, in matching colours** on the line above and the line below.
+- **Notes point at the exact piece and fade when their part ends**; two "is 1" facts said one at a time.
+- **The next part announced, written on the board, and linked**: "So now for the second part. We want
+  to find … To do this, we make use of the first part. Look at the new bracket. It is exactly like our
+  bracket, … but with numbers in place of p and q." — then a look-back beat (the board scrolls back to
+  the expansion), then the matching, then "no need to expand again".
+- **🧮 Calculator** on each value read off the calculator; sleek animations only.
+Its notes, round by round, are in `data/clip-runs/qc-2aa7610f/revise-notes.md` (local) and §2 above.
+
 ### The reference for teaching a NEW method: Surds — multiply by the conjugate (Adrian, 21 Oct 2026: "great, the clip is good. make sure you remember what we have learnt today for future sessions")
 `data/lessons/rationalise-conjugate-am.json` (plan `data/clip-plans/rationalise-conjugate-am.json`, draft
 W1) is the clip to copy whenever a clip introduces a method or object the student has not met (the
