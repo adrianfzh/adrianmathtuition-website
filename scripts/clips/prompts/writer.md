@@ -93,7 +93,8 @@ no focus, no clear.
   limits still hold). The stand-in reviewer checks each one and sends the clip back naming any it
   cannot hear. A plan without `mustSay` has nothing extra to say.
 - **Announce and link each part of the question** before its working: the earlier part is done, the
-  next part asks …, and how the earlier part helps (`_house.md` §2, 4 Nov 2026).
+  next part asks …, and how the earlier part helps (`_house.md` §2, 4 Nov 2026). What the part asks is
+  WRITTEN on the board (the plan's line for it) as the voice says it.
 - **Which part becomes which: same colour on both lines, same word** (Adrian, 4 Nov 2026) — when the
   voice works a part out, light the part above AND its result below together: two `highlight`s with
   `inside` and the same `tone` (none = yellow, `orange`, `sky`), one colour per part.

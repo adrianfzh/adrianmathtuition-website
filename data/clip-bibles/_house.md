@@ -109,7 +109,11 @@ is not how singapore students speak or how teachers in singapore schools speak)"
   link to the first part"*). Before any new working: say the part is done ("That's the first part:
   the expansion."), name the next part and what it asks ("Now the second part: the coefficient of x⁶
   in (2x² − 3/(2x))⁶."), and say how the earlier part helps ("It has the same shape as our bracket, so
-  we can use the expansion we just found."). The board gets a heading for the new part.
+  we can use the expansion we just found."). The board gets a heading for the new part, **and what
+  the part asks is WRITTEN on the board as its first line** while the voice says it (Adrian, 4 Nov
+  2026: *"can we put find the coefficient of x^6 in (..)^6 on screen as well when explaining?"*) —
+  `\text{Find the coefficient of } x^6 \text{ in } \left(2x^2-\tfrac{3}{2x}\right)^6` — not only lit
+  in the question card above, where the student's eyes leave the board.
 - **A note points exactly at what it explains and stays only for its part** (Adrian, 4 Nov 2026:
   *"make the arrow point exactly at 6 choose 0? then when you move on to another part, can remove it
   (with the annotation)"*): a note on a piece of a term uses `inside` (the ↑ sits under that piece);
