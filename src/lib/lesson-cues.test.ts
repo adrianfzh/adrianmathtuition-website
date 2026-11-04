@@ -162,14 +162,12 @@ describe('the verifier’s new rules', () => {
     delete sc.steps[0].heading;
     expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/two headings stack/);
   });
-  it('clipIssues: a second note under the same line is flagged (4 Nov 2026)', () => {
+  it('clipIssues: two notes under one line in ONE beat are flagged; in two beats they are not (4 Nov 2026)', () => {
     const msgs = clipIssues(clip([
-      { say: 'Multiply x by x to get x squared here.', do: [{ do: 'note', text: 'first note', near: 'a' }] },
-      { say: 'Then add three to the x squared term.', do: [{ do: 'note', text: 'second note', near: 'b' }] },
-      { say: 'Equals sign on the next line of working.', do: [{ do: 'note', text: 'other line', near: 'c' }] },
-    ])).map(m => m.message).join(' | ');
-    expect(msgs).toMatch(/a second note under line 1/);
-    expect(msgs).not.toMatch(/under line 2/);
+      { say: 'Multiply x by x to get x squared here.', do: [{ do: 'note', text: 'first note', near: 'a' }, { do: 'note', text: 'second note', near: 'b', on: 'squared here' }] },
+      { say: 'Then add three to the x squared term.', do: [{ do: 'note', text: 'later note', near: 'a' }] },
+    ])).map(m => m.message);
+    expect(msgs.filter(m => /two notes under line 1 in one beat/.test(m))).toHaveLength(1);
   });
   it('narrationIssues: a clip beat of five words or fewer is too short to voice (1 Nov 2026)', () => {
     const msgs = narrationIssues(clip([{ say: 'Plus dot dot dot again.', do: [] }, { say: 'Three terms are enough, so plus dot dot dot.', do: [] }]));
