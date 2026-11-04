@@ -103,7 +103,7 @@ hard cap must be enforced"* … *"make it from september holidays to 1st week of
   (Sec 6 / JC 4) with the Sec cap toggle applied as before.
 - **Small-class period** = the September school holidays (the Saturday after the first Friday of
   September) to **7 October**, both ends in. Inside it a makeup / reschedule / additional / trial only
-  fills a class up to its weekly limit. This is NOT `lib/exam-season.ts`'s EOY window (20 Sep–10 Nov,
+  fills a class up to its weekly limit. This is NOT `lib/exam-season.ts`'s EOY window (6 Sep–10 Nov since 4 Nov 2026,
   which drives the exam pills) — Adrian chose the narrower dates.
 - **Weekly cap is now enforced server-side**: `add-weekly-slot` and `switch` answer 409
   `{full:true, currentCount, capacity}` when `Enrolled Count` (active enrollments only) ≥ the limit;
@@ -488,7 +488,7 @@ Read-only student history view. Cookie-auth protected (same 30-day session), PWA
 
 ### Exam season
 
-- Hardcoded windows in `lib/exam-season.ts` (`EXAM_WINDOWS`): WA1 02-01→03-15, WA2 04-01→05-29, WA3 07-01→09-05, EOY 09-20→11-10 (MM-DD, SGT)
+- Hardcoded windows in `lib/exam-season.ts` (`EXAM_WINDOWS`): WA1 02-01→03-15, WA2 04-01→05-29, WA3 07-01→09-05, EOY 09-06→11-10 (MM-DD, SGT). **EOY opens the day after WA3 closes since 4 Nov 2026** (was 09-20; Adrian: "we need to start 2~3 weeks before the actual exam dates to prepare for the exams" — the first Sec EOY papers fell on 23 Sep and the JC1 promos on 28 Sep, so 20 Sep gave three days to enter dates + topics; WA2 and WA3 already open ~3 weeks ahead). **Prelims close on 30 Sep** (`PRELIM_END`) — they sit in the WA3 window but JC prelims ran 25 Aug – 29 Sep in 2026; only `seasonClosed` uses it. The per-student preparation (the next-lesson pack in exam mode ~3 weeks before the student's own exam date, `lib/teaching-order.ts examSeason`) is keyed to the entered date, not to these windows. There is no longer a gap between WA3 and EOY.
 - Season handover helpers (2026-08-22, all unit-tested): `nextExamType(active)` (WA3→EOY; in a gap → the next window to start; EOY→null), `previousExamType()`, `scheduleExamTypes(active)` (what the schedule/lesson-context fetch), `pickDisplaySeason(records, active, today)` → `{examType, upcoming}` per student, `defaultEditExamType(pick, active)`, `levelSpecificExamType(type, level)` (Sec4/JC2 Prelim, JC1 Promo). See the "Season handover" chip-feature note under /admin/schedule.
 - Manual override: Airtable `Settings` row `exam_season_override` → `{"forceOn":"WA2"}` (or `null`)
 - `resolveActiveExamType(override)` — override if set, else date-based window, else null

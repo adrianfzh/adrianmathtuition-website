@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkExamInfoStatus, seasonSatisfyingTypes, nextExamType, previousExamType, scheduleExamTypes, pickDisplaySeason, defaultEditExamType, levelSpecificExamType, seasonClosed, seasonWindowType, ExamRecord } from './exam-season';
+import { checkExamInfoStatus, seasonSatisfyingTypes, nextExamType, previousExamType, scheduleExamTypes, pickDisplaySeason, defaultEditExamType, levelSpecificExamType, seasonClosed, seasonWindowType, getActiveExamTypeByDate, ExamRecord } from './exam-season';
 
 const rec = (examType: string, over: Partial<ExamRecord> = {}): ExamRecord => ({
   id: 'rec1',
@@ -51,7 +51,7 @@ describe('checkExamInfoStatus season equivalence', () => {
 
 describe('season handover (EOY entered during WA3)', () => {
   const aug22 = new Date('2026-08-22T04:00:00Z'); // WA3 window
-  const sep10 = new Date('2026-09-10T04:00:00Z'); // gap between WA3 and EOY
+  const jun10 = new Date('2026-06-10T04:00:00Z'); // gap between WA2 and WA3 (none between WA3 and EOY since 4 Nov 2026)
   const nov20 = new Date('2026-11-20T04:00:00Z'); // after EOY
   const jan20 = new Date('2026-01-20T04:00:00Z'); // before WA1
 
@@ -61,18 +61,18 @@ describe('season handover (EOY entered during WA3)', () => {
     expect(nextExamType('EOY', aug22)).toBeNull();
   });
   it('nextExamType in a gap is the window that starts next', () => {
-    expect(nextExamType(null, sep10)).toBe('EOY');
+    expect(nextExamType(null, jun10)).toBe('WA3');
     expect(nextExamType(null, jan20)).toBe('WA1');
     expect(nextExamType(null, nov20)).toBeNull();
   });
   it('previousExamType is the window that just ended', () => {
-    expect(previousExamType(sep10)).toBe('WA3');
+    expect(previousExamType(jun10)).toBe('WA2');
     expect(previousExamType(jan20)).toBeNull();
     expect(previousExamType(nov20)).toBe('EOY');
   });
   it('scheduleExamTypes loads active + next + Prelim/Promo, deduped', () => {
     expect(scheduleExamTypes('WA3', aug22)).toEqual(['WA3', 'EOY', 'Prelim', 'Promo']);
-    expect(scheduleExamTypes(null, sep10)).toEqual(['WA3', 'EOY', 'Prelim', 'Promo']);
+    expect(scheduleExamTypes(null, jun10)).toEqual(['WA2', 'WA3', 'Prelim', 'Promo']);
     expect(scheduleExamTypes('EOY', aug22)).toEqual(['EOY', 'Prelim', 'Promo']);
     expect(scheduleExamTypes(null, nov20)).toEqual(['EOY', 'Prelim', 'Promo']);
   });
@@ -129,12 +129,19 @@ describe('season end (Adrian, 4 Nov 2026: "all the EOYs and promos are done")', 
     expect(seasonClosed('EOY', '2026-11-10')).toBe(false);
     expect(seasonClosed('EOY', '2026-11-11')).toBe(true);
     expect(seasonClosed('Promo', '2026-11-11')).toBe(true);   // Promo sits in the EOY window
-    expect(seasonClosed('Prelim', '2026-09-10')).toBe(true);  // Prelim sits in the WA3 window
+    expect(seasonClosed('Prelim', '2026-09-10')).toBe(false); // Prelim sits in the WA3 window but closes 30 Sep (JC prelims)
+    expect(seasonClosed('Prelim', '2026-10-01')).toBe(true);
+    expect(seasonClosed('EOY', '2026-09-10')).toBe(false);   // EOY is ON from 6 Sep
     expect(seasonClosed('EOY', '2026-08-20')).toBe(false);    // entered early, before the window
     expect(seasonClosed('Custom', '2026-12-01')).toBe(false);
     expect(seasonClosed(null, '2026-12-01')).toBe(false);
     expect(seasonWindowType('Promo')).toBe('EOY');
     expect(seasonWindowType('Custom')).toBeNull();
+  });
+  it('EOY opens the day after WA3 closes (3 weeks before the first EOY / promo papers)', () => {
+    expect(getActiveExamTypeByDate(new Date('2026-09-05T04:00:00Z'))).toBe('WA3');
+    expect(getActiveExamTypeByDate(new Date('2026-09-06T04:00:00Z'))).toBe('EOY');
+    expect(getActiveExamTypeByDate(new Date('2026-11-11T04:00:00Z'))).toBeNull();
   });
   it('a date-less row in a CLOSED season is over, not TBC (the three Sec 3 A Math rows)', () => {
     const rows = [
@@ -162,18 +169,18 @@ describe('season end (Adrian, 4 Nov 2026: "all the EOYs and promos are done")', 
 
 describe('defaultEditExamType / levelSpecificExamType', () => {
   const aug22 = new Date('2026-08-22T04:00:00Z');
-  const sep10 = new Date('2026-09-10T04:00:00Z');
+  const jun10 = new Date('2026-06-10T04:00:00Z');
   it('opens on the season still ahead', () => {
     expect(defaultEditExamType({ examType: 'EOY', upcoming: true, closed: false }, 'WA3', aug22)).toBe('EOY');
     expect(defaultEditExamType({ examType: 'WA3', upcoming: true, closed: false }, 'WA3', aug22)).toBe('WA3');
   });
   it('season over → next season (what Adrian is entering now)', () => {
     expect(defaultEditExamType({ examType: 'WA3', upcoming: false, closed: false }, 'WA3', aug22)).toBe('EOY');
-    expect(defaultEditExamType({ examType: 'WA3', upcoming: false, closed: false }, null, sep10)).toBe('EOY');
+    expect(defaultEditExamType({ examType: 'WA3', upcoming: false, closed: false }, null, jun10)).toBe('WA3');
   });
   it('nothing saved → active season, or the next one in a gap', () => {
     expect(defaultEditExamType({ examType: null, upcoming: false, closed: false }, 'WA3', aug22)).toBe('WA3');
-    expect(defaultEditExamType({ examType: null, upcoming: false, closed: false }, null, sep10)).toBe('EOY');
+    expect(defaultEditExamType({ examType: null, upcoming: false, closed: false }, null, jun10)).toBe('WA3');
   });
   it('EOY over with nothing after it stays EOY', () => {
     expect(defaultEditExamType({ examType: 'EOY', upcoming: false, closed: false }, 'EOY', new Date('2026-11-05T04:00:00Z'))).toBe('EOY');

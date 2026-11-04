@@ -12,8 +12,18 @@ export const EXAM_WINDOWS: ExamWindow[] = [
   { type: 'WA1', start: '02-01', end: '03-15' },
   { type: 'WA2', start: '04-01', end: '05-29' },
   { type: 'WA3', start: '07-01', end: '09-05' },
-  { type: 'EOY', start: '09-20', end: '11-10' },
+  // EOY opens the day after WA3 closes: the first Sec EOY papers fall ~23 Sep
+  // and the JC1 promos ~28 Sep, and the dates + topics must be in three weeks
+  // before (Adrian, 4 Nov 2026: "we need to start 2~3 weeks before the actual
+  // exam dates to prepare for the exams"). Was 09-20.
+  { type: 'EOY', start: '09-06', end: '11-10' },
 ];
+
+/**
+ * Prelims sit in the WA3 window but run past its end — JC prelims to the last
+ * week of September (2026: 25 Aug – 29 Sep) — so a Prelim row closes later.
+ */
+export const PRELIM_END = '09-30';
 
 /**
  * Returns the exam type active today based on hardcoded calendar windows.
@@ -199,7 +209,8 @@ export function seasonClosed(examType: string | null | undefined, today: string)
   const t = seasonWindowType(examType);
   if (!t) return false;
   const w = EXAM_WINDOWS.find(x => x.type === t)!;
-  return today.slice(5, 10) > w.end;
+  const end = examType === 'Prelim' ? PRELIM_END : w.end;
+  return today.slice(5, 10) > end;
 }
 
 /**
