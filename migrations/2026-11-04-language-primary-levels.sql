@@ -13,7 +13,7 @@
 --     raise exception 'only english, chinese and higher_chinese have extraction rules (subject %)', d_subject; end if;
 --   if d_subject = 'english' and d_level not in ('EL','EL_NA','EL_NT','S1_EL','S2_EL','S3_EL','S3_EL_NA','P4_EL','P5_EL','P6_EL') then … end if;
 --   if d_subject = 'chinese' and d_level not in ('P4_CL','P5_CL','P6_CL') then … end if;
---   if d_subject = 'higher_chinese' and d_level not in ('P5_HCL','P6_HCL') then … end if;
+--   if d_subject = 'higher_chinese' and d_level not in ('P4_HCL','P5_HCL','P6_HCL') then … end if;
 --
 -- language_items / language_texts already allowed subject chinese / higher_chinese (their CHECKs).
 -- Checked after applying: chinese P5_CL, higher_chinese P6_HCL, english P4_EL and english EL pass the

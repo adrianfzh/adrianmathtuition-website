@@ -60,7 +60,13 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     P4 built the same day: `P4_EXAM_TOPICS` (15 topics) + the bot's `canonical_topics.json` `P4` key,
     `PRIMARY_QLEVELS` = P4/P5/P6, worker law v2026-11-04-p4 §Primary 4 papers (archive
     `exam-extraction-2026-11-04b`). The inbox name reader was NOT taught P4 (a "P4 EL …" name would read as
-    maths). Chinese is released the same way when its cut finishes. **Still owed: read the first banked
+    maths). **Chinese + Higher Chinese cut and RELEASED 4 Nov 2026: 339 rows** (P4_CL 43, P4_HCL 40, P5_CL
+    80, P5_HCL 57, P6_CL 70, P6_HCL 49; ~1.0 GB; `~/PL-staging/chinese/`). **P4 Higher Chinese** was not in
+    the plan — the vendor's P4 Chinese books hold HCL papers (covers say 高级华文) — kept, and the bank function
+    + law now allow `P4_HCL`. 17 dropped (practice/mock/mid-year/WA behind an SA2 bookmark, 4 printed twice).
+    Most files are Paper 2 + key only (the books leave composition out). P6 covers saying only 年终考试 but
+    dated August (Nan Hua 2018–22, Maha Bodhi 2018–19, Maris Stella HCL 2022) filed Prelim. 2019 P6 CL
+    "Catholic" bookmark is really Pei Chun. Order now: P6 → P5 → English → P4 → Chinese. **Still owed: read the first banked
     English paper (and later the first Chinese one) back against its pages** (`language_items` /
     `language_texts` by level) and tell Adrian.
   - **English cut 4 Nov 2026: 239 rows held** (P4_EL 82, P5_EL 82, P6_EL 75; 978 MB; staging + page map
