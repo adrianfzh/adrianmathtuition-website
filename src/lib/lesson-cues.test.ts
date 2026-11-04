@@ -158,9 +158,9 @@ describe('the verifier’s new rules', () => {
     const sc = c.scenes[0] as Extract<LessonScript['scenes'][number], { type: 'equation-steps' }>;
     sc.heading = 'Expand term by term';
     sc.steps[0].heading = 'Expand term by term, from ⁶C₀';
-    expect(clipIssues(c).map(m => m.message).join(' | ')).toMatch(/repeats the scene heading/);
-    sc.steps[0].heading = 'Work out each power';
-    expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/repeats the scene heading/);
+    expect(clipIssues(c).map(m => m.message).join(' | ')).toMatch(/two headings stack/);
+    delete sc.steps[0].heading;
+    expect(clipIssues(c).map(m => m.message).join(' | ')).not.toMatch(/two headings stack/);
   });
   it('clipIssues: a second note under the same line is flagged (4 Nov 2026)', () => {
     const msgs = clipIssues(clip([

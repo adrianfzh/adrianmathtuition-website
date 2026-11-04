@@ -88,6 +88,9 @@ no focus, no clear.
   "C two", "falls")? Light only the term being worked on, never the whole line. No shortcut words. A ✗
   note shows the wrong step AND the right one, or is left out.
 - **The topic bible's "Required wording" is said word for word** — it is Adrian's own phrasing.
+- **Pointing back at a line that has scrolled away = a beat of its own** ("Look back at the expansion.
+  The x to the six is in the third term.") that writes nothing and only lights the piece on that old
+  line — the board scrolls back to it. Write the next line in the NEXT beat.
 - **One new thing per beat** (two at most) plus at most one pointing mark.
 - **The trap: one plain sentence, at the step where it bites**, with a `circle` on the
   token it is about. Not a warning speech before it.

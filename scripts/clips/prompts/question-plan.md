@@ -57,7 +57,11 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   **One token per term on BOTH lines** (Adrian, 4 Nov 2026: *"when saying the calculation term by
   term, highlight that term only"*) — the voice lights one term at a time. When the question then
   matches a second bracket ("same shape"), plan a line that writes the two brackets one under the
-  other, each part its own token, so the matching parts can be lit side by side. The
+  other, each part its own token, so the matching parts can be lit side by side.
+  **A bracket's own ( and ) stay in the token of the part beside them** (`\left(px^2` · `+\dfrac qx\right)^6`
+  is wrong too — use `(px^2` and `+\frac qx)^6` with plain brackets): a lone `(` token leaves a wide gap
+  on the board ("( px²  + q/x )⁶", 4 Nov 2026). **No line heading on the first line when the scene has a
+  heading** — two headings stack. The
   same holds for maths inside an `intro`: a long identity goes on the board as a line, not in the intro.
 - **A result used later is written again where it is used** (31 Oct 2026: two Binomial clips failed
   the look — "talked about but hidden" — because `−224x³` and the long expansion line had scrolled

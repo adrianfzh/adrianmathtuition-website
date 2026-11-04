@@ -785,9 +785,8 @@ export function clipIssues(script: LessonScript): Issue[] {
     if (s.type === 'check') out.push(issue('error', at, 'a clip carries no check — it explains one thing and stops'));
     // 1 Nov 2026 (Binomial third term): "Expand term by term" over "Expand term by term, from ⁶C₀" —
     // the first line's heading said the scene heading again.
-    if (s.type === 'equation-steps' && s.heading && s.steps[0]?.heading
-      && s.steps[0].heading.toLowerCase().startsWith(s.heading.toLowerCase().replace(/[.:]$/, ''))) {
-      out.push(issue('warn', `${at}.steps[0].heading`, 'repeats the scene heading just above it — drop one of them'));
+    if (s.type === 'equation-steps' && s.heading && s.steps[0]?.heading) {
+      out.push(issue('warn', `${at}.steps[0].heading`, 'two headings stack at the top (the scene heading, then this one) — drop one of them'));
     }
     if (!hasBeats(s)) { out.push(issue('error', at, 'every scene of a clip is cut into beats')); return; }
     // Said but not shown (Adrian, 18 Oct 2026, build #1): every number and named letter the voice

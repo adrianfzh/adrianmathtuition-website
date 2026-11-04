@@ -227,9 +227,10 @@ his videos and his notes; the voice says them as written, each with the board as
   whole line — so the simplified line has one token per term too.
 - **Matching the second bracket ("same shape")**: write `\left(px^2+\frac qx\right)^6` and the new
   bracket one under the other, and light the matching parts as they are said (px² ↔ 2x², q/x ↔ −3/(2x)).
-- **Which term holds x⁶**: say "the third term", never "the x⁶ term is the third"; light the third
-  term ON the expansion line (the board scrolls back to show it), so the student sees where x⁶ comes
-  from — or write that term again beside the working.
+- **Which term holds x⁶ — look back, in a beat of its own**: "Look back at the expansion. The x to the
+  six is in the third term." That beat WRITES NOTHING and only lights the third term ON the expansion
+  line (`s2`), so the board scrolls back up to it and the student sees where x⁶ comes from. The next
+  beat writes the coefficient line (the board scrolls down again). Never "the x⁶ term is the third".
 
 **13. Calculator values (Adrian, 1 Nov 2026)** — in the videos he reads values straight off the
 calculator ("7 choose 2 is 21, 2 to the power of 5 is 32"). The clips keep the 31 Oct in-between
