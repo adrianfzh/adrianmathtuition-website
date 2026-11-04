@@ -610,7 +610,9 @@ something new or serious appears. Route `/api/cron/security-scan` (admin or cron
 `?dry=1` reads without saving); rules + wording `lib/security-scan.ts` (pure, tested);
 fetching `lib/security-scan-store.ts`. Reads Supabase's security advisors for both projects
 through the Management API (`SUPABASE_ACCESS_TOKEN`, Production scope only — the route
-cannot run on a preview), and really reads every table the anon role is granted, as anon
+cannot run on a preview; the token must be a scoped token on BOTH projects with **Advisors: Read,
+Database: Read, Backups: Read** — the first token, made for the backup check, had Backups only and
+the first live call on 4 Nov 2026 answered 403 "Missing required permission(s): advisors_read"), and really reads every table the anon role is granted, as anon
 (`set role anon`), plus public storage buckets. Compares with the last ok run's
 `meta.keys` and answers `lines[]`: every ERROR, plus any NEW warning / anon-readable table /
 public bucket; INFO is ignored; empty = silence. It sends nothing itself — the bot's
