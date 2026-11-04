@@ -25,7 +25,13 @@ const SCREEN_CSS = `
   /* A narrow panel (paper and solutions side by side, 2 Nov 2026): a long line scrolls
      sideways on its own instead of widening the whole page and cutting it off. */
   body{overflow-x:hidden}
-  .sol-line,.sol-align,.sol-sub{max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+  .sol-line,.sol-align,.sol-sub{max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:2px 0}
+  /* iPad Safari squashed the "=" rows that hold a tall vector or fraction — the cells line
+     up by baseline and WebKit sizes such a grid row too short, so the row above and below
+     ate into it (Adrian, 4 Nov 2026: "the lines eat into each other"). Centred cells size
+     by content, and a short "cos θ" centred on a tall fraction is how display maths sits
+     anyway. The PDF (Chrome) keeps its baseline rows. */
+  .sol-align{align-items:center;row-gap:8px}
   @media screen {
     /* A little smaller (Adrian, 3 Nov 2026: "fonts for solutions can be slightly smaller"); two fingers zoom it. */
     body{font-size:14px;line-height:1.55;padding:12px 14px 40px}
