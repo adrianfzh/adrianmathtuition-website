@@ -510,6 +510,23 @@ check or the pictures, each costing a whole new run. He said **"Yes, build it"**
   mis-heard are made again (their files are removed; the voice maker skips lines that have one).
   A resumed run from `written` does the same.
 
+### Adrian's notes on a clip that exists: `--revise` (4 Nov 2026)
+
+Adrian, 4 Nov 2026: *"the fix to make video generation correction doesn't seem to make it faster"* —
+`--resume` only helps a late failure; his notes change the words, so each round was still a full run
+(~19 min, 7 of them two writers starting from a blank page). He said **"yes"** to editing the clip that
+exists: `node scripts/clips/question-clip.mjs <questionId> --revise "<his notes>"` (or
+`--revise-file <path>`).
+- The clip as it stands is written out as `draft-P.json`; ONE Opus reviser
+  (`scripts/clips/prompts/reviser.md`) changes only what the notes ask (and the board when they need
+  it, the maths check run again) and writes `draft-N.json`.
+- One blind read of that draft; the maths, fit, rules, look and pictures run as ever.
+- Lines whose words did not change keep their voice (assemble.mjs keeps it by position; the voice
+  maker skips a line that has one), so only changed lines are voiced. A line added in the middle
+  re-voices the lines after it.
+- The notes are kept in `data/clip-runs/<slug>/revise-notes.md`. A NEW clip, or a rule change that
+  should rewrite everything, is still a full run.
+
 ### Not done / next
 
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.

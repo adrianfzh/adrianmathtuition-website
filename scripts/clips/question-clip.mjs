@@ -13,6 +13,11 @@
 // player fix. After a change to the writer's rules or a bible, run WITHOUT it (the words must be
 // written again). A failed voice check is also tried once more on its own before the run fails.
 //
+// --revise "<Adrian's notes>" (or --revise-file <path>) (Adrian, 4 Nov 2026: "yes" to ~10 min a round
+// instead of ~19): apply notes to the clip that EXISTS — one reviser edits it (scripts/clips/prompts/
+// reviser.md) instead of two writers starting from a blank page, one blind read of that edit, and only
+// the lines whose words changed are voiced again. The maths, fit, rules, look and pictures run as ever.
+//
 // Needs: .env.local (Supabase service key, MINIMAX_API_KEY, GOOGLE_API_KEY, ADMIN_SESSION_SECRET),
 // the `claude` CLI signed in (the agents are plan-billed Claude Code runs, never the API),
 // /usr/bin/python3 with sympy, ffmpeg, Chrome, and a running site at --base (for the fit + the look):
@@ -266,7 +271,13 @@ const CKPT = path.join(RUN, 'checkpoint.json');
 const sha = (f) => { try { return createHash('sha1').update(fs.readFileSync(f)).digest('hex'); } catch { return null; } };
 const STAGES = ['written', 'voiced', 'stored'];
 let resume = null;
-if (args.resume) {
+const REVISE_NOTES = args['revise-file'] ? fs.readFileSync(String(args['revise-file']), 'utf8').trim() : typeof args.revise === 'string' ? args.revise.trim() : null;
+if (args.revise !== undefined || args['revise-file'] !== undefined) {
+  if (!REVISE_NOTES) { console.error('--revise needs the notes: --revise "…" or --revise-file <path>'); process.exit(2); }
+  if (!readJson(LESSON) || !readJson(PLAN)) { console.error(`--revise: no clip to revise (${path.relative(ROOT, LESSON)} / the plan is missing) — make it first`); process.exit(2); }
+}
+const REVISE = !!REVISE_NOTES;
+if (args.resume && !REVISE) {
   const c = readJson(CKPT);
   if (c && c.question_id === QID && STAGES.includes(c.stage) && c.lesson && c.lesson === sha(LESSON) && c.plan === sha(PLAN)) {
     resume = c.stage;
@@ -300,12 +311,21 @@ const level = String(q.level).toUpperCase();
 const topic = q.subgroup?.topic || q.topics?.[0];
 if (!topic) await finish('refused', 'no-topic: the question is not filed under a topic');
 const bibleRel = `data/clip-bibles/${QC.bibleFile(topic, level)}`;
+if (REVISE) {
+  // The clip as it stands becomes draft P (words + actions), for the reviser to edit.
+  const cur = readJson(LESSON);
+  const beats = cur.scenes.flatMap((sc, k) => (sc.beats ?? []).map(b => ({ say: b.say, ...(b.asks ? { asks: b.asks } : {}), ...(b.aside ? { aside: b.aside } : {}), ...(b.calc ? { calc: b.calc } : {}), do: b.do, ...(k ? { board: k } : {}) })));
+  fs.writeFileSync(path.join(RUN, 'draft-P.json'), JSON.stringify({ slug: SLUG, draft: 'P', beats }, null, 1) + '\n');
+  fs.appendFileSync(path.join(RUN, 'revise-notes.md'), `\n## ${new Date().toISOString()}\n${REVISE_NOTES}\n`);
+  for (const f of ['draft-N.json', 'checkpoint.json']) fs.rmSync(path.join(RUN, f), { force: true });
+} else {
 if (!PHOTO) {  // a photo run cleared and filled the folder in photoGather
   fs.rmSync(RUN, { recursive: true, force: true });
   fs.mkdirSync(RUN, { recursive: true });
 }
 for (const p of [PLAN, LESSON]) fs.rmSync(p, { force: true });
 fs.rmSync(path.join(ROOT, 'public/lessons', SLUG), { recursive: true, force: true });
+}
 await saveRow({ topic, bible: bibleRel });
 
 // ── 1b bible ────────────────────────────────────────────────────────────────
@@ -332,9 +352,16 @@ fs.writeFileSync(path.join(RUN, 'question.json'), JSON.stringify({
     answer_source: 'two independent blind solves that agreed (answers-agree.py); `solution` is one of them, checked by the other\'s answer — treat it as the bank\'s checked solution' } : {}),
 }, null, 1) + '\n');
 const CHAIN_TOOL = 'Read,Write,Edit,Glob,Grep,Bash(/usr/bin/python3 scripts/clips/chain-check.py:*)';
-const planReply = await step('plan', () => agent('plan', 'opus',
+const planReply = REVISE ? null : await step('plan', () => agent('plan', 'opus',
   `Read scripts/clips/prompts/question-plan.md and follow it. slug: ${SLUG}. The question: data/clip-runs/${SLUG}/question.json. Write data/clip-plans/${SLUG}.json.`, { tools: CHAIN_TOOL }));
-log(`  plan: ${planReply}`);
+if (planReply !== null) log(`  plan: ${planReply}`);
+if (REVISE) {
+  const reply = await step('revise', () => agent('revise', 'opus',
+    `Read scripts/clips/prompts/reviser.md and follow it. slug: ${SLUG}. Adrian's notes:\n${REVISE_NOTES}`,
+    { effort: 'high', tools: 'Read,Write,Edit,Glob,Grep,Bash(node scripts/clips/draft-check.mjs:*),Bash(/usr/bin/python3 scripts/clips/chain-check.py:*)' }));
+  log(`  revise: ${reply}`);
+  if (!readJson(path.join(RUN, 'draft-N.json'))) await finish('failed', 'the reviser wrote no draft-N.json');
+}
 let plan = readJson(PLAN);
 if (!plan) await finish('failed', 'the board plan was not written');
 if (plan.refuse) { put('plan', false, `${plan.refuse}: ${plan.why}`); await finish('refused', `${plan.refuse}: ${plan.why}`); }
@@ -401,8 +428,8 @@ if (!fit.pass) await finish('failed', `fit: ${fit.detail}`.slice(0, 300));
 // ── 2b drafts + 5 blind read ────────────────────────────────────────────────
 const WRITE_TOOL = 'Read,Write,Edit,Glob,Grep,Bash(node scripts/clips/draft-check.mjs:*)';
 const WRITER = (key, extra = '') => `Read scripts/clips/prompts/writer.md and follow it. You are draft ${key}. One clip only: slug ${SLUG} (plan data/clip-plans/${SLUG}.json). Write data/clip-runs/${SLUG}/draft-${key}.json.${extra}`;
-await step('drafts', () => Promise.all([agent('draft-A', 'opus', WRITER('A'), { effort: 'high', tools: WRITE_TOOL }), agent('draft-B', 'opus', WRITER('B'), { effort: 'high', tools: WRITE_TOOL })]));
-if (!readJson(path.join(RUN, 'draft-A.json')) && !readJson(path.join(RUN, 'draft-B.json'))) await finish('failed', 'no draft was written');
+if (!REVISE) await step('drafts', () => Promise.all([agent('draft-A', 'opus', WRITER('A'), { effort: 'high', tools: WRITE_TOOL }), agent('draft-B', 'opus', WRITER('B'), { effort: 'high', tools: WRITE_TOOL })]));
+if (!REVISE && !readJson(path.join(RUN, 'draft-A.json')) && !readJson(path.join(RUN, 'draft-B.json'))) await finish('failed', 'no draft was written');
 
 async function blindRead(only) {
   fs.rmSync(path.join(RUN, 'blind-read.json'), { force: true });
@@ -412,7 +439,7 @@ async function blindRead(only) {
   const low = br ? Math.min(...Object.values(br.scores ?? { x: 0 })) : 0;
   return { br, pass: !!br && br.verdict === 'pass' && low >= 4, low };
 }
-let rd = await step('read', () => blindRead(null));
+let rd = await step('read', () => blindRead(REVISE ? 'N' : null));
 // Up to two rewrites with the reader's notes (step 1 needed A2 / A3 on two of its seven clips);
 // each rewrite is read again by a FRESH reader. Still below 4 → the clip is dropped (SPEC §2 step 5).
 for (const key of ['C', 'D']) {
@@ -457,6 +484,15 @@ checkpoint('written');
 
 // ── 6 voice ─────────────────────────────────────────────────────────────────
 const voiceOnce = async () => {
+  // A line with new words has no voice yet; its old timing file (same name, the old words) must go too,
+  // or the timer keeps it and every cue of that line fires at the old words' times (4 Nov 2026, the
+  // first --revise: 13 cues off).
+  const cur = readJson(LESSON);
+  cur?.scenes.forEach((sc, k) => (sc.beats ?? []).forEach((b, j) => {
+    if (b.audio) return;
+    const base = path.join(ROOT, 'public/lessons', SLUG, `scene-${String(k + 1).padStart(2, '0')}-b${j + 1}`);
+    for (const ext of ['.mp3', '.timing.json']) fs.rmSync(base + ext, { force: true });
+  }));
   voiced = true;
   const g = sh('node', ['scripts/lessons/generate-narration.mjs', SLUG]);
   if (!g.ok) return { ok: false, detail: `voice: ${g.out.trim().slice(-300)}` };

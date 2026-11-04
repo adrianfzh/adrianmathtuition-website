@@ -610,6 +610,9 @@ clip must follow are §1–§2; this is HOW to change one without making it wors
 `node scripts/clips/question-clip.mjs <questionId> --resume` starts after the last step that passed —
 SPEC-CLIP-PIPELINE.md §9 "A failed run starts again from where it failed", 4 Nov 2026. After a rule
 or bible change, a full run without `--resume`.)
+(Adrian's notes on a QUESTION clip that exists: `--revise "<his notes>"` edits the clip instead of
+writing it again — about half the time; SPEC-CLIP-PIPELINE.md §9, 4 Nov 2026. His notes still go into
+§2 here in the same commit.)
 1. Change the plan / draft only where asked (`data/clip-plans/<slug>.json`, `data/clip-runs/<slug>/draft-*.json`,
    and `blind-read.json` `fixed_beats` — it overrides the draft, so edit it too).
 2. `assemble.mjs` → `gate.mjs` (must PASS) → the tests (`clip-ask.test.ts` names board lines; catalog
