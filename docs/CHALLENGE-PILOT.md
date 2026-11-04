@@ -74,5 +74,8 @@ each topics."* Read as: every AM / EM practice topic (≥ 20 questions served) g
 ## After approval — how real results check the label
 The nightly `/api/cron/math-practice-difficulty` (SPEC-TWINS §12) moves **Standard ↔ Advanced**
 from students' first tries, so an approved **Advanced** pilot question gets confirmed or demoted
-by itself. It **never touches a Challenging row** — so nothing yet demotes a Challenge question
-that students find easy. That is a gap, not built (Adrian's call).
+by itself. **Since 4 Nov 2026 it also checks Challenge** (Adrian: "can we make a auto grader/classifier
+for the difficulty?" → "Yes, build it"): with ≥ 20 first tries, a Challenge question fewer than half
+get wrong moves down to Advanced (`planMathLevel`, `MATH_CHALLENGE_KEEP_MIN_WRONG`). The first guess at a
+level already exists — the bot's `gateDifficulty` grader for generated questions, the extraction lane's
+DIFFICULTY_SHAPES tagging for school papers — so no new classifier was built.

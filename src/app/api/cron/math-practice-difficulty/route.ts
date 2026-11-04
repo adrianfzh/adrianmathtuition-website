@@ -7,7 +7,8 @@
 // next step" help), the preview identity left out. With ≥ 20 first tries: under 25 % wrong →
 // Core, over 55 % → Advanced, written to questions.difficulty (what practice_next and every
 // count read). `math_practice_difficulty` keeps the starting level; a hand change after results
-// pins the question; Challenge is never touched. Each move → math_practice_difficulty_changes.
+// pins the question; a Challenge question moves down to Advanced when fewer than half get it wrong
+// first time (4 Nov 2026) — results never make one. Each move → math_practice_difficulty_changes.
 //
 // ?weekly=1 (Mondays 9am SGT via /api/cron/math-practice-difficulty-weekly, 0 1 * * 1 UTC): sends Adrian ONE Telegram line about the week's
 // moves (nothing when none) and marks them reported. ?dry=1 = report only, no writes.

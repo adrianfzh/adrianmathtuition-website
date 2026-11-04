@@ -72,9 +72,29 @@ describe('planMathLevel', () => {
     expect(p.write).toBeNull();
     expect(p.change).toBeNull();
   });
-  it('Challenge is never touched, and never made', () => {
-    expect(planMathLevel('Challenging', null, tally(40, 1))).toEqual({ row: null, write: null, change: null });
+  it('results never make a Challenge question', () => {
     expect(planMathLevel('Advanced', null, tally(40, 40)).write).toBeNull();   // already Advanced, not promoted
+    expect(planMathLevel('Standard', null, tally(40, 40)).write).toBe('Advanced');   // one step only
+  });
+  it('a Challenge question most students get first time → Advanced (4 Nov 2026)', () => {
+    const p = planMathLevel('Challenging', null, tally(20, 9));   // 45% wrong
+    expect(p.write).toBe('Advanced');
+    expect(p.change).toEqual({ from: 'Challenging', to: 'Advanced' });
+    expect(p.row).toMatchObject({ starting_level: 'Challenging', level: 'Advanced', source: 'results' });
+  });
+  it('a Challenge question stays while half or more get it wrong, or with too few tries', () => {
+    expect(planMathLevel('Challenging', null, tally(20, 10)).write).toBeNull();   // exactly half: stays
+    expect(planMathLevel('Challenging', null, tally(30, 25)).write).toBeNull();
+    expect(planMathLevel('Challenging', null, tally(19, 0)).write).toBeNull();    // under 20 tries
+  });
+  it('even an easy Challenge question drops one step a night, not straight to Core', () => {
+    expect(planMathLevel('Challenging', null, tally(40, 1)).write).toBe('Advanced');
+  });
+  it('set back to Challenge by hand after results → pinned, results leave it alone', () => {
+    const stored = { starting_level: 'Challenging', level: 'Advanced', source: 'results' as const, pinned: false };
+    const p = planMathLevel('Challenging', stored, tally(40, 2));
+    expect(p.write).toBeNull();
+    expect(p.row).toMatchObject({ pinned: true, level: 'Challenging' });
   });
   it('the starting level survives a second move', () => {
     const stored = { starting_level: 'Advanced', level: 'Standard', source: 'results' as const, pinned: false };
@@ -103,5 +123,12 @@ describe('mathWeeklyLine', () => {
     expect(line).toMatch(/1 were Advanced → now Core/);
     expect(line).toMatch(/A Math · Logarithms — 2 of 20 wrong/);
     expect(line).toMatch(/1 Core → now Advanced/);
+  });
+  it('lists Challenge questions that moved down', () => {
+    const line = mathWeeklyLine([
+      { from_level: 'Challenging', to_level: 'Advanced', starting_level: 'Challenging', attempts: 24, wrong: 6, label: 'E Math · Matrices' },
+    ]);
+    expect(line).toMatch(/1 were Challenge → now Advanced/);
+    expect(line).toMatch(/E Math · Matrices — 6 of 24 wrong/);
   });
 });

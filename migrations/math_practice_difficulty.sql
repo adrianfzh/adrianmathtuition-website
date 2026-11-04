@@ -9,7 +9,8 @@
 --                    (the nightly job /api/cron/math-practice-difficulty wrote it).
 --   pinned         — Adrian changed the level by hand AFTER results did: his new tap wins and
 --                    results stop touching that question.
--- Results move Standard (Core) ↔ Advanced only; a Challenging question is never touched.
+-- Results move Standard (Core) ↔ Advanced; since 4 Nov 2026 a Challenging question moves DOWN to
+-- Advanced when fewer than half get it wrong (lib/practice-difficulty.ts). Results never make one.
 create table if not exists public.math_practice_difficulty (
   question_id     uuid primary key references public.questions(id) on delete cascade,
   starting_level  text,

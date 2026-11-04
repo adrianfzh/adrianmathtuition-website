@@ -155,8 +155,10 @@ export function estimateLevel(workScore: number, solve: TestSolve): DifficultyLe
 //     "Stuck? next step" help (they could not do it alone). No marks recorded → the verdict.
 //   • Same thresholds as science: ≥ 20 first tries; under 25 % wrong → Core, over 55 % wrong →
 //     Advanced; in between → no change (the level it has stays).
-//   • Results move Core ↔ Advanced only. A Challenge question is never touched, and results
-//     never make one.
+//   • Results move Core ↔ Advanced, and (4 Nov 2026, Adrian: "Yes, build it") move a Challenge
+//     question DOWN to Advanced when, with ≥ 20 first tries, fewer than half get it wrong (most
+//     students get it). Results never make a Challenge question. Once it is Advanced the usual
+//     Core ↔ Advanced rule applies from the next night.
 //   • If Adrian changes a level by hand after results moved it, his tap wins: the question is
 //     pinned and results leave it alone.
 
@@ -174,6 +176,8 @@ export const MATH_LEVEL_LABEL: Record<MathLevel, string> = { Standard: 'Core', A
 
 /** A first try is wrong under this share of the marks. */
 export const MATH_WRONG_BELOW_SHARE = 0.5;
+/** A Challenge question stays Challenge only while at least this share get it wrong first time. */
+export const MATH_CHALLENGE_KEEP_MIN_WRONG = 0.5;
 
 export type MathAttempt = {
   student: string;
@@ -238,14 +242,16 @@ export function planMathLevel(
     reason: `${tally.wrong} of ${tally.attempts} students got it wrong first time (${Math.round(tally.wrongShare * 100)}%)`,
   };
   const none: MathDifficultyPlan = { row: null, write: null, change: null };
-  if (cur === 'Challenging') return none;                                   // Challenge stays as he set it
   if (stored?.pinned) return { ...none, row: { ...stored, ...counts } };
   // Adrian changed it by hand after results did → his tap wins from now on.
   if (stored && stored.source === 'results' && mathLevelOf(stored.level) !== cur) {
     return { ...none, row: { ...stored, ...counts, level: cur, pinned: true, reason: `${counts.reason}; changed by hand after results — your tap kept` } };
   }
   const base: MathDifficultyStored = stored ?? { starting_level: current, level: cur, source: 'start', pinned: false };
-  const target = tally.attempts >= min ? mathLevelFromWrongShare(tally.wrongShare) : null;
+  // Challenge only ever moves down, one step, when most students get it first time.
+  const target = tally.attempts < min ? null
+    : cur === 'Challenging' ? (tally.wrongShare < MATH_CHALLENGE_KEEP_MIN_WRONG ? 'Advanced' : null)
+    : mathLevelFromWrongShare(tally.wrongShare);
   if (!target || target === cur) return { ...none, row: { ...base, ...counts, level: cur } };
   return {
     row: { ...base, ...counts, level: target, source: 'results', changed: true },
@@ -264,7 +270,13 @@ export function mathWeeklyLine(changes: readonly MathChange[], listMax = 5): str
   if (!changes.length) return '';
   const down = changes.filter(c => c.from_level === 'Advanced' && c.to_level === 'Standard');
   const up = changes.filter(c => c.from_level === 'Standard' && c.to_level === 'Advanced');
+  const chal = changes.filter(c => c.from_level === 'Challenging');
   const lines = [`🎚 Maths practice levels: students' first tries moved ${changes.length} question${changes.length === 1 ? '' : 's'} this week.`];
+  if (chal.length) {
+    lines.push(`⬇️ ${chal.length} were Challenge → now ${chal.every(c => c.to_level === 'Standard') ? 'Core' : 'Advanced'} (most students got them first time):`);
+    for (const c of chal.slice(0, listMax)) lines.push(`• ${c.label} — ${c.wrong} of ${c.attempts} wrong`);
+    if (chal.length > listMax) lines.push(`• …and ${chal.length - listMax} more`);
+  }
   if (down.length) {
     lines.push(`⬇️ ${down.length} were Advanced → now Core (most students got them):`);
     for (const c of down.slice(0, listMax)) lines.push(`• ${c.label} — ${c.wrong} of ${c.attempts} wrong`);
