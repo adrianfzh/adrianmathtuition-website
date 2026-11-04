@@ -63,6 +63,8 @@ export function numberWordsToDigits(text) {
 // "times" → *, "cubed" → "cube". Both sides go through the same map, so a misheard word still costs.
 const SPOKEN_SYMBOLS = [
   [/\b(a|one) half\b/g, ' 1/2 '], [/\b(a|one) third\b/g, ' 1/3 '], [/\b(a|one) quarter\b/g, ' 1/4 '],
+  // 4 Nov 2026: "negative an eighth" written "-1/8".
+  [/\b(a|an|one) fifth\b/g, ' 1/5 '], [/\b(a|an|one) sixth\b/g, ' 1/6 '], [/\b(a|an|one) seventh\b/g, ' 1/7 '], [/\b(a|an|one) eighth\b/g, ' 1/8 '], [/\b(a|an|one) ninth\b/g, ' 1/9 '], [/\b(a|an|one) tenth\b/g, ' 1/10 '],
   [/\btimes\b|×|\*/g, ' x '], [/\bcubed\b/g, ' cube '], [/\bsquared\b/g, ' square '],
   [/\bover\b/g, ' / '], [/\bplus\b|\+/g, ' plus '], [/\bequals\b|=/g, ' equals '],
   // 16 Oct 2026: "seven to the power X" heard as "7 ^ x"; "write two" heard as "right two".

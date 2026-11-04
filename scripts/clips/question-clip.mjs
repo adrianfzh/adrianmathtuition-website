@@ -268,7 +268,16 @@ async function photoGather(origin) {
 
 // ── resume point (4 Nov 2026) ───────────────────────────────────────────────
 const CKPT = path.join(RUN, 'checkpoint.json');
-const sha = (f) => { try { return createHash('sha1').update(fs.readFileSync(f)).digest('hex'); } catch { return null; } };
+// The lesson's words and actions only: the voice step writes audio / timing paths into the lesson, so a
+// failed voice step must not make the checkpoint look stale (4 Nov 2026: a --resume after a voice
+// failure fell back to a full run).
+const sha = (f) => {
+  try {
+    const raw = fs.readFileSync(f, 'utf8');
+    const body = f === LESSON ? JSON.stringify(JSON.parse(raw), (k, v) => (k === 'audio' || k === 'timing' ? undefined : v)) : raw;
+    return createHash('sha1').update(body).digest('hex');
+  } catch { return null; }
+};
 const STAGES = ['written', 'voiced', 'stored'];
 let resume = null;
 const REVISE_NOTES = args['revise-file'] ? fs.readFileSync(String(args['revise-file']), 'utf8').trim() : typeof args.revise === 'string' ? args.revise.trim() : null;
