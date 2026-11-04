@@ -208,6 +208,39 @@ one place that failure is visible (nothing can alarm for the alarm).
 > alarm gets tuned out. `/admin/ops` passes no exclusion, so a genuinely dead
 > health check still shows amber there.
 
+## 🧹 An alert that fixes itself is DELETED when it is fixed (Adrian, 4 Nov 2026: "Yes, as a rule")
+
+Adrian: *"if it's okay, why not just delete the message?"* Any Telegram alert about a state
+that can end by itself keeps the sent message's id and deletes it when the state ends.
+Telegram lets a bot delete its own message for 48 h: under 47 h → deleted (every message for
+that state, repeats included); older, or no id kept → ONE short "✅ … again" / "▶ … again" line.
+
+- **The store**: Supabase table `alert_notices` (MAIN project; `migrations/alert_notices.sql`;
+  RLS on, `service_role` only): `key, chat_id, message_id, thread_id, text, sent_at, cleared_at`.
+  One `key` per state. Shared with the bot (its `lib/alert-notices.js`, and the worker shell
+  through `scripts/notify-adrian.js --alert-key` / `--clear-alert`) — bot `docs/OPS.md` lists
+  its alerts.
+- **The helper**: `src/lib/alert-notices.ts` — `raiseAlert(key, category, text, { onlyIfNew,
+  repeatEveryMs, plain })` and `clearAlert(key, againText)`; pure parts tested in
+  `alert-notices.test.ts`. `sendTelegram` takes an optional third argument (`onSent` hands back
+  the message id, `plain` skips HTML); existing callers are unchanged. Never throws; an
+  unreadable table never blocks the alert.
+- **Converted on the website**:
+
+| Route | Key | Deleted when |
+|---|---|---|
+| `api/bot-health` ⚠️ unhealthy / 🚨 DOWN (15-min repeat, now kept in the table, not memory) | `bot-health` | the next run finds the bot healthy |
+| `api/health-check` 🚨 FAILED | `health-check` | the run where every check is green (the old "✅ recovered" line now only when too old) |
+| `api/cron/marking-stall` ⏸ N papers waiting (repeats every 2 h) | `marking-stall` | a run where the reason is gone |
+| same, 🔑/🗝 a login's sign-in ends soon | `signin-ends:<login key>` | that login has a new end date (signed in again) or is gone (`renewedLogins`) |
+| `api/cron/sheet-auto-release` ⚠️ could not auto-release | `sheet-release:<runId>` | `api/admin/release-with-sheet` releases that paper (the desk's Approve & release) |
+| `api/cron/page-gap-sweep` 🔌 self-fix could not do its own work | `page-gap-selffix` | the next run with no fault |
+| `api/cron/backup-check` 🗄 failed / could not run | `backup-check` | the next full green run |
+| `api/cron/file-backup` 🗄 failed / could not run — the table is now its dedupe (`onlyIfNew`: one line per run of failures, not one a night) | `file-backup` | the next green night |
+| `api/cron/leak-test` 🔒 leak / could not run | `leak-test` | the next green week |
+
+New alerts about a state that ends by itself are built this way.
+
 ## The board — `/admin/ops`
 
 Read-only, cookie-auth, hub tile 🩺. `/api/admin/ops` returns the newest logbook

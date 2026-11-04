@@ -147,3 +147,12 @@ describe('🗝 year-long keys (20 Oct 2026)', () => {
     expect(next['ablnon-gmail-com']).toMatchObject({ five_hour: null, seven_day: null, kind: 'key' });
   });
 });
+
+describe('renewedLogins — a sign-in warning is deleted once the login is signed in again (4 Nov 2026)', () => {
+  it('a new end date or a login gone → over; the same end date, or never told → not', async () => {
+    const { renewedLogins } = await import('./marking-stall');
+    const prev = { a: { ends: '2026-11-05T00:00:00Z', day: true, week: true }, b: { ends: '2026-11-06T00:00:00Z', hours: true }, c: { ends: '2026-11-07T00:00:00Z' }, d: { ends: '2026-11-08T00:00:00Z', day: true } };
+    const next = { a: { ends: '2027-11-05T00:00:00Z' }, b: { ends: '2026-11-06T00:00:00Z', hours: true }, c: { ends: '2027-01-01T00:00:00Z' } };
+    expect(renewedLogins(prev, next).sort()).toEqual(['a', 'd']);
+  });
+});

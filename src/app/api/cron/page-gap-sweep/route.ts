@@ -47,6 +47,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert, clearAlert } from '@/lib/alert-notices';
 import { rebuildRunPdfs } from '@/lib/rebuild-run-pdfs';
 import { cronAuth } from '@/lib/cron-auth';
 import {
@@ -217,15 +218,19 @@ export async function GET(req: NextRequest) {
     // 🔌 The self-fix couldn't do its job for a reason that has nothing to do
     // with the paper. This line is NOT subject to alreadyReported: a broken
     // repair arm is worth saying every six hours until somebody fixes it.
+    // 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): kept under 'page-gap-selffix' (src/lib/alert-notices.ts)
+    // and DELETED on the next run that has no fault; a ✅ line only when one is too old to delete.
+    let faultLine: string | null = null;
     if (faults.size) {
-      lines.push(
+      faultLine =
         `🔌 The page-gap self-fix could not do its own work: ${[...faults].slice(0, 3).join(' · ')}.\n`
         + 'Pages were found but nothing was repaired — this is our plumbing, not the paper. '
-        + `Check ADMIN_PASSWORD on the deployment.\n${SITE}/admin/ops`,
-      );
+        + `Check ADMIN_PASSWORD on the deployment.\n${SITE}/admin/ops`;
     }
 
     for (const line of lines) await sendTelegram(line, 'marking').catch(() => {});
+    if (faultLine) await raiseAlert('page-gap-selffix', 'marking', faultLine).catch(() => {});
+    else await clearAlert('page-gap-selffix', '✅ The page-gap self-fix works again.', { category: 'marking' }).catch(() => null);
 
     const repaired = report.reduce((n, r) => n + r.repaired, 0);
     const open = report.reduce((n, r) => n + r.remaining.length, 0);
@@ -235,7 +240,7 @@ export async function GET(req: NextRequest) {
     // A sweep that found gaps and repaired none of them because of a tool fault
     // is a FAILED run, so the ops board ambers instead of reading "all quiet".
     await logJobRun('page-gap-sweep', !faults.size, faults.size ? `${summary} · self-fix broken: ${[...faults][0]}` : summary).catch(() => {});
-    return NextResponse.json({ ok: true, summary, sent: lines.length, noticed, report });
+    return NextResponse.json({ ok: true, summary, sent: lines.length + (faultLine ? 1 : 0), noticed, report });
   } catch (e) {
     await logJobRun('page-gap-sweep', false, (e as Error).message.slice(0, 200)).catch(() => {});
     return NextResponse.json({ ok: false, error: (e as Error).message, report }, { status: 502 });

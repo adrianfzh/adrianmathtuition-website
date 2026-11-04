@@ -3,7 +3,7 @@ import { settleOpenHumanities } from '@/lib/humanities-settle-run';
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { airtableRequest } from '@/lib/airtable';
-import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert, clearAlert } from '@/lib/alert-notices';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
 import { listPrintablesForLevel, dropboxFolderFor } from '@/lib/notes-list';
@@ -1588,18 +1588,19 @@ export async function GET(req: NextRequest) {
 
   if (failures.length && failSig !== prevSig) {
     try {
-      await sendTelegram(
+      // 🧹 kept under 'health-check' (src/lib/alert-notices.ts) so the all-clear can delete it
+      await raiseAlert('health-check', 'alerts',
         `🚨 <b>Health check FAILED</b> (${failures.length}/${results.length})\n\n` +
         failures.map(f => `❌ <b>${f.name}</b>: ${f.info || 'failed'}`).join('\n') +
         `\n\n✅ ${results.length - failures.length} others green`,
-        'alerts'
       );
     } catch { /* alert is best-effort */ }
   } else if (!failures.length && prevSig !== '' && prevSig !== null) {
-    // Alerting only on change means silence has to be earned: say when it clears,
-    // or a fixed problem never gets an all-clear.
+    // Alerting only on change means silence has to be earned. 4 Nov 2026 (Adrian: "if it's okay,
+    // why not just delete the message?" → "Yes, as a rule"): every 🚨 FAILED message of this run of
+    // failures is DELETED; the ✅ line goes only when one is too old to delete (Telegram: 48 h).
     try {
-      await sendTelegram(`✅ <b>Health check recovered</b> — all ${results.length} checks green`, 'alerts');
+      await clearAlert('health-check', `✅ Health check recovered — all ${results.length} checks green`, { category: 'alerts' });
     } catch { /* best-effort */ }
   }
 

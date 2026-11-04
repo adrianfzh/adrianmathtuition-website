@@ -7,7 +7,9 @@
 // Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
 import { logJobRun } from '@/lib/job-log';
-import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert, clearAlert } from '@/lib/alert-notices';
+// 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): a failure line is kept under 'leak-test' (src/lib/alert-notices.ts)
+// and DELETED by the next green run; a ✅ line only when one is too old to delete (Telegram: 48 h).
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { leakTestLine } from '@/lib/leak-test';
 import { controlProblems, mintTestSession, otherStudentProbes, probeLeaks, tableLeaks } from '@/lib/leak-test-store';
@@ -32,12 +34,13 @@ export async function GET(req: NextRequest) {
     const problems = [...t.problems, ...p.problems, ...controls];
     const line = leakTestLine(problems, t.tables, p.asked);
     await logJobRun('leak-test', problems.length === 0, line, { base, tables: t.tables, asked: p.asked, problems: problems.slice(0, 20) });
-    if (problems.length) await sendTelegram(line).catch(() => {});
+    if (problems.length) await raiseAlert('leak-test', undefined, line).catch(() => {});
+    else await clearAlert('leak-test', '✅ The weekly leak test passes again.').catch(() => null);
     return NextResponse.json({ ok: problems.length === 0, line, base, tables: t.tables, asked: p.asked, problems });
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[leak-test] could not run:', msg);
-    await sendTelegram(`🔒 The weekly leak test could not run: ${msg.slice(0, 200)}`, 'ops').catch(() => {});
+    await raiseAlert('leak-test', 'ops', `🔒 The weekly leak test could not run: ${msg.slice(0, 200)}`, { plain: true }).catch(() => {});
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

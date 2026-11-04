@@ -12,6 +12,9 @@ import { coveredRunIds } from '@/lib/sheet-queue';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert } from '@/lib/alert-notices';
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 import { releasedWithWatchLine, heldByPaperLine } from '@/lib/sheet-auto-release';
 import { computeAutoHold } from '@/lib/mark-triage';
 import { cronAuth } from '@/lib/cron-auth';
@@ -83,7 +86,8 @@ export async function GET(req: NextRequest) {
       } else {
         // Not something a cron should decide: hand it back to the desk, once.
         await sb.from('sheet_jobs').update({ auto_release_at: null, stage: `auto-release stopped — ${String(d.error || r.status).slice(0, 120)}` }).eq('id', j.id);
-        await sendTelegram(`⚠️ ${who} — could not auto-release: ${d.error || `HTTP ${r.status}`}. Release from the desk.`, 'marking').catch(() => {});
+        // 🧹 kept under 'sheet-release:<runId>' and deleted when the desk releases it (release-with-sheet, 4 Nov 2026)
+        await raiseAlert(`sheet-release:${j.run_id}`, 'marking', `⚠️ ${esc(who)} — could not auto-release: ${esc(String(d.error || `HTTP ${r.status}`))}. Release from the desk.`).catch(() => {});
         out.push({ id: j.id, ok: false, note: String(d.error || r.status) });
       }
     } catch (e) {

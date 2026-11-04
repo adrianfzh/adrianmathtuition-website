@@ -7,7 +7,9 @@
 // Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
 import { logJobRun } from '@/lib/job-log';
-import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert, clearAlert } from '@/lib/alert-notices';
+// 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): a failure line is kept under 'file-backup' (src/lib/alert-notices.ts)
+// and DELETED by the next green run; a ✅ line only when one is too old to delete (Telegram: 48 h).
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { fileBackupLine, fileBackupProblems } from '@/lib/file-backup';
 import { runFileBackup } from '@/lib/file-backup-store';
@@ -37,12 +39,14 @@ export async function GET(req: NextRequest) {
       copied: r.copied, bytes: r.copiedBytes, failures: r.failures.length, pending,
       caughtUp: pending === 0, expiredRemoved: r.expiredRemoved,
     });
-    if (problems.length) await sendTelegram(`🗄 ${line}`, 'ops').catch(() => {});
+    // onlyIfNew: the table is this job's dedupe — one line per run of failures, not one a night
+    if (problems.length) await raiseAlert('file-backup', 'ops', `🗄 ${line}`, { onlyIfNew: true }).catch(() => {});
+    else await clearAlert('file-backup', '✅ The file backup works again.', { category: 'ops' }).catch(() => null);
     return NextResponse.json({ ok: problems.length === 0, line, ...r });
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[file-backup] failed:', msg);
-    await sendTelegram(`🗄 The file backup could not run: ${msg.slice(0, 200)}`, 'ops').catch(() => {});
+    await raiseAlert('file-backup', 'ops', `🗄 The file backup could not run: ${msg.slice(0, 200)}`, { onlyIfNew: true, plain: true }).catch(() => {});
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

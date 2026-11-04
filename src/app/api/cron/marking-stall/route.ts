@@ -12,10 +12,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert, clearAlert } from '@/lib/alert-notices';
 import { slotAccountRows } from '@/lib/slot-accounts';
 import { getSlotAccounts, getSlotUsage, getMarkingAlarms, setMarkingAlarms } from '@/lib/slot-accounts-store';
-import { loginHealths, signinWarnings, stallDecision, type QueuedPaper, type SigninTold, type StallState } from '@/lib/marking-stall';
+import { loginHealths, renewedLogins, signinWarnings, stallDecision, type QueuedPaper, type SigninTold, type StallState } from '@/lib/marking-stall';
 import { isBenchRun } from '@/lib/desk-state';
 import { cronAuth } from '@/lib/cron-auth';
 
@@ -49,8 +49,16 @@ export async function GET(req: NextRequest) {
     const warn = signinWarnings(health, (alarms.signin ?? {}) as SigninTold, now);
     const sent: string[] = [];
     if (!dry) {
-      if (stall.message && await sendTelegram(esc(stall.message))) sent.push('stall');
-      for (const w of warn.send) if (await sendTelegram(esc(w.text))) sent.push(`signin:${w.key}`);
+      // 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): every ⏸ line (the first and each 2-hourly repeat) is
+      // kept under 'marking-stall' and DELETED once the reason goes away; the 🔑/🗝 sign-in lines under
+      // 'signin-ends:<login>' are deleted once that login is signed in again (src/lib/alert-notices.ts).
+      if (stall.message && await raiseAlert('marking-stall', undefined, esc(stall.message))) sent.push('stall');
+      if (!stall.reason) { const c = await clearAlert('marking-stall', '▶ Marking is moving again.'); if (c && c.open) sent.push('stall cleared'); }
+      for (const w of warn.send) if (await raiseAlert(`signin-ends:${w.key}`, undefined, esc(w.text))) sent.push(`signin:${w.key}`);
+      for (const k of renewedLogins((alarms.signin ?? {}) as SigninTold, warn.told)) {
+        const c = await clearAlert(`signin-ends:${k}`, null);
+        if (c && c.open) sent.push(`signin cleared:${k}`);
+      }
       // a line that failed to send is not remembered as told — the next tick tries again
       const stallState = stall.message && !sent.includes('stall') ? { since: stall.state.since ?? null, told_at: (alarms.stall as StallState | undefined)?.told_at ?? null } : stall.state;
       const told = { ...warn.told };

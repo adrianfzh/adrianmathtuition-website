@@ -165,6 +165,21 @@ export function signinWarnings(h: LoginHealth[], told: SigninTold, now: number =
   return { send, told: out };
 }
 
+/**
+ * Logins whose sign-in warning is over (4 Nov 2026, Adrian: "Yes, as a rule" — an alert that fixes
+ * itself is deleted): the told map for that login was reset by signinWarnings — a new end date
+ * (signed in again) or the login is gone. Their 🔑/🗝 lines (key `signin-ends:<login key>`) are
+ * deleted. Only logins that were actually told something count.
+ */
+export function renewedLogins(prev: SigninTold, next: SigninTold): string[] {
+  return Object.keys(prev || {}).filter((k) => {
+    const p = prev[k];
+    if (!p || !(p.week || p.day || p.hours)) return false;
+    const n = next?.[k];
+    return !n || n.ends !== p.ends;
+  });
+}
+
 export interface QueuedPaper { id: string; queued_at: string; claimed: boolean }
 export interface StallState { since?: string | null; told_at?: string | null }
 

@@ -10,7 +10,9 @@
 // Auth: CRON_SECRET or ADMIN_PASSWORD bearer (lib/cron-auth; the scheduler header is not proof, 4 Nov 2026).
 import { NextRequest, NextResponse } from 'next/server';
 import { logJobRun } from '@/lib/job-log';
-import { sendTelegram } from '@/lib/telegram';
+import { raiseAlert, clearAlert } from '@/lib/alert-notices';
+// 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): a failure line is kept under 'backup-check' (src/lib/alert-notices.ts)
+// and DELETED by the next green run; a ✅ line only when one is too old to delete (Telegram: 48 h).
 import { allProblems, backupCheckLine } from '@/lib/backup-check';
 import { runBackupCheck } from '@/lib/backup-check-store';
 import { cronAuth } from '@/lib/cron-auth';
@@ -36,13 +38,14 @@ export async function GET(req: NextRequest) {
         files: result.files.length,
         managedChecked: result.managed.some((m) => m.checked),
       });
-      if (problems.length) await sendTelegram(`🗄 ${line}`, 'ops').catch(() => {});
+      if (problems.length) await raiseAlert('backup-check', 'ops', `🗄 ${line}`).catch(() => {});
+      else await clearAlert('backup-check', '✅ The backup check passes again.', { category: 'ops' }).catch(() => null);
     }
     return NextResponse.json({ ok: problems.length === 0, line, problems, ...result });
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[backup-check] failed:', msg);
-    if (!quick) await sendTelegram(`🗄 Backup check could not run: ${msg.slice(0, 200)}`, 'ops').catch(() => {});
+    if (!quick) await raiseAlert('backup-check', 'ops', `🗄 Backup check could not run: ${msg.slice(0, 200)}`, { plain: true }).catch(() => {});
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

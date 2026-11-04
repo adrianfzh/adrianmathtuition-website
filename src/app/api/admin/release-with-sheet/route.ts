@@ -23,6 +23,7 @@
 // was nothing worth practising — there is no PDF to choose and no assignment to
 // write: the marked paper is released on its own and the response says why
 // (`kind:'no-sheet'`), rather than 404-ing "No PDF in the sheet's folder yet".
+import { clearAlert } from '@/lib/alert-notices';
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { verifyAgentAuth } from '@/lib/agent-auth';
@@ -312,6 +313,9 @@ export async function POST(req: NextRequest) {
   // hand before the sheet finished) that call never happens — so the flip is
   // repeated here, idempotently, and this button is the one that lets them out.
   const heldItems = await releaseHeldPracticeItems(getSupabaseAdmin(), runId);
+  // 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): the clock's "⚠️ could not auto-release" line for this
+  // paper is deleted now that it is released (src/lib/alert-notices.ts; raised in cron/sheet-auto-release).
+  await clearAlert(`sheet-release:${runId}`, null).catch(() => null);
 
   return NextResponse.json({
     ok: true, released, pdfPath,

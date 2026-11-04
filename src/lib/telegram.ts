@@ -153,7 +153,15 @@ export async function sendTelegramDocument(
   }
 }
 
-export async function sendTelegram(text: string, category?: NotifyCategory): Promise<boolean> {
+/** The sent message, for a sender that wants to delete it later (src/lib/alert-notices.ts, 4 Nov 2026). */
+export type SentMessage = { chat_id: string | number; message_id: number; thread_id?: number | null };
+
+export async function sendTelegram(
+  text: string,
+  category?: NotifyCategory,
+  /** onSent (4 Nov 2026): hands back the sent message's id; plain: send without HTML parsing. Existing callers are unchanged. */
+  opts?: { onSent?: (m: SentMessage) => void; plain?: boolean },
+): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const routed = await resolveTopic(category);
   const chatId = routed?.chatId ?? process.env.TELEGRAM_CHAT_ID;
@@ -167,13 +175,19 @@ export async function sendTelegram(text: string, category?: NotifyCategory): Pro
     body: JSON.stringify({
       // No link card: a desk URL used to unfurl the homepage's generic preview
       // under every notice (Adrian, 8 Sep 2026: "doesn't say which marked pdf").
-      chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true,
+      chat_id: chatId, text, ...(opts?.plain ? {} : { parse_mode: 'HTML' }), disable_web_page_preview: true,
       ...(routed?.threadId ? { message_thread_id: routed.threadId } : {}),
     }),
   });
   if (!res.ok) {
     console.error('[telegram] Send failed:', await res.text());
     return false;
+  }
+  if (opts?.onSent) {
+    try {
+      const j = await res.json();
+      if (j?.result?.message_id) opts.onSent({ chat_id: j.result.chat?.id ?? chatId, message_id: j.result.message_id, thread_id: j.result.message_thread_id ?? null });
+    } catch { /* the send still counts */ }
   }
   return true;
 }
