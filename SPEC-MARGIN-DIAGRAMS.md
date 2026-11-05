@@ -538,7 +538,7 @@ questions?"* → *"Yes, build it"* (show samples on real questions first).
 - **In the chat answers too (5 Nov 2026, Adrian: *"Can bot answering questions have this capability as
   well?"*)** — the bot's solver now sends the same `pc_arrange` picture with a P&C answer, unasked, when
   the working uses groups, gaps, fixed ends, choosing or cases; same count check, a wrong count draws
-  nothing. Built on bot branch `claude/bot-diagrams-pc-questions-fs2dnl`, live on Adrian's yes. Bot
+  nothing. LIVE 5 Nov 2026 (Adrian: "Yes", bot PR #27), colour-coded: one colour per step, its note in the same colour. Bot
   `docs/FIGURES.md` §pc_arrange "In the chat answers too".
 
 ## Addendum — `function_sketch`: the correct sketch in the solution box (29 Oct 2026) — BUILT, switched OFF (ON since 30 Oct 2026, bot fly.toml)
