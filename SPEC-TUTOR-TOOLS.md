@@ -259,7 +259,16 @@ release door (`/api/admin/mark-triage`) sees `tutor:` and only stamps `released_
 (`released_via 'auto:tutor'`) — no Telegram, push, notebook, voice clips or practice work.
 Adrian still gets the bot's usual "📝 Marked from queue" Telegram line for each one.
 
-**Known gaps (prototype):** the tutor's name is not yet on the cover or in the pen's voice
+**First end-to-end test, 5 Nov 2026 (test site):** a one-page algebra sheet with a planted sign
+slip in Q2 → waited 0 min (queue empty), marked by the Mac in about 3 min, **5/6**, Q2 caught
+(M1 A0, "−3x + 2x = −x"), weak topic "Expansion of algebraic expressions −1", red-pen PDF and
+cover open from the tutor's page; no student name on the run. **Until this is promoted, the
+bot's release call goes to the MAIN site**, which does not have the tutor guard yet: the
+test run was released `auto:none` and got one `notebook_mistakes` row under `tutor:…`
+(deleted by hand). After a promote the guard handles it.
+
+**Known gaps (prototype):** the marked PDF and cover say "Adrian's Math Tuition" at the top
+and "the practice sheet that came with this paper" at the foot (no sheet exists for tutors);  the tutor's name is not yet on the cover or in the pen's voice
 (§4 "Voice and name"); no Practice Again for tutors; tutor papers show on Adrian's desk among
 his own (filter by student `Tutor: …`); the bleed table and other "all runs" reports count
 tutor papers unless they filter `student_id like 'tutor:%'`; no payment.
