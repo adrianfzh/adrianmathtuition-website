@@ -21,6 +21,7 @@ import { pdfToPageImages } from '@/lib/pdf-pages';
 import { applyPatch, applyStickerOp, BLANK_PAGE_URL, BOARD_PAPERS, changedPages, displayPageCount, paperUrl, placeSticker, pollMayReplace, shareText, versionWhen, VERSION_WHY, type BoardRole, type PaperGroup, type StickerOp, type VersionReason } from '@/lib/shared-board';
 import BoardStickers, { type ShownSticker } from '@/components/BoardStickers';
 import { strokesToSvg } from '@/lib/annotate/layer';
+import BoardSummaryView from '@/components/BoardSummaryView';
 
 type Version = { id: string; created_at: string; reason: VersionReason; tutor_strokes: number; student_strokes: number };
 
@@ -61,6 +62,8 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
   const [arrange, setArrange] = useState(false);
   const [adding, setAdding] = useState(false);
   const [more, setMore] = useState(false);
+  /** The student's summary (6 Nov 2026) — the student makes it, the tutor reads it. */
+  const [showSummary, setShowSummary] = useState(false);
   /** 🗂 Page thumbnails (5 Nov 2026): every page small, tap one to jump to it. */
   const [thumbs, setThumbs] = useState<Record<number, { w: number; h: number }> | null>(null);
   const fileMode = useRef<'pages' | 'sticker'>('pages');
@@ -416,6 +419,9 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
               className={`rounded-lg border px-3 py-1.5 text-sm ${arrange ? 'border-sky-600 bg-sky-600 text-white font-semibold' : 'bg-white'}`}>{arrange ? 'Done' : 'Move photos'}</button>
           )}
           <button type="button" onClick={openThumbs} aria-expanded={!!thumbs} className={`rounded-lg border px-3 py-1.5 text-sm ${thumbs ? 'border-slate-900 bg-slate-900 text-white' : 'bg-white'}`}>Pages</button>
+          {board.role === 'student' && (
+            <button type="button" onClick={() => setShowSummary(true)} className="rounded-lg border border-emerald-700 bg-white px-3 py-1.5 text-sm font-semibold text-emerald-800">Summary</button>
+          )}
           {board.role === 'tutor' && (
             <button type="button" onClick={() => { setShare(x => !x); setMore(false); }} className="rounded-lg border bg-white px-3 py-1.5 text-sm" aria-expanded={share}>
               {board.linkOn ? 'Share' : 'Link off'}
@@ -428,6 +434,7 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
           <div className="mt-2 flex flex-wrap gap-2 rounded-xl border bg-white p-2" data-more>
             <button type="button" disabled={!!busy} onClick={() => { setMore(false); void downloadPdf(); }} className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50">Download PDF</button>
             <button type="button" onClick={() => { setMore(false); setShowVersions(true); void loadVersions(); }} className="rounded-lg border px-3 py-1.5 text-sm">Earlier versions</button>
+            {board.role === 'tutor' && <button type="button" onClick={() => { setMore(false); setShowSummary(true); }} className="rounded-lg border px-3 py-1.5 text-sm">Student’s summary</button>}
             {board.role === 'tutor' && <button type="button" disabled={!!busy} onClick={() => { setMore(false); void saveTemplate(); }} className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50">Save as template</button>}
           </div>
         )}
@@ -534,6 +541,7 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
         )}
       </header>
       {phone && <p className="mb-2 px-1 text-xs text-slate-500">One finger writes. Two fingers move the page.</p>}
+      {showSummary && <BoardSummaryView role={board.role} api={api} headers={auth.headers} onClose={() => setShowSummary(false)} />}
       <StudentInk
         key={`${board.id}:${board.channel}:${gen}`}
         runId={`board-${board.id}`}

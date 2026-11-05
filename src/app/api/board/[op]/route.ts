@@ -10,6 +10,8 @@
 //   POST /api/board/restore { id?, versionId, which: 'mine' | 'both' }   bring a version back ('both' = tutor only)
 //   POST /api/board/page    { id?, paper }     add a template page (lib/shared-board BOARD_PAPERS)
 //   POST /api/board/sticker { id?, change }    add / move / resize / remove a photo sticker
+//   GET  /api/board/summary[?id=]              the student's summary, and whether the board changed since
+//   POST /api/board/summary { id? }            make it (the STUDENT only; again only when the board changed)
 import { NextResponse, after } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -17,14 +19,17 @@ import { boardAccess, boardLink, channelName, type BoardAccess } from '@/lib/boa
 import { createDownloadUrls, createUploadUrl, handinKey, keyFromUrl, safeExt } from '@/lib/student-files';
 import { tutorRunStudentId } from '@/lib/tutor-portal';
 import { validateInkPages, type InkPages } from '@/lib/student-ink';
-import { applyStickerOp, BOARD_PAPERS, displayPageCount, lastInkedPage, MAX_BOARD_PAGES, MAX_VERSIONS, paperUrl, parseStickerOp, strokeCount, versionReason, withPhotoAppended, type Sticker, type VersionReason } from '@/lib/shared-board';
+import { applyStickerOp, BOARD_PAPERS, displayPageCount, lastInkedPage, pagesToRead, type PageText, MAX_BOARD_PAGES, MAX_VERSIONS, paperUrl, parseStickerOp, strokeCount, versionReason, withPhotoAppended, type Sticker, type VersionReason } from '@/lib/shared-board';
 import { contentDisposition } from '@/lib/marked-pdf-filename';
 import { renderBoardPage } from '@/lib/board-render';
 import { readBoard } from '@/lib/board-read';
+import { makeSummary } from '@/lib/board-summary-store';
+import { summarySig, type BoardSummary } from '@/lib/board-summary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+// 120 s: a summary reads the board, then the writer thinks (up to two tries).
+export const maxDuration = 120;
 
 type Sb = ReturnType<typeof getSupabaseAdmin>;
 /** Keep a snapshot of both layers (lib/shared-board versionReason says when), and only the newest MAX_VERSIONS. */
@@ -41,6 +46,15 @@ async function keepVersion(sb: Sb, boardId: string, tutor: InkPages, student: In
 
 /** A cheap fingerprint of the sticker list, so the poll can tell a screen that missed a live change. */
 const stickerStamp = (l: Sticker[]) => l.map(x => `${x.id}:${x.x},${x.y},${x.w},${x.h}`).join('|');
+
+/** The saved summary, and whether the board changed since it was made (a page written on, or read since). */
+async function summaryState(boardId: string): Promise<{ summary: BoardSummary | null; stale: boolean }> {
+  const { data } = await getSupabaseAdmin().from('shared_boards').select('pages, tutor_ink, student_ink, stickers, page_text, summary').eq('id', boardId).single();
+  const b = data as { pages: { url: string | null }[]; tutor_ink: InkPages; student_ink: InkPages; stickers: Sticker[]; page_text: PageText; summary: BoardSummary | null };
+  if (!b.summary) return { summary: null, stale: true };
+  const behind = pagesToRead(b, b.page_text ?? {}, Date.now(), 0).length > 0;
+  return { summary: b.summary, stale: behind || summarySig(b.page_text ?? {}) !== b.summary.sig };
+}
 
 const notFound = () => NextResponse.json({ error: 'This board is closed or the link has changed. Ask your tutor for the new link.' }, { status: 404 });
 const idOf = (req: Request) => new URL(req.url).searchParams.get('id');
@@ -126,6 +140,11 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': contentDisposition(name, 'attachment'), 'Cache-Control': 'private, no-store' },
     });
   }
+  if (op === 'summary') {
+    const s = await summaryState(board.id);
+    return NextResponse.json(s, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
+
   if (op === 'versions') {
     const { data } = await sb.from('shared_board_versions').select('id, created_at, reason, tutor_strokes, student_strokes')
       .eq('board_id', board.id).order('created_at', { ascending: false }).limit(MAX_VERSIONS);
@@ -196,6 +215,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ op: string }> 
     if (error) return NextResponse.json({ error: 'Could not save the photo — try again.' }, { status: 500 });
     const mine = change.op === 'add' ? (await signedStickers([change.sticker]))[0] : null;
     return NextResponse.json({ ok: true, sticker: mine });
+  }
+
+  if (op === 'summary') {
+    // For the student (Adrian, 6 Nov 2026: "for the student, not for the tutor"); the tutor only reads it.
+    if (role !== 'student') return NextResponse.json({ error: 'Your student makes the summary from their board.' }, { status: 403 });
+    const now = await summaryState(board.id);
+    if (now.summary && !now.stale) return NextResponse.json({ summary: now.summary, stale: false });
+    const made = await makeSummary(board.id).catch(e => { console.error('[board summary]', (e as Error).message); return null; });
+    if (!made) return NextResponse.json({ error: 'Could not make your summary just now — try again in a minute.' }, { status: 502 });
+    if ('empty' in made) return NextResponse.json({ error: 'There is not enough maths on the board yet for a summary.' }, { status: 409 });
+    return NextResponse.json({ summary: made.summary, stale: false });
   }
 
   if (op === 'restore') {

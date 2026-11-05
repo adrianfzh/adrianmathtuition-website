@@ -377,7 +377,25 @@ refused. **Not yet tried on a real iPad with a Pencil and a real phone** — do 
 - **🗂 Pages** — on the board's bar: every page small (page, stickers and both people's writing), tap one to
   go there. The bar now folds Download PDF, Earlier versions and Save as template into **More**, so it
   takes one or two rows on a phone.
-- **Summary** — asked, designed, waiting for Adrian's yes (see the reply of 6 Nov 2026).
+- **📝 Summary — for the STUDENT** (Adrian, 6 Nov 2026: *"i want the summary functionality to be for the
+  student, not for the tutor"* → *"yes"*). The student taps **Summary** on their board → **Make my summary**:
+  one phone screen — **What we did today** (1–3 lines) · **The method** (2–6 steps on the board's own
+  example) · **Watch out** (the mistake they made on the board today, and the fix) · **Try these** (two real
+  bank questions on the lesson's topic, **Answer** hidden until tapped). Saved on the board
+  (`shared_boards.summary`, migration `migrations/2026-11-06-board-summary.sql`); reopening shows it at once;
+  **Update summary** appears only when the board changed (`lib/board-summary summarySig`). The tutor reads
+  it read-only (More → Student's summary) and cannot make it (403).
+  - **Held to the board, because nobody checks it first:** it is written by Sonnet 5.5 from the board's read
+    text only (`lib/board-read`); every number of two or more digits must be on the board — a try with one
+    that is not is sent back once, then that line is dropped (`numbersNotOnBoard` / `dropUnsupported`).
+    The topic must be one of the canonical topics; the level comes from the paper's subject or the tutor's
+    level for the student. No disclaimers, no model named, "your tutor" (CLAUDE.md student-facing rules).
+  - **Try these** come only from the bank through the student serving door: `practice_next` with a plain
+    (not IP) student's audience + `studentRow` (old syllabus, part marks, national rows all held back), and
+    only questions with a printed `answer` (`lib/board-summary-store practiceFor`).
+  - **Cost**, measured on the first test: one call, 1,741 input + 796 output tokens — about US$0.02 a
+    summary (kept on the summary as `usage`). First test (6 Nov 2026, E Math marked paper): it named the
+    sign error from the red pen (+x for −x) and served two Expansion questions; the shown answer checked.
 
 **Known gaps**: a student already on the board when the link is switched off keeps the live
 view until they reload (their saves are refused); no "clear the whole board"; no delete or
