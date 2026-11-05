@@ -7,6 +7,8 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 
 **Student Portal (`/app/*`, `/login`, `/signup`, `/api/portal/*`)**: read [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) first. Phase G safety checks → `docs/OPS.md` §Safety checks; erasure = `lib/erasure.ts`; which bank rows a student may open = `lib/serve-gate.ts`.
 
+**🧭 The app's why + decision rules (Adrian, 5 Nov 2026):** check every new feature, video, promotion or price against [`docs/APP-WHY.md`](docs/APP-WHY.md); if it does not fit, say so in one line before building. Keep both repos' copies identical.
+
 ## 🪙 Token rules — every session and every agent (Adrian, 6 Oct 2026)
 
 Every session and subagent loads this file on start, so its size and our habits are the bill. Detail + examples: [`docs/FANOUT.md`](docs/FANOUT.md) §9a.
