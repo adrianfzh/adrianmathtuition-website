@@ -275,7 +275,7 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:#222}
   <div class="q rv" data-at="0.15">${questionHtml(short.question)}</div>
   <div class="stage" id="stage">
     <div class="board" id="board">
-      <div class="card wrong rv" id="wrong" data-at="${wrongAt}"><div class="body"><div class="row"><span class="x">✗</span><span class="m">${tex(short.wrong.tex)}</span></div><div class="why">← ${esc(short.wrong.why)}</div></div></div>
+      <div class="card wrong rv" id="wrong" data-at="${wrongAt}"><div class="body"><div class="row"><span class="x">✗</span><span class="m">${tex(short.wrong.tex)}</span></div><div class="why">↑ ${esc(short.wrong.why)}</div></div></div>
       <div class="trapline rv" data-at="${whyAt}"><span>${esc(short.trap)}</span></div>
       ${short.figure ? `<div class="card figcard rv" data-at="${tl.figureAt[0].at}">${figureSvg(short.figure)}</div>` : ''}
       <div class="card right rv" data-at="${firstRight}"><div class="head">✓ THE RIGHT WAY</div>${stepsHtml}</div>

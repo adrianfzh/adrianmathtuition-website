@@ -865,3 +865,8 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
   recommendation: **the screen writes the condition as `b² − 4ac`, the same words the voice says** —
   never "discriminant", and never only the substituted form. Clip 1: red card `b² − 4ac < 0 only`;
   the working shows where the numbers come from, `b² − 4ac = 6² − 4k(k − 8) < 0`.
+- *"the <- arrow is on a new line, so it doesn't point directly to what it wants to point on the left"* —
+  the reason under the red card starts with **↑** (it sits under the step it explains), never ←. An
+  arrow on the board points at the thing it explains, in the direction it really is.
+- *"there is still the ...mp4 there when the mouse points"* — the Claude app's hover label again, not in
+  the file; proof sent (a frame pulled straight from the MP4).
