@@ -324,6 +324,8 @@ and transition and the pose still shows.
 
 ## 🎬 Video extras around the board (13 Oct 2026) — BUILT, admin + preview student only
 
+> How to make characters, clips and promo with AI models, and where assets come from: [`docs/VIDEO-PLAYBOOK.md`](VIDEO-PLAYBOOK.md) (5 Nov 2026).
+
 Adrian asked whether Seedance / Kling / Hailuo can make his teaching clips. Answer agreed:
 **not the maths** — video models draw pictures of symbols (wrong digits, no word-level timing,
 nothing editable), so every equation stays on the chalk board. They are used only for extras
