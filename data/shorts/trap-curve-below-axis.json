@@ -13,7 +13,7 @@
     "lies completely below the $x$-axis."
   ],
   "wrong": {
-    "tex": "6^2 - 4k(k - 8) < 0 \\;\\text{ only}",
+    "tex": "b^2 - 4ac < 0 \\;\\text{ only}",
     "why": "forgets the curve must open downwards"
   },
   "trap": "Below the x-axis takes TWO conditions.",
@@ -23,7 +23,7 @@
       "on": "opens downwards"
     },
     {
-      "tex": "6^2 - 4k(k - 8) < 0",
+      "tex": "b^2 - 4ac = 6^2 - 4k(k - 8) < 0",
       "on": "B squared"
     },
     {

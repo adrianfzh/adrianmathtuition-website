@@ -861,3 +861,7 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
   sign"), never a number out of nowhere. Re-check each of the other 9 against this when they are remade.
 - A cue fix on the way: a line that the voice starts reading must appear on the FIRST words that read
   it ("That gives…"), not on a word at the end of the sentence ("reject").
+- *"should we say clearly b^2-4ac <0 on screen? or discriminant < 0 on screen"* → "yes" to the
+  recommendation: **the screen writes the condition as `b² − 4ac`, the same words the voice says** —
+  never "discriminant", and never only the substituted form. Clip 1: red card `b² − 4ac < 0 only`;
+  the working shows where the numbers come from, `b² − 4ac = 6² − 4k(k − 8) < 0`.
