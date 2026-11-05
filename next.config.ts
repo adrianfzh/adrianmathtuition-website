@@ -22,7 +22,10 @@ const nextConfig: NextConfig = {
   // (commit 9c1ee5ae added 340 of them) /api/admin/questions reached 261 MB, over Vercel's 250 MB
   // limit — every preview build failed for 12 hours.
   outputFileTracingExcludes: {
-    '/api/**/*': ['./data/gce-generated/**', './_backups/**'],
+    // docs/ is never read at run time, but a process.cwd() path in the PDF renderers makes the tracer
+    // copy the whole project into each function; docs/characters (pictures) pushed
+    // api/admin/questions past Vercel's 250 MB cap (5 Nov 2026, the Shorts characters).
+    '/api/**/*': ['./data/gce-generated/**', './_backups/**', './docs/**'],
   },
   outputFileTracingIncludes: {
     // The bundled Chromium's brotli-packed binary (5 Sep 2026, replaces the
