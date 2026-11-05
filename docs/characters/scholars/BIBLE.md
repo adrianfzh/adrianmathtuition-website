@@ -2,7 +2,14 @@
 
 Read this before drawing, editing or animating either character. The method is in `docs/VIDEO-PLAYBOOK.md` §2.4 and §3d.
 
-**Status (5 Nov 2026):** written from the level-up sheets Adrian kept on 7 Oct 2026 ("keep all the modern scholar character suites"). The **Seedream** pair is proposed as THE faces, because Seedream drew this look best. **Waiting for Adrian to confirm the faces.** Until then, nothing student-facing uses them.
+**Status (5 Nov 2026): FACES APPROVED.** Adrian picked Option A, the Seedream pair (5 Nov 2026: "Option A").
+
+**The approved six-pose sets** are `approved/boy/` and `approved/girl/`:
+- six files each: `idle`, `point`, `think`, `oops`, `nod`, `cheer`
+- transparent PNG, 512×512, bottom-aligned like the tutor set
+- a preview of all twelve on the slate in `approved/final-set.png`
+
+They are not wired into anything a student sees yet. Using them on the board would be a new `look` (`docs/LESSONS.md` §The character, "A new set").
 
 | | Boy | Girl |
 |---|---|---|
@@ -92,7 +99,14 @@ The cost was about US$1: Seedream 4.5 edit on fal ×2, and GPT Image 2 (medium) 
 
 **Recommendation:** Seedream, for both characters. If chosen, redo only `oops` by editing the idle picture ("one hand up palm-out, one eyebrow raised, small pursed mouth").
 
+## How the `oops` pose was fixed (5 Nov 2026) — reuse this for any pose that comes out wrong
+
+1. Editing the approved `idle` picture with words alone ("one hand up palm-out") came back as a **wave** on both tries.
+2. What worked was giving the model **two pictures**: image 1 = the approved character (the `idle` cut-out on green), image 2 = a picture that already shows the right pose (GPT Image 2's `oops`). The prompt was "Draw the character from image 1 in the POSE from image 2 … keep EVERYTHING about the character from image 1 … take ONLY the pose from image 2". Script: `poses-2026-11-05/oops2.mjs`.
+3. The Seedream picks were boy try 4 and girl try 3.
+4. **Green tint trap:** Seedream drew the white sticker outline slightly green. After keying, pull every pixel's green down to the larger of red and blue. Nothing in these characters is green.
+
 ## Approved by Adrian
 
 - 7 Oct 2026: kept the suites ("keep all the modern scholar character suites").
-- The faces themselves and the sheet: **pending** (Seedream recommended, 5 Nov 2026).
+- 5 Nov 2026: **"Option A"**. The Seedream faces and pose set are approved, with `oops` redrawn.
