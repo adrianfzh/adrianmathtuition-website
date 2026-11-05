@@ -4,13 +4,15 @@
   "level": "AM",
   "levelLabel": "A Math",
   "topic": "Trigonometry",
+  "look": "ocean",
+  "student": "boy",
   "hook": "Most students get this wrong",
   "question": [
     "Solve $2\\sin x \\cos x = \\sin x$",
     "for $0^\\circ \\le x \\le 360^\\circ$."
   ],
   "wrong": {
-    "tex": "\\cos x = \\tfrac{1}{2} \\Rightarrow x = 60^\\circ, 300^\\circ",
+    "tex": "x = 60^\\circ,\\ 300^\\circ \\text{ only}",
     "why": "divided both sides by sin x"
   },
   "trap": "Never divide by sin x. Factorise.",
@@ -74,8 +76,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: never divide by sine X. Factorise.",
+      "hold": 1.2
     }
   ],
   "verify": "x = symbols('x', real=True)\nsols = solveset(2*sin(x)*cos(x) - sin(x), x, Interval(0, 2*pi))\nassert sols == FiniteSet(0, pi/3, pi, 5*pi/3, 2*pi)\nassert solveset(sin(x), x, Interval(0, 2*pi)) == FiniteSet(0, pi, 2*pi)\nassert solveset(2*cos(x) - 1, x, Interval(0, 2*pi)) == FiniteSet(pi/3, 5*pi/3)\nassert [deg(s) for s in sorted(sols, key=lambda s: float(s))] == [0, 60, 180, 300, 360]\n",

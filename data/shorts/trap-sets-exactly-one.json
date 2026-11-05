@@ -4,6 +4,8 @@
   "level": "EM",
   "levelLabel": "E Math",
   "topic": "Sets",
+  "look": "berry",
+  "student": "boy",
   "hook": "Most students get this wrong",
   "question": [
     "In a class, $18$ study French, $15$ study Spanish",
@@ -74,8 +76,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: exactly one leaves out the middle.",
+      "hold": 1.2
     }
   ],
   "verify": "F, S, B = 18, 15, 8\nassert (F - B) + (S - B) == 17\nassert F + S - B == 25          # at least one: the tempting answer\nassert (F - B) + B + (S - B) == 25\n",

@@ -51,7 +51,27 @@ const KATEX_CSS = pathToFileURL(fs.realpathSync(path.join(ROOT, 'node_modules/ka
 const C = { ink: '#1b1c33', muted: '#5d6080', yellow: '#ffd84d', cyan: '#0b8fb3', pink: '#e2337d', green: '#139a4c', red: '#e5484d', amber: '#c98a00', card: '#ffffff', purple: '#4b1fc9' };
 const TUTOR = Object.fromEntries(['idle', 'point', 'think', 'oops', 'nod', 'cheer'].map(p => [p, pathToFileURL(path.join(ROOT, 'public/lessons/characters/tutor', `${p}.png`)).href]));
 /** The tutor's pose for each part of a Short; the answer line turns it to a cheer. */
-const POSE = { hook: 'point', pause: 'think', wrong: 'oops', why: 'point', right: 'nod', end: 'cheer' };
+const POSE = { hook: 'point', pause: 'think', wrong: 'think', why: 'point', right: 'nod', end: 'cheer' };
+// The student who falls for the trap (Adrian, 5 Nov 2026: "character can be more involved"): the
+// scholar boy or girl approved that day (docs/characters/scholars/BIBLE.md). Thinks in the pause,
+// gives the wrong answer proudly, says "oops" at the why, follows the working, cheers at the answer.
+const STUDENT_POSE = { hook: 'idle', pause: 'think', wrong: 'point', why: 'oops', right: 'think', end: 'cheer' };
+const studentSet = (who) => Object.fromEntries(['idle', 'point', 'think', 'oops', 'nod', 'cheer'].map(p => [p, pathToFileURL(path.join(ROOT, 'docs/characters/scholars/approved', who, `${p}.png`)).href]));
+// A different look for every Short (Adrian, 5 Nov 2026: "every video can have very different feel …
+// we should have different looks all the time"). Cards stay white with dark ink on every look, so the
+// maths reads the same. `onbg` = text drawn straight on the background (pause, the site line).
+const THEMES = {
+  grape:    { bg: 'linear-gradient(160deg,#2a1bb8 0%,#6a2cf0 38%,#c22fd6 68%,#ff4f8b 100%)', hook: '#ffd84d', shadow: '#2a1373', sym: 'rgba(255,255,255,.13)', onbg: '#ffffff' },
+  ocean:    { bg: 'linear-gradient(160deg,#0b2a6f 0%,#0e5fa8 40%,#11a3b8 75%,#3fd3b0 100%)', hook: '#ffe14d', shadow: '#06224f', sym: 'rgba(255,255,255,.14)', onbg: '#ffffff' },
+  sunset:   { bg: 'linear-gradient(160deg,#ff7a3d 0%,#ff3d77 45%,#a12bd6 100%)', hook: '#fff3b0', shadow: '#6b1035', sym: 'rgba(255,255,255,.16)', onbg: '#ffffff' },
+  lime:     { bg: 'linear-gradient(160deg,#0f6e45 0%,#1fb36b 45%,#a6e22e 100%)', hook: '#fffbe0', shadow: '#0b4a2c', sym: 'rgba(255,255,255,.16)', onbg: '#ffffff' },
+  midnight: { bg: 'linear-gradient(160deg,#0b0d26 0%,#1b1550 50%,#3a0f4f 100%)', hook: '#4df3ff', shadow: '#c2188f', sym: 'rgba(77,243,255,.16)', onbg: '#ffffff' },
+  paper:    { bg: 'repeating-linear-gradient(0deg,rgba(40,90,200,.10) 0 2px,transparent 2px 56px),repeating-linear-gradient(90deg,rgba(40,90,200,.10) 0 2px,transparent 2px 56px),#fbf8ef', hook: '#e2337d', shadow: '#1b1c33', sym: 'rgba(27,28,51,.07)', onbg: '#1b1c33', still: true },
+  mango:    { bg: 'linear-gradient(160deg,#ffc933 0%,#ff8a1f 55%,#ff4d4d 100%)', hook: '#ffffff', shadow: '#8a2c00', sym: 'rgba(255,255,255,.2)', onbg: '#ffffff' },
+  berry:    { bg: 'linear-gradient(160deg,#1d1147 0%,#7a1e6b 55%,#e0245e 100%)', hook: '#ffd84d', shadow: '#12082e', sym: 'rgba(255,255,255,.12)', onbg: '#ffffff' },
+  sky:      { bg: 'linear-gradient(180deg,#9fdcff 0%,#5fb2ff 55%,#3b7bff 100%)', hook: '#ffffff', shadow: '#0b3a8f', sym: 'rgba(255,255,255,.22)', onbg: '#ffffff' },
+  candy:    { bg: 'linear-gradient(160deg,#ff9ccf 0%,#b9a4ff 50%,#86e3ff 100%)', hook: '#ffffff', shadow: '#7a1d6e', sym: 'rgba(255,255,255,.25)', onbg: '#ffffff' },
+};
 
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const tex = (t, display = false) => katex.renderToString(t, { throwOnError: true, strict: 'ignore', displayMode: display });
@@ -175,28 +195,33 @@ function pageHtml(short, tl) {
   const stepsHtml = short.steps.map((s, k) => `<div class="step rv ${s.answer ? 'answer' : ''} ${s.quiet ? 'quiet' : ''}" data-step="${k}"><span class="m">${tex(s.tex, false)}</span></div>`).join('');
   const wrongAt = tl.beats.find(b => b.part === 'wrong').start + 0.15;
   const whyAt = tl.beats.find(b => b.part === 'why').start + 0.15;
-  const firstRight = tl.beats.find(b => b.part === 'right').start + 0.1;
+  // The green card opens with its first line — which the "why" beat may already show (5 Nov 2026: the
+  // first lines were "shown" inside a card that had not opened yet, so nobody saw them).
+  const firstRight = Math.min(tl.beats.find(b => b.part === 'right').start + 0.1, ...Object.values(tl.stepAt).map(x => x - 0.05));
   const pause = tl.beats.find(b => b.part === 'pause');
   const end = tl.beats.find(b => b.part === 'end');
   const poses = tl.beats.map(b => ({ at: b.start, pose: POSE[b.part] || 'idle' }));
-  const data = { BUBBLES, poses, stepAt: tl.stepAt, figureAt: tl.figureAt, captions: tl.captions, wrongAt, whyAt, firstRight, pause: { start: pause.start, end: pause.end }, endAt: end.start, total: tl.total, answerAt: tl.stepAt[short.steps.findIndex(s => s.answer)] };
+  const spose = tl.beats.map(b => ({ at: b.start, pose: STUDENT_POSE[b.part] || 'idle' }));
+  const th = THEMES[short.look] || THEMES.grape;
+  const STUDENT = studentSet(short.student === 'boy' ? 'boy' : 'girl');
+  const data = { BUBBLES, poses, spose, still: !!th.still, stepAt: tl.stepAt, figureAt: tl.figureAt, captions: tl.captions, wrongAt, whyAt, firstRight, pause: { start: pause.start, end: pause.end }, endAt: end.start, total: tl.total, answerAt: tl.stepAt[short.steps.findIndex(s => s.answer)] };
   return `<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="${KATEX_CSS}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Permanent+Marker&family=Inter:wght@400;500;600;700&display=block" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:${W}px;height:${H}px;overflow:hidden;background:#3b1fd1}
+html,body{width:${W}px;height:${H}px;overflow:hidden;background:#222}
 #f{position:relative;width:${W}px;height:${H}px;overflow:hidden;color:${C.ink};font-family:Kalam,cursive;
-  background:linear-gradient(160deg,#2a1bb8 0%,#6a2cf0 38%,#c22fd6 68%,#ff4f8b 100%);background-size:140% 140%}
+  background:${th.bg};background-size:${th.still ? 'auto' : '140% 140%'}}
 .bubbles{position:absolute;inset:0;pointer-events:none}
-.bubbles span{position:absolute;font-family:Inter,sans-serif;font-weight:700;color:rgba(255,255,255,.13);line-height:1}
+.bubbles span{position:absolute;font-family:Inter,sans-serif;font-weight:700;color:${th.sym};line-height:1}
 .col{position:absolute;left:${SAFE.left}px;right:${W - SAFE.right}px;top:56px;bottom:${H - SAFE.bottom}px;display:flex;flex-direction:column;gap:22px}
 .chips{display:flex;gap:16px;align-items:center;max-width:770px}
 .chip{white-space:nowrap;font-family:Inter,sans-serif;font-weight:700;font-size:28px;letter-spacing:.05em;padding:8px 20px;border-radius:999px}
 .chip.trap{color:#fff;background:${C.red};box-shadow:0 6px 0 rgba(0,0,0,.18)}
 .chip.lvl{color:${C.purple};background:#fff;font-weight:600;letter-spacing:.01em;box-shadow:0 6px 0 rgba(0,0,0,.12)}
-.hook{font-family:'Permanent Marker',cursive;font-size:76px;line-height:1.05;color:${C.yellow};max-width:760px;
-  text-shadow:0 5px 0 #2a1373,0 0 26px rgba(42,19,115,.55)}
+.hook{font-family:'Permanent Marker',cursive;font-size:76px;line-height:1.05;color:${th.hook};max-width:760px;
+  text-shadow:0 5px 0 ${th.shadow}}
 .q{background:#fff;border-radius:28px;padding:26px 34px;font-size:44px;line-height:1.38;box-shadow:0 10px 0 rgba(42,19,115,.28)}
 .q .katex{font-size:1.08em;white-space:nowrap}
 .stage{position:relative;flex:1;display:flex;flex-direction:column;gap:18px;min-height:0}
@@ -209,7 +234,7 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:#3b1fd1}
 .wrong .m .katex{font-size:1.0em}
 .wrong .why{font-size:36px;color:${C.muted};margin-top:2px}
 .wrong.strike .m{text-decoration:line-through;text-decoration-color:${C.red};text-decoration-thickness:5px}
-.trapline{font-family:'Permanent Marker',cursive;font-size:46px;color:${C.yellow};line-height:1.15;text-shadow:0 4px 0 #2a1373}
+.trapline{font-family:'Permanent Marker',cursive;font-size:46px;color:${th.hook};line-height:1.15;text-shadow:0 4px 0 ${th.shadow};transform-origin:left center}
 .right{border-left:12px solid ${C.green};background:#f0fff4}
 .right .head{font-family:Inter,sans-serif;font-weight:700;color:${C.green};font-size:32px;letter-spacing:.05em;margin-bottom:6px}
 .figcard{display:flex;justify-content:center;padding:14px}
@@ -220,19 +245,22 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:#3b1fd1}
 .step.answer .m{display:inline-block;border:5px solid ${C.pink};border-radius:16px;padding:4px 18px;color:${C.green};background:#fff;box-shadow:0 6px 0 rgba(226,51,125,.25)}
 .fig{display:block;align-self:center}
 .pausebox{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.pausebox .duo{display:flex;align-items:center;gap:30px}
+.pausebox .kid{position:relative;width:330px;height:330px}
+.pausebox .kid img,.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}
 .pausebox .ring{position:relative;width:300px;height:300px}
-.pausebox .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Permanent Marker';font-size:170px;color:#fff;text-shadow:0 6px 0 #2a1373}
-.pausebox .t{font-family:'Permanent Marker';font-size:64px;color:#fff;text-align:center;line-height:1.12;text-shadow:0 5px 0 #2a1373}
-.pausebox .t b{color:${C.yellow};font-weight:400}
+.pausebox .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Permanent Marker';font-size:170px;color:${th.onbg};text-shadow:0 6px 0 ${th.shadow}}
+.pausebox .t{font-family:'Permanent Marker';font-size:62px;color:${th.onbg};text-align:center;line-height:1.12;text-shadow:0 5px 0 ${th.shadow}}
+.pausebox .t b{color:${th.hook};font-weight:400}
 .cap{position:absolute;left:60px;right:150px;top:${SAFE.bottom + 8}px;display:flex;justify-content:center}
 .cap span{background:rgba(20,10,60,.72);color:#fff;font-family:Inter,sans-serif;font-weight:500;font-size:40px;line-height:1.3;padding:10px 22px;border-radius:16px;text-align:center}
-.endc{position:absolute;inset:0;background:linear-gradient(160deg,#2a1bb8 0%,#6a2cf0 45%,#ff4f8b 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:330px 70px 330px;text-align:center}
-.endc .rule{font-family:'Permanent Marker';font-size:58px;color:${C.yellow};line-height:1.15;text-shadow:0 5px 0 #2a1373}
-.endc .more{font-size:56px;color:#fff}
-.endc .site{font-family:Inter,sans-serif;font-weight:700;font-size:62px;color:${C.purple};background:${C.yellow};padding:14px 30px;border-radius:22px;box-shadow:0 8px 0 rgba(42,19,115,.35)}
-.endc .sub{font-size:40px;color:rgba(255,255,255,.85)}
+.brand{position:absolute;left:${SAFE.left}px;top:14px;text-align:left;font-family:Inter,sans-serif;font-weight:600;font-size:26px;color:${th.onbg};opacity:0;letter-spacing:.01em}
+.wrong .row{position:relative;white-space:nowrap}
+.wrong{display:flex;gap:18px;align-items:center}
+.wrong .av{position:relative;flex:none;width:185px;height:185px;margin:-22px 0 -22px -14px}
+.wrong .body{min-width:0}
 .tutor{position:absolute;right:20px;top:40px;width:250px;height:250px;transform-origin:50% 100%;z-index:5}
-.tutor img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;filter:drop-shadow(0 8px 0 rgba(42,19,115,.35))}
+.tutor img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;filter:drop-shadow(0 8px 0 rgba(0,0,0,.25))}
 </style></head><body><div id="f">
 <div class="bubbles" id="bubbles">${BUBBLES.map((b, k) => `<span data-k="${k}" style="font-size:${b.size}px">${b.ch}</span>`).join('')}</div>
 <div class="col">
@@ -241,24 +269,19 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:#3b1fd1}
   <div class="q rv" data-at="0.15">${questionHtml(short.question)}</div>
   <div class="stage" id="stage">
     <div class="board" id="board">
-      <div class="card wrong rv" id="wrong" data-at="${wrongAt}"><div class="row"><span class="x">✗</span><span class="m">${tex(short.wrong.tex)}</span></div><div class="why">← ${esc(short.wrong.why)}</div></div>
+      <div class="card wrong rv" id="wrong" data-at="${wrongAt}"><div class="av" id="av">${Object.entries(STUDENT).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('')}</div><div class="body"><div class="row"><span class="x">✗</span><span class="m">${tex(short.wrong.tex)}</span></div><div class="why">← ${esc(short.wrong.why)}</div></div></div>
       <div class="trapline rv" data-at="${whyAt}">${esc(short.trap)}</div>
       ${short.figure ? `<div class="card figcard rv" data-at="${tl.figureAt[0].at}">${figureSvg(short.figure)}</div>` : ''}
       <div class="card right rv" data-at="${firstRight}"><div class="head">✓ THE RIGHT WAY</div>${stepsHtml}</div>
     </div>
     <div class="pausebox" id="pause" style="opacity:0">
-      <div class="ring"><svg width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="130" fill="none" stroke="rgba(251,250,243,.15)" stroke-width="16"/><circle id="arc" cx="150" cy="150" r="130" fill="none" stroke="${C.yellow}" stroke-width="16" stroke-linecap="round" transform="rotate(-90 150 150)" stroke-dasharray="816.8" stroke-dashoffset="0"/></svg><div class="num" id="num">3</div></div>
+      <div class="duo"><div class="kid" id="kid">${Object.entries(STUDENT).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('')}</div><div class="ring"><svg width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="130" fill="none" stroke="rgba(127,127,127,.25)" stroke-width="16"/><circle id="arc" cx="150" cy="150" r="130" fill="none" stroke="${th.hook}" stroke-width="16" stroke-linecap="round" transform="rotate(-90 150 150)" stroke-dasharray="816.8" stroke-dashoffset="0"/></svg><div class="num" id="num">3</div></div></div>
       <div class="t">Pause.<br><b>What do you think<br>the next step is?</b></div>
     </div>
   </div>
 </div>
 <div class="cap"><span id="cap" style="opacity:0"></span></div>
-<div class="endc" id="endc" style="opacity:0">
-  <div class="rule">${esc(short.trap)}</div>
-  <div class="more">More like this — free</div>
-  <div class="site">adrianmathtuition.com</div>
-  <div class="sub">link in the description</div>
-</div>
+<div class="brand" id="brand">Free practice · adrianmathtuition.com</div>
 <div class="tutor" id="tutor">${Object.entries(TUTOR).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('')}</div>
 </div>
 <script>
@@ -277,7 +300,7 @@ const rv = [...document.querySelectorAll('.rv')].map(el => ({ el, at: atOf(el) }
 const tut = document.getElementById('tutor'), tutImgs = [...tut.querySelectorAll('img')];
 window.renderAt = (t) => {
   // background drifts; symbols float up and sway
-  document.getElementById('f').style.backgroundPosition = (50 + 40 * Math.sin(t / 4)).toFixed(1) + '% ' + (50 + 40 * Math.cos(t / 5)).toFixed(1) + '%';
+  if (!D.still) document.getElementById('f').style.backgroundPosition = (50 + 40 * Math.sin(t / 4)).toFixed(1) + '% ' + (50 + 40 * Math.cos(t / 5)).toFixed(1) + '%';
   document.querySelectorAll('#bubbles span').forEach((el) => {
     const b = D.BUBBLES[el.dataset.k];
     const y = ((b.y - t * 40 * b.sp) % 1920 + 1920) % 1920 - 100;
@@ -292,14 +315,30 @@ window.renderAt = (t) => {
   tutImgs.forEach(img => { img.style.opacity = img.dataset.pose === pose ? String(k) : '0'; });
   const pop = 1 + 0.08 * Math.sin(Math.min(1, (t - since) / 0.3) * Math.PI);
   const breath = 1 + 0.025 * Math.sin(t * 2.2);
-  const inTo = ease((t - D.endAt) / 0.5);
-  // on the end card the tutor comes to the middle, bigger
-  const tx = -395 * inTo, ty = 150 * inTo, sc = (1 + 0.5 * inTo) * pop * breath;
-  tut.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + sc.toFixed(4) + ')';
+  // a little hop on each new pose, and a sway while the voice talks
+  const hop = -18 * Math.sin(Math.min(1, (t - since) / 0.35) * Math.PI);
+  const sway = 2.5 * Math.sin(t * 1.7);
+  tut.style.transform = 'translateY(' + hop.toFixed(1) + 'px) rotate(' + sway.toFixed(2) + 'deg) scale(' + (pop * breath).toFixed(4) + ')';
+  // the student: same rules, with its own poses (cheer from the answer line on)
+  let sc0 = D.spose[0], ss = 0;
+  for (const p of D.spose) if (t >= p.at) { sc0 = p; ss = p.at; }
+  let sp = sc0.pose;
+  if (D.answerAt != null && t >= D.answerAt) { sp = 'cheer'; ss = Math.max(ss, D.answerAt); }
+  const sk = Math.min(1, (t - ss) / 0.22);
+  const shop = -14 * Math.sin(Math.min(1, (t - ss) / 0.35) * Math.PI);
+  for (const box of [document.getElementById('kid'), document.getElementById('av')]) {
+    box.querySelectorAll('img').forEach(img => { img.style.opacity = img.dataset.pose === sp ? String(sk) : '0'; });
+    box.style.transform = 'translateY(' + shop.toFixed(1) + 'px) scale(' + (1 + 0.02 * Math.sin(t * 2.4 + 1)).toFixed(4) + ')';
+  }
+  // the end: no advert screen — the trap rule pulses once, the site line fades in small
+  const e = ease((t - D.endAt) / 0.5);
+  document.getElementById('brand').style.opacity = String(0.85 * e);
+  const tl0 = document.querySelector('.trapline');
+  if (t >= D.endAt) tl0.style.transform = 'scale(' + (1 + 0.07 * Math.sin(Math.min(1, (t - D.endAt) / 0.6) * Math.PI)).toFixed(4) + ')';
   for (const { el, at } of rv) {
     const p = ease((t - at) / 0.35);
     el.style.opacity = String(p);
-    if (!(el instanceof SVGElement)) el.style.transform = p < 1 ? 'translateY(' + ((1 - p) * 16).toFixed(1) + 'px)' : '';
+    if (!(el instanceof SVGElement) && !(t >= D.endAt && el.classList.contains('trapline'))) el.style.transform = p < 1 ? 'translateY(' + ((1 - p) * 16).toFixed(1) + 'px)' : '';
   }
   // the wrong answer is crossed out once the right way starts
   document.getElementById('wrong').classList.toggle('strike', t >= D.firstRight);
@@ -316,8 +355,7 @@ window.renderAt = (t) => {
   const c = D.captions.find(c => t >= c.start && t < c.end);
   const cap = document.getElementById('cap');
   if (c) { if (cap.textContent !== c.text) cap.textContent = c.text; cap.style.opacity = '1'; } else cap.style.opacity = '0';
-  if (t >= D.endAt) cap.style.opacity = '0';
-  document.getElementById('endc').style.opacity = String(ease((t - D.endAt) / 0.4));
+
 };
 // The board at its fullest must fit the stage: shrink it once (never below 0.8 — the look check fails it).
 window.fit = () => {
@@ -334,8 +372,6 @@ window.fit = () => {
 window.look = (minPx, safe) => {
   const probs = [];
   const shown = [...document.querySelectorAll('.rv, .pausebox, .cap span')].filter(el => Number(getComputedStyle(el).opacity) > 0.5);
-  const endOn = Number(document.getElementById('endc').style.opacity) > 0.5;
-  if (endOn) return { probs, shown: 'end card' };
   for (const el of shown) {
     if (el.closest('.cap')) continue;
     const r = el.getBoundingClientRect();
@@ -353,7 +389,10 @@ window.look = (minPx, safe) => {
     const a = lines[i - 1].querySelector('.katex-html')?.getBoundingClientRect(), b = lines[i].querySelector('.katex-html')?.getBoundingClientRect();
     if (a && b && a.bottom > b.top + 1) probs.push('working lines ' + i + ' and ' + (i + 1) + ' touch');
   }
-  for (const el of document.querySelectorAll('.step, .row, .q')) if (el.scrollWidth > el.clientWidth + 2) probs.push('cut off sideways: ' + el.textContent.slice(0, 40));
+  // a line counts as seen only if every box around it is open too
+  const seen = (el) => { for (let e = el; e && e.id !== 'f'; e = e.parentElement) if (Number(getComputedStyle(e).opacity) < 0.5) return false; return true; };
+  for (const el of document.querySelectorAll('.step')) if (Number(getComputedStyle(el).opacity) > 0.5 && !seen(el)) probs.push('working line ' + el.dataset.step + ' is shown inside a box that is not open');
+  for (const el of document.querySelectorAll('.step, .wrong .row, .q')) if (el.scrollWidth > el.clientWidth + 2) probs.push('cut off sideways: ' + el.textContent.slice(0, 40));
   // the badges sit on one line (5 Nov 2026: "COMMON TRAP" wrapped under a long topic name)
   const chips = document.querySelector('.chips');
   if (chips.scrollWidth > chips.clientWidth + 1 || [...chips.children].some(c => c.getBoundingClientRect().height > 70)) probs.push('the badges do not fit on one line');

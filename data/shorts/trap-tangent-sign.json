@@ -4,6 +4,8 @@
   "level": "AM",
   "levelLabel": "A Math",
   "topic": "Nature of Roots",
+  "look": "sky",
+  "student": "girl",
   "hook": "Most students get this wrong",
   "question": [
     "The line $y = 3x + k$ is a tangent to the curve",
@@ -75,8 +77,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: when K moves across, it becomes minus K.",
+      "hold": 1.2
     }
   ],
   "verify": "x, k = symbols('x k')\nassert expand((x**2 + 5*x + 2) - (3*x + k)) == x**2 + 2*x + 2 - k\nassert expand(2**2 - 4*1*(2 - k)) == expand(4 - 8 + 4*k)\nassert solve(2**2 - 4*1*(2 - k), k) == [1]\nassert factor((x**2 + 5*x + 2) - (3*x + 1)) == (x + 1)**2      # touches once\nassert solve(2**2 - 4*1*(2 + k), k) == [-1]                     # the sign slip\nassert len(solve((x**2 + 5*x + 2) - (3*x - 1), x)) != 1        # k = -1 is not a tangent\n",

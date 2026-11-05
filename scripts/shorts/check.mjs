@@ -50,7 +50,7 @@ for (const slug of slugs) {
   const warn = [];
 
   // 1 Shape
-  for (const k of ['slug', 'code', 'level', 'levelLabel', 'topic', 'hook', 'question', 'wrong', 'trap', 'steps', 'beats', 'verify', 'youtube']) if (s[k] === undefined) errs.push(`missing "${k}"`);
+  for (const k of ['slug', 'code', 'look', 'student', 'level', 'levelLabel', 'topic', 'hook', 'question', 'wrong', 'trap', 'steps', 'beats', 'verify', 'youtube']) if (s[k] === undefined) errs.push(`missing "${k}"`);
   if (s.slug !== slug) errs.push(`slug "${s.slug}" ≠ file name`);
   if (!/^[a-z0-9]{2,12}$/.test(s.code || '')) errs.push(`code "${s.code}" must be 2–12 lower-case letters/digits (it is the /s/<code> link)`);
   const parts = (s.beats || []).map(b => b.part);
@@ -80,7 +80,12 @@ for (const slug of slugs) {
   const nWords = wordsOf(spoken).length;
   if (nWords > MAX_WORDS) errs.push(`${nWords} spoken words (max ${MAX_WORDS} — a Short is under 60 s)`);
   if (!/^Most students get this wrong\./.test(s.beats?.[0]?.say || '')) errs.push('the first line is the hook: "Most students get this wrong."');
-  if (!/adrian math tuition dot com/i.test(s.beats?.at(-1)?.say || '')) errs.push('the last line names the site');
+  // The ending is quiet (Adrian, 5 Nov 2026: "the last part is a glaring advert > can be more subtle"):
+  // the voice repeats the trap's rule; the site is only a small line on screen.
+  if (!/^Remember: /.test(s.beats?.at(-1)?.say || '')) errs.push('the last line repeats the rule: "Remember: …"');
+  if (/dot com|adrianmathtuition/i.test(s.beats?.at(-1)?.say || '')) errs.push('the voice does not read out the site (the ending stays quiet)');
+  if (!['grape', 'ocean', 'sunset', 'lime', 'midnight', 'paper', 'mango', 'berry', 'sky', 'candy'].includes(s.look)) errs.push(`look "${s.look}" is not one of the Shorts looks`);
+  if (!['boy', 'girl'].includes(s.student)) errs.push('student must be "boy" or "girl"');
   // Letters are capitals in the voice; "negative" for a negative number.
   if (/\bminus (one|two|three|four|five|six|seven|eight|nine|ten)\b(?! (C|X|K|A|B|fifteen|eight))/i.test(spoken.replace(/(\w+) minus/g, '$1 MINUSX'))) warn.push('"minus <number>" — the house voice says "negative" for a negative number');
   if (/\b(x|y|k|c|b|m)\b/.test(spoken)) warn.push('a lower-case single letter in the voice — letters are CAPITALS so the voice reads the letter');

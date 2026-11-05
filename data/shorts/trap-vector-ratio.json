@@ -4,6 +4,8 @@
   "level": "EM",
   "levelLabel": "E Math",
   "topic": "Vectors",
+  "look": "candy",
+  "student": "boy",
   "hook": "Most students get this wrong",
   "question": [
     "$\\overrightarrow{OA} = \\mathbf{a}$ and $\\overrightarrow{OB} = \\mathbf{b}$.",
@@ -75,8 +77,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: C is close to B, so it needs more of vector B.",
+      "hold": 1.2
     }
   ],
   "verify": "a, b = symbols('a b')\nC = a + Rational(3, 4) * (b - a)\nassert expand(C - (a / 4 + 3 * b / 4)) == 0\n# AC : CB = 3 : 1\nassert expand((C - a) - 3 * (b - C)) == 0\nwrong = 3 * a / 4 + b / 4\nassert expand(wrong - C) != 0\n",

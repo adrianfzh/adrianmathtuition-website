@@ -4,6 +4,8 @@
   "level": "EM",
   "levelLabel": "E Math",
   "topic": "Gradients",
+  "look": "paper",
+  "student": "boy",
   "hook": "Most students get this wrong",
   "question": [
     "A line has gradient $-\\tfrac{2}{9}$.",
@@ -68,8 +70,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: flip the fraction, and change the sign.",
+      "hold": 1.2
     }
   ],
   "verify": "m1 = Rational(-2, 9); m2 = Rational(9, 2); wrong = Rational(-9, 2)\nassert m1 * m2 == -1\nassert -1 / m1 == m2\nassert m1 * wrong != -1\n",

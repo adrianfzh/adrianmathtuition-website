@@ -822,3 +822,24 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
   at the wrong answer, nods through the working, cheers at the answer and on the end card (centre,
   bigger). Teaching clips keep the chalk board.
 - *"put this in memory to remind me"* — a reminder line in CLAUDE.md (Pending Tasks) until he posts.
+
+**Adrian's second watch (5 Nov 2026):**
+- *"character can be more involved > plus an animal would perhaps be good"* — the approved scholar
+  girl or boy (`docs/characters/scholars/approved/`) is now the student who falls for the trap: thinks
+  beside the 3-2-1, gives the wrong answer from inside the red card, "oops" at the why, cheers with the
+  tutor at the answer. Both hop on each new pose. **An animal**: none approved yet (on 7 Oct he chose
+  little humans over animal mascots for lessons — VIDEO-PLAYBOOK.md; for Shorts an animal sidekick is
+  now welcome). Drawing one is picture-model money → show him options and ask first.
+- *"choice of purple, well it's unique"* — kept as one look (`grape`).
+- *"every video can have very different feel … we should have different looks all the time"* — ten
+  looks (`grape ocean sunset lime midnight paper mango berry sky candy`, `THEMES` in render.mjs), one
+  per Short (`look` in each JSON); the student alternates girl / boy (`student`). New Shorts take a
+  look that differs from the last few posted.
+- *"the last part is a glaring advert > can be more subtle"* — no end screen: the voice ends
+  "Remember: <the trap rule>", the rule pulses once, and "Free practice · adrianmathtuition.com" fades
+  in as a small line at the top. The site is never read out (check.mjs enforces both).
+- *"there is a mp4 subtitle at the top right-hand corner?"* — that label is the Claude app's player
+  showing the file name; it is not in the video.
+- Bug found on the way: the first working lines of a "why" beat were revealed inside a green card that
+  had not opened yet — invisible in 7 of the first 10 drafts. Fixed; the look check now fails a line
+  shown inside a closed box.

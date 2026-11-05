@@ -4,6 +4,8 @@
   "level": "JC",
   "levelLabel": "H2 Math",
   "topic": "Inequalities",
+  "look": "midnight",
+  "student": "girl",
   "hook": "Most students get this wrong",
   "question": [
     "Solve $\\dfrac{1}{x} < 2$."
@@ -83,8 +85,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: X could be negative. Never multiply by X.",
+      "hold": 1.2
     }
   ],
   "verify": "x = symbols('x', real=True)\nsol = solve_univariate_inequality(1/x < 2, x, relational=False)\nassert sol == Union(Interval.open(-oo, 0), Interval.open(Rational(1, 2), oo))\nassert simplify(1/x - 2 - (1 - 2*x)/x) == 0\n# signs on the number line: -, +, -\nf = (1 - 2*x)/x\nassert f.subs(x, -1) < 0 and f.subs(x, Rational(1, 4)) > 0 and f.subs(x, 1) < 0\nassert (1/x).subs(x, -1) < 2      # the root the shortcut loses\n",

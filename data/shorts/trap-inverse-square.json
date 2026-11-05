@@ -4,6 +4,8 @@
   "level": "EM",
   "levelLabel": "E Math",
   "topic": "Proportion",
+  "look": "lime",
+  "student": "boy",
   "hook": "Most students get this wrong",
   "question": [
     "$y$ is inversely proportional to $x^2$.",
@@ -63,8 +65,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: square first.",
+      "hold": 1.2
     }
   ],
   "verify": "k, x = symbols('k x', positive=True)\ny = k / x**2\nynew = k / (2 * x)**2\nassert simplify(ynew / y) == Rational(1, 4)\nassert simplify(ynew / y) != Rational(1, 2)   # not halved\nassert expand((2 * x)**2) == 4 * x**2\nassert simplify(ynew - k / (4 * x**2)) == 0\n",

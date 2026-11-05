@@ -4,6 +4,8 @@
   "level": "AM",
   "levelLabel": "A Math",
   "topic": "Nature of Roots",
+  "look": "grape",
+  "student": "girl",
   "hook": "Most students get this wrong",
   "question": [
     "Find the range of values of $k$ for which the curve",
@@ -87,8 +89,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: below the X axis takes two conditions.",
+      "hold": 1.2
     }
   ],
   "verify": "k, x = symbols('k x', real=True)\ndisc = 6**2 - 4*k*(k - 8)\nassert expand(disc / -4) == expand(k**2 - 8*k - 9)\nassert factor(k**2 - 8*k - 9) == (k - 9)*(k + 1)\nsol = solve_univariate_inequality(disc < 0, k, relational=False)\nassert sol == Union(Interval.open(-oo, -1), Interval.open(9, oo))\nfinal = sol.intersect(Interval.open(-oo, 0))\nassert final == Interval.open(-oo, -1)\n# k = 10 passes the discriminant but opens upwards: it is above the axis\ny10 = 10*x**2 + 6*x + 2\nassert y10.subs(x, 0) > 0\n# k = -2: every value negative\nym2 = -2*x**2 + 6*x - 10\nassert maximum(ym2, x) < 0\n",

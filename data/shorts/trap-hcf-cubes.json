@@ -4,6 +4,8 @@
   "level": "EM",
   "levelLabel": "E Math",
   "topic": "HCF and LCM",
+  "look": "sunset",
+  "student": "girl",
   "hook": "Most students get this wrong",
   "question": [
     "A box measures $72$ cm by $48$ cm by $30$ cm.",
@@ -66,8 +68,8 @@
     },
     {
       "part": "end",
-      "say": "More like this, free, at adrian math tuition dot com.",
-      "hold": 1.5
+      "say": "Remember: the H C F gives the cube's side. Then count the cubes.",
+      "hold": 1.2
     }
   ],
   "verify": "assert igcd(igcd(72, 48), 30) == 6\nassert ilcm(ilcm(72, 48), 30) == 720\nassert (72 // 6, 48 // 6, 30 // 6) == (12, 8, 5)\nassert 12 * 8 * 5 == 480\nassert 480 * 6**3 == 72 * 48 * 30\nassert 6 != 12 * 8 * 5   # the slip: the side, not the count\n",
