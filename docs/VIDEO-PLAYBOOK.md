@@ -310,7 +310,7 @@ Same stages for all three. Only the last mile differs. ✋ marks Adrian's yes.
 | Bible | **Missing:** one `character bible` for the recurring tutor/mascot (§3d). |
 | Plan | One line in `src/lib/lesson-extras.ts` says which lesson gets which extras |
 | Stills | Picture model on a **green screen**, keyed out (`tutor-recut`) |
-| Clips | Side project, Kling v3 picture-to-video, about US$0.20 per 5 s; a test on Seedance 2.5 is pending |
+| Clips | Side project, **Kling v3 Standard** (decided 5 Nov 2026), start + end picture = two approved poses, no sound, about US$0.42 per 5 s |
 | Sound | MiniMax lesson voice; the model's own sound dropped |
 | Ship | `public/lessons/…`, switch `LESSON_VIDEO_EXTRAS_OPEN_TO_STUDENTS` |
 
@@ -479,7 +479,7 @@ Each step is usable on its own and cheap. Adrian's yes is needed only where ✋ 
    Originally: **character bible for the chibi family + the tutor** (§3d). Write it from the kept sheets and the tutor picture. Free. ✋ He confirms the faces.
 2. ✅ **Approved 5 Nov 2026** (Adrian: "Option A"). The Seedream boy and girl are approved, with `oops` redrawn. They are in `docs/characters/scholars/approved/`. The method for fixing a wrong pose is in the bible.
    Originally: **six-pose sheet of ONE chibi character in the locked style,** on a green screen, from 2 models side by side (Seedream and GPT Image), about US$1. ✋ He picks. This replaces flat drawn looks he rejected.
-3. ✅ **Made 5 Nov 2026** for about US$3.85. The results are in `docs/characters/scholars/BIBLE.md` §First moving clip. Kling Standard is recommended for reactions; waiting for Adrian to pick.
+3. ✅ **Made 5 Nov 2026** for about US$3.85. The results are in `docs/characters/scholars/BIBLE.md` §First moving clip. **Decided (Adrian, 5 Nov 2026: "kling standard"): Kling v3 Standard for board reactions**; Seedance 2.5 for promo.
    Originally: **one 5-second clip of that character** (cheer), from the picked still, on three models side by side: Kling v3 Standard, Kling v3 Pro with elements, and Seedance 2.0 (2.5 if it is on fal by then). About US$3–5. ✋ He picks. No one has tested cartoon drift, so this test settles it, and "expensive is cheap" too.
 4. **One 20-second promo test,** storyboard grid first ✋, then clips, with real app screen recordings, licensed music and captions. About US$5.
 5. Only then: wire the winners in (lesson extras, reward stickers, a promo folder) and add `JOB_RHYTHMS` lines if anything runs on a schedule.

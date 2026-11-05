@@ -117,7 +117,7 @@ What the test taught:
 - **First-try success on all three,** so with simple cartoon moves the cheap model did not need re-rolls. For board reactions, Kling Standard is about five times cheaper than Seedance 2.5 for a usable result.
 - The jump was bigger than wanted on A and C. The next prompt should say "a small bounce, feet stay on the ground".
 
-**Recommendation:** A (Kling v3 Standard) for board reactions and stickers. Keep Seedance 2.5 for promo shots where smoothness matters. Waiting for Adrian to watch and pick.
+**DECIDED 5 Nov 2026 (Adrian: "kling standard"):** board reactions and moving stickers are made with **Kling v3 Standard** (`fal-ai/kling-video/v3/standard/image-to-video`, `start_image_url` + `end_image_url` set to approved poses, no sound, 5 s). Seedance 2.5 is kept for promo shots where smoothness matters.
 
 ## How the `oops` pose was fixed (5 Nov 2026) — reuse this for any pose that comes out wrong
 
