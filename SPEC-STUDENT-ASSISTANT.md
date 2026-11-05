@@ -106,6 +106,16 @@ thing. This is also the data goal: every to-do, note and check-in answered is le
 5. **Check-ins** (max 3 a week, the triggers in §2), with "fewer/stop" in plain words.
 6. **Students' voice notes** — spoken message → text → the same path as typing.
 7. **The same in the app** (Ask tab), then a parents' on/off switch in the parent view.
+8. **It works inside the student's own stuff** (the Notion lesson — Adrian, 5 Nov 2026: *"let's build
+   this"*). Because everything is in one place, the student can ask it to DO things with their own
+   material: "make me a one-page summary of my vectors mistakes", "turn my notes on circles into a
+   cheat sheet", "make a revision timetable until my prelim on 12 Aug", "quiz me on my own notes",
+   "what have I not revised yet?". It reads their error logs, notes, marked papers and exam dates and
+   writes the result back into My Notebook. **Depends on the shared student record** (step 0 below).
+
+**Step 0 (comes first, 5 Nov 2026 — Adrian: "yes build the map"):** map where every piece of a
+student's data lives today (`docs/STUDENT-DATA-MAP.md`), then build ONE shared student record that the
+bot and the app both read. Steps 3–8 all stand on it.
 
 ## 9. How we will know it works
 
