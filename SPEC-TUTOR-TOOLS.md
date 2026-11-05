@@ -275,3 +275,23 @@ tutor papers unless they filter `student_id like 'tutor:%'`; no payment.
 
 **Test account:** `tutor-test@example.com`, password in `.env.local` `TUTOR_TEST_PASSWORD`;
 `node scripts/tutor-test-seed.mjs` makes or resets it (cap 5, one "Test Student").
+
+## 8. The shared board — PROPOSED 5 Nov 2026, waiting for Adrian's yes
+
+Adrian, 5 Nov 2026: *"i would like to build what gauth did > a unlimited digital canvas
+(whiteboard) that tutors and tutees can write on > build it on top of what is offered to
+external tutors (currently they have marking right?)"* (the idea came from the 🍵 laoshi
+report; adapt the idea, never copy another product or its name).
+
+**What exists today:** tutors get marking only (§7, test site). We already have the pen —
+`StudentInk` / `AnnotateOverlay` / `src/lib/annotate/` (colours, highlighter, eraser, undo,
+Pencil writes while a finger scrolls, ink saved by itself) — but only on one person's marked
+pages, one person at a time. Nothing in the website is live between two screens yet.
+
+**Proposed design (one board per tutor-student pair, many boards each):** a page that
+scrolls down without end; the tutor opens it from a marked paper (its pages become the top of
+the board) or blank; adds a photo of a question; the student joins from a private link the
+tutor sends (tutor students have no login); both see each other's ink appear within about a
+second (Supabase's live channel), every stroke saved by itself; boards listed under the
+student, reopen any time, download as PDF. Phone: one finger writes, two fingers move;
+iPad: Pencil writes, finger moves. Test site first, like §7. No marking credit used.
