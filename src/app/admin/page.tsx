@@ -306,7 +306,8 @@ function NumberTile({ n, t, today, at }: { n: { title: string; thing: string; li
       <div className="gl-num-u">today</div>
       {values.length > 0 && (
         <>
-          <div className="gl-num-bars" aria-label={`last ${values.length} days: ${values.join(', ')}`}>
+          <div className="gl-num-bars" aria-label={`last ${values.length} days: ${values.join(', ')}`}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>{/* a tap in the gap between two bars does nothing — it must not open the page */}
             {values.map((v, i) => (
               <span key={i} role="button" tabIndex={0} aria-pressed={picked === i} className={`gl-num-col${picked === i ? ' on' : ''}`} title={String(v)}
                 onClick={(e) => toggle(e, i)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggle(e, i); }}>
@@ -371,7 +372,7 @@ const CSS = `
 .gl-num-v { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; margin-top: 6px; }
 .gl-num-u { font-size: 12px; color: #6b7280; margin-top: 2px; }
 .gl-num-bars { display: flex; align-items: stretch; gap: 4px; height: 46px; margin-top: 10px; }
-.gl-num-col { flex: 1; display: flex; flex-direction: column; min-width: 0; cursor: pointer; border-radius: 4px; -webkit-tap-highlight-color: transparent; }
+.gl-num-col { flex: 1; display: flex; flex-direction: column; min-width: 0; cursor: pointer; border-radius: 4px; -webkit-tap-highlight-color: transparent; padding: 0 1px; margin: 0 -1px; }
 .gl-num-col:focus-visible { outline: 2px solid #111827; outline-offset: 1px; }
 .gl-num-box { flex: 1; display: flex; align-items: flex-end; min-height: 0; }
 .gl-num-bar { display: block; width: 100%; border-radius: 3px 3px 0 0; }
