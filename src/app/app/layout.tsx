@@ -91,7 +91,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Papers' },
-        { href: '/app/my-notes', label: 'My Notebook' },
+        { href: '/app/my-notes', label: 'My Error Log' },
       ]
     : [
         { href: '/app', label: 'Home' },
@@ -99,7 +99,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/ask', label: 'Ask' },
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/marking', label: 'Papers' },
-        { href: '/app/my-notes', label: 'My Notebook' },
+        { href: '/app/my-notes', label: 'My Error Log' },
         // Student requests were retired on 6 Sep 2026 — Find a question
         // (/app/find, via Home) is the door for a question a student needs.
       ];
@@ -109,14 +109,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/practice', label: 'Practise' },
         { href: '/app/ask', label: 'Ask', fab: true },
         { href: '/app/marking', label: 'Papers' },
-        { href: '/app/my-notes', label: 'My Notebook' },
+        { href: '/app/my-notes', label: 'My Error Log' },
       ]
     : [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practise' },
         { href: '/app/ask', label: 'Ask', fab: true },
         { href: '/app/marking', label: 'Papers' },
-        { href: '/app/my-notes', label: 'My Notebook' },
+        { href: '/app/my-notes', label: 'My Error Log' },
       ];
   // "From Adrian" pending work → numeric badge on Home (no 5th tab, per spec).
   // First-login tour (components/PortalTour.tsx). The `data-tour` attributes
@@ -141,7 +141,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/science/practice', label: 'Practise' },   // 1 Oct 2026 — MCQ by topic, the lost topics first
         { href: '/app/science/submit', label: 'Hand in', fab: true },
         { href: '/app/science/papers', label: 'Papers' },
-        { href: '/app/science/my-notes', label: 'My Notebook' },   // 1 Oct 2026 — the science mistakes, apart from the maths ones
+        { href: '/app/science/my-notes', label: 'My Error Log' },   // 1 Oct 2026 — the science mistakes, apart from the maths ones
       ]
     : [];
   // ✍️ The Languages family's menu (SPEC-ESSAY-MARKING.md, 12 Sep 2026): Home · Hand in · Essays.
