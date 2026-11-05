@@ -99,6 +99,26 @@ The cost was about US$1: Seedream 4.5 edit on fal ×2, and GPT Image 2 (medium) 
 
 **Recommendation:** Seedream, for both characters. If chosen, redo only `oops` by editing the idle picture ("one hand up palm-out, one eyebrow raised, small pursed mouth").
 
+## First moving clip — 5 Nov 2026 (playbook §5 step 3)
+
+The test: the boy goes from standing (`start-frame.png`) to the thumbs-up (`end-frame.png`) in 5 seconds, on the slate, with no sound. The same prompt was run on three models. Files are in `clips-2026-11-05/`: `side-by-side.mp4` (the three, labelled, played three times) and `gen.mjs`, which made them. The single clips are in `~/Desktop/ai-video-pipeline/out/chibi-clips/clips/`.
+
+| | A Kling v3 Standard | B Kling v3 Pro + the character attached | C Seedance 2.5 |
+|---|---|---|---|
+| Cost for 5 s (fal, 5 Nov) | **≈ US$0.42** (US$0.084/s) | ≈ US$1.12 (US$0.224/s with elements) | ≈ US$2.30 (token price; ≈ US$0.46/s at 960²) |
+| Face held (blue eyes, hair, outline) | Yes, every frame | Yes | Yes |
+| Movement | Crouch, a big jump, then the thumbs-up. Lively. | **Pointed first, which was not asked for.** It copied the pointing picture given as a reference. | A soft hop, then a smooth thumbs-up with the sparkles. The calmest. |
+| Background | Steady (within 4 shades of the slate) | Steady | Steady |
+| Ends on the approved thumbs-up picture | Yes | Yes | Yes |
+
+What the test taught:
+- **A start picture plus an end picture locks the face.** All three models accept `end_image_url`. Ending on an approved pose means the last frame is always the approved character.
+- **Every reference picture can leak into the clip.** Kling Pro's "elements" were given the point and think poses as extra angles, and it pointed. Give elements only neutral views (front, side, back), never other poses. This is the same rule as "anything you mention can appear".
+- **First-try success on all three,** so with simple cartoon moves the cheap model did not need re-rolls. For board reactions, Kling Standard is about five times cheaper than Seedance 2.5 for a usable result.
+- The jump was bigger than wanted on A and C. The next prompt should say "a small bounce, feet stay on the ground".
+
+**Recommendation:** A (Kling v3 Standard) for board reactions and stickers. Keep Seedance 2.5 for promo shots where smoothness matters. Waiting for Adrian to watch and pick.
+
 ## How the `oops` pose was fixed (5 Nov 2026) — reuse this for any pose that comes out wrong
 
 1. Editing the approved `idle` picture with words alone ("one hand up palm-out") came back as a **wave** on both tries.

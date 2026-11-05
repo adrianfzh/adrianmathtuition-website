@@ -420,7 +420,8 @@ Cheapest first:
 | Grok Imagine Video `xai/grok-imagine-video/image-to-video` | 0.05 (480p) · 0.07 (720p) | | | cheapest |
 | Veo 3.1 Fast | 0.10 | | | weakest faces in [V1] |
 | Hailuo 2.3 | Standard US$0.28 for 6 s at 768p · Pro US$0.49 a 1080p clip | | | (check) |
-| Seedance 2.5, Vidu Q3, Wan 2.x | not confirmed on fal 5 Nov | | | |
+| Seedance 2.5 `bytedance/seedance-2.5/image-to-video` | token-priced: US$0.0214 per 1,000 tokens (tokens = height × width × seconds × 24 / 1024) ≈ 0.46 at 960² | same price | 4–30 s | on fal since; tested 5 Nov |
+| Vidu Q3, Wan 2.x | not confirmed on fal 5 Nov | | | |
 
 ### 4.5 Talking cartoon characters (lip sync)
 
@@ -464,7 +465,8 @@ Each step is usable on its own and cheap. Adrian's yes is needed only where ✋ 
    Originally: **character bible for the chibi family + the tutor** (§3d). Write it from the kept sheets and the tutor picture. Free. ✋ He confirms the faces.
 2. ✅ **Approved 5 Nov 2026** (Adrian: "Option A"). The Seedream boy and girl are approved, with `oops` redrawn. They are in `docs/characters/scholars/approved/`. The method for fixing a wrong pose is in the bible.
    Originally: **six-pose sheet of ONE chibi character in the locked style,** on a green screen, from 2 models side by side (Seedream and GPT Image), about US$1. ✋ He picks. This replaces flat drawn looks he rejected.
-3. **One 5-second clip of that character** (cheer), from the picked still, on three models side by side: Kling v3 Standard, Kling v3 Pro with elements, and Seedance 2.0 (2.5 if it is on fal by then). About US$3–5. ✋ He picks. No one has tested cartoon drift, so this test settles it, and "expensive is cheap" too.
+3. ✅ **Made 5 Nov 2026** for about US$3.85. The results are in `docs/characters/scholars/BIBLE.md` §First moving clip. Kling Standard is recommended for reactions; waiting for Adrian to pick.
+   Originally: **one 5-second clip of that character** (cheer), from the picked still, on three models side by side: Kling v3 Standard, Kling v3 Pro with elements, and Seedance 2.0 (2.5 if it is on fal by then). About US$3–5. ✋ He picks. No one has tested cartoon drift, so this test settles it, and "expensive is cheap" too.
 4. **One 20-second promo test,** storyboard grid first ✋, then clips, with real app screen recordings, licensed music and captions. About US$5.
 5. Only then: wire the winners in (lesson extras, reward stickers, a promo folder) and add `JOB_RHYTHMS` lines if anything runs on a schedule.
 
