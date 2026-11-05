@@ -5,8 +5,7 @@
   "levelLabel": "A Math",
   "topic": "Nature of Roots",
   "look": "grape",
-  "student": "girl",
-  "animal": "otter",
+  "character": "otter",
   "hook": "Most students get this wrong",
   "question": [
     "Find the range of values of $k$ for which the curve",

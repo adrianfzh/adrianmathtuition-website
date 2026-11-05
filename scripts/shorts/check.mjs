@@ -50,7 +50,7 @@ for (const slug of slugs) {
   const warn = [];
 
   // 1 Shape
-  for (const k of ['slug', 'code', 'look', 'student', 'level', 'levelLabel', 'topic', 'hook', 'question', 'wrong', 'trap', 'steps', 'beats', 'verify', 'youtube']) if (s[k] === undefined) errs.push(`missing "${k}"`);
+  for (const k of ['slug', 'code', 'look', 'character', 'level', 'levelLabel', 'topic', 'hook', 'question', 'wrong', 'trap', 'steps', 'beats', 'verify', 'youtube']) if (s[k] === undefined) errs.push(`missing "${k}"`);
   if (s.slug !== slug) errs.push(`slug "${s.slug}" ≠ file name`);
   if (!/^[a-z0-9]{2,12}$/.test(s.code || '')) errs.push(`code "${s.code}" must be 2–12 lower-case letters/digits (it is the /s/<code> link)`);
   const parts = (s.beats || []).map(b => b.part);
@@ -85,8 +85,9 @@ for (const slug of slugs) {
   if (!/^Remember: /.test(s.beats?.at(-1)?.say || '')) errs.push('the last line repeats the rule: "Remember: …"');
   if (/dot com|adrianmathtuition/i.test(s.beats?.at(-1)?.say || '')) errs.push('the voice does not read out the site (the ending stays quiet)');
   if (!['grape', 'ocean', 'sunset', 'lime', 'midnight', 'paper', 'mango', 'berry', 'sky', 'candy'].includes(s.look)) errs.push(`look "${s.look}" is not one of the Shorts looks`);
-  if (!['boy', 'girl'].includes(s.student)) errs.push('student must be "boy" or "girl"');
-  if (!['otter', 'owl', 'cat', 'red-panda'].includes(s.animal)) errs.push('animal must be otter, owl, cat or red-panda');
+  // ONE character per Short (Adrian, 5 Nov 2026: "only ONE character per clip")
+  if (!['tutor', 'girl', 'boy', 'otter', 'owl', 'cat', 'red-panda'].includes(s.character)) errs.push('character must be one of tutor, girl, boy, otter, owl, cat, red-panda');
+  if (s.student !== undefined || s.animal !== undefined) errs.push('one character only: use "character", not "student" / "animal"');
   // Letters are capitals in the voice; "negative" for a negative number.
   if (/\bminus (one|two|three|four|five|six|seven|eight|nine|ten)\b(?! (C|X|K|A|B|fifteen|eight))/i.test(spoken.replace(/(\w+) minus/g, '$1 MINUSX'))) warn.push('"minus <number>" — the house voice says "negative" for a negative number');
   if (/\b(x|y|k|c|b|m)\b/.test(spoken)) warn.push('a lower-case single letter in the voice — letters are CAPITALS so the voice reads the letter');

@@ -5,8 +5,7 @@
   "levelLabel": "E Math",
   "topic": "Proportion",
   "look": "lime",
-  "student": "boy",
-  "animal": "red-panda",
+  "character": "girl",
   "hook": "Most students get this wrong",
   "question": [
     "$y$ is inversely proportional to $x^2$.",
