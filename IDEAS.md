@@ -7,6 +7,26 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 📣 Marketing pipeline for the app — a MAJOR piece to build (Adrian, 5 Nov 2026: "we must really put this in memory > a major but important piece to build as marketing for the app") — PLANNED, step 1 under way
+Goal: more students using the free practice (it collects learning data). Plan Adrian agreed the
+shape of (5 Nov 2026), four parts:
+1. **Make the videos** — ✅ BUILT: the trap-Shorts maker (`scripts/shorts/`, SPEC-CLIP-PIPELINE.md
+   §10): our own questions, maths checked, the approved tutor character, his voice rules.
+2. **Plan what to post when** — ✅ exists: `src/data/marketing-calendar.ts` → `/admin/calendar-marketing-post`.
+3. **Post on a schedule** to YouTube Shorts, then TikTok + Instagram Reels — ❌ missing. Do NOT build
+   our own poster: use a ready-made posting app (well solved on the web, 5 Nov 2026 research).
+   Adrian approves each video on his phone before it goes (Accountability; also YouTube's
+   "inauthentic / mass-produced content" rule — keep real teaching and variety, never a churn of
+   look-alikes).
+4. **See what worked** — 🟡 half: a link per video (`/s/<code>`, lib/short-links.ts); counting
+   waits on `migrations/short_link_clicks.sql` (Adrian's yes); signup does not read the `am_short`
+   cookie yet; no admin view of the counts yet.
+Order: (a) Adrian posts the first 10 drafts (Finder › Movies › "AdrianMath Shorts (drafts)"), one a
+day, and switches on the counter; (b) after 2–3 weeks, see which kinds brought students; (c) then
+build: a weekly batch of new trap Shorts → his phone approval → the posting app; plus free practice
+on the main site (`PLANS_OPEN_TO_STUDENTS`) so the link lands on it. He needs his own YouTube channel
+(his Gmail → Create a channel); sessions cannot create accounts.
+
 ## 🧩 Weekly stretch set (Adrian, 4 Nov 2026: "Yes, build it") — ✅ BUILT, switched ON (Adrian: "the example sets are okay"), live once promoted → `SPEC-STRETCH-SET.md`
 Five things a week per student (new costume · stretch · older topic · spot the mistake · guess first). Preview any student on `/admin/stretch`. Open: promote; the Monday bot line (proposal); approve the waiting spot cards; write the first new-costume questions.
 

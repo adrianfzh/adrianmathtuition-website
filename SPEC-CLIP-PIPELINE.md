@@ -809,3 +809,16 @@ side is not the count), tangent to a curve (the sign when k moves across), curve
 (the a < 0 condition), never divide by sin x, 1/x < 2 (never multiply by x — H2). E Math 6,
 A Math 3, H2 1. The blind read failed 3 on first read (a letter meaning two things, point B vs
 vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
+
+**Adrian's first watch (5 Nov 2026) — binding on every Short:**
+- *"instead of pause: what's your answer, we can have pause: what do you think the next step is?"* —
+  the pause line, voice and screen, is now **"Pause. What do you think the next step is?"**.
+- *"the background is dark green (dull) > can we have something more catchy, exciting, more energy?
+  (this can be different from the teaching clips itself), or even include a character/teacher
+  animation"* — the Shorts no longer use the chalk board: a moving purple-to-pink background with
+  faint maths symbols drifting, white cards with dark ink (the maths stays easy to read), yellow
+  marker headlines, and **the approved tutor** (`public/lessons/characters/tutor`, approved 1 Oct
+  2026) top-right, changing pose with each part — points at the hook, thinks in the pause, "oops"
+  at the wrong answer, nods through the working, cheers at the answer and on the end card (centre,
+  bigger). Teaching clips keep the chalk board.
+- *"put this in memory to remind me"* — a reminder line in CLAUDE.md (Pending Tasks) until he posts.

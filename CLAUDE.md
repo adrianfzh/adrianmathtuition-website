@@ -357,6 +357,8 @@ This takes 2 seconds and returns **no student data** — only field names, types
 
 ## Pending Tasks → [`IDEAS.md`](IDEAS.md)
 
+**📣 The marketing pipeline for the app is a MAJOR piece to build (5 Nov 2026, Adrian: "we must really put this in memory") → [`IDEAS.md`](IDEAS.md) §📣 Marketing pipeline.** **⏰ Remind Adrian: the 10 trap Shorts are waiting (Adrian: "put this in memory to remind me")** — when a session touches marketing, videos, Shorts or getting students to free practice, remind him in one line: the 10 drafts are in Finder › Movies › "AdrianMath Shorts (drafts)" (open "Open me.html"), nothing is posted, link counting waits on his yes. Drop this line once he has posted or says stop → [`SPEC-CLIP-PIPELINE.md`](SPEC-CLIP-PIPELINE.md) §10.
+
 **⏰ Remind Adrian on a model upgrade (15 Oct 2026, Adrian: "remind me about this when opus or fable upgrades")** — every account, every session. Newest when set: **Opus 5.5, Fable 5.1**. If you run on a newer Opus or Fable, say in your first reply, in plain words, that **the student-app notes tidy-up is waiting** (one sample topic done: A Math Quadratic Functions; he checks it on his phone, then the rest) → [`SPEC-NOTES-PORTAL.md`](SPEC-NOTES-PORTAL.md) §Skill layout. Then update the versions on this line and push, so he is reminded once per upgrade.
 
 **Latest hand-over: [`docs/HANDOFF-2026-10-14.md`](docs/HANDOFF-2026-10-14.md)** (WhatsApp trials, chat bots, science study aids; read with [`docs/HANDOFF-2026-10-12.md`](docs/HANDOFF-2026-10-12.md) and [`docs/HANDOFF-2026-10-09.md`](docs/HANDOFF-2026-10-09.md)) — where everything stood on 9 Oct 2026 (replacing Gemini, the Ship button, the morning brief, subject heads, self-learning, the redraw buttons). Read it before picking up any of those.

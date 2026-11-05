@@ -3,7 +3,7 @@
   "code": "perp",
   "level": "EM",
   "levelLabel": "E Math",
-  "topic": "Coordinate Geometry",
+  "topic": "Gradients",
   "hook": "Most students get this wrong",
   "question": [
     "A line has gradient $-\\tfrac{2}{9}$.",
@@ -37,7 +37,7 @@
     },
     {
       "part": "pause",
-      "say": "Pause. What's your answer?",
+      "say": "Pause. What do you think the next step is?",
       "hold": 2.5
     },
     {
