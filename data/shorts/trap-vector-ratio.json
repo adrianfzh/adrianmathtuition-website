@@ -1,0 +1,97 @@
+{
+  "slug": "trap-vector-ratio",
+  "code": "vector",
+  "level": "EM",
+  "levelLabel": "E Math",
+  "topic": "Vectors",
+  "hook": "Most students get this wrong",
+  "question": [
+    "$\\overrightarrow{OA} = \\mathbf{a}$ and $\\overrightarrow{OB} = \\mathbf{b}$.",
+    "$C$ lies on $AB$ with $AC : CB = 3 : 1$.",
+    "Find $\\overrightarrow{OC}$ in terms of $\\mathbf{a}$ and $\\mathbf{b}$."
+  ],
+  "wrong": {
+    "tex": "\\tfrac{3}{4}\\mathbf{a} + \\tfrac{1}{4}\\mathbf{b}",
+    "why": "the 3 sits next to A, so it feels right"
+  },
+  "trap": "C is close to B, so it needs more b.",
+  "figure": {
+    "kind": "segment",
+    "from": "A",
+    "to": "B",
+    "mid": "C",
+    "parts": [
+      3,
+      1
+    ]
+  },
+  "steps": [
+    {
+      "tex": "\\overrightarrow{OC} = \\mathbf{a} + \\tfrac{3}{4}\\overrightarrow{AB}",
+      "on": "three quarters"
+    },
+    {
+      "tex": "= \\mathbf{a} + \\tfrac{3}{4}(\\mathbf{b} - \\mathbf{a})",
+      "on": "B minus A"
+    },
+    {
+      "tex": "= \\tfrac{1}{4}\\mathbf{a} + \\tfrac{3}{4}\\mathbf{b}",
+      "answer": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. C lies on A B, with A C to C B equal to three to one. Find vector O C, in terms of vectors A and B."
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many write three quarters of vector A, plus one quarter of vector B. The three sits next to A in the ratio, so it feels right."
+    },
+    {
+      "part": "why",
+      "say": "But C is three quarters of the way from A to B. It sits close to B, so it needs more of vector B, not less.",
+      "figure": true
+    },
+    {
+      "part": "right",
+      "say": "Start at A, then go three quarters of the way along A B. And A B is the vector B minus A.",
+      "steps": [
+        0,
+        1
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Expand and collect. O C is one quarter of vector A, plus three quarters of vector B.",
+      "steps": [
+        2
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "a, b = symbols('a b')\nC = a + Rational(3, 4) * (b - a)\nassert expand(C - (a / 4 + 3 * b / 4)) == 0\n# AC : CB = 3 : 1\nassert expand((C - a) - 3 * (b - C)) == 0\nwrong = 3 * a / 4 + b / 4\nassert expand(wrong - C) != 0\n",
+  "youtube": {
+    "title": "Vectors: the ratio trap most students fall for",
+    "description": "C lies on AB with AC : CB = 3 : 1. Is OC = ¾a + ¼b? No — C sits close to B, so it needs more b. OC = ¼a + ¾b.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#emath",
+      "#olevel",
+      "#olevelmath",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/vector"
+  }
+}

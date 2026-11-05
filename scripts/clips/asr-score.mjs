@@ -12,6 +12,8 @@
 // words → digits, "-" → "minus", case, spaces and punctuation dropped — then a
 // similarity of 1 − edit distance / length. A misread word still costs its letters.
 // Writes data/clip-runs/<slug>/asr.json { worst, lines[] }. Gate: every line ≥ 0.85.
+// --script <json> --dir <folder>: score a lesson-shaped JSON kept elsewhere (the Shorts,
+// scripts/shorts/voice.mjs) — asr.txt is read from, and asr.json written to, <folder>.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -75,6 +77,10 @@ const SPOKEN_SYMBOLS = [
   // bare "to the five" is a power too.
   [/\^\s*2(?![0-9.])/g, ' square '], [/\^\s*3(?![0-9.])/g, ' cube '],
   [/\^|\bto the power( of)?\b/g, ' pow '], [/\bto the\b/g, ' pow '], [/\b(write|rite)\b/g, ' right '],
+  // 5 Nov 2026 (the Shorts): "seventy two dollars" written "$72", "twenty percent" written "20%",
+  // "nought point seven five" written "0.75", the site read out as "adrianmathtuition.com".
+  [/\$\s?([0-9][0-9.,]*)/g, ' $1 dollars '], [/%/g, ' percent '], [/\bnought point\b/g, ' zero point '], [/\bnot (?=0\.)/g, ' '],
+  [/\bdot com\b/g, ' .com '],
   // 'negative one' is heard as '-1' (the transcript writes the sign): both read as minus.
   [/\bnegative\b/g, ' minus '],
   // 25 Oct 2026 (kinematics): "centimetres" heard as "cm", "centre" as the US "center".
@@ -113,9 +119,11 @@ function similarity(a, b) {
 const args = parseArgs(process.argv.slice(2));
 let failed = false;
 for (const slug of args._) {
-  const scenesB = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lessons', `${slug}.json`), 'utf8')).scenes.map(sc => sc.beats);
+  const scriptFile = typeof args.script === 'string' ? path.resolve(args.script) : path.join(ROOT, 'data/lessons', `${slug}.json`);
+  const runDir = typeof args.dir === 'string' ? path.resolve(args.dir) : path.join(ROOT, 'data/clip-runs', slug);
+  const scenesB = JSON.parse(fs.readFileSync(scriptFile, 'utf8')).scenes.map(sc => sc.beats);
   const beats = scenesB.flat();
-  const txt = fs.readFileSync(path.join(ROOT, 'data/clip-runs', slug, 'asr.txt'), 'utf8').split('\n');
+  const txt = fs.readFileSync(path.join(runDir, 'asr.txt'), 'utf8').split('\n');
   const lines = [];
   for (let i = 0; i < txt.length; i++) {
     const m = txt[i].match(/scene-(\d+)-b(\d+): (\d+)% of narration words heard/);
@@ -128,7 +136,7 @@ for (const slug of args._) {
     lines.push({ beat: k, bag, score: +score.toFixed(3), heard, said: heard ? beats[k - 1].say : undefined });
   }
   const worst = lines.length === beats.length ? Math.min(...lines.map(l => l.score)) : 0;
-  fs.writeFileSync(path.join(ROOT, 'data/clip-runs', slug, 'asr.json'), JSON.stringify({ slug, worst, lines }, null, 1) + '\n');
+  fs.writeFileSync(path.join(runDir, 'asr.json'), JSON.stringify({ slug, worst, lines }, null, 1) + '\n');
   const ok = worst >= 0.85;
   failed ||= !ok;
   console.log(`${ok ? '✓' : '✗'} ${slug}: ${lines.length}/${beats.length} lines heard · worst ${Math.round(worst * 100)} %`);

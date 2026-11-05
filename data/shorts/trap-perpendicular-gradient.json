@@ -1,0 +1,90 @@
+{
+  "slug": "trap-perpendicular-gradient",
+  "code": "perp",
+  "level": "EM",
+  "levelLabel": "E Math",
+  "topic": "Coordinate Geometry",
+  "hook": "Most students get this wrong",
+  "question": [
+    "A line has gradient $-\\tfrac{2}{9}$.",
+    "Find the gradient of a line perpendicular to it."
+  ],
+  "wrong": {
+    "tex": "-\\tfrac{9}{2}",
+    "why": "flipped the fraction, kept the sign"
+  },
+  "trap": "Flip the fraction AND change the sign.",
+  "steps": [
+    {
+      "tex": "m_1 \\times m_2 = -1"
+    },
+    {
+      "tex": "m_2 = -1 \\div \\left(-\\tfrac{2}{9}\\right)"
+    },
+    {
+      "tex": "m_2 = \\tfrac{9}{2}",
+      "answer": true
+    },
+    {
+      "tex": "-\\tfrac{2}{9} \\times \\tfrac{9}{2} = -1 \\;\\checkmark",
+      "quiet": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. A line has gradient negative two over nine. What is the gradient of a line perpendicular to it?"
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many write negative nine over two. They flip the fraction, but keep the negative sign."
+    },
+    {
+      "part": "why",
+      "say": "Flipping is right. But perpendicular gradients multiply to negative one, so the sign must change too.",
+      "steps": [
+        0
+      ]
+    },
+    {
+      "part": "right",
+      "say": "So M two is negative one, divided by negative two over nine. That is nine over two.",
+      "steps": [
+        1,
+        2
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Check. Negative two over nine, times nine over two, is negative one.",
+      "steps": [
+        3
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "m1 = Rational(-2, 9); m2 = Rational(9, 2); wrong = Rational(-9, 2)\nassert m1 * m2 == -1\nassert -1 / m1 == m2\nassert m1 * wrong != -1\n",
+  "youtube": {
+    "title": "Perpendicular gradient: the sign trap",
+    "description": "A line has gradient −2/9. What is the gradient of a line perpendicular to it? Most students flip the fraction and stop. Flip it AND change the sign: m₁ × m₂ = −1.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#emath",
+      "#olevel",
+      "#olevelmath",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/perp"
+  }
+}

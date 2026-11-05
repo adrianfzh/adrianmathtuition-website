@@ -1,0 +1,105 @@
+{
+  "slug": "trap-multiply-by-x",
+  "code": "ineq",
+  "level": "JC",
+  "levelLabel": "H2 Math",
+  "topic": "Inequalities",
+  "hook": "Most students get this wrong",
+  "question": [
+    "Solve $\\dfrac{1}{x} < 2$."
+  ],
+  "wrong": {
+    "tex": "1 < 2x \\Rightarrow x > \\tfrac{1}{2}",
+    "why": "multiplied both sides by x"
+  },
+  "trap": "x could be negative. Never multiply by x.",
+  "figure": {
+    "kind": "numberline",
+    "points": [
+      "0",
+      "\\tfrac{1}{2}"
+    ],
+    "signs": [
+      "−",
+      "+",
+      "−"
+    ],
+    "keep": [
+      0,
+      2
+    ]
+  },
+  "steps": [
+    {
+      "tex": "\\dfrac{1}{x} - 2 < 0",
+      "on": "Bring"
+    },
+    {
+      "tex": "\\dfrac{1 - 2x}{x} < 0",
+      "on": "one fraction"
+    },
+    {
+      "tex": "x < 0 \\;\\text{ or }\\; x > \\tfrac{1}{2}",
+      "answer": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. Solve one over X is less than two."
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many multiply both sides by X. One is less than two X, so X is greater than a half."
+    },
+    {
+      "part": "why",
+      "say": "But X could be negative, and multiplying by a negative flips the sign. Never multiply by X. Bring everything to one side, as one fraction.",
+      "steps": [
+        0,
+        1
+      ]
+    },
+    {
+      "part": "right",
+      "say": "The top is zero at a half. The bottom is zero at zero. Test the signs on a number line.",
+      "figure": true
+    },
+    {
+      "part": "right",
+      "say": "The fraction is negative when X is less than zero, or X is greater than a half.",
+      "steps": [
+        2
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Check with X equals negative one. One over negative one is negative one, which is less than two. The shortcut missed it."
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "x = symbols('x', real=True)\nsol = solve_univariate_inequality(1/x < 2, x, relational=False)\nassert sol == Union(Interval.open(-oo, 0), Interval.open(Rational(1, 2), oo))\nassert simplify(1/x - 2 - (1 - 2*x)/x) == 0\n# signs on the number line: -, +, -\nf = (1 - 2*x)/x\nassert f.subs(x, -1) < 0 and f.subs(x, Rational(1, 4)) > 0 and f.subs(x, 1) < 0\nassert (1/x).subs(x, -1) < 2      # the root the shortcut loses\n",
+  "youtube": {
+    "title": "Solve 1/x < 2 (multiplying by x loses half the answer)",
+    "description": "Solve 1/x < 2. Multiplying by x gives x > ½ — but x could be negative. Bring everything to one side: (1 − 2x)/x < 0, so x < 0 or x > ½.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#h2math",
+      "#alevel",
+      "#jc",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/ineq"
+  }
+}

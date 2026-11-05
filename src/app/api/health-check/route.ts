@@ -95,6 +95,13 @@ export async function GET(req: NextRequest) {
       if (!Array.isArray(d.slots) || d.slots.length === 0) throw new Error('no slots in response');
       return `${d.slots.length} slots`;
     }),
+    // 🎬 A Short's link (/s/<code>, lib/short-links.ts) still sends visitors on, tagged. Not counted.
+    timed('short-link', async () => {
+      const r = await fetch(`${base}/s/perp?probe=1`, { redirect: 'manual', signal: T(10000) });
+      const to = r.headers.get('location') || '';
+      if (r.status !== 302 || !to.includes('utm_content=perp')) throw new Error(`HTTP ${r.status} → ${to || 'nowhere'}`);
+      return 'redirects, tagged';
+    }),
     // Signup link validation — the exact HMAC handshake a parent's link performs
     timed('signup-link', async () => {
       if (!firstSlotId || !process.env.SIGNUP_SECRET) throw new Error('no slot/secret to test with');

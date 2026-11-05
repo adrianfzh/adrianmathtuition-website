@@ -59,6 +59,10 @@
 //                      gemini — a lossless 24 kHz WAV, so a later bitrate change
 //                      is a re-encode, not a re-synthesis; minimax — the API's
 //                      untrimmed MP3 as it came back
+//   --script <path>    voice this lesson-shaped JSON instead of data/lessons/<slug>.json
+//   --out <dir>        write the clips here (repo-relative) instead of public/lessons/<slug>/;
+//                      the JSON then gets repo-relative audio paths (no leading /). Used by
+//                      the Shorts (scripts/shorts/voice.mjs), whose voice must stay private.
 //   --dry              plan only — no API calls, no writes
 //   --verify           transcribe every clip back (Gemini audio understanding)
 //                      and score it against its narration — the listen-check a
@@ -162,11 +166,14 @@ const MINIMAX_API_KEY = (env.MINIMAX_API_KEY || '').trim();
 
 // ── Lesson + segment plan ────────────────────────────────────────────────────
 
-const scriptPath = path.join(ROOT, 'data', 'lessons', `${slug}.json`);
+const scriptPath = typeof flags.script === 'string' ? path.resolve(flags.script) : path.join(ROOT, 'data', 'lessons', `${slug}.json`);
 if (!fs.existsSync(scriptPath)) { console.error(`no such lesson: ${scriptPath}`); process.exit(2); }
 const script = JSON.parse(fs.readFileSync(scriptPath, 'utf8'));
-const outDir = path.join(ROOT, 'public', 'lessons', slug);
-const servedBase = `/lessons/${slug}`;
+const OUT_REL = typeof flags.out === 'string' ? path.relative(ROOT, path.resolve(flags.out)) : null;
+const outDir = OUT_REL !== null ? path.join(ROOT, OUT_REL) : path.join(ROOT, 'public', 'lessons', slug);
+const servedBase = OUT_REL !== null ? OUT_REL.split(path.sep).join('/') : `/lessons/${slug}`;
+/** A served path (/lessons/…, under public/) or a repo-relative one (--out) → the file on disk. */
+const audioFile = (p) => (p.startsWith('/') ? path.join(ROOT, 'public', p) : path.join(ROOT, p));
 
 const pad2 = n => String(n).padStart(2, '0');
 const words = t => t.trim().split(/\s+/).filter(Boolean).length;
@@ -186,7 +193,7 @@ function planSegments() {
         const key = `scene-${pad2(n)}-b${j + 1}`;
         const served = `${servedBase}/${key}.mp3`;
         const existing = typeof b.audio === 'string' ? b.audio : undefined;
-        const existingFile = existing && existing.startsWith('/') ? path.join(ROOT, 'public', existing) : null;
+        const existingFile = existing ? audioFile(existing) : null;
         const present = !!existingFile && fs.existsSync(existingFile) && fs.statSync(existingFile).size > 0;
         segments.push({ sceneIdx: i, sceneNo: n, stepIdx: j, perStep: false, beat: true, key, text: b.say, served, file: path.join(outDir, `${key}.mp3`), existing, present });
       });
@@ -199,7 +206,7 @@ function planSegments() {
       const key = Array.isArray(narration) ? `scene-${pad2(n)}-${j + 1}` : `scene-${pad2(n)}`;
       const served = `${servedBase}/${key}.mp3`;
       const existing = Array.isArray(scene.audio) ? scene.audio[j] : (j === 0 && typeof scene.audio === 'string' ? scene.audio : undefined);
-      const existingFile = existing && existing.startsWith('/') ? path.join(ROOT, 'public', existing) : null;
+      const existingFile = existing ? audioFile(existing) : null;
       const present = !!existingFile && fs.existsSync(existingFile) && fs.statSync(existingFile).size > 0;
       segments.push({ sceneIdx: i, sceneNo: n, stepIdx: j, perStep: Array.isArray(narration), key, text, served, file: path.join(outDir, `${key}.mp3`), existing, present });
     });
@@ -454,7 +461,7 @@ async function main() {
     let low = 0;
     for (const seg of segments) {
       if (!seg.present) { console.log(`  ${seg.key}: (no clip)`); continue; }
-      const t = await transcribe(seg.existing.startsWith('/') ? path.join(ROOT, 'public', seg.existing) : seg.file);
+      const t = await transcribe(seg.existing ? audioFile(seg.existing) : seg.file);
       const score = containment(seg.text, t);
       const flag = score < 0.85 ? '  ⚠ LOW' : '';
       if (score < 0.85) low++;

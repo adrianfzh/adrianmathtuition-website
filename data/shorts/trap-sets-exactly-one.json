@@ -1,0 +1,96 @@
+{
+  "slug": "trap-sets-exactly-one",
+  "code": "sets",
+  "level": "EM",
+  "levelLabel": "E Math",
+  "topic": "Sets",
+  "hook": "Most students get this wrong",
+  "question": [
+    "In a class, $18$ study French, $15$ study Spanish",
+    "and $8$ study both.",
+    "How many study exactly one language?"
+  ],
+  "wrong": {
+    "tex": "18 + 15 - 8 = 25",
+    "why": "that counts at least one language"
+  },
+  "trap": "Exactly one leaves out the middle.",
+  "figure": {
+    "kind": "venn",
+    "left": "French",
+    "right": "Spanish",
+    "both": "8",
+    "leftOnly": "10",
+    "rightOnly": "7"
+  },
+  "steps": [
+    {
+      "tex": "\\text{French only} = 18 - 8 = 10",
+      "on": "French only"
+    },
+    {
+      "tex": "\\text{Spanish only} = 15 - 8 = 7",
+      "on": "Spanish only"
+    },
+    {
+      "tex": "10 + 7 = 17",
+      "answer": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. Eighteen study French, fifteen study Spanish, and eight study both. How many study exactly one language?"
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many write twenty five. Eighteen plus fifteen, minus the eight who study both."
+    },
+    {
+      "part": "why",
+      "say": "But twenty five counts everyone who studies at least one language. Exactly one leaves out the eight in the middle.",
+      "figure": "both"
+    },
+    {
+      "part": "right",
+      "say": "French only is eighteen minus eight, which is ten. Spanish only is fifteen minus eight, which is seven.",
+      "steps": [
+        0,
+        1
+      ],
+      "figure": true
+    },
+    {
+      "part": "right",
+      "say": "Exactly one language is ten plus seven, which is seventeen.",
+      "steps": [
+        2
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "F, S, B = 18, 15, 8\nassert (F - B) + (S - B) == 17\nassert F + S - B == 25          # at least one: the tempting answer\nassert (F - B) + B + (S - B) == 25\n",
+  "youtube": {
+    "title": "\"Exactly one\" — the Venn diagram trap",
+    "description": "18 study French, 15 study Spanish, 8 study both. How many study exactly one? Not 25 — that is \"at least one\". Take out the middle: 10 + 7 = 17.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#emath",
+      "#olevel",
+      "#olevelmath",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/sets"
+  }
+}

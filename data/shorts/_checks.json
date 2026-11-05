@@ -1,0 +1,126 @@
+{
+  "made": "2026-11-05",
+  "voiceUsdTotal": 0.6,
+  "shorts": {
+    "trap-curve-below-axis": {
+      "script": true,
+      "words": 143,
+      "mathsAsserts": 6,
+      "voiceWorst": 86,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 56.67,
+      "mb": 3.1,
+      "voiceUsd": 0.0732,
+      "ok": true
+    },
+    "trap-divide-by-sin": {
+      "script": true,
+      "words": 114,
+      "mathsAsserts": 4,
+      "voiceWorst": 86,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 48.27,
+      "mb": 2.7,
+      "voiceUsd": 0.0606,
+      "ok": true
+    },
+    "trap-hcf-cubes": {
+      "script": true,
+      "words": 119,
+      "mathsAsserts": 6,
+      "voiceWorst": 88,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 49.8,
+      "mb": 2.9,
+      "voiceUsd": 0.0634,
+      "ok": true
+    },
+    "trap-inverse-square": {
+      "script": true,
+      "words": 93,
+      "mathsAsserts": 4,
+      "voiceWorst": 92,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 40.9,
+      "mb": 2.2,
+      "voiceUsd": 0.0459,
+      "ok": true
+    },
+    "trap-multiply-by-x": {
+      "script": true,
+      "words": 130,
+      "mathsAsserts": 4,
+      "voiceWorst": 86,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 48.43,
+      "mb": 2.6,
+      "voiceUsd": 0.065,
+      "ok": true
+    },
+    "trap-perpendicular-gradient": {
+      "script": true,
+      "words": 97,
+      "mathsAsserts": 3,
+      "voiceWorst": 88,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 40.73,
+      "mb": 2.3,
+      "voiceUsd": 0.0542,
+      "ok": true
+    },
+    "trap-reverse-percentage": {
+      "script": true,
+      "words": 107,
+      "mathsAsserts": 5,
+      "voiceWorst": 86,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 44.27,
+      "mb": 2.5,
+      "voiceUsd": 0.0625,
+      "ok": true
+    },
+    "trap-sets-exactly-one": {
+      "script": true,
+      "words": 96,
+      "mathsAsserts": 3,
+      "voiceWorst": 100,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 42.23,
+      "mb": 2.5,
+      "voiceUsd": 0.0567,
+      "ok": true
+    },
+    "trap-tangent-sign": {
+      "script": true,
+      "words": 119,
+      "mathsAsserts": 6,
+      "voiceWorst": 92,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 44.9,
+      "mb": 2.5,
+      "voiceUsd": 0.0551,
+      "ok": true
+    },
+    "trap-vector-ratio": {
+      "script": true,
+      "words": 137,
+      "mathsAsserts": 3,
+      "voiceWorst": 88,
+      "look": true,
+      "lookProblems": [],
+      "seconds": 46.1,
+      "mb": 2.5,
+      "voiceUsd": 0.0614,
+      "ok": true
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "slug": "trap-divide-by-sin",
+  "code": "trig",
+  "level": "AM",
+  "levelLabel": "A Math",
+  "topic": "Trigonometry",
+  "hook": "Most students get this wrong",
+  "question": [
+    "Solve $2\\sin x \\cos x = \\sin x$",
+    "for $0^\\circ \\le x \\le 360^\\circ$."
+  ],
+  "wrong": {
+    "tex": "\\cos x = \\tfrac{1}{2} \\Rightarrow x = 60^\\circ, 300^\\circ",
+    "why": "divided both sides by sin x"
+  },
+  "trap": "Never divide by sin x. Factorise.",
+  "steps": [
+    {
+      "tex": "2\\sin x\\cos x - \\sin x = 0",
+      "on": "Bring"
+    },
+    {
+      "tex": "\\sin x\\,(2\\cos x - 1) = 0",
+      "on": "factorise"
+    },
+    {
+      "tex": "\\sin x = 0 \\;\\Rightarrow\\; x = 0^\\circ, 180^\\circ, 360^\\circ"
+    },
+    {
+      "tex": "\\cos x = \\tfrac{1}{2} \\;\\Rightarrow\\; x = 60^\\circ, 300^\\circ"
+    },
+    {
+      "tex": "x = 0^\\circ, 60^\\circ, 180^\\circ, 300^\\circ, 360^\\circ",
+      "answer": true,
+      "on": "Five"
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. Solve two sine X cosine X equals sine X, for X from zero to three hundred and sixty degrees."
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many divide both sides by sine X. Cosine X is a half, so X is sixty or three hundred degrees. Only two answers."
+    },
+    {
+      "part": "why",
+      "say": "But sine X can be zero, and dividing throws those answers away. Never divide by sine X. Bring it across, and factorise.",
+      "steps": [
+        0,
+        1
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Sine X equals zero gives zero, one hundred and eighty, and three hundred and sixty degrees.",
+      "steps": [
+        2
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Cosine X equals a half gives sixty and three hundred degrees. Five answers, not two.",
+      "steps": [
+        3,
+        4
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "x = symbols('x', real=True)\nsols = solveset(2*sin(x)*cos(x) - sin(x), x, Interval(0, 2*pi))\nassert sols == FiniteSet(0, pi/3, pi, 5*pi/3, 2*pi)\nassert solveset(sin(x), x, Interval(0, 2*pi)) == FiniteSet(0, pi, 2*pi)\nassert solveset(2*cos(x) - 1, x, Interval(0, 2*pi)) == FiniteSet(pi/3, 5*pi/3)\nassert [deg(s) for s in sorted(sols, key=lambda s: float(s))] == [0, 60, 180, 300, 360]\n",
+  "youtube": {
+    "title": "Never divide by sin x (you lose 3 answers)",
+    "description": "Solve 2 sin x cos x = sin x for 0° ≤ x ≤ 360°. Dividing by sin x gives 60° and 300° only. Factorise instead: sin x (2cos x − 1) = 0 gives five answers.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#amath",
+      "#additionalmath",
+      "#olevel",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/trig"
+  }
+}

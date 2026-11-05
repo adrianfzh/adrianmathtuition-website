@@ -1,0 +1,85 @@
+{
+  "slug": "trap-inverse-square",
+  "code": "prop",
+  "level": "EM",
+  "levelLabel": "E Math",
+  "topic": "Proportion",
+  "hook": "Most students get this wrong",
+  "question": [
+    "$y$ is inversely proportional to $x^2$.",
+    "When $x$ is doubled, what happens to $y$?"
+  ],
+  "wrong": {
+    "tex": "y \\text{ is halved}",
+    "why": "inverse of double is half"
+  },
+  "trap": "Square first: y depends on x², not x.",
+  "steps": [
+    {
+      "tex": "y = \\dfrac{k}{x^2}",
+      "on": "Y equals K"
+    },
+    {
+      "tex": "y_{\\text{new}} = \\dfrac{k}{(2x)^2} = \\dfrac{k}{4x^2}",
+      "on": "Two X"
+    },
+    {
+      "tex": "y_{\\text{new}} = \\tfrac{1}{4}\\,y",
+      "answer": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. Y is inversely proportional to X squared. When X is doubled, what happens to Y?"
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many say Y is halved. Inverse means opposite, so double becomes half."
+    },
+    {
+      "part": "why",
+      "say": "But Y depends on X squared, not on X. So square first."
+    },
+    {
+      "part": "right",
+      "say": "Write Y equals K over X squared. Put in two X. Two X, all squared, is four X squared.",
+      "steps": [
+        0,
+        1
+      ]
+    },
+    {
+      "part": "right",
+      "say": "So the new Y is one quarter of the old Y. Y is divided by four.",
+      "steps": [
+        2
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "k, x = symbols('k x', positive=True)\ny = k / x**2\nynew = k / (2 * x)**2\nassert simplify(ynew / y) == Rational(1, 4)\nassert simplify(ynew / y) != Rational(1, 2)   # not halved\nassert expand((2 * x)**2) == 4 * x**2\nassert simplify(ynew - k / (4 * x**2)) == 0\n",
+  "youtube": {
+    "title": "Double x, and y is… halved? (Inverse proportion trap)",
+    "description": "y is inversely proportional to x². Double x, and y is NOT halved — it is divided by 4. Square first.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#emath",
+      "#olevel",
+      "#olevelmath",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/prop"
+  }
+}

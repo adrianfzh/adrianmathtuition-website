@@ -1,0 +1,92 @@
+{
+  "slug": "trap-reverse-percentage",
+  "code": "percent",
+  "level": "EM",
+  "levelLabel": "E Math",
+  "topic": "Percentage",
+  "hook": "Most students get this wrong",
+  "question": [
+    "After a $20\\%$ discount, a bag costs $\\$60$.",
+    "What was the price before the discount?"
+  ],
+  "wrong": {
+    "tex": "\\$60 + 20\\% \\text{ of } \\$60 = \\$72",
+    "why": "the 20% was never taken from $60"
+  },
+  "trap": "$60 is 80% of the original.",
+  "steps": [
+    {
+      "tex": "80\\% \\;\\to\\; \\$60"
+    },
+    {
+      "tex": "1\\% \\;\\to\\; \\$60 \\div 80 = \\$0.75",
+      "on": "one percent"
+    },
+    {
+      "tex": "100\\% \\;\\to\\; \\$0.75 \\times 100 = \\$75",
+      "answer": true,
+      "on": "one hundred"
+    },
+    {
+      "tex": "\\$75 - \\$15 = \\$60 \\;\\checkmark",
+      "quiet": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. After a twenty percent discount, a bag costs sixty dollars. What was the price before the discount?"
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many add twenty percent of sixty, and get seventy two dollars."
+    },
+    {
+      "part": "why",
+      "say": "But the twenty percent was taken from the original price, not from sixty. So sixty dollars is eighty percent of the original.",
+      "steps": [
+        0
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Find one percent: sixty divided by eighty, which is nought point seven five. Then times one hundred. The original price is seventy five dollars.",
+      "steps": [
+        1,
+        2
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Check. Twenty percent of seventy five is fifteen. Seventy five minus fifteen is sixty.",
+      "steps": [
+        3
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "orig = Rational(75)\nassert orig * Rational(80, 100) == 60\nassert Rational(60, 80) == Rational(3, 4)\nassert Rational(60, 80) * 100 == 75\nassert orig * Rational(20, 100) == 15\nwrong = 60 + Rational(20, 100) * 60\nassert wrong == 72 and wrong * Rational(80, 100) != 60\n",
+  "youtube": {
+    "title": "Price after 20% off is $60. Original price? (Not $72)",
+    "description": "A bag costs $60 after a 20% discount. Adding 20% of $60 gives $72 — wrong. $60 is 80% of the original, so the original is $75.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#emath",
+      "#olevel",
+      "#olevelmath",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/percent"
+  }
+}

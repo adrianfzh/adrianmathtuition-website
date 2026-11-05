@@ -1,0 +1,88 @@
+{
+  "slug": "trap-hcf-cubes",
+  "code": "cubes",
+  "level": "EM",
+  "levelLabel": "E Math",
+  "topic": "HCF and LCM",
+  "hook": "Most students get this wrong",
+  "question": [
+    "A box measures $72$ cm by $48$ cm by $30$ cm.",
+    "It is filled exactly with identical cubes.",
+    "Find the smallest number of cubes."
+  ],
+  "wrong": {
+    "tex": "6 \\text{ cubes}",
+    "why": "6 is the side of each cube, not the count"
+  },
+  "trap": "HCF gives the cube's side. Then count the cubes.",
+  "steps": [
+    {
+      "tex": "\\text{HCF}(72, 48, 30) = 6",
+      "on": "H C F"
+    },
+    {
+      "tex": "\\text{Along the edges: } 12,\\; 8,\\; 5",
+      "on": "twelve"
+    },
+    {
+      "tex": "12 \\times 8 \\times 5 = 480 \\text{ cubes}",
+      "answer": true
+    }
+  ],
+  "beats": [
+    {
+      "part": "hook",
+      "say": "Most students get this wrong. A box, seventy two by forty eight by thirty centimetres, is filled exactly with identical cubes. Find the smallest number of cubes."
+    },
+    {
+      "part": "pause",
+      "say": "Pause. What's your answer?",
+      "hold": 2.5
+    },
+    {
+      "part": "wrong",
+      "say": "Many find the H C F, which is six, and write six cubes. But six is the side of each cube, not how many cubes."
+    },
+    {
+      "part": "why",
+      "say": "Fewest cubes means the biggest cube. Its side must divide seventy two, forty eight and thirty exactly. That is the H C F, which is six.",
+      "steps": [
+        0
+      ]
+    },
+    {
+      "part": "right",
+      "say": "So each cube is six centimetres. Along the edges, that is twelve, eight and five cubes.",
+      "steps": [
+        1
+      ]
+    },
+    {
+      "part": "right",
+      "say": "Twelve times eight times five is four hundred and eighty cubes.",
+      "steps": [
+        2
+      ]
+    },
+    {
+      "part": "end",
+      "say": "More like this, free, at adrian math tuition dot com.",
+      "hold": 1.5
+    }
+  ],
+  "verify": "assert igcd(igcd(72, 48), 30) == 6\nassert ilcm(ilcm(72, 48), 30) == 720\nassert (72 // 6, 48 // 6, 30 // 6) == (12, 8, 5)\nassert 12 * 8 * 5 == 480\nassert 480 * 6**3 == 72 * 48 * 30\nassert 6 != 12 * 8 * 5   # the slip: the side, not the count\n",
+  "youtube": {
+    "title": "\"Smallest number of cubes\" — the answer is NOT the HCF",
+    "description": "A 72 × 48 × 30 cm box is filled with identical cubes. Smallest number of cubes? The HCF, 6, is the side of each cube — not the answer. Count them: 12 × 8 × 5 = 480.",
+    "hashtags": [
+      "#shorts",
+      "#math",
+      "#emath",
+      "#olevel",
+      "#olevelmath",
+      "#singapore",
+      "#mathtips"
+    ],
+    "link": "https://www.adrianmathtuition.com/s/cubes"
+  }
+}

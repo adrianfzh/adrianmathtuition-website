@@ -761,3 +761,51 @@ slider at the bottom, after the clip"* — built in `lesson-player.tsx`:
 - **19 Oct 2026 — Compare powers re-cut as ONE equation line by line** (Adrian, watching it: "you don't have to do the powers first separate on another line, just make the equation go line by line, explaining along the way, having separate explanations break the flow > only do it if a concept is really complex"): the power done in place (Times power note), grouped, Minus power with brackets, the brackets opened inside the powers ("minus a bracket flips every sign inside"), collected, b¹; no side lines, no section titles; 10 lines, 21 beats, about 2 minutes. a⁹ and b¹ light on their own when each base is compared. Rule added to `_house.md` §2 + writer/reviewer briefs. Storyboard reviews 2 × pass; phone review 0 must, 0 should; gate green.
 - **19 Oct 2026 — Compare powers, Adrian's next three notes:** the brackets explained with the common mistake AT that step ("make sure you put brackets because its minus … a common mistake is students not putting brackets so they got their signs wrong") + a `✗ Common mistake: no brackets` note — lesson-verify now lets a `✗ Common mistake:` note sit at its step (only `✗ Watch out` must come last); "add up like terms"; `Comparing powers of a:` / `of b:` labels on their own lines. Rules in `_house.md` §2, reviewer brief items 12–13. Voice re-recorded; gate green.
 
+
+## 10. Short videos — "common trap" YouTube Shorts (BUILT 5 Nov 2026, drafts only)
+
+**Asked for:** Adrian, 5 Nov 2026, "yes" to *"try a small test of 10 'common trap' short videos on
+YouTube Shorts first … then see which ones bring students to the free practice … first check what
+your clip pipeline can already make, so nothing gets built twice."* Nothing is posted: posting is
+his decision.
+
+**What was reused and what is new.** The in-app clip player (`/app/lesson`) is a phone page with
+its own header, controls and "Now try one" — it cannot be filmed as a clean 9:16 video. So a Short
+has its own small stage, and reuses everything else from the clip pipeline:
+| Step | Reused | New |
+|---|---|---|
+| Script | the house rules (`data/clip-bibles/_house.md` §3–§5), the topic bibles (Nature of Roots) | `data/shorts/<slug>.json`: question, the tempting wrong answer, the one-line trap rule, the working, the beats, a sympy block, the YouTube title/description/hashtags/link |
+| Checks before voice | — | `node scripts/shorts/check.mjs`: shape (hook → pause → wrong → why → right… → end), ≤ 150 words, red lines (no model, school, paper names; nothing about how students' work is used — Adrian, 5 Nov 2026: competitors must not learn the business logic), every formula draws in KaTeX, the sympy block passes (answer, the wrong answer is wrong, a middle step) |
+| Blind read | the clip pipeline's fresh-Opus reader | — (one reader over all 10; pass = every score ≥ 4) |
+| Voice | `generate-narration.mjs` (MiniMax `speech-02-hd`, `English_FriendlyPerson`) — new flags `--script` / `--out` keep a Short's voice in `out/shorts/` (git-ignored), never `public/` | `node scripts/shorts/voice.mjs <slug…>` |
+| Speech round trip | `generate-narration --verify` + `asr-score.mjs` (new flags `--script` / `--dir`; now reads "$72", "20%", "nought point") | — |
+| Film | the chalk look (`lesson-theme.ts` tokens, Kalam + Permanent Marker, KaTeX) | `node scripts/shorts/render.mjs <slug…>`: a clock-driven page photographed frame by frame (30 fps, 1080 × 1920), each voice line laid at its own start; look checks at every beat (safe area clear of the Shorts buttons and title, maths ≥ 34 px, nothing cut off, board never shrunk below 0.8), a still per beat + a contact sheet. `--draft` = stills only, no voice money |
+| Hand over | — | `node scripts/shorts/collect.mjs`: copies only Shorts that passed everything to `~/Movies/AdrianMath Shorts (drafts)/` with "Open me.html" (each video, title, description, hashtags, Copy buttons); writes the record `data/shorts/_checks.json` |
+
+**The shape** (Adrian's format, 5 Nov 2026): hook "Most students get this wrong." with the question
+on screen → "Pause. What's your answer?" with a 3-2-1 ring → the common wrong answer (red ✗) and
+why it is tempting → the trap in one line → the right way, a line at a time (green ✓), answer boxed
+→ end card: the trap rule, "More like this — free", adrianmathtuition.com. Captions run under the
+board (most Shorts are watched with the sound off). **One agreed exception to `_house.md` §4:** the
+hook READS the question (the viewer has nothing else), where a clip's opening says what is asked.
+
+**Links — which Short brought people in.** Each description carries
+`https://www.adrianmathtuition.com/s/<code>` (`src/app/s/[code]/route.ts`, `lib/short-links.ts`):
+it counts the visit in `short_link_clicks` (code, time, referring host, robot guess — no IP, no
+user agent), keeps the code in a 90-day `am_short` cookie, and sends the visitor on with
+`utm_source=youtube&utm_medium=shorts&utm_campaign=common-traps&utm_content=<code>`. Health check
+`short-link`. **Not done:** (1) the table needs `migrations/short_link_clicks.sql` applied to the
+maths database — until then the link still works, it just does not count; (2) the destination is
+the home page (`SHORT_LINK_DESTINATION`), because the free practice for strangers is still off on
+the main site (`PLANS_OPEN_TO_STUDENTS = false`, SPEC-PLANS.md) — point it at the free sign-up when
+that opens; (3) a sign-up does not yet read the `am_short` cookie; (4) no admin page for the
+counts yet (a query on `short_link_clicks` grouped by code).
+
+**The first 10 (5 Nov 2026)** — `data/shorts/_checks.json` has every check per Short. Traps chosen
+from `/admin/traps` (the questions most students lose marks on) and the classic ones, every question
+rewritten with new numbers and no school's wording: perpendicular gradient (sign), vector ratio
+(which end), "exactly one" in a Venn diagram, inverse square, reverse percentage, HCF cubes (the
+side is not the count), tangent to a curve (the sign when k moves across), curve below the x-axis
+(the a < 0 condition), never divide by sin x, 1/x < 2 (never multiply by x — H2). E Math 6,
+A Math 3, H2 1. The blind read failed 3 on first read (a letter meaning two things, point B vs
+vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
