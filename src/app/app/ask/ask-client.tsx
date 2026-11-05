@@ -10,6 +10,7 @@
 // student from the bot's anonymous 20/day quota to the student 60/day one.
 
 import { usePhotoCheck } from '@/components/PhotoCheck';
+import VoiceToText from '@/components/VoiceToText';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import Link from 'next/link';
@@ -445,7 +446,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
         <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-5 mb-4">
           <p className="font-semibold text-navy">Hi{firstName ? ` ${firstName}` : ''}! Stuck on a question?</p>
           <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-            Type it out or send a photo — you&rsquo;ll get a clear, step-by-step solution.
+            Type it out, send a photo, or tap 🎤 and say it — you&rsquo;ll get a clear, step-by-step solution.
             Your tutor sees what you ask, so lessons can pick up exactly where you got stuck.
           </p>
         </div>
@@ -525,6 +526,21 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
               >
                 📎
               </button>
+              {/* 🎤 voice → the words land in the box to check, then Send (bot handlers/voice-in.js twin) */}
+              <VoiceToText
+                endpoint={`${BOT_API_BASE}/api/chat/transcribe`}
+                getToken={ensurePortalToken}
+                disabled={isLoading}
+                onError={setErrorMsg}
+                onText={(words) => {
+                  const box = inputRef.current;
+                  if (!box) return;
+                  setErrorMsg('');
+                  box.value = box.value.trim() ? `${box.value.trim()} ${words}` : words;
+                  autoResize(box);
+                  box.focus();
+                }}
+              />
               <button
                 type="button"
                 onClick={() => sendMessage()}
