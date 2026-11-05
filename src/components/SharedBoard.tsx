@@ -18,7 +18,8 @@ import { uploadStudentFile } from '@/lib/student-files-client';
 import { resizeToJpeg } from '@/lib/spread-split';
 import { heicFilesToJpeg } from '@/lib/heic-browser';
 import { pdfToPageImages } from '@/lib/pdf-pages';
-import { applyPatch, BLANK_PAGE_URL, changedPages, displayPageCount, pollMayReplace, shareText, versionWhen, VERSION_WHY, type BoardRole, type VersionReason } from '@/lib/shared-board';
+import { applyPatch, applyStickerOp, BLANK_PAGE_URL, BOARD_PAPERS, changedPages, displayPageCount, paperUrl, placeSticker, pollMayReplace, shareText, versionWhen, VERSION_WHY, type BoardRole, type PaperGroup, type StickerOp, type VersionReason } from '@/lib/shared-board';
+import BoardStickers, { type ShownSticker } from '@/components/BoardStickers';
 
 type Version = { id: string; created_at: string; reason: VersionReason; tutor_strokes: number; student_strokes: number };
 
@@ -27,6 +28,7 @@ type Opened = {
   id: string; role: BoardRole; title: string; tutorName: string; studentName: string | null;
   pages: StoredPage[];
   mine: InkPages; other: InkPages; otherAt: string | null;
+  stickers: ShownSticker[];
   channel: string; rt: { url: string | null; key: string | null };
   link?: string; linkOn?: boolean;
 };
@@ -52,6 +54,12 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
   const [showVersions, setShowVersions] = useState(false);
   /** Bumped after an earlier version comes back: the pen mounts again on the restored layer. */
   const [gen, setGen] = useState(0);
+  const [stickers, setStickers] = useState<ShownSticker[]>([]);
+  const stickersRef = useRef<ShownSticker[]>([]); stickersRef.current = stickers;
+  /** "Move photos": the stickers take the touch, the pen rests. */
+  const [arrange, setArrange] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const fileMode = useRef<'pages' | 'sticker'>('pages');
   // A phone has no Pencil: one finger writes from the start. Read once, before the pen mounts.
   const [phone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px) and (pointer: coarse)').matches);
   const storedLen = useRef(0);
@@ -70,6 +78,8 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
     // A page whose stored reference did not change keeps the address it already drew (a fresh signature would reload it).
     setStored(old => b.pages.map(p => { const o = old[p.index]; return o && o.ref === p.ref && o.url ? o : p; }));
     storedLen.current = b.pages.length;
+    // Stickers: keep the address already drawn when the photo is the same one.
+    setStickers(old => (b.stickers ?? []).map(n => { const o = old.find(x => x.id === n.id); return o && o.ref === n.ref && o.url ? { ...n, url: o.url } : n; }));
     if (pagesOnly) return;
     setBoard(b); setOther(b.other ?? {}); setMineCount(b.mine ?? {});
     sent.current = b.mine ?? {}; otherAtRef.current = b.otherAt;
@@ -87,6 +97,12 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
       setOther(o => applyPatch(o, payload.patch ?? {}));
     });
     ch.on('broadcast', { event: 'pages' }, () => { void open(true); });
+    // A sticker added, moved, resized or removed on the other screen: the whole (small) list arrives.
+    ch.on('broadcast', { event: 'stickers' }, ({ payload }) => {
+      if (!payload || payload.from === board.role || !Array.isArray(payload.list)) return;
+      lastLiveAt.current = Date.now();
+      setStickers(payload.list as ShownSticker[]);
+    });
     // The other side brought an earlier version back: read the board again and start the pen on it.
     ch.on('broadcast', { event: 'restored' }, () => { void settle().then(() => open()).then(() => setGen(g => g + 1)); });
     ch.on('presence', { event: 'sync' }, () => {
@@ -110,8 +126,10 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
       const since = otherAtRef.current ? `since=${encodeURIComponent(otherAtRef.current)}` : '';
       const r = await fetch(api('poll', since), { headers: auth.headers, cache: 'no-store' }).catch(() => null);
       if (!r?.ok) return;
-      const j = await r.json().catch(() => null) as { pageCount: number; other?: InkPages; otherAt: string | null } | null;
+      const j = await r.json().catch(() => null) as { pageCount: number; stickerStamp?: string; other?: InkPages; otherAt: string | null } | null;
       if (!j) return;
+      const stamp = stickersRef.current.map(x => `${x.id}:${x.x},${x.y},${x.w},${x.h}`).join('|');
+      if (j.stickerStamp !== undefined && j.stickerStamp !== stamp && pollMayReplace(lastLiveAt.current, Date.now())) { void open(true); return; }
       if (j.other && pollMayReplace(lastLiveAt.current, Date.now())) { setOther(j.other); otherAtRef.current = j.otherAt; }
       if (j.pageCount !== storedLen.current) void open(true);
     };
@@ -171,6 +189,121 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
       if (last >= 0) setTimeout(() => document.getElementById(`page-${last}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
     } catch (e) { setMsg((e as Error).message || 'Could not add the photo.'); }
     finally { setBusy(''); if (photoRef.current) photoRef.current.value = ''; }
+  }
+
+  // ── ＋ Add: a template page (paper, maths, organise) ──────────────────────
+  async function addPaper(key: string) {
+    setAdding(false); setMsg(''); setBusy('Adding the page…');
+    try {
+      const r = await fetch(api('page'), { method: 'POST', headers: { ...auth.headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: boardId, paper: key }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Could not add the page.');
+      await open(true);
+      void chan.current?.send({ type: 'broadcast', event: 'pages', payload: {} });
+      setTimeout(() => document.getElementById(`page-${j.index}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    } catch (e) { setMsg((e as Error).message); }
+    finally { setBusy(''); }
+  }
+
+  // ── photo stickers ────────────────────────────────────────────────────────
+  /** The page most in view (the pen's pages carry id="page-N"), and its size in page pixels. */
+  const pageInView = (): { index: number; box: { w: number; h: number } } | null => {
+    const mid = window.innerHeight / 2;
+    let best: { index: number; d: number; el: HTMLElement } | null = null;
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('[id^="page-"]'))) {
+      const r = el.getBoundingClientRect();
+      const d = r.top <= mid && r.bottom >= mid ? 0 : Math.min(Math.abs(r.top - mid), Math.abs(r.bottom - mid));
+      const index = Number(el.id.slice(5));
+      if (Number.isInteger(index) && (!best || d < best.d)) best = { index, d, el };
+    }
+    if (!best) return null;
+    const m = /([\d.]+)\s*\/\s*([\d.]+)/.exec(best.el.style.aspectRatio || '');
+    return { index: best.index, box: m ? { w: Number(m[1]), h: Number(m[2]) } : { w: 1000, h: 1414 } };
+  };
+  const sendStickers = (list: ShownSticker[]) => { if (role) void chan.current?.send({ type: 'broadcast', event: 'stickers', payload: { from: role, list } }); };
+  const postSticker = async (change: StickerOp) => {
+    const r = await fetch(api('sticker'), { method: 'POST', headers: { ...auth.headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: boardId, change }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Could not save the photo.');
+    return j as { sticker?: ShownSticker | null };
+  };
+  async function addSticker(file: File) {
+    const at = pageInView();
+    if (!at) return;
+    const [jpg] = await heicFilesToJpeg([file], s => setBusy(s));
+    setBusy('Adding the photo…');
+    const up = await resizeToJpeg(jpg);
+    const dims = await new Promise<{ w: number; h: number }>(res => {
+      const u = URL.createObjectURL(up); const im = new Image();
+      im.onload = () => { res({ w: im.naturalWidth || 4, h: im.naturalHeight || 3 }); URL.revokeObjectURL(u); };
+      im.onerror = () => { res({ w: 4, h: 3 }); URL.revokeObjectURL(u); };
+      im.src = u;
+    });
+    const res = await uploadStudentFile(api('upload-token', `filename=${encodeURIComponent(up.name || 'photo.jpg')}`), up, { contentType: up.type || 'image/jpeg', headers: auth.headers });
+    const id = (crypto.randomUUID?.() ?? `${Date.now()}${Math.random()}`).replace(/[^A-Za-z0-9]/g, '').slice(0, 24);
+    const sticker = { id, page: at.index, url: res.url, ...placeSticker(at.box, dims) };
+    const j = await postSticker({ op: 'add', sticker });
+    const shown: ShownSticker = j.sticker ?? { ...sticker, ref: res.url };
+    const next = [...stickersRef.current.filter(x => x.id !== id), shown];
+    setStickers(next); sendStickers(next);
+    setArrange(true);                         // straight into "Move photos" so it can be placed
+  }
+  const lastMoveSent = useRef(0);
+  const onStickerMove = useCallback((id: string, b: { x: number; y: number; w: number; h: number }) => {
+    const now = Date.now();
+    if (now - lastMoveSent.current < 120) return;
+    lastMoveSent.current = now;
+    sendStickers(stickersRef.current.map(x => (x.id === id ? { ...x, ...b } : x)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
+  async function onStickerCommit(id: string, b: { x: number; y: number; w: number; h: number }) {
+    const next = applyStickerOp(stickersRef.current, { op: 'update', id, ...b }) as ShownSticker[] | null;
+    if (!next) return;
+    setStickers(next); sendStickers(next);
+    try { await postSticker({ op: 'update', id, ...b }); } catch (e) { setMsg((e as Error).message); }
+  }
+  async function onStickerDelete(id: string) {
+    if (!window.confirm('Remove this photo from the page?')) return;
+    const next = stickersRef.current.filter(x => x.id !== id);
+    setStickers(next); sendStickers(next);
+    try { await postSticker({ op: 'delete', id }); } catch (e) { setMsg((e as Error).message); }
+  }
+  const pageExtra = useCallback((index: number, box: { w: number; h: number }) => (
+    <BoardStickers list={stickers} page={index} box={box} arrange={arrange}
+      onMove={onStickerMove} onCommit={(id, b) => void onStickerCommit(id, b)} onDelete={id => void onStickerDelete(id)} />
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [stickers, arrange, onStickerMove]);
+
+  function pickFiles(mode: 'pages' | 'sticker') {
+    fileMode.current = mode; setAdding(false);
+    if (photoRef.current) {
+      photoRef.current.accept = mode === 'sticker' ? 'image/*' : 'image/*,application/pdf';
+      photoRef.current.multiple = mode === 'pages';
+      photoRef.current.click();
+    }
+  }
+  async function onFiles(list: FileList | null) {
+    if (!list?.length) return;
+    if (fileMode.current === 'pages') return addPhoto(list);
+    setMsg('');
+    try { await addSticker(list[0]); } catch (e) { setMsg((e as Error).message || 'Could not add the photo.'); }
+    finally { setBusy(''); if (photoRef.current) photoRef.current.value = ''; }
+  }
+
+  // ── the tutor's own saved boards ─────────────────────────────────────────
+  async function saveTemplate() {
+    const title = window.prompt('Name this template (your writing, the pages and photos are kept — never the student\'s writing):', board?.title ?? '');
+    if (title == null) return;
+    setBusy('Saving the template…'); setMsg('');
+    try {
+      const r = await fetch('/api/tutor/templates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boardId, title }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Could not save the template.');
+      setBusy(`Saved as “${j.title}” — start a new board from it on the student's page.`);
+      setTimeout(() => setBusy(''), 4000);
+      return;
+    } catch (e) { setMsg((e as Error).message); }
+    setBusy('');
   }
 
   async function downloadPdf() {
@@ -244,8 +377,12 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
           </span>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" disabled={!!busy} onClick={() => photoRef.current?.click()} className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">＋ Photo or PDF</button>
-          <input ref={photoRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={e => void addPhoto(e.target.files)} />
+          <button type="button" disabled={!!busy} onClick={() => setAdding(a => !a)} aria-expanded={adding} className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">＋ Add</button>
+          <input ref={photoRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={e => void onFiles(e.target.files)} />
+          {stickers.length > 0 && (
+            <button type="button" onClick={() => setArrange(a => !a)} aria-pressed={arrange}
+              className={`rounded-lg border px-3 py-1.5 text-sm ${arrange ? 'border-sky-600 bg-sky-600 text-white font-semibold' : 'bg-white'}`}>{arrange ? 'Done moving' : 'Move photos'}</button>
+          )}
           <button type="button" disabled={!!busy} onClick={() => void downloadPdf()} className="rounded-lg border bg-white px-3 py-1.5 text-sm disabled:opacity-50">Download PDF</button>
           <button type="button" onClick={() => { setShowVersions(v => !v); if (!showVersions) void loadVersions(); }} aria-expanded={showVersions} className="rounded-lg border bg-white px-3 py-1.5 text-sm">Earlier versions</button>
           {board.role === 'tutor' && (
@@ -256,6 +393,35 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
         </div>
         {busy && <p className="mt-1 text-xs text-slate-500">{busy}</p>}
         {msg && <p className="mt-1 text-xs text-red-600">{msg}</p>}
+        {board.role === 'tutor' && (
+          <div className="mt-1.5">
+            <button type="button" disabled={!!busy} onClick={() => void saveTemplate()} className="text-xs text-slate-600 underline underline-offset-2">Save as template</button>
+          </div>
+        )}
+        {arrange && <p className="mt-1 text-xs text-sky-800">Drag a photo to move it. Drag its blue corner to make it bigger or smaller. ✕ removes it. The pen rests until you tap Done moving.</p>}
+        {adding && (
+          <div className="mt-2 max-h-[60vh] overflow-y-auto rounded-xl border bg-white p-3" data-add-menu>
+            <p className="text-sm font-semibold">From your files</p>
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => pickFiles('pages')} className="rounded-lg border px-2 py-2 text-left text-sm"><span className="font-semibold">Photo or PDF</span><br /><span className="text-xs text-slate-500">as new pages at the end</span></button>
+              <button type="button" onClick={() => pickFiles('sticker')} className="rounded-lg border px-2 py-2 text-left text-sm"><span className="font-semibold">Photo on this page</span><br /><span className="text-xs text-slate-500">a sticker you can move and resize</span></button>
+            </div>
+            {(['Paper', 'Maths', 'Organise'] as PaperGroup[]).map(g => (
+              <div key={g} className="mt-3">
+                <p className="text-sm font-semibold">{g === 'Paper' ? 'A new page of paper' : g === 'Maths' ? 'Maths pages' : 'Organise'}</p>
+                <div className="mt-1.5 grid grid-cols-4 gap-2">
+                  {BOARD_PAPERS.filter(p => p.group === g).map(p => (
+                    <button key={p.key} type="button" onClick={() => void addPaper(p.key)} className="text-center" data-paper={p.key}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={paperUrl(p.key)} alt="" className="w-full rounded-md border bg-white" style={{ aspectRatio: '1000 / 1414' }} />
+                      <span className="mt-0.5 block text-[11px] leading-tight text-slate-600">{p.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {share && board.role === 'tutor' && (
           <div className="mt-2 rounded-xl border bg-white p-3 text-sm">
             {board.linkOn ? (
@@ -317,6 +483,8 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
         otherNote={false}
         fingerWritesDefault={phone}
         typeTool
+        readOnly={arrange}
+        pageExtra={pageExtra}
       />
     </main>
   );

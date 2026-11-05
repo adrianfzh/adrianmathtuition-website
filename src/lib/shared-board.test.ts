@@ -82,3 +82,42 @@ describe('earlier versions', () => {
     expect(versionWhen('2026-11-01T07:42:00Z', new Date('2026-11-05T09:00:00Z'))).toBe('1 Nov 3:42 pm');
   });
 });
+
+import { applyStickerOp, clampBox, isPaperUrl, paperUrl, parseStickerOp, placeSticker, resizeKeepShape, BOARD_PAPERS, type Sticker } from './shared-board';
+
+describe('page templates', () => {
+  it('knows its own template pages and nothing else', () => {
+    expect(BOARD_PAPERS.every(p => isPaperUrl(paperUrl(p.key)))).toBe(true);
+    expect(isPaperUrl('/board/secret.png')).toBe(false);
+    expect(isPaperUrl('https://evil.example/board/axes.png')).toBe(false);
+  });
+});
+
+describe('photo stickers', () => {
+  const s: Sticker = { id: 'abc123', page: 0, url: 'u', x: 10, y: 10, w: 100, h: 50 };
+  it('places a new sticker centred, 60% wide, keeping its shape', () => {
+    expect(placeSticker({ w: 1000, h: 1414 }, { w: 400, h: 200 })).toEqual({ x: 200, y: 371, w: 600, h: 300 });
+    const tall = placeSticker({ w: 1000, h: 1414 }, { w: 100, h: 1000 });
+    expect(tall.h).toBeLessThanOrEqual(849);
+  });
+  it('keeps a dragged sticker on the page', () => {
+    expect(clampBox({ x: -5000, y: 9000, w: 100, h: 100 }, { w: 1000, h: 1414 })).toEqual({ x: -60, y: 1374, w: 100, h: 100 });
+    expect(clampBox({ x: 0, y: 0, w: 5, h: 5 }, { w: 1000, h: 1414 }).w).toBe(40);
+  });
+  it('resizes from the corner keeping the photo\'s shape', () => {
+    expect(resizeKeepShape(s, 100)).toMatchObject({ w: 200, h: 100 });
+  });
+  it('adds, moves and removes; refuses an unknown id', () => {
+    const added = applyStickerOp([], { op: 'add', sticker: s })!;
+    expect(added).toHaveLength(1);
+    expect(applyStickerOp(added, { op: 'update', id: 'abc123', x: 1, y: 2, w: 3, h: 4 })![0]).toMatchObject({ x: 1, y: 2, w: 3, h: 4 });
+    expect(applyStickerOp(added, { op: 'delete', id: 'abc123' })).toEqual([]);
+    expect(applyStickerOp(added, { op: 'delete', id: 'nope000' })).toBeNull();
+  });
+  it('reads only well-formed changes', () => {
+    expect(parseStickerOp({ op: 'add', sticker: { ...s } })).not.toBeNull();
+    expect(parseStickerOp({ op: 'add', sticker: { ...s, page: 999 } })).toBeNull();
+    expect(parseStickerOp({ op: 'update', id: 'abc123', x: 'a', y: 1, w: 1, h: 1 })).toBeNull();
+    expect(parseStickerOp({ op: 'delete', id: '../x' })).toBeNull();
+  });
+});

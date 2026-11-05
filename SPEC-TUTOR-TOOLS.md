@@ -338,7 +338,29 @@ refused. **Not yet tried on a real iPad with a Pencil and a real phone** — do 
   restore — so a restore can be undone the same way (`lib/shared-board versionReason`). Newest 60
   per board. **Bring back my writing** (anyone, own layer) · **Bring back both** (tutor only). The
   other screen reloads by itself.
-- Not built: **templates** — Adrian asked whether people use them a lot; held until a tutor asks.
+- **Templates — BUILT 5 Nov 2026** (Adrian: *"do the 4 different kinds of templates you suggested + the
+  paper types and the math pages and the tutor's own saved board"*). **＋ Add** on the board opens one menu:
+  - *From your files*: **Photo or PDF** (new pages at the end) · **Photo on this page** (a sticker, below).
+  - *A new page of paper*: Squared · Lined · Dotted · Blank.
+  - *Maths pages*: Graph axes · Coordinate grid (−10…10, working lines below) · Number lines · Triangle &
+    circle · Table.
+  - *Organise*: Cornell notes (key words · notes · summary) · Week planner · Checklist.
+  The pages are pictures drawn once by `scripts/board-paper.mjs` into `public/board/<key>.png` (the list is
+  `BOARD_PAPERS` in `lib/shared-board.ts` — keep the keys the same; re-run the script after a change). A
+  template page is added like a photo (after everything written). The PDF reads them from disk
+  (`next.config.ts` traces `public/board/*.png` into `/api/board/**`).
+  - **A tutor's own saved board**: **Save as template** on the tutor's board keeps its pages, the TUTOR's
+    writing and its photo stickers — never the student's writing (table `board_templates`,
+    `/api/tutor/templates`, at most 100 a tutor). On a student's page: **Start from one of your templates**
+    (and Remove). Boards already made from a template are not touched when it is removed.
+- **Photo stickers — BUILT 5 Nov 2026** (Adrian: *"place a photo onto a page (stuck onto a PDF page like a
+  sticker, which you can move and resize - like how notability does it)"*). **＋ Add → Photo on this page**
+  puts the photo on the page most in view, centred, 60% wide, and turns on **Move photos**: drag to move,
+  drag the blue corner to resize (keeps its shape), ✕ removes; **Done moving** gives the pen back.
+  Stickers lie UNDER the writing, so anyone can write on a photo. Either side may move one; the other screen
+  follows live while it is dragged. Stored in `shared_boards.stickers` (page-image pixels,
+  `lib/shared-board.ts` Sticker / applyStickerOp), drawn in the PDF under the ink. Migration
+  `migrations/2026-11-05-board-templates-stickers.sql` (applied). Not in "Earlier versions" (only writing is).
 
 **Known gaps**: a student already on the board when the link is switched off keeps the live
 view until they reload (their saves are refused); no "clear the whole board"; no delete or

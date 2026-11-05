@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
     '/api/**/*': ['./data/gce-generated/**', './_backups/**', './docs/**'],
   },
   outputFileTracingIncludes: {
+    // 🧑‍🏫 The shared board's template pages, read from disk when a board becomes a PDF (SPEC-TUTOR-TOOLS §8).
+    '/api/board/**/*': ['./public/board/*.png'],
     // The bundled Chromium's brotli-packed binary (5 Sep 2026, replaces the
     // runtime-downloaded chromium-min) must ride along with every API route that
     // can render a PDF through lib/generate-pdf.ts getBrowser — the tracer

@@ -1,6 +1,6 @@
 // 🧑‍🏫 A tutor's shared boards (SPEC-TUTOR-TOOLS §8).
 //   GET    ?student=<id>                     the student's boards, newest first
-//   POST   { studentId, paperId?, title? }   a new board — blank, or opened on a marked paper's pages
+//   POST   { studentId, paperId?, templateId?, title? }   a new board — blank, on a marked paper's pages, or from one of the tutor's templates
 //   PATCH  { id, action: 'new-link' | 'link-off' | 'link-on' | 'rename', title? }
 // Every query is filtered by the tutor id from the signed cookie, never from the request.
 import { NextResponse } from 'next/server';
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const tutor = await currentTutor();
   if (!tutor) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
-  const body = await req.json().catch(() => ({})) as { studentId?: string; paperId?: string; title?: string };
+  const body = await req.json().catch(() => ({})) as { studentId?: string; paperId?: string; templateId?: string; title?: string };
   if (!body.studentId || !UUID.test(body.studentId)) return NextResponse.json({ error: 'student is required' }, { status: 400 });
   const sb = getSupabaseAdmin();
   const { data: s } = await sb.from('tutor_students').select('id').eq('id', body.studentId).eq('tutor_id', tutor.id).maybeSingle();
@@ -39,7 +39,16 @@ export async function POST(req: Request) {
   let pages: BoardPage[] = [];
   let paperName: string | null = null;
   let paperId: string | null = null;
-  if (body.paperId) {
+  let ink: Record<string, unknown> = {};
+  let stickers: unknown[] = [];
+  if (body.templateId) {
+    if (!UUID.test(body.templateId)) return NextResponse.json({ error: 'bad template' }, { status: 400 });
+    const { data: t } = await sb.from('board_templates').select('title, pages, ink, stickers').eq('id', body.templateId).eq('tutor_id', tutor.id).maybeSingle();
+    if (!t) return NextResponse.json({ error: 'template not found' }, { status: 404 });
+    pages = (t.pages ?? []) as BoardPage[]; ink = (t.ink ?? {}) as Record<string, unknown>; stickers = (t.stickers ?? []) as unknown[];
+    paperName = t.title as string;
+  }
+  if (body.paperId && !body.templateId) {
     if (!UUID.test(body.paperId)) return NextResponse.json({ error: 'bad paper' }, { status: 400 });
     const { data: p } = await sb.from('tutor_papers').select('id, run_id, paper_name')
       .eq('id', body.paperId).eq('tutor_id', tutor.id).eq('tutor_student_id', body.studentId).maybeSingle();
@@ -55,7 +64,7 @@ export async function POST(req: Request) {
   }
   const { data, error } = await sb.from('shared_boards').insert({
     tutor_id: tutor.id, tutor_student_id: body.studentId, title: boardTitle(body.title, paperName),
-    source_paper_id: paperId, pages, link_key: newLinkKey(),
+    source_paper_id: paperId, pages, link_key: newLinkKey(), tutor_ink: ink, stickers,
   }).select('id').single();
   if (error || !data) { console.error('[tutor boards] create failed:', error?.message); return NextResponse.json({ error: 'Could not make the board — try again.' }, { status: 500 }); }
   return NextResponse.json({ id: data.id });

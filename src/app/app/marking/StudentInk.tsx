@@ -71,13 +71,15 @@ type SurfaceProps = {
   typing?: { x: number; y: number } | null;
   onTypeAt?: (index: number, x: number, y: number) => void;
   onTyped?: (index: number, text: string | null, nat: Nat) => void;
+  /** The shared board's photo stickers: drawn over the page picture and UNDER the writing. */
+  extra?: (index: number, box: Nat) => React.ReactNode;
 };
 
 /** The pointer's default — red, as a laser is; any pen colour can be chosen since 23 Sep 2026. */
 const LASER = '#ef4444';
 
 /** One page: its bitmap on a canvas (lazily, near the viewport), both ink layers, the live stroke, and the input. */
-function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, size, canWrite, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection, typing, onTypeAt, onTyped }: SurfaceProps) {
+function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, size, canWrite, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection, typing, onTypeAt, onTyped, extra }: SurfaceProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const bmpRef = useRef<HTMLCanvasElement | null>(null);
   const liveRef = useRef<SVGPathElement | null>(null);
@@ -387,6 +389,7 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
       style={{ aspectRatio: `${box.w} / ${box.h}`, touchAction: 'pan-y pinch-zoom', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', cursor: writable ? 'crosshair' : 'default' }}>
       <canvas ref={bmpRef} role="img" aria-label={label} className="absolute inset-0 w-full h-full block" />
       {failed && <p className="absolute inset-0 grid place-items-center text-xs text-gray-400">{label} could not be loaded</p>}
+      {extra?.(page.index, box)}
       {other && other.strokes.length > 0 && (
         <svg viewBox={`0 0 ${other.w} ${other.h}`} className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden
           dangerouslySetInnerHTML={{ __html: strokesToSvg(other.strokes) }} />
@@ -481,7 +484,7 @@ function TypeBox({ at, box, color, fontPx, wrapRef, onDone }: {
   );
 }
 
-export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading, otherNote = true, fingerWritesDefault = false, typeTool = false }: {
+export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading, otherNote = true, fingerWritesDefault = false, typeTool = false, pageExtra }: {
   runId: string; pages: InkPageInput[]; initial: InkPages | null; readOnly?: boolean; other?: OtherInk | null;
   /** Where the ink goes (23 Sep 2026): by default the marked paper's layer (/api/portal/marking/ink);
    *  a sheet being done in the app (/app/work) passes its own saver to `student_work_ink`. */
@@ -501,6 +504,8 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   fingerWritesDefault?: boolean;
   /** The shared board: a ⌨ Type tool on the bar — tap the page, type a neat note (5 Nov 2026). */
   typeTool?: boolean;
+  /** The shared board: what lies on each page under the writing (photo stickers). */
+  pageExtra?: (index: number, box: Nat) => React.ReactNode;
 }) {
   const isAdrian = editor === 'adrian';
   const saveUrl = isAdrian ? '/api/admin/marking/teacher-ink' : '/api/portal/marking/ink';
@@ -900,7 +905,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
           tool={tool} color={penColor} hlColor={hlColor} pointerColor={pointerColor} size={tool === 'text' ? sizes.pen : sizes[tool]} canWrite={!readOnly && show} fingerWrites={fingerWrites}
           onStroke={onStroke} onErase={onErase} onDoubleTap={onDoubleTap} onLasso={onLasso}
           selection={selection && selection.index === p.index ? surfaceSelection : null}
-          typing={typingAt && typingAt.index === p.index ? typingAt : null} onTypeAt={onTypeAt} onTyped={onTyped} />
+          typing={typingAt && typingAt.index === p.index ? typingAt : null} onTypeAt={onTypeAt} onTyped={onTyped} extra={pageExtra} />
       ))}
       {fullScreen && (
         <AnnotateOverlay

@@ -59,8 +59,8 @@ export default function TutorStudent({ params }: { params: Promise<{ id: string 
 }
 
 /** Make a board (blank, or on a marked paper's pages) and open it. */
-async function newBoard(studentId: string, paperId?: string): Promise<string | null> {
-  const r = await fetch('/api/tutor/boards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId, paperId }) });
+async function newBoard(studentId: string, paperId?: string, templateId?: string): Promise<string | null> {
+  const r = await fetch('/api/tutor/boards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId, paperId, templateId }) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) return j.error || 'Could not make the board — try again.';
   window.location.href = `/tutor/board/${j.id}`;
@@ -72,9 +72,16 @@ function Boards({ studentId }: { studentId: string }) {
   const [boards, setBoards] = useState<{ id: string; title: string; updated_at: string; link_on: boolean }[] | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [templates, setTemplates] = useState<{ id: string; title: string; pages: number }[]>([]);
   useEffect(() => {
     void fetch(`/api/tutor/boards?student=${studentId}`, { cache: 'no-store' }).then(r => r.json()).then(j => setBoards(j.boards ?? [])).catch(() => setBoards([]));
+    void fetch('/api/tutor/templates', { cache: 'no-store' }).then(r => r.json()).then(j => setTemplates(j.templates ?? [])).catch(() => setTemplates([]));
   }, [studentId]);
+  const dropTemplate = async (t: { id: string; title: string }) => {
+    if (!window.confirm(`Remove the template “${t.title}”? Boards already made from it stay.`)) return;
+    await fetch(`/api/tutor/templates?id=${t.id}`, { method: 'DELETE' });
+    setTemplates(list => list.filter(x => x.id !== t.id));
+  };
   return (
     <section className="mt-6 rounded-xl border bg-white p-4">
       <h2 className="text-lg font-semibold">Boards</h2>
@@ -82,6 +89,22 @@ function Boards({ studentId }: { studentId: string }) {
       <button type="button" disabled={busy} onClick={async () => { setBusy(true); setErr((await newBoard(studentId)) ?? ''); setBusy(false); }}
         className="mt-3 w-full rounded-lg bg-slate-900 py-2 font-semibold text-white disabled:opacity-50">{busy ? 'Opening…' : 'New board'}</button>
       {err && <p className="mt-1 text-sm text-red-600">{err}</p>}
+      {templates.length > 0 && (
+        <div className="mt-3">
+          <p className="text-sm font-semibold">Start from one of your templates</p>
+          <ul className="mt-1 divide-y rounded-lg border">
+            {templates.map(t => (
+              <li key={t.id} className="flex items-center gap-2 px-3 py-2">
+                <button type="button" disabled={busy} className="min-w-0 flex-1 truncate text-left font-medium text-emerald-800 disabled:opacity-50"
+                  onClick={async () => { setBusy(true); setErr((await newBoard(studentId, undefined, t.id)) ?? ''); setBusy(false); }}>
+                  {t.title} <span className="text-xs font-normal text-slate-500">· {t.pages} page{t.pages === 1 ? '' : 's'}</span>
+                </button>
+                <button type="button" aria-label={`Remove the template ${t.title}`} className="shrink-0 text-xs text-slate-400 underline" onClick={() => void dropTemplate(t)}>Remove</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {boards && boards.length > 0 && (
         <ul className="mt-3 divide-y">
           {boards.map(b => (
@@ -94,7 +117,7 @@ function Boards({ studentId }: { studentId: string }) {
           ))}
         </ul>
       )}
-      <p className="mt-2 text-xs text-slate-500">To go through a marked paper together, tap “Open board” on the paper below.</p>
+      <p className="mt-2 text-xs text-slate-500">To go through a marked paper together, tap “Open board” on the paper below. To make a template, open a board and tap “Save as template”.</p>
     </section>
   );
 }

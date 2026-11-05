@@ -7,7 +7,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { currentTutor } from '@/lib/tutor-auth';
 import { safeEqual } from '@/lib/safe-equal';
-import type { BoardPage, BoardRole } from '@/lib/shared-board';
+import type { BoardPage, BoardRole, Sticker } from '@/lib/shared-board';
 import type { InkPages } from '@/lib/student-ink';
 
 export interface BoardRow {
@@ -15,8 +15,9 @@ export interface BoardRow {
   pages: BoardPage[]; tutor_ink: InkPages; student_ink: InkPages;
   tutor_ink_at: string | null; student_ink_at: string | null;
   link_key: string; link_on: boolean; created_at: string; updated_at: string;
+  stickers: Sticker[];
 }
-export const BOARD_COLUMNS = 'id, tutor_id, tutor_student_id, title, source_paper_id, pages, tutor_ink, student_ink, tutor_ink_at, student_ink_at, link_key, link_on, created_at, updated_at';
+export const BOARD_COLUMNS = 'id, tutor_id, tutor_student_id, title, source_paper_id, pages, tutor_ink, student_ink, tutor_ink_at, student_ink_at, link_key, link_on, created_at, updated_at, stickers';
 
 export const newLinkKey = () => randomBytes(18).toString('base64url');
 const UUID = /^[0-9a-f-]{36}$/i;

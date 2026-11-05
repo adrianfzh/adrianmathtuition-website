@@ -7,6 +7,16 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 🧑‍🏫 Open a shared board in the Notebook iPad app — LATER, remind Adrian (5 Nov 2026)
+
+Adrian: *"remind me then, if it makes the code better"*. The board (website, `SPEC-TUTOR-TOOLS.md` §8) and the
+Notebook iPad app (`SPEC-STUDENT-APP.md` §0d) use two different pens on purpose — Apple's pen only runs
+inside an iPad app; the board must run in any browser — but they already write the SAME ink format
+(`lib/student-ink.ts`). The idea: "Open this board in the Notebook app", so an iPad user writes on a board
+with Apple's pen. **Remind Adrian when the next work touches either pen** (a pen change made twice, or a
+tutor/student asking for Apple's pen on a board) — that is when one shared reader/writer for board ink
+would make the code better, not before.
+
 ## 📣 Marketing pipeline for the app — a MAJOR piece to build (Adrian, 5 Nov 2026: "we must really put this in memory > a major but important piece to build as marketing for the app") — PLANNED, step 1 under way
 Goal: more students using the free practice (it collects learning data). Plan Adrian agreed the
 shape of (5 Nov 2026), four parts:

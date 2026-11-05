@@ -8,8 +8,12 @@
 //   GET  /api/board/pdf[?id=]                  the whole board as a PDF, both layers drawn in
 //   GET  /api/board/versions[?id=]             earlier versions (when, why, how much each side had written)
 //   POST /api/board/restore { id?, versionId, which: 'mine' | 'both' }   bring a version back ('both' = tutor only)
+//   POST /api/board/page    { id?, paper }     add a template page (lib/shared-board BOARD_PAPERS)
+//   POST /api/board/sticker { id?, change }    add / move / resize / remove a photo sticker
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { PDFDocument } from 'pdf-lib';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { boardAccess, boardLink, channelName, type BoardAccess } from '@/lib/board-store';
@@ -17,7 +21,7 @@ import { createDownloadUrls, createUploadUrl, fetchOurFile, handinKey, keyFromUr
 import { tutorRunStudentId } from '@/lib/tutor-portal';
 import { validateInkPages, type InkPages } from '@/lib/student-ink';
 import { strokesToSvg } from '@/lib/annotate/layer';
-import { displayPageCount, lastInkedPage, MAX_BOARD_PAGES, MAX_VERSIONS, strokeCount, versionReason, withPhotoAppended, type VersionReason } from '@/lib/shared-board';
+import { applyStickerOp, BOARD_PAPERS, displayPageCount, isPaperUrl, lastInkedPage, MAX_BOARD_PAGES, MAX_VERSIONS, paperUrl, parseStickerOp, strokeCount, versionReason, withPhotoAppended, type Sticker, type VersionReason } from '@/lib/shared-board';
 import { contentDisposition } from '@/lib/marked-pdf-filename';
 
 export const runtime = 'nodejs';
@@ -37,6 +41,9 @@ async function keepVersion(sb: Sb, boardId: string, tutor: InkPages, student: In
   if (old?.length) await sb.from('shared_board_versions').delete().in('id', old.map(o => o.id as string));
 }
 
+/** A cheap fingerprint of the sticker list, so the poll can tell a screen that missed a live change. */
+const stickerStamp = (l: Sticker[]) => l.map(x => `${x.id}:${x.x},${x.y},${x.w},${x.h}`).join('|');
+
 const notFound = () => NextResponse.json({ error: 'This board is closed or the link has changed. Ask your tutor for the new link.' }, { status: 404 });
 const idOf = (req: Request) => new URL(req.url).searchParams.get('id');
 const layers = (a: BoardAccess) => a.role === 'tutor'
@@ -54,6 +61,17 @@ async function signedPages(pages: { url: string | null }[]) {
   });
 }
 
+async function signedStickers(list: Sticker[]) {
+  const keys = list.map(s => keyFromUrl(s.url)).filter((k): k is string => !!k);
+  const signed = new Map<string, string | null>();
+  if (keys.length) for (const x of await createDownloadUrls(keys, 6 * 3600)) signed.set(x.key, x.url);
+  return list.map(s => { const k = keyFromUrl(s.url); return { ...s, ref: s.url, url: k ? signed.get(k) ?? null : s.url }; });
+}
+const ownFile = (url: string | undefined, studentId: string) => {
+  const key = keyFromUrl(url);
+  return !!key && key.startsWith(`handins/${tutorRunStudentId(studentId)}/`);
+};
+
 export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }) {
   const { op } = await ctx.params;
   const a = await boardAccess(req, idOf(req));
@@ -69,6 +87,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
       studentName: role === 'tutor' ? (st as { name: string } | null)?.name ?? 'Student' : null,
       pages: await signedPages(board.pages ?? []),
       mine, other, otherAt,
+      stickers: await signedStickers(board.stickers ?? []),
       channel: channelName(board),
       rt: { url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL, key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || null },
       ...(role === 'tutor' ? { link: boardLink(req, board.link_key), linkOn: board.link_on } : {}),
@@ -80,7 +99,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
     const { other, otherAt } = layers(a);
     const since = new URL(req.url).searchParams.get('since');
     const same = !!since && since === otherAt;
-    return NextResponse.json({ pageCount: (board.pages ?? []).length, otherAt, ...(same ? {} : { other }) }, { headers: { 'Cache-Control': 'private, no-store' } });
+    return NextResponse.json({ pageCount: (board.pages ?? []).length, stickerStamp: stickerStamp(board.stickers ?? []), otherAt, ...(same ? {} : { other }) }, { headers: { 'Cache-Control': 'private, no-store' } });
   }
 
   if (op === 'upload-token') {
@@ -102,15 +121,37 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
       const bg = board.pages?.[i]?.url ?? null;
       let buf: Buffer | null = null;
       if (bg) {
-        const r = await fetchOurFile(bg).catch(() => null);
-        if (r?.ok) buf = Buffer.from(await r.arrayBuffer());
+        // A template page is a picture in public/board (traced into this function, next.config); anything else is in the private store.
+        if (isPaperUrl(bg)) buf = await readFile(join(process.cwd(), 'public', bg)).catch(() => null);
+        else {
+          const r = await fetchOurFile(bg).catch(() => null);
+          if (r?.ok) buf = Buffer.from(await r.arrayBuffer());
+        }
       }
       if (!buf) buf = await sharp({ create: { width: 1000, height: 1414, channels: 3, background: '#ffffff' } }).jpeg().toBuffer();
       const ink = [board.tutor_ink?.[i], board.student_ink?.[i]].filter(l => l && l.strokes?.length);
       const meta = await sharp(buf).rotate().metadata();
       const w = meta.autoOrient?.width ?? meta.width ?? 1000, h = meta.autoOrient?.height ?? meta.height ?? 1414;
       let img = sharp(buf).rotate();
-      if (ink.length) img = img.composite(ink.map(l => ({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${l!.w} ${l!.h}">${strokesToSvg(l!.strokes)}</svg>`), top: 0, left: 0 })));
+      // Stickers first (they lie under the writing), scaled from the page's ink box to this picture.
+      const layers: sharp.OverlayOptions[] = [];
+      const inkBox = ink[0] ? { w: ink[0]!.w, h: ink[0]!.h } : { w, h };
+      for (const st of (board.stickers ?? []).filter(x => x.page === i)) {
+        const r = await fetchOurFile(st.url).catch(() => null);
+        if (!r?.ok) continue;
+        const k = w / inkBox.w;
+        const sw = Math.max(1, Math.round(st.w * k)), sh = Math.max(1, Math.round(st.h * k));
+        const left = Math.round(st.x * k), top = Math.round(st.y * k);
+        // Cut the part that hangs off the page (sharp refuses an overlay outside the picture).
+        const cx0 = Math.max(0, -left), cy0 = Math.max(0, -top);
+        const cw = Math.min(sw, w - left) - cx0, ch = Math.min(sh, h - top) - cy0;
+        if (cw <= 0 || ch <= 0) continue;
+        const piece = await sharp(Buffer.from(await r.arrayBuffer())).rotate().resize(sw, sh, { fit: 'fill' })
+          .extract({ left: cx0, top: cy0, width: cw, height: ch }).png().toBuffer();
+        layers.push({ input: piece, left: left + cx0, top: top + cy0 });
+      }
+      for (const l of ink) layers.push({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${l!.w} ${l!.h}">${strokesToSvg(l!.strokes)}</svg>`), top: 0, left: 0 });
+      if (layers.length) img = img.composite(layers);
       const jpg = await img.jpeg({ quality: 88 }).toBuffer();
       const e = await pdf.embedJpg(jpg);
       const drawH = Math.round(PAGE_W * (e.height / e.width));
@@ -131,7 +172,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
 
 export async function POST(req: Request, ctx: { params: Promise<{ op: string }> }) {
   const { op } = await ctx.params;
-  const body = await req.json().catch(() => ({})) as { id?: string; pages?: unknown; url?: string; versionId?: string; which?: string };
+  const body = await req.json().catch(() => ({})) as { id?: string; pages?: unknown; url?: string; versionId?: string; which?: string; paper?: string; change?: unknown };
   const a = await boardAccess(req, body.id ?? idOf(req));
   if (!a) return notFound();
   const { board, role } = a;
@@ -155,8 +196,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ op: string }> 
   }
 
   if (op === 'photo') {
-    const key = keyFromUrl(body.url);
-    if (!key || !key.startsWith(`handins/${tutorRunStudentId(board.tutor_student_id)}/`)) return NextResponse.json({ error: 'bad photo' }, { status: 400 });
+    if (!ownFile(body.url, board.tutor_student_id)) return NextResponse.json({ error: 'bad photo' }, { status: 400 });
     // Read the newest pages and ink, so a photo never lands on a page someone just wrote on.
     const { data: fresh } = await sb.from('shared_boards').select('pages, tutor_ink, student_ink').eq('id', board.id).single();
     const f = fresh as { pages: { url: string | null }[]; tutor_ink: InkPages; student_ink: InkPages };
@@ -165,6 +205,31 @@ export async function POST(req: Request, ctx: { params: Promise<{ op: string }> 
     const { error } = await sb.from('shared_boards').update({ pages, updated_at: new Date().toISOString() }).eq('id', board.id);
     if (error) return NextResponse.json({ error: 'Could not add the photo — try again.' }, { status: 500 });
     return NextResponse.json({ ok: true, index: pages.length - 1 });
+  }
+
+  if (op === 'page') {
+    const paper = BOARD_PAPERS.find(p => p.key === body.paper);
+    if (!paper) return NextResponse.json({ error: 'unknown paper' }, { status: 400 });
+    const { data: fresh } = await sb.from('shared_boards').select('pages, tutor_ink, student_ink').eq('id', board.id).single();
+    const f = fresh as { pages: { url: string | null }[]; tutor_ink: InkPages; student_ink: InkPages };
+    const pages = withPhotoAppended(f.pages ?? [], paperUrl(paper.key), f.tutor_ink, f.student_ink);
+    if (!pages) return NextResponse.json({ error: 'This board is full — start a new board.' }, { status: 409 });
+    const { error } = await sb.from('shared_boards').update({ pages, updated_at: new Date().toISOString() }).eq('id', board.id);
+    if (error) return NextResponse.json({ error: 'Could not add the page — try again.' }, { status: 500 });
+    return NextResponse.json({ ok: true, index: pages.length - 1 });
+  }
+
+  if (op === 'sticker') {
+    const change = parseStickerOp(body.change);
+    if (!change) return NextResponse.json({ error: 'bad sticker' }, { status: 400 });
+    if (change.op === 'add' && !ownFile(change.sticker.url, board.tutor_student_id)) return NextResponse.json({ error: 'bad photo' }, { status: 400 });
+    const { data: fresh } = await sb.from('shared_boards').select('stickers').eq('id', board.id).single();
+    const next = applyStickerOp(((fresh as { stickers: Sticker[] } | null)?.stickers) ?? [], change);
+    if (!next) return NextResponse.json({ error: change.op === 'add' ? 'This board has too many photos.' : 'That photo was removed.' }, { status: 409 });
+    const { error } = await sb.from('shared_boards').update({ stickers: next, updated_at: new Date().toISOString() }).eq('id', board.id);
+    if (error) return NextResponse.json({ error: 'Could not save the photo — try again.' }, { status: 500 });
+    const mine = change.op === 'add' ? (await signedStickers([change.sticker]))[0] : null;
+    return NextResponse.json({ ok: true, sticker: mine });
   }
 
   if (op === 'restore') {

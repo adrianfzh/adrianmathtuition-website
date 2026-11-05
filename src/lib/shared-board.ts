@@ -131,3 +131,96 @@ export const VERSION_WHY: Record<VersionReason, string> = {
   'big-erase': 'just before a big rub-out',
   'before-restore': 'just before an earlier version was brought back',
 };
+
+// ── Page templates (Adrian, 5 Nov 2026: "do the 4 different kinds of templates you suggested + the
+// paper types and the math pages") — drawn once by scripts/board-paper.mjs into public/board/<key>.png.
+export type PaperGroup = 'Paper' | 'Maths' | 'Organise';
+export const BOARD_PAPERS: readonly { key: string; label: string; group: PaperGroup }[] = [
+  { key: 'squared', label: 'Squared', group: 'Paper' },
+  { key: 'lined', label: 'Lined', group: 'Paper' },
+  { key: 'dotted', label: 'Dotted', group: 'Paper' },
+  { key: 'blank', label: 'Blank', group: 'Paper' },
+  { key: 'axes', label: 'Graph axes', group: 'Maths' },
+  { key: 'coordinate', label: 'Coordinate grid', group: 'Maths' },
+  { key: 'numberline', label: 'Number lines', group: 'Maths' },
+  { key: 'geometry', label: 'Triangle & circle', group: 'Maths' },
+  { key: 'table', label: 'Table', group: 'Maths' },
+  { key: 'cornell', label: 'Cornell notes', group: 'Organise' },
+  { key: 'planner', label: 'Week planner', group: 'Organise' },
+  { key: 'checklist', label: 'Checklist', group: 'Organise' },
+];
+export const paperUrl = (key: string) => `/board/${key}.png`;
+/** A stored page that is one of our templates (served from the site itself, not the private store). */
+export function isPaperUrl(u: string | null | undefined): boolean {
+  const m = /^\/board\/([a-z]+)\.png$/.exec(u ?? '');
+  return !!m && BOARD_PAPERS.some(p => p.key === m[1]);
+}
+
+// ── Photo stickers (Adrian, 5 Nov 2026: "place a photo onto a page (stuck onto a PDF page like a
+// sticker, which you can move and resize - like how notability does it)"). One list per board; the
+// box is in that page's image pixels, so it sits in the same place on every screen and in the PDF.
+// Stickers lie UNDER the writing, so either person can write on top of one.
+export type Sticker = { id: string; page: number; url: string; x: number; y: number; w: number; h: number };
+export const MAX_STICKERS = 100;
+export const MIN_STICKER = 40;
+const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+/** Where a new sticker goes on a page of size `box`: centred, 60% of the page wide (never taller than 60%). */
+export function placeSticker(box: { w: number; h: number }, img: { w: number; h: number }): { x: number; y: number; w: number; h: number } {
+  const ratio = img.h / Math.max(1, img.w);
+  let w = box.w * 0.6, h = w * ratio;
+  if (h > box.h * 0.6) { h = box.h * 0.6; w = h / ratio; }
+  return { x: Math.round((box.w - w) / 2), y: Math.round((box.h - h) / 3), w: Math.round(w), h: Math.round(h) };
+}
+
+/** Keep a box on its page and at least MIN_STICKER big (a drag never loses a sticker off the edge). */
+export function clampBox(b: { x: number; y: number; w: number; h: number }, box: { w: number; h: number }) {
+  const w = Math.min(box.w, Math.max(MIN_STICKER, b.w)), h = Math.min(box.h * 2, Math.max(MIN_STICKER, b.h));
+  const x = Math.min(box.w - MIN_STICKER, Math.max(MIN_STICKER - w, b.x));
+  const y = Math.min(box.h - MIN_STICKER, Math.max(MIN_STICKER - h, b.y));
+  return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+}
+
+/** Resize from the bottom-right corner keeping the photo's shape: the new width follows the drag. */
+export function resizeKeepShape(s: { x: number; y: number; w: number; h: number }, dx: number) {
+  const ratio = s.h / Math.max(1, s.w);
+  const w = Math.max(MIN_STICKER, s.w + dx);
+  return { ...s, w: Math.round(w), h: Math.round(w * ratio) };
+}
+
+export type StickerOp =
+  | { op: 'add'; sticker: Sticker }
+  | { op: 'update'; id: string; x: number; y: number; w: number; h: number }
+  | { op: 'delete'; id: string };
+
+/** Check what a screen sent. The url itself is checked by the route (it must be this board's own file). */
+export function parseStickerOp(raw: unknown): StickerOp | null {
+  const o = raw as Record<string, unknown> | null;
+  if (!o || typeof o !== 'object') return null;
+  const id = typeof o.id === 'string' && /^[A-Za-z0-9_-]{6,40}$/.test(o.id) ? o.id : null;
+  if (o.op === 'delete') return id ? { op: 'delete', id } : null;
+  if (o.op === 'update') {
+    if (!id || ![o.x, o.y, o.w, o.h].every(finite)) return null;
+    return { op: 'update', id, x: o.x as number, y: o.y as number, w: o.w as number, h: o.h as number };
+  }
+  if (o.op === 'add') {
+    const s = o.sticker as Record<string, unknown> | null;
+    if (!s || typeof s !== 'object') return null;
+    const sid = typeof s.id === 'string' && /^[A-Za-z0-9_-]{6,40}$/.test(s.id) ? s.id : null;
+    if (!sid || typeof s.url !== 'string' || !Number.isInteger(s.page) || (s.page as number) < 0 || (s.page as number) >= MAX_BOARD_PAGES) return null;
+    if (![s.x, s.y, s.w, s.h].every(finite) || (s.w as number) <= 0 || (s.h as number) <= 0) return null;
+    return { op: 'add', sticker: { id: sid, page: s.page as number, url: s.url, x: s.x as number, y: s.y as number, w: s.w as number, h: s.h as number } };
+  }
+  return null;
+}
+
+/** Apply one change to the list (pure). null = refused (too many, or an unknown sticker). */
+export function applyStickerOp(list: readonly Sticker[], op: StickerOp): Sticker[] | null {
+  if (op.op === 'add') {
+    if (list.length >= MAX_STICKERS) return null;
+    return [...list.filter(s => s.id !== op.sticker.id), op.sticker];
+  }
+  if (!list.some(s => s.id === op.id)) return null;
+  if (op.op === 'delete') return list.filter(s => s.id !== op.id);
+  return list.map(s => (s.id === op.id ? { ...s, x: Math.round(op.x), y: Math.round(op.y), w: Math.round(op.w), h: Math.round(op.h) } : s));
+}
