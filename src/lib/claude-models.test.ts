@@ -32,6 +32,8 @@ const SWITCHED: Record<string, RegExp> = {
   'src/lib/humanities-own-points.ts': /OWN_TYPE_MODEL = process\.env\.OWN_TYPE_MODEL \|\| SONNET_55;/,
   // 🎲 P&C coach: a question in words read into a counter spec, admin page only (28 Oct 2026).
   'src/lib/pc-read.ts': /PC_READ_MODEL = process\.env\.PC_READ_MODEL \|\| SONNET_55;/,
+  // 🗣 English oral speaking partner: the question after each answer + the wellbeing check (5 Nov 2026).
+  'src/lib/english-oral-store.ts': /ORAL_PARTNER_MODEL = process\.env\.ORAL_PARTNER_MODEL \|\| SONNET_55;/,
 };
 
 describe('Sonnet 5.5 setting', () => {
@@ -60,6 +62,7 @@ describe('Sonnet 5.5 setting', () => {
       ['src/app/api/portal/practice/hint/route.ts', /model: HINT_MODEL,[\s\S]*?messages:/],
       ['src/lib/paper-book-split-io.ts', /messages\.create\(\{\s*model,[\s\S]*?messages:/],
       ['src/app/api/admin-schedule/extract-exam-topics/route.ts', /model: EXTRACTION_MODEL,[\s\S]*?messages:/],
+      ['src/lib/english-oral-store.ts', /model: ORAL_PARTNER_MODEL,[\s\S]*?messages:/],
     ];
     for (const [f, re] of sites) {
       const m = read(f).match(re);

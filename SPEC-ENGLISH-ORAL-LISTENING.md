@@ -48,8 +48,11 @@ The band tables are in `data/rubrics/english-1184-oral.json`, word for word from
   am ready" skips it) with a box for notes that stay on the phone → Record, stops by itself at
   2:00 → the recording is stored → turned into words → **"This is what we heard"**: the student
   fixes any word that was heard wrong → the words are read against the Response table → the report.
-- **Part 2 — spoken interaction.** Three prompts, each played aloud (and shown), each answered
-  aloud (up to 1:30), then the same "what we heard" step and ONE report.
+- **Part 2 — spoken interaction, with the speaking partner (5 Nov 2026, §Speaking partner).** A
+  discussion in turns: each of the set's three prompts is played aloud (and shown) and answered aloud
+  (up to 1:30); then the partner asks ONE question about what the student just said, read aloud by
+  the same voice, and that is answered too — six answers, about 8 minutes. Then the same "what we
+  heard" step (each answer under the question it answered) and ONE report.
 - **The report** (the essay report's shape, top to bottom): the band line → your ideas, each
   ✓ developed or ◐ only stated → how it was organised → up to three habits (count + one example
   from the student's own words + the fix) → up to three stronger ways to say a sentence they said →
@@ -85,6 +88,8 @@ The band tables are in `data/rubrics/english-1184-oral.json`, word for word from
 | The recording | private bucket, key `oral/<identity>/<attempt>/<n>.<ext>` (`lib/student-files`), readable only by its owner and Adrian; erased with the account |
 | Speech into words | **Prototype only — to be replaced before opening (§Speech into words without Google).** Gemini on the Google key the site already has (the same call as the end-of-lesson voice note): `transcribeSpeech`. About half a US cent a two-minute recording. The words are written exactly as spoken, slips included |
 | The reading | the plan queue (`plan_reads`, kind `english-oral`, model alias `opus`) — never the paid key |
+| The speaking partner (Part 2) | rules `src/lib/english-oral-partner.ts` (turns, the follow-up prompt, its checks, the stand-in questions — tested); I/O in `english-oral-store.ts` (`writeFollowUp` = Sonnet 5.5 on the paid key, `partnerVoice` = MiniMax `English_FriendlyPerson`, `saveFollowUp` — kept as `followUp` on the answer it reacts to) |
+| Wellbeing (any oral answer) | `src/lib/wellbeing.ts` — a COPY of the bot's `lib/wellbeing.js` + `config/help-lines.js` (change them together); `wellbeingCheck` in the store |
 
 ## 3. Checkpoints
 
@@ -123,7 +128,10 @@ flipped, in the same change:
 2. The consent wording at sign-up covers **a child's voice**.
 3. **Build the no-Google speech route first** (Whisper `small.en` on our own worker — §Speech into
    words without Google, DECIDED). The Gemini call is the closed prototype only; Adrian does not
-   want to pay Google.
+   want to pay Google. ⚠ **Part 2 changes this (5 Nov 2026):** with the speaking partner the words
+   are needed within seconds, between turns. The worker route takes one to two minutes an answer,
+   so it fits Part 1 but not Part 2 — Part 2 needs a fast hearer that is not Google. To be put to
+   Adrian as one choice on the day oral is about to open.
 
 ## Switches (`src/lib/portal-beta.ts`, all `false`)
 
@@ -330,7 +338,61 @@ students use papers, which is when results change.
 ## Not built
 
 - A silent video clip as the stimulus (the exam uses a clip; the pilot uses a still picture).
-- Follow-up prompts that react to what the student just said (the three prompts are fixed).
 - A bench for the oral reading (seeded transcripts at a known band, the same answer read twice).
 - Deleting a recording after a set time — recommendation: keep 30 days, then keep only the words.
 - More oral sets: the pilot is 3. (More listening: §More papers.)
+
+## 🗣 Speaking partner — Part 2 reacts to what the student said (5 Nov 2026)
+
+From the bot's 🍵 laoshi report (Duolingo's Video Call). Adrian, 5 Nov 2026: *"we can do the oral
+part now for english"* → shown one design (turns, not a live call) → *"Yes, build it"*. English only;
+Chinese, Malay and Tamil stay in `IDEAS.md` for later. Closed like the rest of oral
+(`ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS`).
+
+**Why turns, not a live call.** The exam itself takes turns: the examiner waits for the candidate to
+finish. Turns are like sending voice notes back and forth; a live call is billed by the minute
+(roughly US$0.05–0.20 a minute, about US$0.40–1.60 a practice).
+
+**One practice.**
+1. Set prompt 1 (the recorded MP3) → the student answers (up to 1:30).
+2. The answer → words (`transcribeSpeech`) → the follow-up writer (Sonnet 5.5, paid key — real time;
+   the plan queue is a minute or more) → read aloud (MiniMax) → shown under "About what you said".
+3. The student answers it. Repeat for prompts 2 and 3: **six answers**, about 8 minutes.
+4. "This is what we heard" for all six → ONE report on the plan queue (unchanged, free) — its
+   prompt now says the follow-ups were asked, and counts whether each one was answered itself
+   (the band table's "engagement in a discussion").
+
+**The follow-up** (`buildFollowUpPrompt`, `parseFollowUp`): picks up something specific the
+student said and asks for a reason, an example from their life, the other side, or what would
+happen if; too little said → the question again more simply. At most 6 words of "I see." first, 35
+words in all, ends in a question mark. Never a name, never what it is, no praise, no feedback, no
+marks; it does not jump ahead to the set's later prompts; no family problems, health, religion,
+race or politics. A reply that fails the checks, or a writer that is down, → a **stand-in
+question** ("Can you give me an example from your own life?"…) — the practice never stops on it.
+No voice → the words are shown and the student reads them.
+
+**Wellbeing** (bot `docs/SOLVER.md` §Wellbeing). Every oral answer, Part 1 and Part 2, goes
+through the bot's word check (`src/lib/wellbeing.ts`, a copy). Clear first-person words → serious at
+once. Words that are often about other people ("students getting bullied online") → the follow-up
+writer's own `risk` answer decides, or (Part 1) one small RISK/SAFE question; if that fails, the
+bot's fallback for the rule. Everyday exam stress is left alone — it is a fair thing to say in an
+oral answer. Serious → no next question; the page shows fixed words with the official help lines
+(mindline 1771, and for abuse or danger 999 / 995 / 1800 777 0000) and "the practice can wait";
+Adrian gets 🆘 in the students topic with the words said.
+
+**Cost, measured on one trial (5 Nov 2026):** three follow-ups ≈ 3 × (Sonnet ~US$0.008 + voice
+~US$0.02) + six hearings ≈ US$0.015 → **about US$0.10 (≈ S$0.13) a practice**; the report is free
+(plan). Caps unchanged: 6 reports a student a day.
+
+**Trial (5 Nov 2026, local, a made-up student voice from macOS `say`, the real services):**
+- Each turn's wait: hearing 3–4 s + writing 2–2.5 s + voice 2–4 s = **about 9 seconds**.
+- The three follow-ups each picked up the student's own point ("You said it is our own rubbish. If
+  people know cleaners are hired, do you think they might litter more?"). None used a stand-in.
+- The report came back Band 3 and said, per question, where a follow-up was only half answered
+  ("you said what schools could do, not what you could do").
+- A worrying answer ("my classmates bully me every day and I am scared to go to school") → the
+  writer said risk, the help card showed, the alert was sent.
+- The page at phone size (375 px): the intro, "About what you said" with 🔊, the six questions on
+  "This is what we heard", the help card — no sideways scroll.
+- NOT tested: a real phone's microphone, a real student's accent, the partner's voice playing by
+  itself on an iPhone (Safari may need the 🔊 tap — the button is there).

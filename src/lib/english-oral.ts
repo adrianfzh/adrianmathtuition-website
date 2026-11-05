@@ -86,11 +86,13 @@ function tableText(part: OralPart): string {
   return TABLE[part].bands.map(b => `Band ${b.band}: ${b.descriptors.map(withoutPronunciation).join(' · ')}`).join('\n');
 }
 
-export function buildOralPrompt(s: Pick<OralSet, 'scene' | 'planned' | 'interaction'>, part: OralPart, said: string[]): string {
-  const prompts = promptsFor(s, part);
+/** `asked`: what was really asked at each turn — Part 2 with the speaking partner has six (lib/english-oral-partner). */
+export function buildOralPrompt(s: Pick<OralSet, 'scene' | 'planned' | 'interaction'>, part: OralPart, said: string[], asked?: string[]): string {
+  const prompts = asked && asked.length ? asked : promptsFor(s, part);
+  const partner = !!asked && asked.length > s.interaction.length;
   const turns = prompts.map((p, i) => `PROMPT${prompts.length > 1 ? ' ' + (i + 1) : ''}\n${p}\n\nWHAT THE STUDENT SAID\n<<<\n${clip((said[i] ?? '').trim() || '(nothing)', ORAL_WORDS_MAX)}\n>>>`).join('\n\n');
   const planned = part === 'planned';
-  return `You are giving feedback on a Secondary 4 student's practice for the O-Level English oral examination (${planned ? 'Part 1, Planned Response: the student saw a picture and a prompt, planned, then spoke for up to two minutes' : 'Part 2, Spoken Interaction: the student answered each prompt aloud'}). You have only the WORDS, turned into text from a recording.
+  return `You are giving feedback on a Secondary 4 student's practice for the O-Level English oral examination (${planned ? 'Part 1, Planned Response: the student saw a picture and a prompt, planned, then spoke for up to two minutes' : (partner ? 'Part 2, Spoken Interaction: a discussion with the examiner. Each main prompt was followed by one follow-up question that reacted to what the student had just said' : 'Part 2, Spoken Interaction: the student answered each prompt aloud')}). You have only the WORDS, turned into text from a recording.
 
 THE PICTURE THE STUDENT SAW (in words)
 ${s.scene}
@@ -108,7 +110,8 @@ RULES
 - A habit is a language pattern heard in the words more than once: tense, subject-verb agreement, a vague word ("things", "stuff", "very good"), one word used again and again, every sentence joined with "and then", words too casual for an examination.
 - Every "said" must be the student's EXACT words, copied from the text above, 3 to 14 words.
 - Speak TO the student: "you". Plain, short words. No praise without a reason. Never mention marks.
-- If almost nothing was said, the band is 0 or 1 and the lists may be empty.
+- If almost nothing was said, the band is 0 or 1 and the lists may be empty.${partner ? `
+- Engagement in the discussion counts: did the student answer each follow-up question itself, pick up the examiner's point and take it further, or only repeat what they had already said?` : ''}
 
 Reply with one JSON object and nothing else:
 {"band": <0 to 5>,

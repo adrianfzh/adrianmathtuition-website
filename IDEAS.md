@@ -446,3 +446,6 @@ the student records answers to three FIXED prompts; "follow-up prompts that reac
 said" is listed under Not built, and that is exactly Part 2 Spoken Interaction). Missing: a partner that talks
 back live, and any Mother Tongue oral (Chinese, Malay, Tamil). Watch the cost per minute (a live call is
 roughly US$0.05–0.20 a minute — estimate, 5 Nov 2026) and the wellbeing rules for a student talking freely.
+**ENGLISH BUILT 5 Nov 2026** (Adrian: "we can do the oral part now for english" → "Yes, build it"): a speaking partner
+that takes turns, not a live call — SPEC-ENGLISH-ORAL-LISTENING.md §Speaking partner. Closed like the rest of oral. Chinese,
+Malay and Tamil oral remain LATER.

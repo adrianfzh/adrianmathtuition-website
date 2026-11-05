@@ -2,6 +2,10 @@
 // One oral practice, start to finish (SPEC-ENGLISH-ORAL-LISTENING.md):
 //   look → (Part 1: prepare, with a timer and notes that stay on the phone) → speak, one prompt at
 //   a time → "This is what we heard" (the student fixes a misheard word) → handed in → the feedback.
+// Part 2 has the SPEAKING PARTNER (5 Nov 2026, SPEC §Speaking partner): after each set prompt the
+// door answers with one question about what the student just said (`next`), played aloud — six
+// turns in all. If an answer sounds like a student at risk, the door sends `help` and the practice
+// stops on the help lines.
 // Each recording goes to POST /api/portal/english/oral (stored privately, turned into words); the
 // confirmed words are queued there for reading and GET ?attempt= is asked until the feedback is in.
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,7 +20,8 @@ const API = '/api/portal/english/oral';
 const clock = (s: number): string => `${Math.floor(Math.max(0, s) / 60)}:${String(Math.max(0, Math.floor(s)) % 60).padStart(2, '0')}`;
 
 type Band = { line: string; descriptors: string[] };
-type Stage = 'look' | 'prepare' | 'speak' | 'confirm' | 'waiting' | 'done' | 'failed';
+type Stage = 'look' | 'prepare' | 'speak' | 'confirm' | 'waiting' | 'done' | 'failed' | 'help';
+type Help = { lead: string; lines: string[] };
 interface Props { set: PublicOral; part: OralPart; attempt: string | null; prompts: string[]; promptAudio: string[]; maxSeconds: number; prepSeconds: number }
 
 function pickMime(): string {
@@ -197,11 +202,21 @@ function Report({ part, band, report, prompts, said }: { part: OralPart; band: B
 
 export default function OralSession({ set, part, attempt: opened, prompts, promptAudio, maxSeconds, prepSeconds }: Props) {
   const planned = part === 'planned';
+  // Part 2: each set prompt (turn 0, 2, 4) is followed by the partner's question (turn 1, 3, 5).
+  const turns = planned ? 1 : prompts.length * 2;
+  const blank = <T,>(v: T): T[] => Array.from({ length: turns }, () => v);
   const [stage, setStage] = useState<Stage>(opened ? 'waiting' : 'look');
   const [attempt, setAttempt] = useState<string | null>(opened);
   const [q, setQ] = useState(0);
-  const [heard, setHeard] = useState<string[]>(prompts.map(() => ''));
-  const [clips, setClips] = useState<(string | null)[]>(prompts.map(() => null));
+  const [heard, setHeard] = useState<string[]>(blank(''));
+  const [clips, setClips] = useState<(string | null)[]>(blank(null));
+  const [followUps, setFollowUps] = useState<string[]>(blank(''));
+  const [followAudio, setFollowAudio] = useState<(string | null)[]>(blank(null));
+  const [askedBack, setAskedBack] = useState<string[] | null>(null);
+  const [help, setHelp] = useState<Help | null>(null);
+  const askedAt = (i: number): string => (planned ? prompts[0] : i % 2 === 0 ? prompts[i / 2] : followUps[i]);
+  const asked = askedBack ?? Array.from({ length: turns }, (_, i) => askedAt(i));
+  const audioAt = (i: number): string | null => (planned ? null : i % 2 === 0 ? promptAudio[i / 2] ?? null : followAudio[i]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prepLeft, setPrepLeft] = useState(prepSeconds);
@@ -234,7 +249,7 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
         const r = await fetch(`${API}?attempt=${attempt}`);
         const j = await r.json().catch(() => ({}));
         if (stopped) return;
-        if (j.state === 'done') { setReport(j.report as OralReport); setBand((j.band as Band) ?? null); setSaid((j.said as string[]) ?? []); setStage('done'); }
+        if (j.state === 'done') { setReport(j.report as OralReport); setBand((j.band as Band) ?? null); setSaid((j.said as string[]) ?? []); if (Array.isArray(j.asked)) setAskedBack(j.asked as string[]); setStage('done'); }
         else if (j.state === 'failed' || r.status === 404) setStage('failed');
         else if (j.state === 'recording') setStage('look');
       } catch { /* a dropped request: ask again */ }
@@ -258,7 +273,12 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
       setAttempt(String(j.attempt));
       setHeard(h => h.map((x, i) => (i === q ? String(j.heard) : x)));
       setClips(c => c.map((x, i) => (i === q ? URL.createObjectURL(blob) : x)));
-      if (q + 1 < prompts.length) setQ(q + 1); else setStage('confirm');
+      if (j.help) { setHelp(j.help as Help); setStage('help'); return; }
+      if (j.next?.say) {
+        setFollowUps(f => f.map((x, i) => (i === q + 1 ? String(j.next.say) : x)));
+        setFollowAudio(f => f.map((x, i) => (i === q + 1 ? (j.next.audio ? String(j.next.audio) : null) : x)));
+      }
+      if (q + 1 < turns) setQ(q + 1); else setStage('confirm');
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not save it. Try again.'); }
     finally { setBusy(false); }
   };
@@ -274,7 +294,7 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
     finally { setBusy(false); }
   };
 
-  const again = () => { setAttempt(null); setQ(0); setHeard(prompts.map(() => '')); setClips(prompts.map(() => null)); setReport(null); setBand(null); setPrepLeft(prepSeconds); setError(null); setStage('look'); };
+  const again = () => { setAttempt(null); setQ(0); setHeard(blank('')); setClips(blank(null)); setFollowUps(blank('')); setFollowAudio(blank(null)); setAskedBack(null); setHelp(null); setReport(null); setBand(null); setPrepLeft(prepSeconds); setError(null); setStage('look'); };
   const picture = (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={set.picture} alt={set.alt} className="w-full rounded-3xl border border-black/5 shadow-sm" />
@@ -299,8 +319,9 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
           ) : (
             <section className={`${CARD} p-4 space-y-1`}>
               <h2 className={TAG}>How it works</h2>
-              <p className="text-[15px] leading-snug text-gray-900">You will hear {prompts.length} questions on this topic, one at a time.</p>
-              <p className="text-[15px] leading-snug text-gray-900">Answer each one aloud. You have up to {clock(maxSeconds)} for each.</p>
+              <p className="text-[15px] leading-snug text-gray-900">This is a discussion, like the real exam.</p>
+              <p className="text-[15px] leading-snug text-gray-900">You will hear {prompts.length} questions on this topic. After each answer, you will be asked one more question about what you said.</p>
+              <p className="text-[15px] leading-snug text-gray-900">Answer aloud. You have up to {clock(maxSeconds)} each time. About 8 minutes in all.</p>
             </section>
           )}
           <button type="button" className={MAIN} onClick={() => setStage(planned ? 'prepare' : 'speak')}>{planned ? `Start preparing · ${clock(prepSeconds)}` : 'Start'}</button>
@@ -327,11 +348,11 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
         <>
           {planned && picture}
           <section className={`${CARD} p-4 space-y-2`}>
-            <h2 className={TAG}>{planned ? 'Your prompt' : `Question ${q + 1} of ${prompts.length}`}</h2>
-            <p className="text-[16px] font-semibold leading-snug text-gray-900">{prompts[q]}</p>
-            {!planned && promptAudio[q] && (
+            <h2 className={TAG}>{planned ? 'Your prompt' : q % 2 === 0 ? `Question ${q / 2 + 1} of ${prompts.length}` : 'About what you said'}</h2>
+            <p className="text-[16px] font-semibold leading-snug text-gray-900">{asked[q]}</p>
+            {!planned && audioAt(q) && (
               <>
-                <audio ref={ask} key={promptAudio[q]} src={promptAudio[q]} autoPlay preload="auto" />
+                <audio ref={ask} key={`${q}-${audioAt(q)?.slice(-24)}`} src={audioAt(q) as string} autoPlay preload="auto" />
                 <button type="button" onClick={() => { const a = ask.current; if (a) { a.currentTime = 0; void a.play().catch(() => {}); } }} className="text-[13px] font-semibold text-violet-700"><span aria-hidden className="mr-1">🔊</span>Hear the question</button>
               </>
             )}
@@ -349,10 +370,10 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
               <h2 className={TAG}>This is what we heard</h2>
               <p className="text-[14px] leading-snug text-gray-700 mt-0.5">Fix any word that was heard wrong. Leave the rest as you said it.</p>
             </div>
-            {prompts.map((p, i) => (
+            {asked.map((p, i) => (
               <div key={i} className="space-y-1.5">
-                {prompts.length > 1 && <p className="text-[13px] leading-snug text-gray-500">{i + 1}. {p}</p>}
-                <textarea value={heard[i]} onChange={e => setHeard(h => h.map((x, k) => (k === i ? e.target.value : x)))} rows={prompts.length > 1 ? 4 : 9} maxLength={3000}
+                {asked.length > 1 && <p className="text-[13px] leading-snug text-gray-500">{i + 1}. {p}</p>}
+                <textarea value={heard[i]} onChange={e => setHeard(h => h.map((x, k) => (k === i ? e.target.value : x)))} rows={asked.length > 1 ? 4 : 9} maxLength={3000}
                   className="w-full rounded-2xl border border-black/10 bg-white p-3 text-[15px] leading-relaxed text-gray-900 focus:outline-none focus:border-violet-500" />
                 {clips[i] && <audio controls src={clips[i] as string} className="w-full h-9" />}
               </div>
@@ -372,6 +393,16 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
         </section>
       )}
 
+      {stage === 'help' && help && (
+        <section className={`${CARD} p-5 space-y-3`} aria-live="polite">
+          <p className="text-[16px] font-semibold leading-snug text-navy">{help.lead}</p>
+          <ul className="space-y-2">
+            {help.lines.map((l, i) => <li key={i} className="text-[15px] leading-snug text-gray-900">{l}</li>)}
+          </ul>
+          <p className="text-[14px] leading-snug text-gray-600">The practice can wait. It will be here when you want to come back.</p>
+        </section>
+      )}
+
       {stage === 'failed' && (
         <section className={`${CARD} p-5 text-center space-y-2`}>
           <p className="text-[16px] font-bold text-navy">This one could not be read</p>
@@ -381,7 +412,7 @@ export default function OralSession({ set, part, attempt: opened, prompts, promp
 
       {stage === 'done' && report && (
         <>
-          <Report part={part} band={band} report={report} prompts={prompts} said={said} />
+          <Report part={part} band={band} report={report} prompts={asked} said={said} />
           <button type="button" className={SIDE} onClick={again}>Speak on this again</button>
           <Link href="/app/languages/oral" className="block text-center text-[13px] text-gray-500 underline underline-offset-2">Choose another topic</Link>
         </>

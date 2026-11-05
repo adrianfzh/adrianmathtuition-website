@@ -19,7 +19,8 @@ export const spoken = (text: string): string => sayAs(String(text).replace(/\bMd
 /** The characters the voice is paid for in one part: its intro and every line. */
 export const voiceChars = (s: ListeningSet): number => spoken(s.intro).length + s.script.reduce((n, l) => n + spoken(l.text).length, 0);
 
-async function speak(text: string, voice: string, speed: number, emotion?: string): Promise<Uint8Array> {
+/** One line read aloud → MP3 bytes. Also the oral speaking partner's voice (lib/english-oral-store). */
+export async function speak(text: string, voice: string, speed: number, emotion?: string): Promise<Uint8Array> {
   const key = (process.env.MINIMAX_API_KEY || '').trim();
   if (!key) throw new Error('MINIMAX_API_KEY missing');
   const body = { model: TTS_MODEL, text: spoken(text), voice_setting: { voice_id: voice, speed, vol: 1, pitch: 0, ...(emotion ? { emotion } : {}) },
