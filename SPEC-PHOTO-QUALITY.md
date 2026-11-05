@@ -46,8 +46,10 @@ the mark-scheme upload (a printed scheme, not the student's photo), admin screen
 ## Limits — how they were set
 
 758 real student photos from the web chat: **0 flagged** (least sharp scored 53; the limit
-is 30). Blurred copies: 91–100% flagged. Darkened copies: 100%. Browser vs bot scores on
-the same 50 photos: see the commit message of this change.
+is 30). Blurred copies: 91–100% flagged. Darkened copies: 100%. Browser vs bot on the same
+18 real photos (the least sharp ones): browser scores within ~15 of the bot's, lowest 44
+— all 18 passed; blurred copies of all 18 were flagged. (The commit message says 50; the
+image host refused the rest.)
 
 ## Log
 
