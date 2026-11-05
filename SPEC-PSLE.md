@@ -66,9 +66,11 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     + law now allow `P4_HCL`. 17 dropped (practice/mock/mid-year/WA behind an SA2 bookmark, 4 printed twice).
     Most files are Paper 2 + key only (the books leave composition out). P6 covers saying only 年终考试 but
     dated August (Nan Hua 2018–22, Maha Bodhi 2018–19, Maris Stella HCL 2022) filed Prelim. 2019 P6 CL
-    "Catholic" bookmark is really Pei Chun. Order now: P6 → P5 → English → P4 → Chinese. **Still owed: read the first banked
-    English paper (and later the first Chinese one) back against its pages** (`language_items` /
-    `language_texts` by level) and tell Adrian.
+    "Catholic" bookmark is really Pei Chun. Order now: P6 → P5 → English → P4 → Chinese. **Checked 5 Nov 2026 (Adrian: "Yes, check them"):**
+    three banked papers read back against their pages by Opus checkers — P5 EL SA2 2020 Maris Stella
+    (82/82 questions, 7 passages, 80/80 answers match the key), P6 CL Prelim 2020 CHIJ St Nicholas (42/42, 5
+    passages, every answer matches), P4 HCL SA2 2021 Nanyang (27/27, 3 passages, every answer matches). No
+    errors. Paper misprints are kept as printed and noted; the key's own slips (a capital, "Chuckle") are kept too.
   - **English cut 4 Nov 2026: 239 rows held** (P4_EL 82, P5_EL 82, P6_EL 75; 978 MB; staging + page map
     `~/PL-staging/english/`). Every file has its key; only 79 have Paper 1 (the books leave writing out for
     many schools, almost all P4). P6 covers all say Prelim (filed Prelim). 14 recycled copies dropped (the
