@@ -9,6 +9,7 @@
 // identity token (/api/portal/ask-token → body.portalToken) that upgrades the
 // student from the bot's anonymous 20/day quota to the student 60/day one.
 
+import { usePhotoCheck } from '@/components/PhotoCheck';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import Link from 'next/link';
@@ -44,6 +45,7 @@ const SendIcon = () => (
 
 export default function AskClient({ firstName, botLevel }: { firstName: string | null; botLevel: string | null }) {
   const [started, setStarted] = useState(false);
+  const pc = usePhotoCheck('ask'); // 📷 retake? (SPEC-PHOTO-QUALITY.md)
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewSrc, setPreviewSrc] = useState('');
@@ -398,6 +400,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
 
   return (
     <div className="max-w-2xl mx-auto ask-page">
+      {pc.card}
       {/* KaTeX (CDN, same pins as /chat) */}
       <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="afterInteractive" />
       <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" strategy="afterInteractive" />
@@ -511,7 +514,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
                 accept="image/*"
                 className="hidden"
                 multiple
-                onChange={e => { Array.from(e.target.files || []).forEach(f => setImage(f)); e.target.value = ''; }}
+                onChange={e => { const picked = Array.from(e.target.files || []); e.target.value = ''; void pc.check(picked).then(ok => ok.forEach(f => setImage(f))); }}
               />
               <button
                 type="button"

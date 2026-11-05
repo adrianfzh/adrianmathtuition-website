@@ -6,6 +6,7 @@
 // hour and lands on the Practice list (a Writing… row until then). One sheet
 // a day; a second one lands on the first free day up to three days ahead.
 // A single photo can ask for a worked example as well.
+import { usePhotoCheck } from '@/components/PhotoCheck';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
@@ -22,6 +23,7 @@ type SheetReply = { ok: true; assignmentId: string; day: string; waits: boolean;
 
 export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
   const router = useRouter();
+  const pc = usePhotoCheck('practice-photo'); // 📷 retake? (SPEC-PHOTO-QUALITY.md)
   const uid = useId();
   const [level, setLevel] = useState<FindLevelOption['key']>(levels[0]?.key ?? 'EM');
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -47,14 +49,16 @@ export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
   async function addFiles(list: FileList | null) {
     setEpoch(e => e + 1);
     if (!list || !list.length) return;
+    const picked = await pc.check(list);
+    if (!picked.length) return;
     setBusy('reading'); setMsg(null);
     try {
       const room = MAX_SHEET_PHOTOS - photos.length;
-      const files = Array.from(list).slice(0, Math.max(0, room));
+      const files = picked.slice(0, Math.max(0, room));
       const next: Photo[] = [];
       for (const f of files) next.push({ dataUrl: await fileToJpegDataUrl(f, 1400), name: f.name });
       setPhotos(p => [...p, ...next].slice(0, MAX_SHEET_PHOTOS));
-      if (list.length > room) setMsg({ kind: 'err', text: `Up to ${MAX_SHEET_PHOTOS} photos a sheet — the first ${room} were kept.` });
+      if (picked.length > room) setMsg({ kind: 'err', text: `Up to ${MAX_SHEET_PHOTOS} photos a sheet — the first ${room} were kept.` });
     } catch (e) {
       setMsg({ kind: 'err', text: portalMessage(e) });
     } finally {
@@ -90,6 +94,7 @@ export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
 
   return (
     <section className={`${CARD} p-4 space-y-3`}>
+      {pc.card}
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-semibold text-navy">Photos in, a practice sheet out</p>

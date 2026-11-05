@@ -9,6 +9,7 @@
 //
 // Opening this screen holds the paper out of the queue for 10 minutes (the page
 // server component asks for the hold), long enough to photograph a page or two.
+import { usePhotoCheck } from '@/components/PhotoCheck';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { uploadPage } from './submit-client';
@@ -27,6 +28,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref, after
   afterMarking?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const pc = usePhotoCheck('add-pages'); // 📷 retake? (SPEC-PHOTO-QUALITY.md)
   const uploaded = useRef(new Map<number, string>());
   const [pages, setPages] = useState<Page[]>([]);
   const [busy, setBusy] = useState(false);
@@ -44,7 +46,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref, after
         try { files.push(...await pdfToPageImages(f, () => {})); } catch { setError(`Couldn't read ${f.name} — photograph the pages instead.`); }
         continue;
       }
-      if (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) files.push(f);
+      if (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) files.push(...await pc.check([f]));
     }
     const added: Page[] = [];
     // iPhone HEIC → JPEG before upload (27 Oct 2026, lib/heic-browser.ts).
@@ -123,6 +125,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref, after
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
+      {pc.card}
       <div className="pt-1">
         <Link href={backHref} className="text-sm text-gray-500 hover:text-navy">← Back</Link>
         <h1 className="text-xl font-bold text-navy mt-1">➕ {afterMarking ? 'Add missing pages' : 'Add pages'}: {title}</h1>

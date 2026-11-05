@@ -1,5 +1,6 @@
 'use client';
 
+import { usePhotoCheck } from '@/components/PhotoCheck';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
@@ -397,6 +398,7 @@ function SidebarContent({
 
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
+  const pc = usePhotoCheck('web-chat'); // 📷 retake? (SPEC-PHOTO-QUALITY.md)
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewSrc, setPreviewSrc] = useState('');
@@ -969,7 +971,7 @@ export default function ChatPage() {
             accept="image/*"
             style={{ display: 'none' }}
             multiple
-            onChange={e => { Array.from(e.target.files || []).forEach(f => setImage(f)); e.target.value = ''; }}
+            onChange={e => { const picked = Array.from(e.target.files || []); e.target.value = ''; void pc.check(picked).then(ok => ok.forEach(f => setImage(f))); }}
           />
           <button
             type="button"
@@ -1012,6 +1014,7 @@ export default function ChatPage() {
 
   return (
     <div id="chatLayout" className="chat-layout">
+      {pc.card}
       {/* Telegram Mini App SDK */}
       <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" />
       {/* KaTeX scripts — auto-render captures the katex global at its own load
