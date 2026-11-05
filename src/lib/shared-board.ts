@@ -93,3 +93,41 @@ export const LIVE_QUIET_MS = 10_000;
 export function pollMayReplace(lastLiveAt: number, now: number): boolean {
   return now - lastLiveAt > LIVE_QUIET_MS;
 }
+
+// ── Earlier versions (Adrian, 5 Nov 2026: "Go back to an earlier version … let's do this") ──
+// A version is a snapshot of BOTH layers as they were just BEFORE a save. One is kept every
+// 10 minutes of writing, before a big rub-out (half or more of someone's writing gone at once,
+// e.g. "Clear my notes"), and before every restore — so bringing a version back can itself be undone.
+export type VersionReason = 'every-10-min' | 'big-erase' | 'before-restore';
+export const VERSION_EVERY_MS = 10 * 60_000;
+export const MAX_VERSIONS = 60;
+
+export function strokeCount(layer: InkPages | null | undefined): number {
+  let n = 0;
+  for (const v of Object.values(layer ?? {})) n += v?.strokes?.length ?? 0;
+  return n;
+}
+
+/** Keep a version of the layer as it was before this save? Returns why, or null. */
+export function versionReason(o: { before: InkPages; after: InkPages; lastVersionAt: number | null; now: number }): VersionReason | null {
+  const b = strokeCount(o.before), a = strokeCount(o.after);
+  if (b >= 3 && b - a >= 3 && a <= b / 2) return 'big-erase';
+  if (b > 0 && (o.lastVersionAt == null || o.now - o.lastVersionAt >= VERSION_EVERY_MS)) return 'every-10-min';
+  return null;
+}
+
+/** How a version reads in the list: "Today 3:42 pm · before a big rub-out". */
+export function versionWhen(iso: string, now = new Date()): string {
+  const d = new Date(iso);
+  const day = (x: Date) => x.toLocaleDateString('en-SG', { timeZone: 'Asia/Singapore' });
+  const time = d.toLocaleTimeString('en-SG', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Singapore' }).replace(/\s/g, ' ').toLowerCase();
+  const y = new Date(now.getTime() - 86_400_000);
+  const label = day(d) === day(now) ? 'Today' : day(d) === day(y) ? 'Yesterday'
+    : d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
+  return `${label} ${time}`;
+}
+export const VERSION_WHY: Record<VersionReason, string> = {
+  'every-10-min': '',
+  'big-erase': 'just before a big rub-out',
+  'before-restore': 'just before an earlier version was brought back',
+};

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyPatch, boardTitle, changedPages, displayPageCount, lastInkedPage, pollMayReplace, shareText, withPhotoAppended, MAX_BOARD_PAGES } from './shared-board';
+import { strokeCount, versionReason, versionWhen, VERSION_EVERY_MS, applyPatch, boardTitle, changedPages, displayPageCount, lastInkedPage, pollMayReplace, shareText, withPhotoAppended, MAX_BOARD_PAGES } from './shared-board';
 import type { InkPages } from './student-ink';
 
 const stroke = { tool: 'pen' as const, color: '#000', width: 3, points: [{ x: 1, y: 1, p: 0.5 }, { x: 5, y: 5, p: 0.5 }] };
@@ -55,5 +55,30 @@ describe('words', () => {
   });
   it('writes the WhatsApp line with the first name', () => {
     expect(shareText('Tan Wei Ming', 'https://x/b/k')).toBe('Hi Tan, here is our board. Open it on your phone or iPad and write with me: https://x/b/k');
+  });
+});
+
+describe('earlier versions', () => {
+  const now = Date.parse('2026-11-05T08:00:00Z');
+  it('keeps one before a big rub-out, whatever the time', () => {
+    expect(versionReason({ before: { 0: page(10) }, after: { 0: page(2) }, lastVersionAt: now - 1000, now })).toBe('big-erase');
+    expect(versionReason({ before: { 0: page(10) }, after: {}, lastVersionAt: now, now })).toBe('big-erase');
+  });
+  it('does not count rubbing out one or two lines as big', () => {
+    expect(versionReason({ before: { 0: page(4) }, after: { 0: page(2) }, lastVersionAt: now - 1000, now })).toBeNull();
+  });
+  it('keeps one every 10 minutes of writing, and none of an empty board', () => {
+    expect(versionReason({ before: { 0: page(1) }, after: { 0: page(2) }, lastVersionAt: null, now })).toBe('every-10-min');
+    expect(versionReason({ before: { 0: page(1) }, after: { 0: page(2) }, lastVersionAt: now - VERSION_EVERY_MS + 1, now })).toBeNull();
+    expect(versionReason({ before: {}, after: { 0: page(1) }, lastVersionAt: null, now })).toBeNull();
+  });
+  it('counts strokes across pages', () => {
+    expect(strokeCount({ 0: page(2), 3: page(3) })).toBe(5);
+    expect(strokeCount(null)).toBe(0);
+  });
+  it('says when, in Singapore time', () => {
+    expect(versionWhen('2026-11-05T07:42:00Z', new Date('2026-11-05T09:00:00Z'))).toBe('Today 3:42 pm');
+    expect(versionWhen('2026-11-04T07:42:00Z', new Date('2026-11-05T09:00:00Z'))).toBe('Yesterday 3:42 pm');
+    expect(versionWhen('2026-11-01T07:42:00Z', new Date('2026-11-05T09:00:00Z'))).toBe('1 Nov 3:42 pm');
   });
 });

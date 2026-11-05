@@ -23,7 +23,7 @@ import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import { strokesToSvg } from '@/lib/annotate/layer';
 import { inkIsEmpty, inkStrokes, type InkPages } from '@/lib/student-ink';
 import {
-  addStroke, eraseAt, eraserRadius, ERASER_SCREEN_PX, isAccident, toImagePoint, toolWidth, type InkTool, type InkSize, type Nat,
+  addStroke, eraseAt, eraserRadius, ERASER_SCREEN_PX, isAccident, toImagePoint, toolWidth, typedFontSize, type InkTool, type InkSize, type Nat,
   PEN_COLORS, HL_COLORS, PEN_COLOR_DEFAULT, HL_COLOR_DEFAULT, paletteColor, INK_SIZES, INK_SIZE_DEFAULT, sizeChoice, toolbarPlacement,
   HOLD_SNAP_MS, snapHeldStroke, heldStill, isDoubleTap,
   emptyHistory, pushHistory, undoInk, redoInk, type InkHistory,
@@ -67,13 +67,17 @@ type SurfaceProps = {
   /** The lasso tool closed a loop on this page (23 Sep 2026); an empty polygon = a tap, which drops the selection. */
   onLasso: (index: number, polygon: StrokePoint[]) => void;
   selection: SurfaceSelection | null;
+  /** ⌨ Type (the shared board): where a typed note is being written on THIS page, and the hand-off when it is done. */
+  typing?: { x: number; y: number } | null;
+  onTypeAt?: (index: number, x: number, y: number) => void;
+  onTyped?: (index: number, text: string | null, nat: Nat) => void;
 };
 
 /** The pointer's default — red, as a laser is; any pen colour can be chosen since 23 Sep 2026. */
 const LASER = '#ef4444';
 
 /** One page: its bitmap on a canvas (lazily, near the viewport), both ink layers, the live stroke, and the input. */
-function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, size, canWrite, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection }: SurfaceProps) {
+function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, size, canWrite, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection, typing, onTypeAt, onTyped }: SurfaceProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const bmpRef = useRef<HTMLCanvasElement | null>(null);
   const liveRef = useRef<SVGPathElement | null>(null);
@@ -85,8 +89,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
   const natRef = useRef<Nat | null>(null);
   const writable = canWrite && Number.isInteger(page.index);
   // Latest props for the listeners below, which are attached once.
-  const live = useRef({ tool, color, hlColor, pointerColor, size, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection });
-  useEffect(() => { live.current = { tool, color, hlColor, pointerColor, size, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection }; });
+  const live = useRef({ tool, color, hlColor, pointerColor, size, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection, onTypeAt });
+  useEffect(() => { live.current = { tool, color, hlColor, pointerColor, size, fingerWrites, onStroke, onErase, onDoubleTap, onLasso, selection, onTypeAt }; });
   // The selected strokes are drawn in their own group so a drag slides them live; the laser's trail is a group redrawn each frame.
   const selGroupRef = useRef<SVGGElement | null>(null);
   const trailGroupRef = useRef<SVGGElement | null>(null);
@@ -215,6 +219,7 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
       const t = live.current.tool;
       if (t === 'er') { erase(p, 'start'); return; }
       if (t === 'pointer') { trailRef.current.push({ x: p.x, y: p.y, t: performance.now() }); return; }
+      if (t === 'text') return;                          // ⌨ Type: the tap's place is read at the end
       const n = natRef.current!;
       const lp = liveRef.current;
       if (t === 'lasso') {
@@ -241,6 +246,7 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
       const t = live.current.tool;
       if (t === 'er') { erase(p, 'move'); return; }
       if (t === 'pointer') { trailRef.current.push({ x: p.x, y: p.y, t: performance.now() }); return; }
+      if (t === 'text') return;
       const last = pts[pts.length - 1];
       if (last && last.x === p.x && last.y === p.y) return;
       pts.push(p);
@@ -269,6 +275,7 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
       const mine = pts; pts = [];
       if (!n || !mine.length) return;
       if (t === 'pointer') return;                        // the trail fades by itself; nothing is filed
+      if (t === 'text') { live.current.onTypeAt?.(page.index, mine[0].x, mine[0].y); return; }
       if (t === 'lasso') {
         if (wasDragging) {
           selGroupRef.current?.removeAttribute('transform');
@@ -420,6 +427,10 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
           <button type="button" onClick={selection.done} className="h-9 px-2.5 rounded-full text-[12px] font-semibold hover:bg-white/15" aria-label="Done">Done</button>
         </div>
       )}
+      {typing && onTyped && (
+        <TypeBox at={typing} box={box} color={color} fontPx={typedFontSize(box, size)} wrapRef={wrapRef}
+          onDone={text => onTyped(page.index, text, natRef.current ?? box)} />
+      )}
       <svg viewBox={`0 0 ${box.w} ${box.h}`} className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
         <g ref={trailGroupRef} />
         <path ref={liveRef} d="" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ mixBlendMode: tool === 'hl' ? 'multiply' : 'normal' }} />
@@ -428,7 +439,49 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
   );
 }
 
-export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading, otherNote = true, fingerWritesDefault = false }: {
+/**
+ * ⌨ Type (the shared board, 5 Nov 2026 — Adrian: "enable to type neat notes"): a box where the
+ * finger or Pencil tapped. Enter files the note (Shift+Enter = a new line), tapping away files it
+ * too, Esc drops it. The note is a text stroke on the writer's own layer (lib/annotate/layer
+ * strokesToSvg draws it), so it erases, lassos, undoes, saves and goes live like ink.
+ */
+function TypeBox({ at, box, color, fontPx, wrapRef, onDone }: {
+  at: { x: number; y: number }; box: Nat; color: string; fontPx: number;
+  wrapRef: React.RefObject<HTMLDivElement | null>; onDone: (text: string | null) => void;
+}) {
+  const ref = useRef<HTMLTextAreaElement | null>(null);
+  const done = useRef(false);
+  // The page's on-screen width / its image width — the box's letters match the note it becomes.
+  const [scale] = useState(() => (wrapRef.current?.clientWidth || box.w) / box.w);
+  useEffect(() => {
+    const el = ref.current;
+    el?.focus({ preventScroll: true });
+    // The page's own (native) pen listeners must not see a touch inside the box — it places the caret.
+    const stop = (e: Event) => e.stopPropagation();
+    const kinds = ['pointerdown', 'pointermove', 'pointerup', 'touchstart', 'touchmove', 'touchend'] as const;
+    kinds.forEach(k => el?.addEventListener(k, stop));
+    return () => kinds.forEach(k => el?.removeEventListener(k, stop));
+  }, []);
+  const finish = (text: string | null) => { if (done.current) return; done.current = true; onDone(text && text.trim() ? text.replace(/\s+$/, '') : null); };
+  const css = Math.max(14, fontPx * scale);
+  return (
+    <textarea ref={ref} rows={1} aria-label="Type a note" placeholder="Type…" data-typebox
+      onKeyDown={e => {
+        if (e.key === 'Escape') { e.preventDefault(); finish(null); }
+        else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finish(e.currentTarget.value); }
+      }}
+      onBlur={e => finish(e.currentTarget.value)}
+      onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = `${t.scrollHeight}px`; }}
+      className="absolute z-20 resize-none rounded-md border border-dashed border-navy/40 bg-white/90 px-1 py-0 outline-none shadow-sm"
+      style={{
+        left: `${(at.x / box.w) * 100}%`, top: `calc(${(at.y / box.h) * 100}% - ${css * 0.9}px)`,
+        width: `min(${Math.max(40, 100 - (at.x / box.w) * 100)}%, 520px)`,
+        fontSize: `${css}px`, lineHeight: 1.25, color, fontFamily: '"Patrick Hand", "DejaVu Sans", sans-serif',
+      }} />
+  );
+}
+
+export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading, otherNote = true, fingerWritesDefault = false, typeTool = false }: {
   runId: string; pages: InkPageInput[]; initial: InkPages | null; readOnly?: boolean; other?: OtherInk | null;
   /** Where the ink goes (23 Sep 2026): by default the marked paper's layer (/api/portal/marking/ink);
    *  a sheet being done in the app (/app/work) passes its own saver to `student_work_ink`. */
@@ -446,6 +499,8 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   otherNote?: boolean;
   /** The shared board on a phone: one finger writes from the start (there is no Pencil). */
   fingerWritesDefault?: boolean;
+  /** The shared board: a ⌨ Type tool on the bar — tap the page, type a neat note (5 Nov 2026). */
+  typeTool?: boolean;
 }) {
   const isAdrian = editor === 'adrian';
   const saveUrl = isAdrian ? '/api/admin/marking/teacher-ink' : '/api/portal/marking/ink';
@@ -466,7 +521,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   const [palette, setPalette] = useState<InkTool | 'sel' | null>(null);
   // Sizes (22 Sep 2026): one per tool, remembered on this device per editor.
   const sizeKey = (t: InkTool) => `ink-size:${isAdrian ? 'adrian' : 'student'}:${t}`;
-  const [sizes, setSizes] = useState<Record<InkTool, InkSize>>({ pen: INK_SIZE_DEFAULT, hl: INK_SIZE_DEFAULT, er: INK_SIZE_DEFAULT, lasso: INK_SIZE_DEFAULT, pointer: INK_SIZE_DEFAULT });
+  const [sizes, setSizes] = useState<Record<InkTool, InkSize>>({ pen: INK_SIZE_DEFAULT, hl: INK_SIZE_DEFAULT, er: INK_SIZE_DEFAULT, lasso: INK_SIZE_DEFAULT, pointer: INK_SIZE_DEFAULT, text: INK_SIZE_DEFAULT });
   // The whole suit of colours (23 Sep 2026, Adrian): the grid, the device's own wheel, and the last eight picked.
   const recentKey = `ink-recent:${isAdrian ? 'adrian' : 'student'}`;
   const [recent, setRecent] = useState<string[]>([]);
@@ -476,7 +531,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
       const p = window.localStorage.getItem(colorKey('pen')); if (p) setPenColor(normalizeHex(p) ?? PEN_DEFAULT[editor]);
       const h = window.localStorage.getItem(colorKey('hl')); if (h) setHlColor(paletteColor('hl', h));
       const l = window.localStorage.getItem(colorKey('pointer')); if (l) setPointerColor(normalizeHex(l) ?? LASER);
-      setSizes({ pen: sizeChoice(window.localStorage.getItem(sizeKey('pen'))), hl: sizeChoice(window.localStorage.getItem(sizeKey('hl'))), er: sizeChoice(window.localStorage.getItem(sizeKey('er'))), lasso: INK_SIZE_DEFAULT, pointer: INK_SIZE_DEFAULT });
+      setSizes({ pen: sizeChoice(window.localStorage.getItem(sizeKey('pen'))), hl: sizeChoice(window.localStorage.getItem(sizeKey('hl'))), er: sizeChoice(window.localStorage.getItem(sizeKey('er'))), lasso: INK_SIZE_DEFAULT, pointer: INK_SIZE_DEFAULT, text: INK_SIZE_DEFAULT });
       setRecent(recentColors(window.localStorage.getItem(recentKey)));
     } catch { /* private mode: defaults */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read once on mount
@@ -591,6 +646,16 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     inkRef.current = out; setInk(out); touch();
   }, [touch]);
   const onStroke = useCallback((index: number, stroke: Stroke, nat: Nat) => change(cur => addStroke(cur, index, stroke, nat)), [change]);
+  // ⌨ Type (the shared board): one note box open at a time; a filled box becomes a text stroke.
+  const [typingAt, setTypingAt] = useState<{ index: number; x: number; y: number } | null>(null);
+  const typingRef = useRef(typingAt); typingRef.current = typingAt;
+  const onTypeAt = useCallback((index: number, x: number, y: number) => setTypingAt(cur => (cur ? cur : { index, x, y })), []);
+  const onTyped = useCallback((index: number, text: string | null, nat: Nat) => {
+    const at = typingRef.current;
+    setTypingAt(null);
+    if (!at || at.index !== index || !text) return;
+    onStroke(index, { tool: 'pen', color: penColor, width: 2, points: [{ x: at.x, y: at.y, p: 1 }], text: text.slice(0, 500), fontSize: typedFontSize(nat, sizes.pen) }, nat);
+  }, [onStroke, penColor, sizes.pen]);
   // One erase gesture = one undo step: the first cut pushes the ink as it was when the
   // eraser touched down; every cut until it lifts only updates the ink (22 Sep 2026).
   const eraseGesture = useRef<{ before: InkPages; pushed: boolean } | null>(null);
@@ -662,6 +727,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     marks: 'M3 3h18v18H3z M7 13l3 3 7-7',
     lasso: 'M12 4c5 0 9 2.2 9 5s-4 5-9 5-9-2.2-9-5 4-5 9-5z M7.5 13.5c-1 1.5-1 3 0 4.5 M6 21l1.5-3',
     pointer: 'M4 20L14 10 M14 10l3-3 M11 4l1.5 1.5 M20 13l-1.5-1.5 M17 4l-1 1 M20 7l-1 1',
+    text: 'M5 6V4h14v2 M12 4v16 M9 20h6',
     grid: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z',
   } as const;
   // Pinch zoom: pin the pill to the visual viewport at 1/scale so it stays put, centred, the same size.
@@ -796,6 +862,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
             {toolBtn('er', 'Eraser')}
             {toolBtn('lasso', 'Lasso')}
             {toolBtn('pointer', 'Pointer', pointerColor)}
+            {typeTool && toolBtn('text', 'Type', penColor)}
             <span className="w-px h-6 bg-black/10 mx-0.5 sm:mx-1" aria-hidden />
             {iconBtn('Undo', ICON.undo, undo, { disabled: !history.past.length })}
             {iconBtn('Redo', ICON.redo, redo, { disabled: !history.future.length })}
@@ -830,9 +897,10 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
         <PageSurface key={p.index} page={p}
           mine={show ? ink[p.index] : undefined}
           other={showOther && other?.pages ? other.pages[p.index] : undefined}
-          tool={tool} color={penColor} hlColor={hlColor} pointerColor={pointerColor} size={sizes[tool]} canWrite={!readOnly && show} fingerWrites={fingerWrites}
+          tool={tool} color={penColor} hlColor={hlColor} pointerColor={pointerColor} size={tool === 'text' ? sizes.pen : sizes[tool]} canWrite={!readOnly && show} fingerWrites={fingerWrites}
           onStroke={onStroke} onErase={onErase} onDoubleTap={onDoubleTap} onLasso={onLasso}
-          selection={selection && selection.index === p.index ? surfaceSelection : null} />
+          selection={selection && selection.index === p.index ? surfaceSelection : null}
+          typing={typingAt && typingAt.index === p.index ? typingAt : null} onTypeAt={onTypeAt} onTyped={onTyped} />
       ))}
       {fullScreen && (
         <AnnotateOverlay

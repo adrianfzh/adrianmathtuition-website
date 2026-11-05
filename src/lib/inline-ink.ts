@@ -11,7 +11,13 @@ import { splitStrokeAtCircle } from './annotate/stroke-split';
 
 export type Nat = { w: number; h: number };
 /** Five tools since 23 Sep 2026: the lasso selects strokes to move / copy / recolour / delete; the pointer is a laser trail that is never saved. */
-export type InkTool = 'pen' | 'hl' | 'er' | 'lasso' | 'pointer';
+export type InkTool = 'pen' | 'hl' | 'er' | 'lasso' | 'pointer' | 'text';
+
+/** A typed note's letter size in page-image pixels (the shared board's ⌨ Type tool, 5 Nov 2026): S / M / L of the pen's size choice. */
+export function typedFontSize(nat: Nat, size: InkSize = 'M'): number {
+  const base = Math.max(18, Math.round(nat.w / 24));   // ≈ 14 px on a phone, ≈ 29 px on an iPad
+  return Math.round(base * (size === 'S' ? 0.8 : size === 'L' ? 1.35 : 1));
+}
 /** The tools that draw ink (the others select or point). */
 export const DRAW_TOOLS: readonly InkTool[] = ['pen', 'hl'];
 /** Three sizes per tool (22 Sep 2026, Adrian: "select different sizes for pen, highlighter and eraser"). */

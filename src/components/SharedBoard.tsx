@@ -17,7 +17,10 @@ import type { InkPages } from '@/lib/student-ink';
 import { uploadStudentFile } from '@/lib/student-files-client';
 import { resizeToJpeg } from '@/lib/spread-split';
 import { heicFilesToJpeg } from '@/lib/heic-browser';
-import { applyPatch, BLANK_PAGE_URL, changedPages, displayPageCount, pollMayReplace, shareText, type BoardRole } from '@/lib/shared-board';
+import { pdfToPageImages } from '@/lib/pdf-pages';
+import { applyPatch, BLANK_PAGE_URL, changedPages, displayPageCount, pollMayReplace, shareText, versionWhen, VERSION_WHY, type BoardRole, type VersionReason } from '@/lib/shared-board';
+
+type Version = { id: string; created_at: string; reason: VersionReason; tutor_strokes: number; student_strokes: number };
 
 type StoredPage = { index: number; ref: string | null; url: string | null };
 type Opened = {
@@ -45,6 +48,10 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState('');
   const [share, setShare] = useState(false);
+  const [versions, setVersions] = useState<Version[] | null>(null);
+  const [showVersions, setShowVersions] = useState(false);
+  /** Bumped after an earlier version comes back: the pen mounts again on the restored layer. */
+  const [gen, setGen] = useState(0);
   // A phone has no Pencil: one finger writes from the start. Read once, before the pen mounts.
   const [phone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px) and (pointer: coarse)').matches);
   const storedLen = useRef(0);
@@ -80,6 +87,8 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
       setOther(o => applyPatch(o, payload.patch ?? {}));
     });
     ch.on('broadcast', { event: 'pages' }, () => { void open(true); });
+    // The other side brought an earlier version back: read the board again and start the pen on it.
+    ch.on('broadcast', { event: 'restored' }, () => { void settle().then(() => open()).then(() => setGen(g => g + 1)); });
     ch.on('presence', { event: 'sync' }, () => {
       const st = ch.presenceState();
       setHere(Object.keys(st).some(k => k !== board.role));
@@ -118,7 +127,11 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
     });
     if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Could not save'); }
   }, [api, auth.headers, boardId]);
+  // The pen saves a moment (1.2 s) after the last stroke; a restore waits for that save, or it would overwrite the version brought back.
+  const lastChangeAt = useRef(0);
+  const settle = () => new Promise<void>(r => setTimeout(r, Math.max(0, lastChangeAt.current + 2500 - Date.now())));
   const onChange = useCallback((pages: InkPages) => {
+    lastChangeAt.current = Date.now();
     setMineCount(pages);
     const patch = changedPages(sent.current, pages);
     sent.current = pages;
@@ -134,10 +147,18 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
     if (!list?.length) return;
     setMsg('');
     try {
-      const files = await heicFilesToJpeg(Array.from(list).slice(0, 5), s => setBusy(s));
+      // A PDF becomes one page per PDF page (Adrian, 5 Nov 2026: "annotate pdfs?") — the same reader the hand-in uses.
+      const raw: File[] = [];
+      for (const f of Array.from(list).slice(0, 5)) {
+        if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+          setBusy(`Reading ${f.name}…`);
+          raw.push(...(await pdfToPageImages(f, (d, t) => setBusy(`Reading ${f.name} — page ${d} of ${t}…`))).slice(0, 20));
+        } else raw.push(f);
+      }
+      const files = await heicFilesToJpeg(raw.slice(0, 20), s => setBusy(s));
       let last = -1;
-      for (const f of files) {
-        setBusy('Adding the photo…');
+      for (const [n, f] of files.entries()) {
+        setBusy(files.length > 1 ? `Adding page ${n + 1} of ${files.length}…` : 'Adding the photo…');
         const up = await resizeToJpeg(f);
         const res = await uploadStudentFile(api('upload-token', `filename=${encodeURIComponent(up.name || 'photo.jpg')}`), up, { contentType: up.type || 'image/jpeg', headers: auth.headers });
         const r = await fetch(api('photo'), { method: 'POST', headers: { ...auth.headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: boardId, url: res.url }) });
@@ -174,6 +195,30 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
     setBoard(b => b ? { ...b, link: j.link, linkOn: j.linkOn } : b);
   }
 
+  async function loadVersions() {
+    setVersions(null);
+    const r = await fetch(api('versions'), { headers: auth.headers, cache: 'no-store' }).catch(() => null);
+    const j = r?.ok ? await r.json().catch(() => null) : null;
+    setVersions(j?.versions ?? []);
+  }
+
+  async function restore(v: Version, which: 'mine' | 'both') {
+    const what = which === 'both' ? 'everyone’s writing' : 'your writing';
+    if (!window.confirm(`Bring back ${what} from ${versionWhen(v.created_at)}? Today’s board is kept as a copy, so you can undo this.`)) return;
+    setBusy('Bringing it back…'); setMsg('');
+    try {
+      await settle();
+      const r = await fetch(api('restore'), { method: 'POST', headers: { ...auth.headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: boardId, versionId: v.id, which }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Could not bring it back.');
+      void chan.current?.send({ type: 'broadcast', event: 'restored', payload: {} });
+      await open();
+      setGen(g => g + 1);
+      setShowVersions(false);
+    } catch (e) { setMsg((e as Error).message); }
+    finally { setBusy(''); }
+  }
+
   if (failed) return (
     <main className="mx-auto max-w-md px-4 py-16 text-center">
       <p className="text-lg font-semibold">This board is not open</p>
@@ -199,9 +244,10 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
           </span>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" disabled={!!busy} onClick={() => photoRef.current?.click()} className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">＋ Photo of a question</button>
-          <input ref={photoRef} type="file" accept="image/*" multiple className="hidden" onChange={e => void addPhoto(e.target.files)} />
+          <button type="button" disabled={!!busy} onClick={() => photoRef.current?.click()} className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">＋ Photo or PDF</button>
+          <input ref={photoRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={e => void addPhoto(e.target.files)} />
           <button type="button" disabled={!!busy} onClick={() => void downloadPdf()} className="rounded-lg border bg-white px-3 py-1.5 text-sm disabled:opacity-50">Download PDF</button>
+          <button type="button" onClick={() => { setShowVersions(v => !v); if (!showVersions) void loadVersions(); }} aria-expanded={showVersions} className="rounded-lg border bg-white px-3 py-1.5 text-sm">Earlier versions</button>
           {board.role === 'tutor' && (
             <button type="button" onClick={() => setShare(s => !s)} className="rounded-lg border bg-white px-3 py-1.5 text-sm" aria-expanded={share}>
               {board.linkOn ? 'Share with student' : 'Link is off'}
@@ -233,10 +279,33 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
             )}
           </div>
         )}
+        {showVersions && (
+          <div className="mt-2 max-h-[50vh] overflow-y-auto rounded-xl border bg-white p-3 text-sm" data-versions>
+            <p className="text-slate-600">The board keeps a copy every 10 minutes of writing, and just before anyone rubs out a lot. Bringing one back keeps today’s board as a copy too, so you can always undo it.</p>
+            {versions === null && <p className="mt-2 text-slate-500">Loading…</p>}
+            {versions && versions.length === 0 && <p className="mt-2 text-slate-500">No earlier versions yet — the first is kept after 10 minutes of writing.</p>}
+            <ul className="mt-2 divide-y">
+              {(versions ?? []).map(v => {
+                const mineN = board.role === 'tutor' ? v.tutor_strokes : v.student_strokes;
+                const otherN = board.role === 'tutor' ? v.student_strokes : v.tutor_strokes;
+                return (
+                  <li key={v.id} className="py-2">
+                    <p className="font-medium">{versionWhen(v.created_at)}{VERSION_WHY[v.reason] && <span className="font-normal text-slate-500"> · {VERSION_WHY[v.reason]}</span>}</p>
+                    <p className="text-xs text-slate-500">Your writing: {mineN} line{mineN === 1 ? '' : 's'} · {otherName.split(/\s+/)[0]}: {otherN} line{otherN === 1 ? '' : 's'}</p>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <button type="button" disabled={!!busy} className="rounded-lg border px-2.5 py-1 text-xs font-semibold disabled:opacity-50" onClick={() => void restore(v, 'mine')}>Bring back my writing</button>
+                      {board.role === 'tutor' && <button type="button" disabled={!!busy} className="rounded-lg border px-2.5 py-1 text-xs disabled:opacity-50" onClick={() => void restore(v, 'both')}>Bring back both</button>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </header>
       {phone && <p className="mb-2 px-1 text-xs text-slate-500">One finger writes. Two fingers move the page.</p>}
       <StudentInk
-        key={`${board.id}:${board.channel}`}
+        key={`${board.id}:${board.channel}:${gen}`}
         runId={`board-${board.id}`}
         pages={pages}
         initial={board.mine}
@@ -247,6 +316,7 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
         heading={board.role === 'tutor' ? `With ${board.studentName ?? 'your student'}` : `With ${board.tutorName}`}
         otherNote={false}
         fingerWritesDefault={phone}
+        typeTool
       />
     </main>
   );

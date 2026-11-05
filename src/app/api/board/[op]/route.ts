@@ -6,6 +6,8 @@
 //   GET  /api/board/upload-token[?id=]&filename=   a signed upload for a photo
 //   POST /api/board/photo   { id?, url }       add that photo as the next page
 //   GET  /api/board/pdf[?id=]                  the whole board as a PDF, both layers drawn in
+//   GET  /api/board/versions[?id=]             earlier versions (when, why, how much each side had written)
+//   POST /api/board/restore { id?, versionId, which: 'mine' | 'both' }   bring a version back ('both' = tutor only)
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { PDFDocument } from 'pdf-lib';
@@ -15,12 +17,25 @@ import { createDownloadUrls, createUploadUrl, fetchOurFile, handinKey, keyFromUr
 import { tutorRunStudentId } from '@/lib/tutor-portal';
 import { validateInkPages, type InkPages } from '@/lib/student-ink';
 import { strokesToSvg } from '@/lib/annotate/layer';
-import { displayPageCount, lastInkedPage, MAX_BOARD_PAGES, withPhotoAppended } from '@/lib/shared-board';
+import { displayPageCount, lastInkedPage, MAX_BOARD_PAGES, MAX_VERSIONS, strokeCount, versionReason, withPhotoAppended, type VersionReason } from '@/lib/shared-board';
 import { contentDisposition } from '@/lib/marked-pdf-filename';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+
+type Sb = ReturnType<typeof getSupabaseAdmin>;
+/** Keep a snapshot of both layers (lib/shared-board versionReason says when), and only the newest MAX_VERSIONS. */
+async function keepVersion(sb: Sb, boardId: string, tutor: InkPages, student: InkPages, reason: VersionReason) {
+  const { error } = await sb.from('shared_board_versions').insert({
+    board_id: boardId, tutor_ink: tutor ?? {}, student_ink: student ?? {},
+    tutor_strokes: strokeCount(tutor), student_strokes: strokeCount(student), reason,
+  });
+  if (error) { console.warn('[board version]', error.message); return; }
+  const { data: old } = await sb.from('shared_board_versions').select('id').eq('board_id', boardId)
+    .order('created_at', { ascending: false }).range(MAX_VERSIONS, MAX_VERSIONS + 50);
+  if (old?.length) await sb.from('shared_board_versions').delete().in('id', old.map(o => o.id as string));
+}
 
 const notFound = () => NextResponse.json({ error: 'This board is closed or the link has changed. Ask your tutor for the new link.' }, { status: 404 });
 const idOf = (req: Request) => new URL(req.url).searchParams.get('id');
@@ -106,12 +121,17 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': contentDisposition(name, 'attachment'), 'Cache-Control': 'private, no-store' },
     });
   }
+  if (op === 'versions') {
+    const { data } = await sb.from('shared_board_versions').select('id, created_at, reason, tutor_strokes, student_strokes')
+      .eq('board_id', board.id).order('created_at', { ascending: false }).limit(MAX_VERSIONS);
+    return NextResponse.json({ versions: data ?? [] }, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
   return NextResponse.json({ error: 'unknown' }, { status: 404 });
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ op: string }> }) {
   const { op } = await ctx.params;
-  const body = await req.json().catch(() => ({})) as { id?: string; pages?: unknown; url?: string };
+  const body = await req.json().catch(() => ({})) as { id?: string; pages?: unknown; url?: string; versionId?: string; which?: string };
   const a = await boardAccess(req, body.id ?? idOf(req));
   if (!a) return notFound();
   const { board, role } = a;
@@ -121,6 +141,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ op: string }> 
     const v = validateInkPages(body.pages);
     if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
     if (lastInkedPage(v.pages) >= MAX_BOARD_PAGES) return NextResponse.json({ error: 'too many pages' }, { status: 400 });
+    // An earlier version of the board as it was just before this save, when it is time for one.
+    const { data: last } = await sb.from('shared_board_versions').select('created_at').eq('board_id', board.id)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
+    const before = role === 'tutor' ? board.tutor_ink : board.student_ink;
+    const why = versionReason({ before: before ?? {}, after: v.pages, lastVersionAt: last ? Date.parse(last.created_at as string) : null, now: Date.now() });
+    if (why) await keepVersion(sb, board.id, board.tutor_ink, board.student_ink, why);
     const now = new Date().toISOString();
     const col = role === 'tutor' ? { tutor_ink: v.pages, tutor_ink_at: now } : { student_ink: v.pages, student_ink_at: now };
     const { error } = await sb.from('shared_boards').update({ ...col, updated_at: now }).eq('id', board.id);
@@ -139,6 +165,23 @@ export async function POST(req: Request, ctx: { params: Promise<{ op: string }> 
     const { error } = await sb.from('shared_boards').update({ pages, updated_at: new Date().toISOString() }).eq('id', board.id);
     if (error) return NextResponse.json({ error: 'Could not add the photo — try again.' }, { status: 500 });
     return NextResponse.json({ ok: true, index: pages.length - 1 });
+  }
+
+  if (op === 'restore') {
+    if (!body.versionId || !/^[0-9a-f-]{36}$/i.test(body.versionId)) return NextResponse.json({ error: 'version is required' }, { status: 400 });
+    const both = body.which === 'both';
+    if (both && role !== 'tutor') return NextResponse.json({ error: 'Only the tutor can bring back everyone\'s writing.' }, { status: 403 });
+    const { data: ver } = await sb.from('shared_board_versions').select('tutor_ink, student_ink').eq('id', body.versionId).eq('board_id', board.id).maybeSingle();
+    if (!ver) return NextResponse.json({ error: 'That version is gone.' }, { status: 404 });
+    // The board as it is now becomes a version first — so this can be undone the same way.
+    await keepVersion(sb, board.id, board.tutor_ink, board.student_ink, 'before-restore');
+    const now = new Date().toISOString();
+    const patch: Record<string, unknown> = { updated_at: now };
+    if (both || role === 'tutor') { patch.tutor_ink = ver.tutor_ink ?? {}; patch.tutor_ink_at = now; }
+    if (both || role === 'student') { patch.student_ink = ver.student_ink ?? {}; patch.student_ink_at = now; }
+    const { error } = await sb.from('shared_boards').update(patch).eq('id', board.id);
+    if (error) return NextResponse.json({ error: 'Could not bring it back — try again.' }, { status: 500 });
+    return NextResponse.json({ ok: true });
   }
   return NextResponse.json({ error: 'unknown' }, { status: 404 });
 }

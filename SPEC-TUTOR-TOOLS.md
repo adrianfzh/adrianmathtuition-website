@@ -324,6 +324,22 @@ last page added a new empty page on both; two photos added from either side appe
 PDF had every page with both layers; a wrong link, no sign-in, and a switched-off link were all
 refused. **Not yet tried on a real iPad with a Pencil and a real phone** — do that on the test site.
 
+**Added later on 5 Nov 2026** (Adrian: *"enable to type neat notes"* · *"annotate pdfs?"* ·
+*"Go back to an earlier version … let's do this"*):
+- **⌨ Type** on the pen bar (board only — `StudentInk typeTool`): tap the page, type, Enter files it
+  (Shift+Enter = new line, Esc drops it). A typed note is a text stroke on your own layer, so it
+  erases, lassos, undoes, saves and goes live like ink; it is in the PDF. Letter size follows the
+  pen's S/M/L (`lib/inline-ink typedFontSize`, about 14 px on a phone, 29 px on an iPad).
+- **＋ Photo or PDF**: a PDF becomes one board page per PDF page (up to 20 at a time), read in the
+  browser by the hand-in's reader (`lib/pdf-pages`). Then write or type on it.
+- **Earlier versions** (table `shared_board_versions`, migration `migrations/2026-11-05-shared-board-versions.sql`,
+  applied): a copy of BOTH layers is kept every 10 minutes of writing, just before a big rub-out
+  (half or more of someone's writing gone at once, e.g. "Clear my notes"), and just before every
+  restore — so a restore can be undone the same way (`lib/shared-board versionReason`). Newest 60
+  per board. **Bring back my writing** (anyone, own layer) · **Bring back both** (tutor only). The
+  other screen reloads by itself.
+- Not built: **templates** — Adrian asked whether people use them a lot; held until a tutor asks.
+
 **Known gaps**: a student already on the board when the link is switched off keeps the live
 view until they reload (their saves are refused); no "clear the whole board"; no delete or
 rename button yet (the route has rename).
