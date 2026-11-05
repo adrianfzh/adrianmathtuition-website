@@ -58,3 +58,27 @@ export async function refundPayment(paymentIntent: string, trialId: string): Pro
   const r = await post('/refunds', { payment_intent: paymentIntent, 'metadata[trial_id]': trialId }, `trial-refund-${trialId}`);
   return { id: r.id, status: r.status };
 }
+
+/** A Checkout page for one 30-day self-serve plan (lib/plans.ts, 5 Nov 2026). The price comes
+ *  from the plans config, so changing a price there changes the checkout too. metadata.plan
+ *  tells the webhook which plan to grant; client_reference_id is the portal account. */
+export async function createPlanCheckout(opts: {
+  accountId: string; plan: string; label: string; priceCents: number; papers: number; days: number; baseUrl: string;
+}): Promise<{ id: string; url: string }> {
+  const s = await post('/checkout/sessions', {
+    mode: 'payment',
+    'line_items[0][quantity]': '1',
+    'line_items[0][price_data][currency]': 'sgd',
+    'line_items[0][price_data][unit_amount]': String(opts.priceCents),
+    'line_items[0][price_data][product_data][name]': `${opts.label} — ${opts.days} days`,
+    'line_items[0][price_data][product_data][description]': `${opts.papers} full papers marked with feedback. Practice included.`,
+    client_reference_id: opts.accountId,
+    'metadata[kind]': 'plan',
+    'metadata[plan]': opts.plan,
+    'metadata[days]': String(opts.days),
+    success_url: `${opts.baseUrl}/app/plans?paid=1`,
+    cancel_url: `${opts.baseUrl}/app/plans`,
+  }, `plan-checkout-${opts.accountId}-${opts.plan}-${Math.floor(Date.now() / 600_000)}`);
+  if (!s?.id || !s?.url) throw new Error('stripe: no checkout url');
+  return { id: s.id, url: s.url };
+}

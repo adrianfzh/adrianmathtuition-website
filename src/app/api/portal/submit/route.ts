@@ -27,6 +27,8 @@ import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { ownsHandinUrl } from '@/lib/add-pages';
 import { handinCheckStamp } from '@/lib/handin-check';
+import { plansActive, freeUsedMessage, planUsedMessage } from '@/lib/plans';
+import { getPlanStatus } from '@/lib/plan-usage';
 import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-limit';
 import { scienceQueuePlacement } from '@/lib/science-queue-store';
@@ -98,6 +100,13 @@ export async function POST(req: Request) {
   const access = await requireActiveAccess(account);
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
+  // 💳 Plans (lib/plans.ts, 5 Nov 2026 — test site only until PLANS_OPEN_TO_STUDENTS):
+  // an account with no plan is on the free tier and has FREE_MARKED_PAPERS (+ any
+  // bonus) marked papers for life. Counted from runs stamped plan_free below.
+  const plansOn = plansActive();
+  const freeStatus = access.free
+    ? await getPlanStatus(account, studentId).then(st => (st.kind === 'free' ? st : null)).catch(() => null)
+    : null;
 
   let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown; handinCheck?: { asked?: unknown; list?: unknown; key?: unknown }; handinAnswer?: unknown; selectedOnly?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
@@ -221,9 +230,20 @@ export async function POST(req: Request) {
   // 20 on Intensive) — checked BEFORE the daily cap so "pass used up" never
   // masquerades as "come back tomorrow". Assignments stay exempt from both
   // (Adrian initiated them; one hand-in per assignment is the brake).
-  if (meteredPass && !assignment && !science && handinsRemaining(meteredPass) <= 0) {
+  // With plans on, science papers count too (they cost the same to mark).
+  const metersThis = !assignment && (!science || plansOn);
+  if (access.free && metersThis && (!freeStatus || freeStatus.left <= 0)) {
     return NextResponse.json({
-      error: `You’ve used all ${handinAllowance(meteredPass)} marked papers in this pass — upgrade to Intensive or wait for your next pass at /app/pass. Everything else stays open.`,
+      error: freeUsedMessage(freeStatus?.allowance ?? 1),
+      upgrade: '/app/plans',
+    }, { status: 402 });
+  }
+  if (meteredPass && metersThis && handinsRemaining(meteredPass) <= 0) {
+    return NextResponse.json({
+      error: plansOn
+        ? planUsedMessage(handinAllowance(meteredPass))
+        : `You’ve used all ${handinAllowance(meteredPass)} marked papers in this pass — upgrade to Intensive or wait for your next pass at /app/pass. Everything else stays open.`,
+      ...(plansOn ? { upgrade: '/app/plans' } : {}),
     }, { status: 402 });
   }
 
@@ -452,6 +472,8 @@ export async function POST(req: Request) {
           ? { source: { ...(rj.source as Record<string, unknown>), scheme_source: { ...(((rj.source as { scheme_source?: Record<string, unknown> }).scheme_source) ?? {}), attached_by: 'student' } } }
           : {}),
         ...(assignment ? { assignment_id: assignment.id } : {}),
+        // 💳 This paper spent the account's free marked paper (lib/plan-usage counts these).
+        ...(access.free && metersThis ? { plan_free: true } : {}),
         // ☑️ The marker counts only the questions with working on them (bot lib/selected-only).
         ...(selectedOnly ? { selected_only: true } : {}),
         // Pre-registration (SPEC-PRINT-PAPER.md): the exact QB questions on
@@ -475,7 +497,7 @@ export async function POST(req: Request) {
   // write the same value and under-count by one (accepted — it only ever gives
   // a hand-in away, and the daily cap bounds the drift); a failure here is
   // logged, never fatal — the paper is already with Adrian.
-  if (meteredPass && !assignment && !science) {
+  if (meteredPass && metersThis) {
     const { error: meterErr } = await admin
       .from('portal_passes')
       .update({ handins_used: (meteredPass.handins_used ?? 0) + 1 })

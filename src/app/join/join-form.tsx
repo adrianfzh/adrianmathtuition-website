@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { JOIN_LEVELS } from '@/lib/portal-join';
 
-export default function JoinForm({ refId, trial }: { refId: string | null; trial: boolean }) {
+export default function JoinForm({ refId, trial, plansNote = null }: { refId: string | null; trial: boolean; /** 💳 Plans on: the line under the button (no prices — this page is public). */ plansNote?: string | null }) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [level, setLevel] = useState('');
@@ -158,7 +158,9 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
           {busy ? 'Creating account…' : 'Create account'}
         </button>
         <p className="text-[11px] text-gray-400 text-center">
-          {trial
+          {plansNote
+            ? plansNote
+            : trial
             ? 'Next: your first 3 days are free — then S$29 for 30 days.'
             : 'Next: pick up your 30-day pass (S$29) and you’re in.'}
         </p>

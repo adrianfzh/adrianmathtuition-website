@@ -41,6 +41,7 @@ import { sendTelegram } from '@/lib/telegram';
 const notify_money = (text: string) => sendTelegram(text, 'money');
 import { rewardInviterForPaidPass } from '@/lib/referral-reward';
 import { handleTrialPaid } from '@/lib/trial-paid';
+import { PLANS, isPlanKey } from '@/lib/plans';
 
 export const runtime = 'nodejs';
 
@@ -132,9 +133,13 @@ export async function POST(req: NextRequest) {
   // Amount floor + SGD-only gate (PASS_MIN_AMOUNT_SGD, default S$25): a S$1
   // link typo — or a malicious tiny payment aimed at a guessed uuid — must
   // never buy 30 days.
+  // A self-serve plan checkout (lib/plans.ts, 5 Nov 2026) carries metadata.plan;
+  // its floor is that plan's own price (Lite is below the S$25 pass floor).
+  const planKey = isPlanKey(session.metadata?.plan) ? session.metadata.plan : null;
   const qual = paymentQualifiesForPass({
     amountCents: typeof session.amount_total === 'number' ? session.amount_total : null,
     currency: session.currency || '',
+    ...(planKey ? { minAmountSgd: PLANS[planKey].priceSgd } : {}),
   });
   if (!qual.ok) return manual(qual.reason || 'payment did not qualify');
 
@@ -157,7 +162,8 @@ export async function POST(req: NextRequest) {
   // Tier (the hand-in meter): the Intensive payment link carries
   // metadata.tier = 'intensive'; anything else — the Standard link, old
   // sessions, typos — meters as 'standard'.
-  const tier = session.metadata?.tier === 'intensive' ? 'intensive' as const : 'standard' as const;
+  // A plan checkout's tier is the plan key (its papers come from lib/plans.ts).
+  const tier = planKey ?? (session.metadata?.tier === 'intensive' ? 'intensive' as const : 'standard' as const);
 
   const { expiresAt, duplicate } = await grantPass({
     accountId,

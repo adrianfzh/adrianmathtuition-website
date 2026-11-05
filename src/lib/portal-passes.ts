@@ -23,6 +23,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from './supabase';
 import { sgtDateISO } from './sgt';
+import { PLANS, isPlanKey, plansActive, type PlanKey } from './plans';
 
 export type PassSource = 'hitpay' | 'stripe' | 'manual' | 'referral' | 'trial';
 
@@ -90,8 +91,11 @@ export function currentPassInRows<T extends PassRow>(rows: T[], now: Date): T | 
   return best;
 }
 
-/** Marked hand-ins this pass includes in total (tier-normalized). */
+/** Marked hand-ins this pass includes in total. A plan row (lite/plus/max,
+ *  5 Nov 2026 — lib/plans.ts) reads its plan's papers; anything else is a
+ *  legacy pass, tier-normalized. */
 export function handinAllowance(pass: Pick<MeteredPassRow, 'tier'> | null | undefined): number {
+  if (isPlanKey(pass?.tier)) return PLANS[pass.tier].papersPerPeriod;
   return HANDINS_PER_PASS[normalizeTier(pass?.tier)];
 }
 
@@ -105,7 +109,8 @@ export function handinsRemaining(
 }
 
 /** The SGT-daily hand-in ceiling for a stranger on this tier. */
-export function dailyHandinCapForTier(tier: string | null | undefined): number {
+export function dailyHandinCapForTier(tier: string | null | undefined): number | null {
+  if (isPlanKey(tier)) return PLANS[tier].dailyCap;
   return DAILY_HANDIN_CAP_BY_TIER[normalizeTier(tier)];
 }
 
@@ -331,8 +336,9 @@ export async function grantPass(
     source: PassSource;
     reference?: string | null;
     now?: Date;
-    /** 'standard' (default) or 'intensive' — sets the pass's hand-in meter. */
-    tier?: PassTier;
+    /** 'standard' (default) or 'intensive' — sets the pass's hand-in meter;
+     *  or a plan key (lite/plus/max) whose papers come from lib/plans.ts. */
+    tier?: PassTier | PlanKey;
   },
   client: PassesClient = getSupabaseAdmin(),
 ): Promise<{ id: string; expiresAt: string; duplicate?: boolean }> {
@@ -359,7 +365,7 @@ export async function grantPass(
       reference,
       starts_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
-      tier: normalizeTier(opts.tier),
+      tier: isPlanKey(opts.tier) ? opts.tier : normalizeTier(opts.tier),
     })
     .select('id, expires_at')
     .single<{ id: string; expires_at: string }>();
@@ -376,6 +382,9 @@ export async function portalAccessAllowed(
 ): Promise<boolean> {
   if (!account) return false;
   if (isTuitionAccount(account)) return true; // short-circuits: no DB hit for tuition students
+  // Plans (lib/plans.ts, 5 Nov 2026): the free tier lets every signed-in
+  // account in — practice is free, only marked papers are counted (submit route).
+  if (plansActive()) return true;
   return hasActivePass(account.id, now, client ?? getSupabaseAdmin());
 }
 
@@ -404,7 +413,7 @@ export const PASS_REQUIRED_MESSAGE =
 export type AccessCheck =
   /** `pass` is the stranger's current pass row (their meter), null for tuition
    *  accounts — the tuition short-circuit never touches the DB. */
-  | { ok: true; pass: MeteredPassRow | null }
+  | { ok: true; pass: MeteredPassRow | null; free?: boolean }
   | { ok: false; status: 402; error: string };
 
 /**
@@ -423,6 +432,9 @@ export async function requireActiveAccess(
   if (account) {
     const pass = await getCurrentPass(account.id, now, client ?? getSupabaseAdmin());
     if (pass) return { ok: true, pass };
+    // Plans on: no plan = the free tier. Practice routes let it through; the
+    // submit route meters its free marked paper(s) (lib/plans.ts).
+    if (plansActive()) return { ok: true, pass: null, free: true };
   }
   return { ok: false, status: 402, error: PASS_REQUIRED_MESSAGE };
 }

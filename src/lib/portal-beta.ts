@@ -808,3 +808,10 @@ export async function parentReportVisible(identity?: string | null): Promise<boo
   const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
   return admin && !(await viewingAsStudent());
 }
+
+// 💳 Self-serve plans (5 Nov 2026, SPEC-PLANS.md — Adrian: "let's build it first, including
+// the pricing, then we can change later, but let's prototype first"). Free = practice + one
+// marked paper; Lite / Plus / Max by papers marked per 30 days; every price and limit is in
+// lib/plans.ts. The plans run on the TEST site (and locally) whatever this says; on the main
+// site they stay off — strangers keep the old S$29 pass — until this is true.
+export const PLANS_OPEN_TO_STUDENTS = false;

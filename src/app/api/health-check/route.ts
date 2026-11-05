@@ -1175,6 +1175,13 @@ export async function GET(req: NextRequest) {
       }
       return r.status === 503 ? 'deployed, awaiting Stripe secret' : 'signature gate up';
     }),
+    // 💳 Plans checkout (lib/plans.ts, 5 Nov 2026): anonymous POST must draw 404 (plans
+    // off on this site — the main site until PLANS_OPEN_TO_STUDENTS) or 401 (on, gate up).
+    timed('plans-checkout', async () => {
+      const r = await fetch(`${base}/api/portal/plans/checkout`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 404 && r.status !== 401) throw new Error(`expected 404 (plans off) or 401 (login gate), got HTTP ${r.status}`);
+      return r.status === 404 ? 'plans off here' : 'login gate up';
+    }),
     // /join — the public self-serve signup landing every student's 🎟 invite
     // link points at. Must render 200 anonymously; anything else means the
     // invite loop's front door is broken.

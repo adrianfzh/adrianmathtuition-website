@@ -29,6 +29,8 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
 import { grantPass, TRIAL_PASS_DAYS, qualifiesToGrantTrials } from '@/lib/portal-passes';
+import { plansActive, REFERRED_EXTRA_FREE_PAPERS } from '@/lib/plans';
+import { grantBonusPapers } from '@/lib/plan-usage';
 import {
   buildSelfServeConsentRecord,
   matchedSignupTelegramText,
@@ -219,7 +221,24 @@ export async function POST(req: NextRequest) {
   // never fails the signup (the account is already saved). The reference
   // (invite:<inviter>:<new account>) makes retries idempotent per-invitee.
   let trialGranted = false;
-  if (inviter && inviterQualifies) {
+  let bonusGranted = false;
+  // 💳 Plans on (lib/plans.ts — test site until PLANS_OPEN_TO_STUDENTS): no 3-day
+  // trial; the invited friend gets REFERRED_EXTRA_FREE_PAPERS more free marked
+  // paper(s) on top of everyone's free one. Same farming guard (inviterQualifies).
+  if (plansActive()) {
+    if (inviter && inviterQualifies && REFERRED_EXTRA_FREE_PAPERS > 0) {
+      try {
+        await grantBonusPapers({
+          accountId: created.user.id,
+          papers: REFERRED_EXTRA_FREE_PAPERS,
+          reference: trialReference(inviter.id, created.user.id),
+        });
+        bonusGranted = true;
+      } catch (e) {
+        console.error('[portal-join] invite bonus failed:', (e as Error).message);
+      }
+    }
+  } else if (inviter && inviterQualifies) {
     try {
       await grantPass({
         accountId: created.user.id,
@@ -241,5 +260,5 @@ export async function POST(req: NextRequest) {
     console.warn('[portal-join] telegram notify failed:', (e as Error).message);
   }
 
-  return NextResponse.json({ ok: true, trial: trialGranted });
+  return NextResponse.json({ ok: true, trial: trialGranted, ...(bonusGranted ? { bonusPapers: REFERRED_EXTRA_FREE_PAPERS } : {}) });
 }

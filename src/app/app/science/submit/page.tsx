@@ -15,6 +15,7 @@ import { startsPhrase } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
 import { SCIENCE_MARK_SUBJECTS } from '@/lib/mark-subject-for-student';
 import { studentSciences } from '@/lib/portal-prefs';
+import { submitPlanBlock } from '@/lib/plan-usage';
 import SubmitClient from '../../submit/submit-client';
 import AddPagesView from '../../submit/add-pages-view';
 
@@ -42,5 +43,7 @@ export default async function ScienceSubmitPage({ searchParams }: { searchParams
       else if (place.waits) queueNotice = { blocking: false, text: `Today’s science papers are used. This one is marked ${startsPhrase(place.day, sgtTodayISO())}.` };
     } catch { /* never block the page on a read — the route checks again */ }
   }
-  return <SubmitClient family="science" queueNotice={queueNotice} subjectChoices={choice ? [...choice.subjects] : [...SCIENCE_MARK_SUBJECTS]} />;
+  // 💳 Plans (lib/plans.ts): science papers count against the free paper / the plan too.
+  const planBlock = account ? await submitPlanBlock(account, sid) : null;
+  return <SubmitClient family="science" planBlock={planBlock} queueNotice={queueNotice} subjectChoices={choice ? [...choice.subjects] : [...SCIENCE_MARK_SUBJECTS]} />;
 }

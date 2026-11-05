@@ -16,6 +16,8 @@ import {
 } from '@/lib/portal-passes';
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
+import { submitPlanBlock } from '@/lib/plan-usage';
+import { plansActive } from '@/lib/plans';
 import SubmitClient from './submit-client';
 import AddPagesView from './add-pages-view';
 import { markSubjectAccess, tutorMarkedUploadOpen } from '@/lib/portal-beta';
@@ -72,7 +74,8 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
       if (!isTuitionAccount(account)) {
         const pass = await getCurrentPass(account.id);
         cap = dailyHandinCapForTier(pass?.tier);
-        if (handinsRemaining(pass) <= 0) slotUsed = true;
+        // No pass + plans on = the free tier: its own card (planBlock below), not this one.
+        if (pass ? handinsRemaining(pass) <= 0 : !plansActive()) slotUsed = true;
       }
       if (!slotUsed && cap !== null) {
         const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, sid);
@@ -93,5 +96,7 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
     : pickableSubjects({ enrolled: await enrolledMarkSubjects(account.airtable_student_id), access });
 
   const tutorMarkedDoor = !assignment && !paper && (await tutorMarkedUploadOpen());
-  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} subjectChoices={subjectChoices} tutorMarkedDoor={tutorMarkedDoor} />;
+  // 💳 Plans (lib/plans.ts — test site until switched on): the free paper or the plan's papers used → the upgrade card.
+  const planBlock = assignment ? null : await submitPlanBlock(account, sid);
+  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} subjectChoices={subjectChoices} tutorMarkedDoor={tutorMarkedDoor} planBlock={planBlock} />;
 }

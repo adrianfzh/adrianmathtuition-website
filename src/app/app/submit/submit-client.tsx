@@ -98,7 +98,9 @@ export async function uploadPage(file: File, onNote: (s: string) => void): Promi
   throw err;
 }
 
-export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math', embedded = false, tutorMarkedDoor = false }: {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math', embedded = false, tutorMarkedDoor = false, planBlock = null }: {
+  /** 💳 Plans (lib/plans.ts): the free paper / the plan's papers are used — show the upgrade card instead of the form. */
+  planBlock?: { title: string; body: string } | null;
   /** 📝 The door to filing a paper the tutor marked on paper (5 Oct 2026, behind TUTOR_MARKED_UPLOAD_OPEN_TO_STUDENTS). */
   tutorMarkedDoor?: boolean;
   assignment?: { id: string; title: string } | null;
@@ -134,6 +136,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const [stage, setStage] = useState('');            // progress line while submitting
   const [converting, setConverting] = useState('');  // progress line while a PDF rasterises
   const [error, setError] = useState('');
+  const [upgradeLink, setUpgradeLink] = useState(false);
   // What the pre-flight found wrong with the hand-in. Shown once; sending again
   // goes through regardless (see the route — this is advice, never a gate).
   // ☑️ "I only did some questions" (Adrian, 19 Oct 2026 — selected TYS questions): the marker
@@ -263,6 +266,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
 
   async function submit(confirmed = false, answer: 'not-done' | 'sent-anyway' | null = null) {
     if (!pages.length || busy) return;
+    setUpgradeLink(false);
     if (!paperName.trim()) { setError('Tell us which paper this is before sending.'); return; }
     if (isScience && !subject) { setError('Pick the subject — physics, chemistry or biology — before sending.'); return; }
     setError('');
@@ -364,6 +368,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       }
       if (!r.ok) {
         reportSubmitFailure({ stage: 'rejected', reason: `HTTP ${r.status}${d.error ? `: ${String(d.error).slice(0, 120)}` : ''}`, pages: pages.length, uploaded: urls.length, paperName: paperName.trim() || null, attempts: 1 });
+        if (r.status === 402 && (d as { upgrade?: string }).upgrade) {
+          setUpgradeLink(true);
+          throw new Error(String(d.error));
+        }
         throw new Error(friendlyPortalMessage(r.status, d.error, 'The submission failed — try again.'));
       }
       setQueuedFor(d.queuedFor ?? null);
@@ -434,6 +442,24 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">Hand in a science paper</h1>
         {card}
+      </div>
+    );
+  }
+
+  if (planBlock && !assignment) {
+    return (
+      <div className="space-y-4 pb-24 sm:pb-4">
+        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
+        <div className={`${CARD} p-5 text-center`}>
+          <p className="text-4xl">📝</p>
+          <p className="font-bold text-navy mt-2">{planBlock.title}</p>
+          <p className="text-sm text-gray-600 mt-1.5">{planBlock.body}</p>
+          <div className="mt-4 flex justify-center">
+            <Link href="/app/plans" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              See plans
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -663,6 +689,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         )}
 
         {error && <p className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">{error}</p>}
+        {error && upgradeLink && (
+          <Link href="/app/plans" className="block text-center text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+            See plans
+          </Link>
+        )}
 
         {/* What the pre-flight found. Amber, not red: the pages are uploaded and
             the hand-in goes through either way — it asks the one question only

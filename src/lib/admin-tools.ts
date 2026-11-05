@@ -22,7 +22,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
   ] },
   { group: 'The machine', links: [
     { label: 'Ops logbook', href: '/admin/ops', emoji: '🩺' }, { label: 'Overnight', href: '/admin/overnight', emoji: '🌙' }, { label: 'Switches', href: '/admin/switches', emoji: '🎚' },
-    { label: 'Costs', href: '/admin/costs', emoji: '💵' }, { label: 'Extraction rules', href: '/admin/extraction-rules', emoji: '📜' },
+    { label: 'Costs', href: '/admin/costs', emoji: '💵' }, { label: 'Plans', href: '/admin/plans', emoji: '💳' }, { label: 'Extraction rules', href: '/admin/extraction-rules', emoji: '📜' },
     { label: 'Bot', href: '/admin/bot', emoji: '🤖' }, { label: 'Bot analytics', href: '/admin/bot-analytics', emoji: '📈' },
   ] },
   { group: 'Bank + materials', links: [

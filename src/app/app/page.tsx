@@ -4,6 +4,8 @@ import { Suspense, cache } from 'react';
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getCurrentPass, isTuitionAccount, passEndingNudge } from '@/lib/portal-passes';
+import { plansActive } from '@/lib/plans';
+import { getPlanStatus } from '@/lib/plan-usage';
 import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
@@ -108,6 +110,11 @@ export default async function DashboardPage() {
   // Only what Adrian sent: the student's own finds (/app/find, source 'find')
   // live in Practice, never under "From Adrian".
   const adrianWork = fromAdrian(assignments);
+  // 💳 Plans (lib/plans.ts — test site until PLANS_OPEN_TO_STUDENTS): one line with
+  // the papers left, to the plans page. Strangers only; fail-soft.
+  const planStatus = !isTuitionAccount(account) && plansActive()
+    ? await getPlanStatus(account, sid).catch(() => null)
+    : null;
   const pendingWork = adrianWork.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(adrianWork);
   const announcement = activeAnnouncement();
@@ -127,7 +134,24 @@ export default async function DashboardPage() {
       {/* ⏳ Trial/pass-ending nudge — HOME ONLY, strangers riding a pass that
           ends today/tomorrow (lib/portal-passes.passEndingNudge). One slim
           amber line, straight to the renew screen. */}
-      {passNudge && (
+      {planStatus && planStatus.kind !== 'tuition' && (
+        <Link
+          href="/app/plans"
+          className={`flex items-center gap-2.5 rounded-2xl px-4 py-2.5 text-sm transition active:scale-[0.99] ${planStatus.left > 0 ? 'bg-sky-50 border border-sky-200 text-sky-900 hover:bg-sky-100' : 'bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100'}`}
+        >
+          <span aria-hidden className="shrink-0">📝</span>
+          <span className="min-w-0 flex-1">
+            {planStatus.kind === 'free'
+              ? (planStatus.left > 0
+                  ? <><span className="font-semibold">{planStatus.left === 1 ? '1 free marked paper' : `${planStatus.left} free marked papers`}</span> — hand one in to see how marking works</>
+                  : <><span className="font-semibold">Free marked paper used</span> — see plans for more</>)
+              : <><span className="font-semibold">{planStatus.left} of {planStatus.allowance} marked papers left</span> on {planStatus.label}</>}
+          </span>
+          <span className="shrink-0 font-semibold">›</span>
+        </Link>
+      )}
+
+      {passNudge && !planStatus && (
         <Link
           href="/app/pass"
           className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 text-sm text-amber-900 hover:bg-amber-100 active:scale-[0.99] transition"

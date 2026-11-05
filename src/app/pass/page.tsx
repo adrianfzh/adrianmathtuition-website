@@ -28,6 +28,7 @@ import {
   type MeteredPassRow,
 } from '@/lib/portal-passes';
 import { passCheckoutUrl } from '@/lib/portal-join';
+import { plansActive } from '@/lib/plans';
 import { createServiceClient } from '@/lib/supabase-server';
 import SignOutButton from '@/app/app/signout-button';
 import DeleteAccount from './delete-account';
@@ -57,6 +58,8 @@ export default async function PassPage() {
   const account = await sessionAccount();
   if (!account) redirect('/login');
   if (isTuitionAccount(account)) redirect('/app'); // tuition rides free — no DB hit
+  // 💳 Plans on (test site until PLANS_OPEN_TO_STUDENTS): the plans page replaces this one.
+  if (plansActive()) redirect('/app/plans');
 
   // One passes read decides everything (rows are service-only; RLS keeps the
   // anon client out of portal_passes entirely).

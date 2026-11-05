@@ -9,6 +9,7 @@
 // pass.
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { FREE_MARKED_PAPERS, REFERRED_EXTRA_FREE_PAPERS, plansActive } from '@/lib/plans';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/portal-auth';
 import { createServiceClient } from '@/lib/supabase-server';
@@ -73,6 +74,13 @@ export default async function JoinPage({
     } catch { /* cosmetic — worst case the generic pitch shows */ }
   }
 
+  // 💳 Plans on (lib/plans.ts — test site until PLANS_OPEN_TO_STUDENTS): this page is
+  // public, so it names NO prices — only that practice is free and the first
+  // paper(s) are marked free. Prices live behind the login (/app/plans).
+  const plansOn = plansActive();
+  const freePapers = FREE_MARKED_PAPERS + (inviterFound ? REFERRED_EXTRA_FREE_PAPERS : 0);
+  const freeLine = freePapers === 1 ? 'your first paper marked free' : `your first ${freePapers} papers marked free`;
+
   return (
     <main className="min-h-screen bg-[hsl(45,100%,97%)] px-4 py-10">
       <div className="max-w-md mx-auto space-y-5">
@@ -99,7 +107,9 @@ export default async function JoinPage({
             <li className="flex items-start gap-2.5 text-sm text-gray-700">
               <span className="shrink-0">💳</span>
               <span>
-                {inviterFound ? (
+                {plansOn ? (
+                  <><span className="font-semibold text-navy">Free to practise</span>, and {freeLine}</>
+                ) : inviterFound ? (
                   <><span className="font-semibold text-navy">3 days free, then S$29 for 30 days</span> — one-time payment, no subscription</>
                 ) : (
                   <>S$29 for 30 days — one-time payment, no subscription, no auto-renew</>
@@ -109,7 +119,7 @@ export default async function JoinPage({
           </ul>
         </div>
 
-        <JoinForm refId={validRef} trial={inviterFound} />
+        <JoinForm refId={validRef} trial={inviterFound} plansNote={plansOn ? `Next: practise free, and hand in ${freePapers === 1 ? 'one paper' : `${freePapers} papers`} to be marked free.` : null} />
 
         <p className="text-center text-xs text-gray-500">
           Already have an account?{' '}
