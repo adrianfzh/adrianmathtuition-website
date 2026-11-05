@@ -802,6 +802,12 @@ export function clipIssues(script: LessonScript): Issue[] {
       if (a.do !== 'quote' || a.on) return;
       out.push(issue('warn', `${at}.beats[${k}].do[${j}]`, `a quote with no "on" lights the question card at the start of the line, not when the voice reads it — give it "on" = the words that read "${String((a as { text?: string }).text ?? '').slice(0, 40)}"`));
     }));
+    // A question clip reads its question with the card lighting along (Adrian, 5 Nov 2026, on a clip
+    // made before quotes: "parts of question is not highlighted when explaining the question"). The
+    // first beat lights the piece it reads.
+    if (hasBeats(s) && script.question && i === 0 && !(s.beats[0]?.do ?? []).some(a => a.do === 'quote')) {
+      out.push(issue('error', `${at}.beats[0]`, 'the first beat reads the question but lights nothing on the question card — add a "quote" (with "on") for each piece the voice reads'));
+    }
     // A quote the card cannot find lights nothing (5 Nov 2026: "$(1-2x)^n$" never lit in "find n and b"
     // and no check noticed). Every quote is a piece of the question card's text.
     if (hasBeats(s) && script.question) s.beats.forEach((b, k) => b.do.forEach((a, j) => {

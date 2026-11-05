@@ -177,6 +177,10 @@ describe('the verifier’s new rules', () => {
     c.question = 'Given that $(1-2x)^n = 1 + bx + 112x^2 + \\dots$, find the value of $n$ and of $b$.';
     const msgs = clipIssues(c).filter(m => /not a piece of the question card/.test(m.message)).map(m => m.where);
     expect(msgs).toEqual([expect.stringContaining('beats[1]')]);
+    // 5 Nov 2026: a clip whose opening lights nothing on the question card.
+    const none = clip([{ say: 'This question is about one plus four x, to the power seven.', do: [] }]);
+    none.question = 'Find the first four terms in the expansion of $(1 + 4x)^7$.';
+    expect(clipIssues(none).map(m => m.message).join(' | ')).toMatch(/lights nothing on the question card/);
   });
   it('clipIssues: lighting a line far above while writing far below is flagged on a scrolling board (4 Nov 2026)', () => {
     const c = clip([{ say: 'Compare the x terms: b x and negative two n x, so b is negative two n.', do: [{ do: 'highlight', token: 'l0' }, { do: 'write', step: 5, on: 'so b is' }] }]);
