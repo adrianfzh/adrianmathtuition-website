@@ -460,8 +460,10 @@ One line per asset in `promo/<clip>/ASSETS.md` when promo work starts:
 
 Each step is usable on its own and cheap. Adrian's yes is needed only where ✋ is marked.
 
-1. **Character bible for the chibi family + the tutor** (§3d). Write it from the kept sheets and the tutor picture. Free. ✋ He confirms the faces.
-2. **Six-pose sheet of ONE chibi character in the locked style,** on a green screen, from 2 models side by side (Seedream and GPT Image), about US$1. ✋ He picks. This replaces flat drawn looks he rejected.
+1. ✅ **Done 5 Nov 2026:** `docs/characters/scholars/BIBLE.md` and `docs/characters/tutor/BIBLE.md`.
+   Originally: **character bible for the chibi family + the tutor** (§3d). Write it from the kept sheets and the tutor picture. Free. ✋ He confirms the faces.
+2. ✅ **Made 5 Nov 2026** for both the boy and the girl. Seedream is recommended; the comparison is in `docs/characters/scholars/BIBLE.md` §Six-pose sheets. Waiting for Adrian to pick.
+   Originally: **six-pose sheet of ONE chibi character in the locked style,** on a green screen, from 2 models side by side (Seedream and GPT Image), about US$1. ✋ He picks. This replaces flat drawn looks he rejected.
 3. **One 5-second clip of that character** (cheer), from the picked still, on three models side by side: Kling v3 Standard, Kling v3 Pro with elements, and Seedance 2.0 (2.5 if it is on fal by then). About US$3–5. ✋ He picks. No one has tested cartoon drift, so this test settles it, and "expensive is cheap" too.
 4. **One 20-second promo test,** storyboard grid first ✋, then clips, with real app screen recordings, licensed music and captions. About US$5.
 5. Only then: wire the winners in (lesson extras, reward stickers, a promo folder) and add `JOB_RHYTHMS` lines if anything runs on a schedule.
