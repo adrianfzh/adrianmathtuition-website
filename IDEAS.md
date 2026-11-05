@@ -437,3 +437,12 @@ from the marker) are the least useful lines; the marker should name the kind mor
 11. ✅ (2026-08-29) /notes level index = two hero tiles in the portal language (AM navy/cream, EM gold/navy; `data-level` accents in notes.css; print-safe).
 12. ✅ (2026-08-29) KEY FACTS now stacks label-over-formula on ≤640px phones (leading-label selectors split from mid-sentence bolds — which also removed 47 spurious 6.5rem desktop gaps; stray `<br>`s suppressed via `:has()`; Techniques `li` spacing opened up). Verified against all 74 real topic_cards through the actual remark pipeline. REMAINING: the content-clarity pass on the cards is Adrian's editing call.
 13. ✅ **Sec 3–5 strangers now declare E Math / A Math / Both at signup** — stored to portal_accounts.subjects, scoping practice + mocks via qbLevelsFor.
+
+## 🗣 A live speaking partner for ORAL practice — English, Chinese, Malay, Tamil (Adrian, 5 Nov 2026: "will be good for oral for language (english and chinese and malay and tamil) later") — 💡 idea, LATER
+From the bot's 🍵 laoshi report: Duolingo's Video Call (a cartoon character you talk to out loud, live).
+Not for maths (the exam marks written working — Adrian agreed to skip it there), but a good fit for the
+oral exam, where speaking IS the skill. What exists: English oral practice (SPEC-ENGLISH-ORAL-LISTENING.md —
+the student records answers to three FIXED prompts; "follow-up prompts that react to what the student just
+said" is listed under Not built, and that is exactly Part 2 Spoken Interaction). Missing: a partner that talks
+back live, and any Mother Tongue oral (Chinese, Malay, Tamil). Watch the cost per minute (a live call is
+roughly US$0.05–0.20 a minute — estimate, 5 Nov 2026) and the wellbeing rules for a student talking freely.
