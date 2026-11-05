@@ -20,7 +20,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const argv = process.argv.slice(2);
 const FORCE = argv.includes('--force');
 const slugs = argv.includes('--all')
-  ? fs.readdirSync(path.join(ROOT, 'data/shorts')).filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''))
+  ? fs.readdirSync(path.join(ROOT, 'data/shorts')).filter(f => f.endsWith('.json') && !f.startsWith('_')).map(f => f.replace(/\.json$/, ''))
   : argv.filter(a => !a.startsWith('--'));
 if (!slugs.length) { console.error('usage: node scripts/shorts/voice.mjs <slug…> | --all [--force]'); process.exit(2); }
 

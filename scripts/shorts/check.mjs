@@ -35,7 +35,7 @@ const BANNED = [
 ];
 
 const files = process.argv.slice(2).filter(a => !a.startsWith('--'));
-const slugs = files.length ? files : fs.readdirSync(DIR).filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
+const slugs = files.length ? files : fs.readdirSync(DIR).filter(f => f.endsWith('.json') && !f.startsWith('_')).map(f => f.replace(/\.json$/, ''));
 
 /** Inline $…$ pieces of a question line. */
 const inlineTex = (line) => line.split(/(?<!\\)\$/).filter((_, i) => i % 2 === 1);

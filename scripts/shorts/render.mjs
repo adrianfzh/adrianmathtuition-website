@@ -32,7 +32,7 @@ const argv = process.argv.slice(2);
 const DRAFT = argv.includes('--draft');
 const FPS = Number(argv[argv.indexOf('--fps') + 1]) || 30;
 const slugs = argv.includes('--all')
-  ? fs.readdirSync(path.join(ROOT, 'data/shorts')).filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''))
+  ? fs.readdirSync(path.join(ROOT, 'data/shorts')).filter(f => f.endsWith('.json') && !f.startsWith('_')).map(f => f.replace(/\.json$/, ''))
   : argv.filter((a, i) => !a.startsWith('--') && argv[i - 1] !== '--fps');
 if (!slugs.length) { console.error('usage: node scripts/shorts/render.mjs <slug…> | --all [--draft]'); process.exit(2); }
 
@@ -97,10 +97,12 @@ function timeline(short, voice) {
     // At most ~2 lines a caption: a long sentence is cut into word runs of ≤ 64 characters.
     const chunks = beat.say.match(/[^.?!]+[.?!]?/g).map(s => s.trim()).filter(Boolean).flatMap(s => {
       if (s.length <= 70) return [s];
-      const out = [];
+      // n even pieces, each cut at the word nearest its share (no orphan "a half." at the end).
+      const n = Math.ceil(s.length / 64), words = s.split(' '), out = [];
       let cur = '';
-      for (const w of s.split(' ')) {
-        if (cur && (cur + ' ' + w).length > 64) { out.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w;
+      for (const w of words) {
+        const next = cur ? cur + ' ' + w : w;
+        if (cur && out.length < n - 1 && Math.abs(next.length - s.length / n) > Math.abs(cur.length - s.length / n)) { out.push(cur); cur = w; } else cur = next;
       }
       if (cur) out.push(cur);
       return out;
@@ -197,8 +199,9 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:${C.board}}
 .trapline{font-family:'Permanent Marker',cursive;font-size:46px;color:${C.yellow};line-height:1.15}
 .right{border-color:${C.green};background:rgba(182,232,176,.08)}
 .right .head{font-family:Inter,sans-serif;font-weight:700;color:${C.green};font-size:32px;letter-spacing:.05em;margin-bottom:6px}
-.step{font-size:52px;line-height:1.35;padding:2px 0;white-space:nowrap}
+.step{font-size:52px;line-height:normal;padding:3px 0;white-space:nowrap}
 .step .katex{font-size:1.0em}
+.step:has(.mfrac){padding:14px 0}
 .step.quiet{font-size:40px;color:${C.muted}}
 .step.answer .m{display:inline-block;border:4px solid ${C.pink};border-radius:16px;padding:4px 18px;color:${C.green};box-shadow:0 0 22px rgba(255,194,210,.25)}
 .fig{display:block;align-self:center}
@@ -303,6 +306,12 @@ window.look = (minPx, safe) => {
     if (Number(getComputedStyle(k.closest('.rv')).opacity) < 0.5) continue;
     const px = parseFloat(getComputedStyle(k).fontSize) * (k.closest('#board') ? SCALE : 1);
     if (px < minPx) probs.push('maths ' + px.toFixed(0) + ' px < ' + minPx + ' px: ' + k.textContent.slice(0, 40));
+  }
+  // two working lines must not touch (5 Nov 2026: stacked fractions ran into each other)
+  const lines = [...document.querySelectorAll('.step')].filter(el => Number(getComputedStyle(el).opacity) > 0.5);
+  for (let i = 1; i < lines.length; i++) {
+    const a = lines[i - 1].querySelector('.katex-html')?.getBoundingClientRect(), b = lines[i].querySelector('.katex-html')?.getBoundingClientRect();
+    if (a && b && a.bottom > b.top + 1) probs.push('working lines ' + i + ' and ' + (i + 1) + ' touch');
   }
   for (const el of document.querySelectorAll('.step, .row, .q')) if (el.scrollWidth > el.clientWidth + 2) probs.push('cut off sideways: ' + el.textContent.slice(0, 40));
   // the badges sit on one line (5 Nov 2026: "COMMON TRAP" wrapped under a long topic name)
