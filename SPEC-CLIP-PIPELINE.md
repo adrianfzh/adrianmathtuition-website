@@ -843,3 +843,7 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
 - Bug found on the way: the first working lines of a "why" beat were revealed inside a green card that
   had not opened yet — invisible in 7 of the first 10 drafts. Fixed; the look check now fails a line
   shown inside a closed box.
+- *"all 4, we can switch around"* (the animal options) — otter, owl, cat and red panda all join, one
+  per Short (`animal` field, rotating), six poses each (`docs/characters/animals-2026-11-05/`). The
+  animal thinks beside the student in the 3-2-1, points at the trap rule from beside it, nods through
+  the working and cheers at the answer and the "Remember" line.
