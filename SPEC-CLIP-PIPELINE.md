@@ -870,3 +870,9 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
   arrow on the board points at the thing it explains, in the direction it really is.
 - *"there is still the ...mp4 there when the mouse points"* — the Claude app's hover label again, not in
   the file; proof sent (a frame pulled straight from the MP4).
+- *"the blue student behind the blue background is almost invisible · also, style is important.. · why
+  not the animals? keep gender agnostic"* — **binding: the one character is always an animal** (otter,
+  owl, cat, red panda, in turn). Why: the tutor's white shirt and hair were cut out as see-through, so
+  he melts into a coloured look; the tutor and the scholars are drawn in a different style from the
+  animals, and Adrian wants one style; animals are neither boy nor girl. The animals' white sticker
+  outline keeps them clear on every look. check.mjs refuses any other character.
