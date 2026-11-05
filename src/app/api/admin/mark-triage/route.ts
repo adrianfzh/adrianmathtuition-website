@@ -58,6 +58,7 @@ import { paperFolder, markedAiPath } from '@/lib/paper-folder';
 import { isOurFileUrl } from '@/lib/student-files-url';
 import { fetchOurFile } from '@/lib/student-files';
 import { uploadFile, dropboxConfigured } from '@/lib/dropbox';
+import { isTutorRunStudentId } from '@/lib/tutor-portal';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, isScienceSubject } from '@/lib/portal-subjects';
 
@@ -825,6 +826,15 @@ export async function POST(req: NextRequest) {
           via: 'none',
           note: `${pendingCount(run.result_json)} question(s) still need review`,
         });
+        continue;
+      }
+
+      // 🧑‍🏫 A tutor's paper (SPEC-TUTOR-TOOLS §7, 5 Nov 2026): the tutor reads it on /tutor,
+      // so release is only the stamp — no Telegram, push, notebook, voice or practice work
+      // for a student who has no account here.
+      if (isTutorRunStudentId(run.student_id)) {
+        const { error: tErr } = await supa.from('paper_marking_runs').update({ released_at: now, released_via: auto ? 'auto:tutor' : 'tutor' }).eq('id', run.id);
+        results.push({ runId: run.id, studentName: run.student_name, released: !tErr, via: tErr ? 'none' : 'tutor', note: tErr?.message ?? 'tutor portal — the tutor reads it there' });
         continue;
       }
 

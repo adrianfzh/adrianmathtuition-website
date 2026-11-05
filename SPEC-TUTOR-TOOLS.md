@@ -206,3 +206,63 @@ What a centre WILL pay for, and what we already have most of:
 
 The rest — operations at scale, staff onboarding, compliance paperwork — stays out of
 scope unless a centre pays for the two above first.
+
+## 7. The tutor portal prototype — BUILT 5 Nov 2026 (test site only)
+
+Adrian, 5 Nov 2026: *"yes shall we build it first? but gatekeep first"*. Phase 0 of §4–§5 as
+software: another tutor hands in their own students' papers and gets them back marked by the
+same marker. On the test site only until Adrian promotes it.
+
+**Gatekeeping**
+- **Invite only.** No sign-up page. Adrian makes the account on **`/admin/tutors`** (name,
+  email, papers a month) and gets a one-time link `/tutor/invite/<token>` (14 days; only its
+  sha256 is stored). The tutor sets a password there. "New invite link" is also the forgotten-
+  password path (it clears the old password). "Switch off" locks the account at once.
+- **Hidden.** `/tutor` is `noindex`, disallowed in `robots.ts`, not in the sitemap, linked from
+  nowhere public. The sign-in page says only "Sign in".
+- **Own login, not the student portal's.** A signed httpOnly cookie `tutor_session`
+  (`lib/tutor-auth.ts`, secret `TUTOR_SESSION_SECRET` → `SIGNUP_SECRET`, its own HMAC label so
+  an admin token never passes as a tutor one). A tutor can never reach `/app` or `/admin`.
+
+**What a tutor does** — `/tutor`: their name, "N of CAP papers this month", their students, add
+a student. `/tutor/s/<id>`: hand in a paper (photos or a PDF, the paper's name with the same "we
+have this paper ✓" check students get, A/E/H2 Math), then the list of papers: waiting → being
+marked → marked with the score, **weak topics** (marks lost per topic), **Marked paper** (the
+red-pen PDF), **Full report**, and **Where the marks went** (the cover page).
+
+**Data and separation**
+- Tables `tutor_accounts`, `tutor_students`, `tutor_papers` (migration
+  `migrations/2026-11-05-tutor-portal.sql`): RLS on, no policies, no grants to anon /
+  authenticated — only the server's service key reads them, and every route filters by the
+  tutor id from the signed cookie, never from the request.
+- **Names stay with the tutor.** The marking run's `student_id` is `tutor:<tutor_students.id>`
+  and its `student_name` is `Tutor: <tutor's name>`. With `tutor_students` left out, the marked
+  data Adrian keeps is anonymous. The cover page is drawn with the student's name for the tutor
+  only and never cached.
+- Uploads go to the private store under `handins/tutor:<student id>/` (the prefix is the
+  ownership proof, as for portal hand-ins).
+
+**Adrian's students first — the waiting room** (`lib/tutor-portal.ts tutorPapersToRelease`,
+`lib/tutor-store.ts releaseWaitingTutorPapers`). A tutor's paper is saved as an ordinary run at
+hand-in but NOT queued. It joins the 🌙 queue only when **no paper of Adrian's students is
+waiting**, **one tutor paper at a time**, **at most 15 a day** across all tutors. Checked after
+every tutor hand-in, whenever a tutor opens a student's papers, and by
+`/api/cron/tutor-queue` every 30 min (job_runs `tutor-queue`; Vercel crons run on the main site
+only, so on the test site the first two do the work).
+
+**The meter.** One `tutor_papers` row per hand-in, never deleted, with `month` (SGT `YYYY-MM`).
+The monthly cap is checked before saving. `/admin/tutors` shows papers this month / cap and ≈
+US$1.40 a paper. Billing reads these rows later; nothing is charged today.
+
+**After marking.** The bot marks it like any tagged paper and calls the release door; the
+release door (`/api/admin/mark-triage`) sees `tutor:` and only stamps `released_at`
+(`released_via 'auto:tutor'`) — no Telegram, push, notebook, voice clips or practice work.
+Adrian still gets the bot's usual "📝 Marked from queue" Telegram line for each one.
+
+**Known gaps (prototype):** the tutor's name is not yet on the cover or in the pen's voice
+(§4 "Voice and name"); no Practice Again for tutors; tutor papers show on Adrian's desk among
+his own (filter by student `Tutor: …`); the bleed table and other "all runs" reports count
+tutor papers unless they filter `student_id like 'tutor:%'`; no payment.
+
+**Test account:** `tutor-test@example.com`, password in `.env.local` `TUTOR_TEST_PASSWORD`;
+`node scripts/tutor-test-seed.mjs` makes or resets it (cap 5, one "Test Student").

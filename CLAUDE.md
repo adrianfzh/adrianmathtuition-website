@@ -68,6 +68,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | 👪 Weekly parent report (`/parent/*`, `/app/focus`, `/admin/parent-report`, `parent_links`, `parent_reports`, `consent_records`) | [`SPEC-PARENT-REPORT.md`](SPEC-PARENT-REPORT.md) |
 | Telegram `/ws` worksheet menu | [`SPEC-WORKSHEET-MENU.md`](SPEC-WORKSHEET-MENU.md) |
 | School exam tracker (📝 inside Overview's Exams box: scan a school-marked exam, marks lost by topic, exam vs last exam, parent note) — BUILT 15 Oct | [`SPEC-EXAM-TRACKER.md`](SPEC-EXAM-TRACKER.md) |
+| 🧑‍🏫 Tutor portal (`/tutor`, `/admin/tutors`, `tutor_*` tables) — invite-only, hidden, tutor papers wait behind students' | [`SPEC-TUTOR-TOOLS.md`](SPEC-TUTOR-TOOLS.md) §7 |
 | Paid WhatsApp trials (`/trial/pay`, `trial_bookings`, the parent fact sheet, the trial fee off the first bill) | [`SPEC-TRIAL-BOOKING.md`](SPEC-TRIAL-BOOKING.md) |
 | 💳 Self-serve plans: free tier + Lite/Plus/Max, every price and limit in `lib/plans.ts` (prototype, test site only) | [`SPEC-PLANS.md`](SPEC-PLANS.md) |
 | Which door makes which worksheet (picker · `/ws` · create-worksheet), where its PDF comes from | [`docs/SKILLS.md`](docs/SKILLS.md) top table |

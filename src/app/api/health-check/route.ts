@@ -477,6 +477,12 @@ export async function GET(req: NextRequest) {
       }
       return 'every released run has a subject';
     }),
+    // 🧑‍🏫 Tutor portal (SPEC-TUTOR-TOOLS §7): the hand-in door must answer 401 with no session.
+    timed('tutor-portal', async () => {
+      const r = await fetch(`${base}/api/tutor/papers`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Student paper hand-ins (/app/submit). The token route must answer — 401
     // without a session is the healthy signal (the route is deployed and its
     // auth gate is up); a 404 means students silently lose the submit path,
