@@ -86,7 +86,9 @@ for (const slug of slugs) {
   if (/dot com|adrianmathtuition/i.test(s.beats?.at(-1)?.say || '')) errs.push('the voice does not read out the site (the ending stays quiet)');
   if (!['grape', 'ocean', 'sunset', 'lime', 'midnight', 'paper', 'mango', 'berry', 'sky', 'candy'].includes(s.look)) errs.push(`look "${s.look}" is not one of the Shorts looks`);
   // ONE character per Short (Adrian, 5 Nov 2026: "only ONE character per clip")
-  if (!['tutor', 'girl', 'boy', 'otter', 'owl', 'cat', 'red-panda'].includes(s.character)) errs.push('character must be one of tutor, girl, boy, otter, owl, cat, red-panda');
+  // Animals only (Adrian, 5 Nov 2026: "why not the animals? keep gender agnostic" · "style is important"):
+  // the tutor and the scholar boy/girl are a different style, and the tutor's white shirt vanished on colour.
+  if (!['otter', 'owl', 'cat', 'red-panda'].includes(s.character)) errs.push('character must be one of the animals: otter, owl, cat, red-panda');
   if (s.student !== undefined || s.animal !== undefined) errs.push('one character only: use "character", not "student" / "animal"');
   // Letters are capitals in the voice; "negative" for a negative number.
   if (/\bminus (one|two|three|four|five|six|seven|eight|nine|ten)\b(?! (C|X|K|A|B|fifteen|eight))/i.test(spoken.replace(/(\w+) minus/g, '$1 MINUSX'))) warn.push('"minus <number>" — the house voice says "negative" for a negative number');

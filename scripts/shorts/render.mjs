@@ -50,8 +50,8 @@ const KATEX_CSS = pathToFileURL(fs.realpathSync(path.join(ROOT, 'node_modules/ka
 // docs/LESSONS.md §The PICTURE look) changing pose with each part.
 const C = { ink: '#1b1c33', muted: '#5d6080', yellow: '#ffd84d', cyan: '#0b8fb3', pink: '#e2337d', green: '#139a4c', red: '#e5484d', amber: '#c98a00', card: '#ffffff', purple: '#4b1fc9' };
 // ONE character per Short (Adrian, 5 Nov 2026: "only ONE character per clip"), `character` in each
-// JSON: the tutor (approved 1 Oct), the scholar girl or boy (approved 5 Nov), or an animal (otter, owl,
-// cat, red panda — "all 4, we can switch around"). Every set has the same six poses.
+// JSON — an ANIMAL only (otter, owl, cat, red panda; "why not the animals? keep gender agnostic",
+// "style is important"). tutor/girl/boy stay in the map for reference; check.mjs refuses them.
 const POSES6 = ['idle', 'point', 'think', 'oops', 'nod', 'cheer'];
 const CHAR_DIR = {
   tutor: 'public/lessons/characters/tutor',
