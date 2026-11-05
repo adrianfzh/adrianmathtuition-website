@@ -421,7 +421,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     if (embedded) return card;
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Hand in a paper'}</h1>
         {card}
       </div>
     );
@@ -451,7 +451,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   if (planBlock && !assignment) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Hand in a paper'}</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">📝</p>
           <p className="font-bold text-navy mt-2">{planBlock.title}</p>
@@ -469,7 +469,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   if (slotUsed && !assignment && !paper) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">Hand in a paper</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">🎟️</p>
           <p className="font-bold text-navy mt-2">{isScience ? 'Today’s science hand-ins are used' : 'Today’s hand-ins are used'}</p>
@@ -510,7 +510,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           <h1 className="text-xl font-bold text-navy mt-1">Hand in: {paper.title}</h1>
         </div>
       ) : isScience && embedded ? null : (
-        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Hand in a paper'}</h1>
       )}
 
       {tutorMarkedDoor && !assignment && !paper && !isScience && (

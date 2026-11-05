@@ -325,7 +325,7 @@ export default async function DashboardPage() {
             </Link>
           ) : (
             <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 active:scale-[0.98] transition">
-              📄 Submit a paper
+              📄 Hand in a paper
             </Link>
           )}
         </div>

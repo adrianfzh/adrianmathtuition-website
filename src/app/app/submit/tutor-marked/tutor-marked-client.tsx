@@ -103,7 +103,7 @@ export default function TutorMarkedClient({ subjects }: { subjects: string[] }) 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
-        <Link href="/app/submit" className="text-sm text-gray-500 hover:text-navy">← Submit a paper</Link>
+        <Link href="/app/submit" className="text-sm text-gray-500 hover:text-navy">← Hand in a paper</Link>
         <h1 className="text-xl font-bold text-navy mt-1">A paper your tutor marked</h1>
         <p className="text-[13px] text-gray-600 mt-0.5">Keep it here with your other papers. Nothing is marked again — we only read the total.</p>
       </div>

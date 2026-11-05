@@ -713,7 +713,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
         <div ref={toolbarRef} className="fixed left-1/2 z-40 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-5 flex flex-col items-center gap-2" data-ink-toolbar
           style={pinned ? { left: pinned.left, top: pinned.top, bottom: 'auto', transform: `translate(-50%, -100%) scale(${pinned.scale})`, transformOrigin: '50% 100%' } : { transform: 'translateX(-50%)' }}>
           {!hintSeen && (
-            <div className="max-w-[calc(100vw-24px)] rounded-full bg-navy text-white text-[11.5px] px-3.5 py-1.5 shadow-lg flex items-center gap-2" role="status">
+            <div className="max-w-[calc(100vw-24px)] rounded-full bg-navy text-white text-[11.5px] px-3.5 py-1.5 shadow-lg hidden md:flex items-center gap-2" role="status">
               <span>Hold the Pencil still at the end of a stroke to snap a line, box or circle · double-tap the page to erase</span>
               <button type="button" onClick={dismissHint} aria-label="Got it" className="w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 text-white leading-none">×</button>
             </div>

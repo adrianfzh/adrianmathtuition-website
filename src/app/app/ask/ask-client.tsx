@@ -501,7 +501,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
             <div className="flex items-center gap-2">
               <textarea
                 ref={inputRef}
-                placeholder={fromClip ? 'Type your question about this step…' : 'Type a math question, or add a photo…'}
+                placeholder={fromClip ? 'Type your question about this step…' : 'Type a question or add a photo'}
                 rows={1}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                 onChange={e => autoResize(e.currentTarget)}

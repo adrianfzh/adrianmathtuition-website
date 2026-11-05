@@ -200,7 +200,7 @@ export default function NotebookClient() {
             those questions lands here — with a practice twin to beat.
           </p>
           <Link href="/app/submit" className="inline-block mt-3 text-sm font-semibold text-navy hover:underline">
-            📤 Submit a paper ›
+            📤 Hand in a paper ›
           </Link>
         </div>
       ) : (

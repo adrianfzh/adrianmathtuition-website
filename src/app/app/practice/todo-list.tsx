@@ -129,7 +129,7 @@ export default async function PracticeTodo({ account, top = null, extra = null }
                 <div className="flex items-start gap-3">
                   <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-navy truncate">{r.title}</div>
+                    <div className="font-semibold text-navy line-clamp-2 leading-snug">{r.title}</div>
                     <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-x-2">
                       {subtitle && <span>{subtitle}</span>}
                       <span>{subtitle ? '· ' : ''}{sentOn(r.created_at)}</span>

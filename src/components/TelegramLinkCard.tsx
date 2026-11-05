@@ -107,7 +107,7 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
   if (variant === 'home') {
     if (!homeVisible) return null;
     return (
-      <div className={`${HOME_CARD} relative flex items-center gap-3`} role="status" data-telegram-link>
+      <div className={`${HOME_CARD} relative flex items-center gap-3 pr-10`} role="status" data-telegram-link>
         <button type="button" aria-label="Not now" onClick={() => { logPortalEvent('telegram:nudge-dismissed'); dismissTelegramNudge(); }}
           className="absolute top-2 right-2 w-7 h-7 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 text-base leading-none">×</button>
         <span aria-hidden className="flex items-center justify-center w-10 h-10 rounded-2xl bg-[#229ED9]/10 text-[#229ED9] shrink-0">
