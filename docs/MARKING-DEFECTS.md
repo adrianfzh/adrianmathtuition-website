@@ -1334,3 +1334,14 @@ New classes:
 - **The part label "(answer)" printed in every chip**, for example "Q1(answer) 0/1", or "Q10(answer):" in the strip. Every page of 2019 P1 has it. `no-red-sentence` failed on all 7 pages, and all 7 were released. This is F250's family with a new word. Read (label) + pen (chip).
 - **A "✗" inside the read's words prints as a tofu box**: "your own list says C ⍰" (2019 P1 p8 Q21). `pen-font-safe` failed and the page was released. Pen (note font).
 - **Possible accuracy — Adrian's call**: in 2018 P1, Q3 and Q20 carry the paper's printed "Out of syllabus". She left both blank, and each was scored 0/1 ("not attempted"), giving 27/40 rather than 27/38. On the same day, the 2017 paper's out-of-syllabus Q31 was left out of the total. Read (OOS note not seen; F206 family).
+
+# 6 Nov 2026 — the page reader: new defect classes (findings of 6 Nov: 6 papers, 40 pages; the fixer works them at 06:45)
+
+Rainie Physics P1 2020 (`779c3da5`), 2021 (`c1f9f735`), 2022 (`b9d6ddc6`), 2023 (`362a6732`), her Chemistry topical sheet "organic" (`0e3d585e`), and Adrian's tutor test (`acac0470`), all sent 5 Nov, all after the 5 Nov fixer pushes. Seen working: chips print "Q1 0/1" although the read labelled parts "MCQ" (F265); most credited MCQs ticked right after her letter. Returns (in the reader's findings file): the ✗ beside ANOTHER option, often the right one (6); the lost MCQ only in the footer (9); a mark or note in the next question (blank pages); marks on the wrong lines of her working; the point said 3–4×; the right letter never printed; 16 pages released with ink-audit failures.
+
+New classes:
+- **After mcq-tight-row-mark-above shipped, the mark sits above the NEXT option.** Chemistry "organic" p13 Q38: she circled C; the ✓B1 sits above the printed "D" of "D 2 and 3 only" (drawn 22:11, after the 18:52 ship). Pen (`lib/mcq-seat` tight row).
+- **A red leader on a brown note.** Physics 2022 p12 Q30 and 2020 p12 Q31: the note's curved leader is red and runs across her working; every other leader is brown. Pen (ink of leaders; "one note, one ink").
+- **A reply to her "?" that starts "Yes" when her line is wrong.** Physics 2023 p7 Q22: her "Δθ = 3000 ?" answered "Yes: 2400 ÷ (400 × 2.0) = 3°C, so 25 + 3 = 28°C". Words (student-note reply).
+- **Possible accuracy — Adrian's call, fresh evidence for 5 Nov's out-of-syllabus line**: Physics 2021 Q19 (footer "Q19 0/1 · B0; Not attempted (printed 'Out of syllabus')") and 2022 Q15, both blank, both counted 0/1.
+- **Possible accuracy — Adrian's call, fresh evidence for 29 Oct's topical-compilation line**: the "organic" sheet repeats printed numbers from different schools (two Q34, two Q36, two Q37); the run counts one question per number (9 in all), so AMK Q36 (✓), Cedar Q34 (✗ "should be D") and Cedar Q37 (✗ "should be C") are drawn but not in her 8/9. Read (question identity on topical sheets).
