@@ -38,7 +38,7 @@ export default async function SpotPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
-        <Link href="/app/my-notes" className="text-sm text-gray-500 hover:text-navy">‹ My Error Log</Link>
+        <Link href="/app/my-notes" className="text-sm text-gray-500 hover:text-navy">‹ My Notebook</Link>
         <h1 className="text-xl font-bold text-navy mt-1">🔍 Spot the mistake</h1>
         <p className="text-sm text-gray-500 mt-0.5">The same kind of slip as one of yours — in someone else&apos;s working. Find it.</p>
       </div>

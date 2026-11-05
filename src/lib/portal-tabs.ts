@@ -22,7 +22,7 @@ export const TAB_LABELS = {
   paper: 'A marked paper',
   explain: 'Explain it',
   submit: 'Hand in',
-  notebook: 'My Error Log',
+  notebook: 'My Notebook',
   're-attempt': 'Notebook (re-attempt)',
   assignments: 'From your tutor',
   work: 'A worksheet',

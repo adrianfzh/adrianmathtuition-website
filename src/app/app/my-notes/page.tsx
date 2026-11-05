@@ -109,10 +109,10 @@ export default async function MyNotebookPage({ searchParams, family = 'math' }: 
   if (!account || !sid) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">My Error Log</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">My Error Logs</h1>
         <div className={`${CARD} p-5`}>
           <p className="text-sm text-gray-600">
-            My Error Log is built from a student&apos;s own marked papers.{' '}
+            My Error Logs are built from a student&apos;s own marked papers.{' '}
             <Link href="/login" className="font-semibold text-navy underline">Log in as a student</Link> to see one.
           </p>
         </div>
@@ -137,7 +137,7 @@ export default async function MyNotebookPage({ searchParams, family = 'math' }: 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
-        <h1 className="text-xl font-bold text-navy">My Error Log</h1>
+        <h1 className="text-xl font-bold text-navy">My Error Logs</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           What each marked {family === 'science' ? 'science ' : ''}paper found, so you know what to fix before the next one.
         </p>
