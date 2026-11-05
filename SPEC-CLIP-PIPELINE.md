@@ -852,3 +852,12 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
   rotating across Shorts. It sits in the top corner (points, gasps at the wrong answer, nods, cheers),
   comes down beside the 3-2-1 to think, then goes back. The student-in-the-red-card and the animal
   beside the rule are gone; check.mjs refuses a `student` or `animal` field.
+- *"students can jump straight from the question to the answer, so they can't arrive at k<-1 or k>9
+  straightaway, just talk about the next step"* — **binding: the red card shows the tempting NEXT
+  STEP, not a final wrong answer** — the pause asks "what do you think the next step is?", so the
+  payoff answers that. Clip 1 now shows `6² − 4k(k − 8) < 0 only` ("forgets the curve must open
+  downwards"). Where a question is one step (perpendicular gradient, reverse percentage), the next
+  step and the answer are the same thing — still say it as the move ("flip the fraction and keep the
+  sign"), never a number out of nowhere. Re-check each of the other 9 against this when they are remade.
+- A cue fix on the way: a line that the voice starts reading must appear on the FIRST words that read
+  it ("That gives…"), not on a word at the end of the sentence ("reject").
