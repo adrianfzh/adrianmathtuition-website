@@ -36,6 +36,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 🧰 "What students asked for that we can't do yet" (13 Oct 2026, Adrian: "keep a weekly list"): bot
   // scripts/unmet-asks.js on the Fly worker, Mondays 07:41, into the morning brief.
   'unmet-asks':        { kind: 'interval', hours: 204, label: 'Mondays 7:41am' },
+  // 🍵 The laoshi report (5 Nov 2026, Adrian: "let's build"): bot skill laoshi-report on the Fly worker,
+  // plan-billed, Mondays 08:00; scripts/laoshi-report.js --send stamps it.
+  'laoshi-report':     { kind: 'interval', hours: 204, label: 'Mondays 8am' },
   // 🎯 Paid WhatsApp trials (12 Oct 2026, SPEC-TRIAL-BOOKING.md): the bot's after-trial question,
   // the 2-day reminder and the 7-day "no reply" note. Every 30 min on the bot; stamps every pass.
   'trial-followup':    { kind: 'interval', hours: 2, label: 'every 30 min (bot)' },
