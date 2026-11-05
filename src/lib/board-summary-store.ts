@@ -23,7 +23,7 @@ import {
 } from '@/lib/board-summary';
 import type { PageText } from '@/lib/shared-board';
 
-export const SUMMARY_MODEL = SONNET_55;
+export const SUMMARY_MODEL = process.env.BOARD_SUMMARY_MODEL || SONNET_55;
 /** A plain (not IP) student — tutor students have no portal account; this is what the portal serves such a student. */
 const STUDENT_AUDIENCE = { p_is_ip: false, p_admin: false, p_ip_content: false };
 
