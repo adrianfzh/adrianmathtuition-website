@@ -10,19 +10,17 @@
 //   POST /api/board/restore { id?, versionId, which: 'mine' | 'both' }   bring a version back ('both' = tutor only)
 //   POST /api/board/page    { id?, paper }     add a template page (lib/shared-board BOARD_PAPERS)
 //   POST /api/board/sticker { id?, change }    add / move / resize / remove a photo sticker
-import { NextResponse } from 'next/server';
-import sharp from 'sharp';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { NextResponse, after } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { boardAccess, boardLink, channelName, type BoardAccess } from '@/lib/board-store';
-import { createDownloadUrls, createUploadUrl, fetchOurFile, handinKey, keyFromUrl, safeExt } from '@/lib/student-files';
+import { createDownloadUrls, createUploadUrl, handinKey, keyFromUrl, safeExt } from '@/lib/student-files';
 import { tutorRunStudentId } from '@/lib/tutor-portal';
 import { validateInkPages, type InkPages } from '@/lib/student-ink';
-import { strokesToSvg } from '@/lib/annotate/layer';
-import { applyStickerOp, BOARD_PAPERS, displayPageCount, isPaperUrl, lastInkedPage, MAX_BOARD_PAGES, MAX_VERSIONS, paperUrl, parseStickerOp, strokeCount, versionReason, withPhotoAppended, type Sticker, type VersionReason } from '@/lib/shared-board';
+import { applyStickerOp, BOARD_PAPERS, displayPageCount, lastInkedPage, MAX_BOARD_PAGES, MAX_VERSIONS, paperUrl, parseStickerOp, strokeCount, versionReason, withPhotoAppended, type Sticker, type VersionReason } from '@/lib/shared-board';
 import { contentDisposition } from '@/lib/marked-pdf-filename';
+import { renderBoardPage } from '@/lib/board-render';
+import { readBoard } from '@/lib/board-read';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -118,41 +116,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }
     const pdf = await PDFDocument.create();
     const PAGE_W = 595;
     for (let i = 0; i < count; i++) {
-      const bg = board.pages?.[i]?.url ?? null;
-      let buf: Buffer | null = null;
-      if (bg) {
-        // A template page is a picture in public/board (traced into this function, next.config); anything else is in the private store.
-        if (isPaperUrl(bg)) buf = await readFile(join(process.cwd(), 'public', bg)).catch(() => null);
-        else {
-          const r = await fetchOurFile(bg).catch(() => null);
-          if (r?.ok) buf = Buffer.from(await r.arrayBuffer());
-        }
-      }
-      if (!buf) buf = await sharp({ create: { width: 1000, height: 1414, channels: 3, background: '#ffffff' } }).jpeg().toBuffer();
-      const ink = [board.tutor_ink?.[i], board.student_ink?.[i]].filter(l => l && l.strokes?.length);
-      const meta = await sharp(buf).rotate().metadata();
-      const w = meta.autoOrient?.width ?? meta.width ?? 1000, h = meta.autoOrient?.height ?? meta.height ?? 1414;
-      let img = sharp(buf).rotate();
-      // Stickers first (they lie under the writing), scaled from the page's ink box to this picture.
-      const layers: sharp.OverlayOptions[] = [];
-      const inkBox = ink[0] ? { w: ink[0]!.w, h: ink[0]!.h } : { w, h };
-      for (const st of (board.stickers ?? []).filter(x => x.page === i)) {
-        const r = await fetchOurFile(st.url).catch(() => null);
-        if (!r?.ok) continue;
-        const k = w / inkBox.w;
-        const sw = Math.max(1, Math.round(st.w * k)), sh = Math.max(1, Math.round(st.h * k));
-        const left = Math.round(st.x * k), top = Math.round(st.y * k);
-        // Cut the part that hangs off the page (sharp refuses an overlay outside the picture).
-        const cx0 = Math.max(0, -left), cy0 = Math.max(0, -top);
-        const cw = Math.min(sw, w - left) - cx0, ch = Math.min(sh, h - top) - cy0;
-        if (cw <= 0 || ch <= 0) continue;
-        const piece = await sharp(Buffer.from(await r.arrayBuffer())).rotate().resize(sw, sh, { fit: 'fill' })
-          .extract({ left: cx0, top: cy0, width: cw, height: ch }).png().toBuffer();
-        layers.push({ input: piece, left: left + cx0, top: top + cy0 });
-      }
-      for (const l of ink) layers.push({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${l!.w} ${l!.h}">${strokesToSvg(l!.strokes)}</svg>`), top: 0, left: 0 });
-      if (layers.length) img = img.composite(layers);
-      const jpg = await img.jpeg({ quality: 88 }).toBuffer();
+      const jpg = await renderBoardPage(board, i);
       const e = await pdf.embedJpg(jpg);
       const drawH = Math.round(PAGE_W * (e.height / e.width));
       pdf.addPage([PAGE_W, drawH]).drawImage(e, { x: 0, y: 0, width: PAGE_W, height: drawH });
@@ -192,6 +156,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ op: string }> 
     const col = role === 'tutor' ? { tutor_ink: v.pages, tutor_ink_at: now } : { student_ink: v.pages, student_ink_at: now };
     const { error } = await sb.from('shared_boards').update({ ...col, updated_at: now }).eq('id', board.id);
     if (error) { console.error('[board ink]', error.message); return NextResponse.json({ error: 'Could not save — it tries again with your next stroke.' }, { status: 500 }); }
+    // Search your handwriting: read the pages that changed, once the writing on them has rested a moment (lib/board-read).
+    after(async () => { try { await readBoard(board.id); } catch (e) { console.warn('[board read]', (e as Error).message); } });
     return NextResponse.json({ ok: true, at: now });
   }
 

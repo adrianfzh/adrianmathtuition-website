@@ -20,6 +20,7 @@ import { heicFilesToJpeg } from '@/lib/heic-browser';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { applyPatch, applyStickerOp, BLANK_PAGE_URL, BOARD_PAPERS, changedPages, displayPageCount, paperUrl, placeSticker, pollMayReplace, shareText, versionWhen, VERSION_WHY, type BoardRole, type PaperGroup, type StickerOp, type VersionReason } from '@/lib/shared-board';
 import BoardStickers, { type ShownSticker } from '@/components/BoardStickers';
+import { strokesToSvg } from '@/lib/annotate/layer';
 
 type Version = { id: string; created_at: string; reason: VersionReason; tutor_strokes: number; student_strokes: number };
 
@@ -59,6 +60,9 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
   /** "Move photos": the stickers take the touch, the pen rests. */
   const [arrange, setArrange] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [more, setMore] = useState(false);
+  /** 🗂 Page thumbnails (5 Nov 2026): every page small, tap one to jump to it. */
+  const [thumbs, setThumbs] = useState<Record<number, { w: number; h: number }> | null>(null);
   const fileMode = useRef<'pages' | 'sticker'>('pages');
   // A phone has no Pencil: one finger writes from the start. Read once, before the pen mounts.
   const [phone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px) and (pointer: coarse)').matches);
@@ -85,6 +89,15 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
     sent.current = b.mine ?? {}; otherAtRef.current = b.otherAt;
   }, [api, auth.headers]);
   useEffect(() => { void open(); }, [open]);
+  // Opened from a search result (…#page-4): go to that page once the pages are on screen.
+  const jumped = useRef(false);
+  useEffect(() => {
+    if (!board || jumped.current) return;
+    const m = /^#page-(\d+)$/.exec(window.location.hash);
+    if (!m) { jumped.current = true; return; }
+    const t = setTimeout(() => { jumped.current = true; jumpTo(Number(m[1])); }, 600);
+    return () => clearTimeout(t);
+  }, [board]);
 
   // ── live channel ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -352,6 +365,25 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
     finally { setBusy(''); }
   }
 
+  /** Scroll so page `i` sits just under the sticky header. */
+  function jumpTo(i: number) {
+    const el = document.getElementById(`page-${i}`);
+    if (!el) return;
+    const head = document.querySelector('[data-board-header]')?.getBoundingClientRect().height ?? 0;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - head - 8, behavior: 'smooth' });
+  }
+  function openThumbs() {
+    if (thumbs) { setThumbs(null); return; }
+    // Each page's shape, as the pen measured it (its aspect-ratio), so writing and stickers sit right in the small copy.
+    const boxes: Record<number, { w: number; h: number }> = {};
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('[id^="page-"]'))) {
+      const m = /([\d.]+)\s*\/\s*([\d.]+)/.exec(el.style.aspectRatio || '');
+      if (m) boxes[Number(el.id.slice(5))] = { w: Number(m[1]), h: Number(m[2]) };
+    }
+    setAdding(false); setShowVersions(false); setShare(false);
+    setThumbs(boxes);
+  }
+
   if (failed) return (
     <main className="mx-auto max-w-md px-4 py-16 text-center">
       <p className="text-lg font-semibold">This board is not open</p>
@@ -367,7 +399,7 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
 
   return (
     <main className="mx-auto max-w-3xl px-2 sm:px-4 pb-40">
-      <header className="sticky top-0 z-20 -mx-2 sm:-mx-4 mb-3 border-b bg-slate-50/95 px-3 sm:px-4 py-2 backdrop-blur">
+      <header data-board-header className="sticky top-0 z-20 -mx-2 sm:-mx-4 mb-3 border-b bg-slate-50/95 px-3 sm:px-4 py-2 backdrop-blur">
         <div className="flex items-center gap-2">
           {back && <a href={back.href} className="text-sm text-slate-500 shrink-0" aria-label={back.label}>‹</a>}
           <h1 className="min-w-0 flex-1 truncate text-base font-semibold" title={board.title}>{board.title}</h1>
@@ -381,24 +413,55 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
           <input ref={photoRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={e => void onFiles(e.target.files)} />
           {stickers.length > 0 && (
             <button type="button" onClick={() => setArrange(a => !a)} aria-pressed={arrange}
-              className={`rounded-lg border px-3 py-1.5 text-sm ${arrange ? 'border-sky-600 bg-sky-600 text-white font-semibold' : 'bg-white'}`}>{arrange ? 'Done moving' : 'Move photos'}</button>
+              className={`rounded-lg border px-3 py-1.5 text-sm ${arrange ? 'border-sky-600 bg-sky-600 text-white font-semibold' : 'bg-white'}`}>{arrange ? 'Done' : 'Move photos'}</button>
           )}
-          <button type="button" disabled={!!busy} onClick={() => void downloadPdf()} className="rounded-lg border bg-white px-3 py-1.5 text-sm disabled:opacity-50">Download PDF</button>
-          <button type="button" onClick={() => { setShowVersions(v => !v); if (!showVersions) void loadVersions(); }} aria-expanded={showVersions} className="rounded-lg border bg-white px-3 py-1.5 text-sm">Earlier versions</button>
+          <button type="button" onClick={openThumbs} aria-expanded={!!thumbs} className={`rounded-lg border px-3 py-1.5 text-sm ${thumbs ? 'border-slate-900 bg-slate-900 text-white' : 'bg-white'}`}>Pages</button>
           {board.role === 'tutor' && (
-            <button type="button" onClick={() => setShare(s => !s)} className="rounded-lg border bg-white px-3 py-1.5 text-sm" aria-expanded={share}>
-              {board.linkOn ? 'Share with student' : 'Link is off'}
+            <button type="button" onClick={() => { setShare(x => !x); setMore(false); }} className="rounded-lg border bg-white px-3 py-1.5 text-sm" aria-expanded={share}>
+              {board.linkOn ? 'Share' : 'Link off'}
             </button>
           )}
+          <button type="button" onClick={() => setMore(m => !m)} aria-expanded={more} aria-label="More" className={`rounded-lg border px-3 py-1.5 text-sm ${more ? 'border-slate-900 bg-slate-900 text-white' : 'bg-white'}`}>More</button>
         </div>
-        {busy && <p className="mt-1 text-xs text-slate-500">{busy}</p>}
-        {msg && <p className="mt-1 text-xs text-red-600">{msg}</p>}
-        {board.role === 'tutor' && (
-          <div className="mt-1.5">
-            <button type="button" disabled={!!busy} onClick={() => void saveTemplate()} className="text-xs text-slate-600 underline underline-offset-2">Save as template</button>
+        {more && (
+          // The less-used buttons, folded away so the phone keeps its writing space (5 Nov 2026).
+          <div className="mt-2 flex flex-wrap gap-2 rounded-xl border bg-white p-2" data-more>
+            <button type="button" disabled={!!busy} onClick={() => { setMore(false); void downloadPdf(); }} className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50">Download PDF</button>
+            <button type="button" onClick={() => { setMore(false); setShowVersions(true); void loadVersions(); }} className="rounded-lg border px-3 py-1.5 text-sm">Earlier versions</button>
+            {board.role === 'tutor' && <button type="button" disabled={!!busy} onClick={() => { setMore(false); void saveTemplate(); }} className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-50">Save as template</button>}
           </div>
         )}
-        {arrange && <p className="mt-1 text-xs text-sky-800">Drag a photo to move it. Drag its blue corner to make it bigger or smaller. ✕ removes it. The pen rests until you tap Done moving.</p>}
+        {busy && <p className="mt-1 text-xs text-slate-500">{busy}</p>}
+        {msg && <p className="mt-1 text-xs text-red-600">{msg}</p>}
+        {arrange && <p className="mt-1 text-xs text-sky-800">Drag a photo to move it. Drag its blue corner to make it bigger or smaller. ✕ removes it. The pen rests until you tap Done.</p>}
+        {thumbs && (
+          <div className="mt-2 max-h-[55vh] overflow-y-auto rounded-xl border bg-white p-3" data-thumbs>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {pages.map(p => {
+                const box = thumbs[p.index] ?? { w: 1000, h: 1414 };
+                const layers = [other[p.index], mineCount[p.index]].filter(l => l && l.strokes?.length);
+                return (
+                  <button key={p.index} type="button" onClick={() => { setThumbs(null); setTimeout(() => jumpTo(p.index), 50); }} className="text-center" aria-label={`Go to page ${p.index + 1}`} data-thumb={p.index}>
+                    <span className="relative block overflow-hidden rounded-md border bg-white" style={{ aspectRatio: `${box.w} / ${box.h}` }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-fill" />
+                      {stickers.filter(st => st.page === p.index && st.url).map(st => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={st.id} src={st.url!} alt="" className="absolute object-fill"
+                          style={{ left: `${(st.x / box.w) * 100}%`, top: `${(st.y / box.h) * 100}%`, width: `${(st.w / box.w) * 100}%`, height: `${(st.h / box.h) * 100}%` }} />
+                      ))}
+                      {layers.map((l, k) => (
+                        <svg key={k} viewBox={`0 0 ${l!.w} ${l!.h}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-hidden
+                          dangerouslySetInnerHTML={{ __html: strokesToSvg(l!.strokes) }} />
+                      ))}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-slate-600">{p.index + 1}{p.index === pages.length - 1 ? ' · empty' : ''}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {adding && (
           <div className="mt-2 max-h-[60vh] overflow-y-auto rounded-xl border bg-white p-3" data-add-menu>
             <p className="text-sm font-semibold">From your files</p>
@@ -447,6 +510,7 @@ export default function SharedBoard({ boardId, linkKey, back }: { boardId?: stri
         )}
         {showVersions && (
           <div className="mt-2 max-h-[50vh] overflow-y-auto rounded-xl border bg-white p-3 text-sm" data-versions>
+            <button type="button" onClick={() => setShowVersions(false)} className="float-right ml-2 text-xs text-slate-500 underline">Close</button>
             <p className="text-slate-600">The board keeps a copy every 10 minutes of writing, and just before anyone rubs out a lot. Bringing one back keeps today’s board as a copy too, so you can always undo it.</p>
             {versions === null && <p className="mt-2 text-slate-500">Loading…</p>}
             {versions && versions.length === 0 && <p className="mt-2 text-slate-500">No earlier versions yet — the first is kept after 10 minutes of writing.</p>}

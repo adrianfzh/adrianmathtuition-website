@@ -121,3 +121,45 @@ describe('photo stickers', () => {
     expect(parseStickerOp({ op: 'delete', id: '../x' })).toBeNull();
   });
 });
+
+import { pageHasContent, pageSig, pagesToRead, searchBoards, snippetAround, type PageText } from './shared-board';
+
+describe('search your handwriting', () => {
+  const base = { pages: [{ url: '/board/axes.png' }, { url: 'https://www.adrianmathtuition.com/api/files/handins/x/a.jpg' }, { url: null }], tutor_ink: {}, student_ink: {}, stickers: [] };
+  it('reads only pages with something on them', () => {
+    expect(pageHasContent(base, 0)).toBe(false);          // an empty template
+    expect(pageHasContent(base, 1)).toBe(true);           // a photo or PDF page
+    expect(pageHasContent({ ...base, student_ink: { 2: page(1) } }, 2)).toBe(true);
+  });
+  it('reads a page again only when it changed, and waits while someone is writing', () => {
+    const now = Date.parse('2026-11-05T10:00:00Z');
+    const b = { ...base, tutor_ink: { 0: page(2) } };
+    const sig = pageSig(b, 0);
+    expect(pagesToRead(b, {}, now)).toEqual([0, 1]);
+    expect(pagesToRead(b, { 0: { text: 'x', sig, at: '2026-11-05T09:00:00Z' } }, now)).toEqual([1]);
+    const b2 = { ...b, tutor_ink: { 0: page(3) } };
+    expect(pagesToRead(b2, { 0: { text: 'x', sig, at: '2026-11-05T09:59:30Z' }, 1: { text: '', sig: pageSig(b2, 1), at: '2026-11-05T09:00:00Z' } }, now)).toEqual([]);
+    expect(pagesToRead(b2, { 0: { text: 'x', sig, at: '2026-11-05T09:59:30Z' }, 1: { text: '', sig: pageSig(b2, 1), at: '2026-11-05T09:00:00Z' } }, now, 0)).toEqual([0]);
+  });
+  it('finds a page with every word, newest board first', () => {
+    const boards: { id: string; title: string; updated_at: string; page_text: PageText }[] = [
+      { id: 'a', title: 'Algebra', updated_at: '2026-11-01', page_text: { 0: { text: 'Use the quadratic formula x = (-b ± sqrt(b^2-4ac))/2a', sig: '', at: '' } } },
+      { id: 'b', title: 'Quadratics', updated_at: '2026-11-04', page_text: { 3: { text: 'Completing the square, then the quadratic formula', sig: '', at: '' } } },
+      { id: 'c', title: 'Vectors', updated_at: '2026-11-05', page_text: { 0: { text: 'a + b', sig: '', at: '' } } },
+    ];
+    const hits = searchBoards(boards, 'Quadratic  FORMULA');
+    expect(hits.map(h => [h.boardId, h.page])).toEqual([['b', 3], ['a', 0]]);
+    expect(searchBoards(boards, 'vectors')).toEqual([{ boardId: 'c', title: 'Vectors', page: null, snippet: '' }]);
+    expect(searchBoards(boards, '  ')).toEqual([]);
+    // Exact phrase first: "x = 4" is not a page that merely has an x, an = and a 4.
+    const maths: { id: string; title: string; updated_at: string; page_text: PageText }[] = [
+      { id: 'm', title: 'M', updated_at: '2026-11-05', page_text: { 0: { text: '2x = 8\nx=4', sig: '', at: '' }, 1: { text: 'x + 2 = 4y', sig: '', at: '' } } },
+    ];
+    expect(searchBoards(maths, 'x = 4').map(h => h.page)).toEqual([0]);
+    expect(searchBoards(maths, 'y x').map(h => h.page)).toEqual([1]);
+  });
+  it('shows a short line around the word', () => {
+    expect(snippetAround('a '.repeat(60) + 'formula here', 'formula').startsWith('…')).toBe(true);
+    expect(snippetAround('short text', 'zzz')).toBe('short text');
+  });
+});

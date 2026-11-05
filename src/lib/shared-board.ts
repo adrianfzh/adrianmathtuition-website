@@ -224,3 +224,86 @@ export function applyStickerOp(list: readonly Sticker[], op: StickerOp): Sticker
   if (op.op === 'delete') return list.filter(s => s.id !== op.id);
   return list.map(s => (s.id === op.id ? { ...s, x: Math.round(op.x), y: Math.round(op.y), w: Math.round(op.w), h: Math.round(op.h) } : s));
 }
+
+// ── Search your handwriting (Adrian, 5 Nov 2026: "yes build search your handwriting") ──
+// Each page with something on it is read from a picture of the page (lib/board-read: the printed
+// question, photos and both people's writing) into plain text, kept in shared_boards.page_text.
+// A page is read again only when what it holds has changed (its `sig`), and not more than once a
+// READ_GAP while someone is still writing on it; a search first reads any page that is behind.
+export type PageText = Record<string, { text: string; sig: string; at: string }>;
+export const READ_GAP_MS = 90_000;
+export const MAX_READS_PER_SEARCH = 6;
+
+type ReadableBoard = { pages: BoardPage[]; tutor_ink: InkPages; student_ink: InkPages; stickers?: Sticker[] | null };
+
+/** What a page holds, in a few characters: changes whenever its writing, photo or stickers change. */
+export function pageSig(b: ReadableBoard, i: number): string {
+  const n = (l: InkPages) => l?.[i]?.strokes?.length ?? 0;
+  const typed = [b.tutor_ink?.[i], b.student_ink?.[i]].flatMap(l => l?.strokes ?? []).filter(s => s.text).map(s => s.text!.length).join(',');
+  const st = (b.stickers ?? []).filter(s => s.page === i).map(s => s.id).join(',');
+  return `${b.pages?.[i]?.url ?? ''}|${n(b.tutor_ink)}|${n(b.student_ink)}|${typed}|${st}`;
+}
+
+/** Worth reading: some writing, a sticker, or a page that is a photo / PDF page (not one of our empty templates). */
+export function pageHasContent(b: ReadableBoard, i: number): boolean {
+  const ink = (b.tutor_ink?.[i]?.strokes?.length ?? 0) + (b.student_ink?.[i]?.strokes?.length ?? 0);
+  const bg = b.pages?.[i]?.url ?? null;
+  return ink > 0 || (b.stickers ?? []).some(s => s.page === i) || (!!bg && !isPaperUrl(bg));
+}
+
+/** The pages to read now. `gapMs` 0 = read everything that is behind (a search is waiting). */
+export function pagesToRead(b: ReadableBoard, known: PageText, now: number, gapMs = READ_GAP_MS): number[] {
+  const out: number[] = [];
+  const count = displayPageCount((b.pages ?? []).length, b.tutor_ink, b.student_ink) - 1;
+  for (let i = 0; i < Math.max(count, (b.pages ?? []).length); i++) {
+    const had = known[String(i)];
+    if (!pageHasContent(b, i)) continue;
+    if (had && had.sig === pageSig(b, i)) continue;
+    if (had && gapMs && now - Date.parse(had.at) < gapMs) continue;
+    out.push(i);
+  }
+  return out;
+}
+
+const norm = (s: string) => s.toLowerCase().replace(/[−–—]/g, '-').replace(/\s+/g, ' ').trim();
+/** Words of a search: "quadratic formula" → both must be on the page (or in the board's name). */
+export function searchWords(q: string): string[] {
+  return norm(q).split(' ').filter(w => w.length >= 1).slice(0, 8);
+}
+
+export type SearchHit = { boardId: string; title: string; page: number | null; snippet: string };
+
+/** Find every page (or board name) that has ALL the words. Newest boards first, at most `limit`. */
+export function searchBoards(boards: { id: string; title: string; page_text: PageText; updated_at: string }[], q: string, limit = 30): SearchHit[] {
+  const words = searchWords(q);
+  if (!words.length) return [];
+  // Exact first: "x = 4" means those characters together (spaces ignored). Only when nothing has the
+  // whole phrase does a page with all the words, anywhere on it, count.
+  const phrase = norm(q).replace(/ /g, '');
+  const exact = (hay: string) => norm(hay).replace(/ /g, '').includes(phrase);
+  const loose = (hay: string) => { const h = norm(hay), squash = h.replace(/ /g, ''); return words.every(w => h.includes(w) || squash.includes(w.replace(/ /g, ''))); };
+  const anyExact = boards.some(b => exact(b.title) || Object.values(b.page_text ?? {}).some(v => v?.text && exact(v.text)));
+  const has = anyExact ? exact : loose;
+  const hits: SearchHit[] = [];
+  for (const b of [...boards].sort((a, z) => z.updated_at.localeCompare(a.updated_at))) {
+    // The board's name has every word: one line for the board, not one for each page.
+    if (has(b.title)) { hits.push({ boardId: b.id, title: b.title, page: null, snippet: '' }); continue; }
+    const pages = Object.entries(b.page_text ?? {}).map(([k, v]) => ({ i: Number(k), text: v?.text ?? '' })).sort((a, z) => a.i - z.i);
+    for (const p of pages) {
+      if (!p.text || !(has(p.text) || (!anyExact && has(`${b.title} ${p.text}`)))) continue;
+      const first = anyExact ? q.trim() : words.find(w => norm(p.text).includes(w)) ?? words[0];
+      hits.push({ boardId: b.id, title: b.title, page: p.i, snippet: snippetAround(p.text, first) });
+    }
+    if (hits.length >= limit) break;
+  }
+  return hits.slice(0, limit);
+}
+
+/** A line of the page around the first word found (about 90 characters). */
+export function snippetAround(text: string, word: string): string {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  const at = flat.toLowerCase().indexOf(word.toLowerCase());
+  if (at < 0) return flat.slice(0, 90) + (flat.length > 90 ? '…' : '');
+  const from = Math.max(0, at - 35), to = Math.min(flat.length, at + 55);
+  return `${from > 0 ? '…' : ''}${flat.slice(from, to)}${to < flat.length ? '…' : ''}`;
+}

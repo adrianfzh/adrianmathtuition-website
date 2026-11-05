@@ -362,6 +362,23 @@ refused. **Not yet tried on a real iPad with a Pencil and a real phone** — do 
   `lib/shared-board.ts` Sticker / applyStickerOp), drawn in the PDF under the ink. Migration
   `migrations/2026-11-05-board-templates-stickers.sql` (applied). Not in "Earlier versions" (only writing is).
 
+**Added 5–6 Nov 2026** (Adrian: *"yes build search your handwriting"* · *"yes do page thumbnails"*):
+- **🔎 Search your handwriting** — on a student's page, under Boards: **Find in boards**. Every page with
+  something on it (writing, a sticker, a photo or PDF page; never an empty template) is read from a picture
+  of the page (`lib/board-render` — the same picture the PDF uses) by Gemini 2.5 Flash on the site's Google
+  key (`lib/board-read`, thinking switched OFF — with it on, the first test read stopped half way down a
+  page). Kept in `shared_boards.page_text` with the page's `sig`, so a page is read again only when it
+  changed, and not more than once in 90 s while someone is writing (after each save, `after()` in the ink
+  route). A search first reads up to 6 pages that are behind, then matches: **the exact phrase first**
+  ("x = 4", spaces ignored), else every word on the page; the board's name counts too. A result opens the
+  board at that page (`#page-N`). Cost, measured on the test boards: about 400 input + 20–40 output tokens
+  a page — roughly US$0.0002 a page read; counted per board in `shared_boards.read_usage` (the website has
+  no cost ledger). Migration `migrations/2026-11-05-board-page-text.sql` (applied).
+- **🗂 Pages** — on the board's bar: every page small (page, stickers and both people's writing), tap one to
+  go there. The bar now folds Download PDF, Earlier versions and Save as template into **More**, so it
+  takes one or two rows on a phone.
+- **Summary** — asked, designed, waiting for Adrian's yes (see the reply of 6 Nov 2026).
+
 **Known gaps**: a student already on the board when the link is switched off keeps the live
 view until they reload (their saves are refused); no "clear the whole board"; no delete or
 rename button yet (the route has rename).

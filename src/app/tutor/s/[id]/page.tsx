@@ -105,6 +105,7 @@ function Boards({ studentId }: { studentId: string }) {
           </ul>
         </div>
       )}
+      {boards && boards.length > 0 && <BoardSearch studentId={studentId} />}
       {boards && boards.length > 0 && (
         <ul className="mt-3 divide-y">
           {boards.map(b => (
@@ -119,6 +120,48 @@ function Boards({ studentId }: { studentId: string }) {
       )}
       <p className="mt-2 text-xs text-slate-500">To go through a marked paper together, tap “Open board” on the paper below. To make a template, open a board and tap “Save as template”.</p>
     </section>
+  );
+}
+
+/** 🔎 Search your handwriting (5 Nov 2026): every page of this student's boards is read into text; find the page. */
+function BoardSearch({ studentId }: { studentId: string }) {
+  const [q, setQ] = useState('');
+  const [hits, setHits] = useState<{ boardId: string; title: string; page: number | null; snippet: string }[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [behind, setBehind] = useState(0);
+  const run = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!q.trim()) { setHits(null); return; }
+    setBusy(true);
+    try {
+      const r = await fetch(`/api/tutor/boards/search?student=${studentId}&q=${encodeURIComponent(q.trim())}`, { cache: 'no-store' });
+      const j = await r.json().catch(() => ({}));
+      setHits(j.hits ?? []); setBehind(j.stillReading ?? 0);
+    } finally { setBusy(false); }
+  };
+  return (
+    <form onSubmit={run} className="mt-3" role="search">
+      <div className="flex gap-2">
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Find in boards — e.g. quadratic formula" aria-label="Find in boards"
+          className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm" enterKeyHint="search" />
+        <button type="submit" disabled={busy} className="rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-50">{busy ? 'Looking…' : 'Find'}</button>
+      </div>
+      {busy && <p className="mt-1 text-xs text-slate-500">Reading any new writing first — a few seconds.</p>}
+      {hits && !busy && (hits.length === 0
+        ? <p className="mt-2 text-sm text-slate-500">Nothing found for “{q.trim()}”.{behind > 0 ? ' Some new writing is still being read — try again in a minute.' : ''}</p>
+        : (
+          <ul className="mt-2 divide-y rounded-lg border" data-search-hits>
+            {hits.map((h, i) => (
+              <li key={`${h.boardId}:${h.page}:${i}`}>
+                <a href={`/tutor/board/${h.boardId}${h.page != null ? `#page-${h.page}` : ''}`} className="block px-3 py-2">
+                  <span className="font-medium">{h.title}</span>{h.page != null && <span className="text-xs text-slate-500"> · page {h.page + 1}</span>}
+                  {h.snippet && <span className="mt-0.5 block text-xs text-slate-600">{h.snippet}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ))}
+    </form>
   );
 }
 
