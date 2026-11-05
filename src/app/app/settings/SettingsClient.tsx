@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
+import StudySettingsCard from './StudySettingsCard';
 import ParentLinkCard from './ParentLinkCard';
 import InstallCard from '@/components/InstallCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
@@ -133,6 +134,8 @@ export default function SettingsClient({
           the card shows ✓ Linked + Unlink once portal_accounts.telegram_chat_id
           is set (or inherited from Airtable — lib/telegram-link-state.ts). */}
       <TelegramLinkCard variant="settings" linked={telegramLinked} chatId={telegramChatId} />
+
+      <StudySettingsCard />
 
       <PushToggle />
 

@@ -371,6 +371,23 @@ export async function suggestionsOpen(): Promise<boolean> {
   return false;
 }
 
+// 💡 Hint first on the app's Settings page (5 Nov 2026). The switch itself is the bot's
+// (`answer_prefs`, bot lib/hint-first.js) and so far changes TELEGRAM answers only — the app chat does
+// not read it yet. Students do not see it until Adrian opens it (the bot hides it the same way:
+// HINT_FIRST_MENU). Adrian and the preview student always see the row. Practice reminders are open.
+export const HINT_FIRST_SETTING_OPEN_TO_STUDENTS = false;
+
+export async function hintFirstSettingOpen(): Promise<boolean> {
+  if (HINT_FIRST_SETTING_OPEN_TO_STUDENTS) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && SUGGESTIONS_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}
+
 // 📝 A paper the tutor marked on paper (5 Oct 2026, Adrian: "allow students to upload
 // physically marked copies of exam papers - so they have one place they can keep track").
 // The Hand in page's "A paper my tutor marked on paper" door → /app/submit/tutor-marked
