@@ -573,6 +573,9 @@ if (!look.ok && look.lk && look.lk.actions.fired < look.lk.actions.expected && l
 put('look', look.ok, look.detail);
 if (!look.ok) await finish('failed', `look: ${look.detail}`);
 const pics = await step('pictures', async () => {
+  // A reader that did not run must not pass on the last run's file (5 Nov 2026: the plan's weekly
+  // limit stopped the reader, and the old pictures.json said "no problems").
+  fs.rmSync(path.join(RUN, 'pictures.json'), { force: true });
   await agent('pictures', 'sonnet', `Read scripts/clips/prompts/look-reader.md and follow it. slug ${SLUG}. Pictures: ${path.join(lookDir, SLUG)}.`, { tools: `Read,Write,Glob,Bash(ls:*)` });
   return readJson(path.join(RUN, 'pictures.json'));
 });
