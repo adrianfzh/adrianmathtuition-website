@@ -179,6 +179,7 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
 ## 🧹 An alert that fixes itself is deleted (Adrian, 4 Nov 2026: "Yes, as a rule")
 
 Any Telegram alert to Adrian about a state that can end by itself (waiting, stuck, down, full, failing) keeps the sent message's id and **deletes it when the state ends** (Telegram allows 48 h; older → one short "▶ … again" line). Both repos; the reference build is the bot's `lib/worker-idle.js resumeAction` → bot `CLAUDE.md`.
+**A false alarm (our own check was wrong) is fixed without asking, then reported in one line** (Adrian, 5 Nov 2026: "it should auto fix though") → `docs/OPS.md` §🔧.
 
 ## 🚫 No disclaimers, no model names on student screens (Adrian, 5 Oct 2026)
 

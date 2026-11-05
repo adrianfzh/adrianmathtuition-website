@@ -241,6 +241,22 @@ that state, repeats included); older, or no id kept → ONE short "✅ … again
 
 New alerts about a state that ends by itself are built this way.
 
+### 🔧 A false alarm is fixed without asking (Adrian, 5 Nov 2026: "it should auto fix though")
+
+5 Nov 2026: the Fly worker's boot check reported "🔑 Marking key 1 did not work" because that
+account was at its weekly plan limit (reset 9 am), not because the key was dead. The session
+that checked it asked Adrian whether to fix the check. Adrian: *"it should auto fix though"*.
+
+- **When an alert turns out to be OUR OWN check being wrong** (a false alarm, a misread of a
+  normal state, a threshold that fires on a healthy system): fix the check in the same
+  session, ship it through the normal gates, delete the alert, and TELL Adrian afterwards —
+  one line: what fired, why it was wrong, what changed, how to undo. Do not ask first.
+- Ask first only when the fix changes what the alert protects (a safety check, a money
+  check, a student-facing surface) or needs a sign-in or secret from him.
+- Same rule in the bot repo (`CLAUDE.md` + `docs/MARKING.md` §the year-long keys playbook).
+  Related standing rules: [`CLAUDE.md`](../CLAUDE.md) §🧹 (an alert that fixes itself is
+  deleted) and the 14 Oct rule that small approved fixes ship, then inform.
+
 ## The board — `/admin/ops`
 
 Read-only, cookie-auth, hub tile 🩺. `/api/admin/ops` returns the newest logbook
