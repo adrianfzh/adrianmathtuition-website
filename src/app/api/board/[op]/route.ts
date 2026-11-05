@@ -1,0 +1,144 @@
+// 🧑‍🏫 The shared board — one door for the tutor (signed cookie + ?id=) and the student
+// (the private link's key in the `x-board-key` header). SPEC-TUTOR-TOOLS §8.
+//   GET  /api/board/open[?id=]                 the board: pages (signed, 6 h), both layers, the live channel
+//   GET  /api/board/poll[?id=]                 the other side's layer + the page count (the slow fallback)
+//   POST /api/board/ink     { id?, pages }     save MY layer (each side writes only its own)
+//   GET  /api/board/upload-token[?id=]&filename=   a signed upload for a photo
+//   POST /api/board/photo   { id?, url }       add that photo as the next page
+//   GET  /api/board/pdf[?id=]                  the whole board as a PDF, both layers drawn in
+import { NextResponse } from 'next/server';
+import sharp from 'sharp';
+import { PDFDocument } from 'pdf-lib';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { boardAccess, boardLink, channelName, type BoardAccess } from '@/lib/board-store';
+import { createDownloadUrls, createUploadUrl, fetchOurFile, handinKey, keyFromUrl, safeExt } from '@/lib/student-files';
+import { tutorRunStudentId } from '@/lib/tutor-portal';
+import { validateInkPages, type InkPages } from '@/lib/student-ink';
+import { strokesToSvg } from '@/lib/annotate/layer';
+import { displayPageCount, lastInkedPage, MAX_BOARD_PAGES, withPhotoAppended } from '@/lib/shared-board';
+import { contentDisposition } from '@/lib/marked-pdf-filename';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+const notFound = () => NextResponse.json({ error: 'This board is closed or the link has changed. Ask your tutor for the new link.' }, { status: 404 });
+const idOf = (req: Request) => new URL(req.url).searchParams.get('id');
+const layers = (a: BoardAccess) => a.role === 'tutor'
+  ? { mine: a.board.tutor_ink, other: a.board.student_ink, otherAt: a.board.student_ink_at }
+  : { mine: a.board.student_ink, other: a.board.tutor_ink, otherAt: a.board.tutor_ink_at };
+
+async function signedPages(pages: { url: string | null }[]) {
+  const keys = pages.map(p => keyFromUrl(p.url)).filter((k): k is string => !!k);
+  const signed = new Map<string, string | null>();
+  if (keys.length) for (const s of await createDownloadUrls(keys, 6 * 3600)) signed.set(s.key, s.url);
+  return pages.map((p, index) => {
+    const k = keyFromUrl(p.url);
+    // `ref` = the stored reference: the page keeps its signed address while ref is unchanged (SharedBoard).
+    return { index, ref: p.url, url: p.url == null ? null : k ? signed.get(k) ?? null : p.url };
+  });
+}
+
+export async function GET(req: Request, ctx: { params: Promise<{ op: string }> }) {
+  const { op } = await ctx.params;
+  const a = await boardAccess(req, idOf(req));
+  if (!a) return notFound();
+  const { board, role } = a;
+  const sb = getSupabaseAdmin();
+
+  if (op === 'open') {
+    const { data: st } = await sb.from('tutor_students').select('name').eq('id', board.tutor_student_id).maybeSingle();
+    const { mine, other, otherAt } = layers(a);
+    return NextResponse.json({
+      id: board.id, role, title: board.title, tutorName: a.tutorName,
+      studentName: role === 'tutor' ? (st as { name: string } | null)?.name ?? 'Student' : null,
+      pages: await signedPages(board.pages ?? []),
+      mine, other, otherAt,
+      channel: channelName(board),
+      rt: { url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL, key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || null },
+      ...(role === 'tutor' ? { link: boardLink(req, board.link_key), linkOn: board.link_on } : {}),
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
+
+  if (op === 'poll') {
+    // `since` = the other side's save time the page already has: unchanged → the layer is left out.
+    const { other, otherAt } = layers(a);
+    const since = new URL(req.url).searchParams.get('since');
+    const same = !!since && since === otherAt;
+    return NextResponse.json({ pageCount: (board.pages ?? []).length, otherAt, ...(same ? {} : { other }) }, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
+
+  if (op === 'upload-token') {
+    const ext = safeExt(new URL(req.url).searchParams.get('filename') || '', ['jpg', 'jpeg', 'png', 'webp'], 'jpg');
+    try {
+      const u = await createUploadUrl(handinKey(tutorRunStudentId(board.tutor_student_id), ext));
+      return NextResponse.json({ uploadUrl: u.uploadUrl, key: u.key, url: u.url });
+    } catch (e) {
+      console.error('[board upload-token]', (e as Error).message);
+      return NextResponse.json({ error: 'Could not start the upload — try again.' }, { status: 503 });
+    }
+  }
+
+  if (op === 'pdf') {
+    const count = Math.max(1, displayPageCount((board.pages ?? []).length, board.tutor_ink, board.student_ink) - 1);
+    const pdf = await PDFDocument.create();
+    const PAGE_W = 595;
+    for (let i = 0; i < count; i++) {
+      const bg = board.pages?.[i]?.url ?? null;
+      let buf: Buffer | null = null;
+      if (bg) {
+        const r = await fetchOurFile(bg).catch(() => null);
+        if (r?.ok) buf = Buffer.from(await r.arrayBuffer());
+      }
+      if (!buf) buf = await sharp({ create: { width: 1000, height: 1414, channels: 3, background: '#ffffff' } }).jpeg().toBuffer();
+      const ink = [board.tutor_ink?.[i], board.student_ink?.[i]].filter(l => l && l.strokes?.length);
+      const meta = await sharp(buf).rotate().metadata();
+      const w = meta.autoOrient?.width ?? meta.width ?? 1000, h = meta.autoOrient?.height ?? meta.height ?? 1414;
+      let img = sharp(buf).rotate();
+      if (ink.length) img = img.composite(ink.map(l => ({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${l!.w} ${l!.h}">${strokesToSvg(l!.strokes)}</svg>`), top: 0, left: 0 })));
+      const jpg = await img.jpeg({ quality: 88 }).toBuffer();
+      const e = await pdf.embedJpg(jpg);
+      const drawH = Math.round(PAGE_W * (e.height / e.width));
+      pdf.addPage([PAGE_W, drawH]).drawImage(e, { x: 0, y: 0, width: PAGE_W, height: drawH });
+    }
+    const name = `${board.title.replace(/[^\w .()·-]+/g, ' ').trim() || 'board'}.pdf`;
+    return new NextResponse(Buffer.from(await pdf.save()), {
+      headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': contentDisposition(name, 'attachment'), 'Cache-Control': 'private, no-store' },
+    });
+  }
+  return NextResponse.json({ error: 'unknown' }, { status: 404 });
+}
+
+export async function POST(req: Request, ctx: { params: Promise<{ op: string }> }) {
+  const { op } = await ctx.params;
+  const body = await req.json().catch(() => ({})) as { id?: string; pages?: unknown; url?: string };
+  const a = await boardAccess(req, body.id ?? idOf(req));
+  if (!a) return notFound();
+  const { board, role } = a;
+  const sb = getSupabaseAdmin();
+
+  if (op === 'ink') {
+    const v = validateInkPages(body.pages);
+    if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
+    if (lastInkedPage(v.pages) >= MAX_BOARD_PAGES) return NextResponse.json({ error: 'too many pages' }, { status: 400 });
+    const now = new Date().toISOString();
+    const col = role === 'tutor' ? { tutor_ink: v.pages, tutor_ink_at: now } : { student_ink: v.pages, student_ink_at: now };
+    const { error } = await sb.from('shared_boards').update({ ...col, updated_at: now }).eq('id', board.id);
+    if (error) { console.error('[board ink]', error.message); return NextResponse.json({ error: 'Could not save — it tries again with your next stroke.' }, { status: 500 }); }
+    return NextResponse.json({ ok: true, at: now });
+  }
+
+  if (op === 'photo') {
+    const key = keyFromUrl(body.url);
+    if (!key || !key.startsWith(`handins/${tutorRunStudentId(board.tutor_student_id)}/`)) return NextResponse.json({ error: 'bad photo' }, { status: 400 });
+    // Read the newest pages and ink, so a photo never lands on a page someone just wrote on.
+    const { data: fresh } = await sb.from('shared_boards').select('pages, tutor_ink, student_ink').eq('id', board.id).single();
+    const f = fresh as { pages: { url: string | null }[]; tutor_ink: InkPages; student_ink: InkPages };
+    const pages = withPhotoAppended(f.pages ?? [], body.url!, f.tutor_ink, f.student_ink);
+    if (!pages) return NextResponse.json({ error: 'This board is full — start a new board.' }, { status: 409 });
+    const { error } = await sb.from('shared_boards').update({ pages, updated_at: new Date().toISOString() }).eq('id', board.id);
+    if (error) return NextResponse.json({ error: 'Could not add the photo — try again.' }, { status: 500 });
+    return NextResponse.json({ ok: true, index: pages.length - 1 });
+  }
+  return NextResponse.json({ error: 'unknown' }, { status: 404 });
+}

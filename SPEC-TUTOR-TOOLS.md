@@ -276,22 +276,54 @@ tutor papers unless they filter `student_id like 'tutor:%'`; no payment.
 **Test account:** `tutor-test@example.com`, password in `.env.local` `TUTOR_TEST_PASSWORD`;
 `node scripts/tutor-test-seed.mjs` makes or resets it (cap 5, one "Test Student").
 
-## 8. The shared board — PROPOSED 5 Nov 2026, waiting for Adrian's yes
+## 8. The shared board — BUILT 5 Nov 2026 (test site only)
 
 Adrian, 5 Nov 2026: *"i would like to build what gauth did > a unlimited digital canvas
 (whiteboard) that tutors and tutees can write on > build it on top of what is offered to
-external tutors (currently they have marking right?)"* (the idea came from the 🍵 laoshi
-report; adapt the idea, never copy another product or its name).
+external tutors (currently they have marking right?)"* → *"Yes, build it"*. The idea came from
+the 🍵 laoshi report; we adapt the idea, never copy another product or its name.
 
-**What exists today:** tutors get marking only (§7, test site). We already have the pen —
-`StudentInk` / `AnnotateOverlay` / `src/lib/annotate/` (colours, highlighter, eraser, undo,
-Pencil writes while a finger scrolls, ink saved by itself) — but only on one person's marked
-pages, one person at a time. Nothing in the website is live between two screens yet.
+**What it is.** One big sheet of paper between tutor and student, each on their own phone or
+iPad, from home. Both write; each sees the other's writing appear within about a second.
 
-**Proposed design (one board per tutor-student pair, many boards each):** a page that
-scrolls down without end; the tutor opens it from a marked paper (its pages become the top of
-the board) or blank; adds a photo of a question; the student joins from a private link the
-tutor sends (tutor students have no login); both see each other's ink appear within about a
-second (Supabase's live channel), every stroke saved by itself; boards listed under the
-student, reopen any time, download as PDF. Phone: one finger writes, two fingers move;
-iPad: Pencil writes, finger moves. Test site first, like §7. No marking credit used.
+**What the tutor does** (`/tutor/s/<id>`): **New board** (blank), or **Open board** on a marked
+paper — its marked pages become the top of the board. The board is `/tutor/board/<id>`:
+**＋ Photo of a question**, **Download PDF**, **Share with student** (Send on WhatsApp · Copy link ·
+Switch the link off · Make a new link — the old link stops working). Boards are listed under
+the student, newest first; open one again any time and carry on.
+
+**What the student does**: opens the private link `/b/<key>` (no login — tutor students have
+none; like the link in a "track your parcel" SMS). Same pen, same photo and PDF buttons.
+
+**Rules**
+- **Pages never run out**: every stored page, every page anyone wrote on, then one empty page
+  (`lib/shared-board.ts displayPageCount`). Blank pages are squared paper (`public/board-blank.png`).
+  A photo goes after everything written, so no stroke ever moves page.
+- **Each side writes its own layer** (`tutor_ink` / `student_ink`, the `lib/student-ink` shape);
+  the other side's layer is drawn under yours. You rub out only your own writing.
+- **The pen is the students' pen** (`app/marking/StudentInk`: colours, highlighter, eraser,
+  lasso, pointer, undo/redo, shapes, full screen). iPad: the Pencil writes, a finger moves.
+  **Phone: one finger writes, two fingers move** (on by default on a phone; the ✋ button toggles it).
+- **Live**: a Supabase broadcast channel (the website's first live feature). Its name is a hash
+  of the board id and link key, given only to someone who may open the board, and it changes
+  with a new link. Only the pages that changed are sent; presence shows "<name> is here".
+  The database is the truth (each side saves a moment after each stroke); a poll catches
+  anything missed — every 8 s, every 2.5 s when the live channel is down.
+- **Who may open it**: the owning tutor's signed cookie, or the link key in the `x-board-key`
+  header while the link is on (`lib/board-store.ts boardAccess`). Photos are stored privately under
+  `handins/tutor:<student id>/`; page pictures reach the browser as 6-hour signed addresses.
+
+**Data**: table `shared_boards` (migration `migrations/2026-11-05-shared-boards.sql`, applied):
+RLS on, no policies, only the server's key reads it. Student names stay in `tutor_students`.
+**Company points** (CLAUDE.md §The company): boards live in our own database (§14.5); a board
+uses **no marking credit** (§7.1) and no AI — nothing to meter.
+
+**Tested 5 Nov 2026** (local, phone size, two tabs as tutor and student): marked paper as the
+first page; a student stroke appeared on the tutor's screen and the reverse; writing on the
+last page added a new empty page on both; two photos added from either side appeared on both;
+PDF had every page with both layers; a wrong link, no sign-in, and a switched-off link were all
+refused. **Not yet tried on a real iPad with a Pencil and a real phone** — do that on the test site.
+
+**Known gaps**: a student already on the board when the link is switched off keeps the live
+view until they reload (their saves are refused); no "clear the whole board"; no delete or
+rename button yet (the route has rename).

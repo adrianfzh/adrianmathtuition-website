@@ -48,17 +48,61 @@ export default function TutorStudent({ params }: { params: Promise<{ id: string 
       <Link href="/tutor" className="text-sm text-slate-500">‹ All students</Link>
       <h1 className="mb-4 mt-1 text-2xl font-bold">{student.name}{student.level && <span className="ml-2 text-base font-normal text-slate-500">{student.level}</span>}</h1>
       <HandIn studentId={id} left={left} onSent={load} />
+      <Boards studentId={id} />
       <h2 className="mb-2 mt-8 text-lg font-semibold">Papers</h2>
       {papers.length === 0 && <p className="text-sm text-slate-500">None yet.</p>}
       <ul className="space-y-3">
-        {papers.map(p => <PaperCard key={p.id} p={p} />)}
+        {papers.map(p => <PaperCard key={p.id} p={p} studentId={id} />)}
       </ul>
     </main>
   );
 }
 
-function PaperCard({ p }: { p: Paper }) {
+/** Make a board (blank, or on a marked paper's pages) and open it. */
+async function newBoard(studentId: string, paperId?: string): Promise<string | null> {
+  const r = await fetch('/api/tutor/boards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId, paperId }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) return j.error || 'Could not make the board — try again.';
+  window.location.href = `/tutor/board/${j.id}`;
+  return null;
+}
+
+/** 🧑‍🏫 The shared boards with this student (SPEC-TUTOR-TOOLS §8). */
+function Boards({ studentId }: { studentId: string }) {
+  const [boards, setBoards] = useState<{ id: string; title: string; updated_at: string; link_on: boolean }[] | null>(null);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void fetch(`/api/tutor/boards?student=${studentId}`, { cache: 'no-store' }).then(r => r.json()).then(j => setBoards(j.boards ?? [])).catch(() => setBoards([]));
+  }, [studentId]);
+  return (
+    <section className="mt-6 rounded-xl border bg-white p-4">
+      <h2 className="text-lg font-semibold">Boards</h2>
+      <p className="mt-1 text-sm text-slate-500">A page you and your student both write on, live, each on your own phone or iPad.</p>
+      <button type="button" disabled={busy} onClick={async () => { setBusy(true); setErr((await newBoard(studentId)) ?? ''); setBusy(false); }}
+        className="mt-3 w-full rounded-lg bg-slate-900 py-2 font-semibold text-white disabled:opacity-50">{busy ? 'Opening…' : 'New board'}</button>
+      {err && <p className="mt-1 text-sm text-red-600">{err}</p>}
+      {boards && boards.length > 0 && (
+        <ul className="mt-3 divide-y">
+          {boards.map(b => (
+            <li key={b.id}>
+              <a href={`/tutor/board/${b.id}`} className="flex items-center justify-between gap-3 py-2">
+                <span className="min-w-0 truncate font-medium">{b.title}</span>
+                <span className="shrink-0 text-xs text-slate-500">{new Date(b.updated_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' })} ›</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-2 text-xs text-slate-500">To go through a marked paper together, tap “Open board” on the paper below.</p>
+    </section>
+  );
+}
+
+function PaperCard({ p, studentId }: { p: Paper; studentId: string }) {
   const [cover, setCover] = useState(false);
+  const [boardErr, setBoardErr] = useState('');
+  const [opening, setOpening] = useState(false);
   const date = new Date(p.handedIn).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
   return (
     <li className="rounded-xl border bg-white p-4">
@@ -85,7 +129,10 @@ function PaperCard({ p }: { p: Paper }) {
             <a className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white" href={`/api/tutor/paper-pdf?paper=${p.id}`} target="_blank" rel="noreferrer">Marked paper</a>
             <a className="rounded-lg border px-3 py-1.5 text-sm" href={`/api/tutor/paper-pdf?paper=${p.id}&kind=full`} target="_blank" rel="noreferrer">Full report</a>
             <button className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setCover(c => !c)}>{cover ? 'Hide summary' : 'Where the marks went'}</button>
+            <button className="rounded-lg border border-emerald-700 px-3 py-1.5 text-sm font-semibold text-emerald-800 disabled:opacity-50" disabled={opening}
+              onClick={async () => { setOpening(true); setBoardErr((await newBoard(studentId, p.id)) ?? ''); setOpening(false); }}>{opening ? 'Opening…' : 'Open board'}</button>
           </div>
+          {boardErr && <p className="mt-1 text-sm text-red-600">{boardErr}</p>}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {cover && <img className="mt-3 w-full rounded-lg border" src={`/api/tutor/paper-cover?paper=${p.id}`} alt="Where the marks went" />}
         </>

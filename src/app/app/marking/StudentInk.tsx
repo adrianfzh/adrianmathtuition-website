@@ -78,6 +78,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
   const bmpRef = useRef<HTMLCanvasElement | null>(null);
   const liveRef = useRef<SVGPathElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  /** Which url imgRef holds: the shared board turns its empty last page into a photo in place (5 Nov 2026). */
+  const imgUrlRef = useRef<string | null>(null);
   const [nat, setNat] = useState<Nat | null>(null);
   const [failed, setFailed] = useState(false);
   const natRef = useRef<Nat | null>(null);
@@ -131,7 +133,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
       canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
     };
     const load = () => {
-      if (imgRef.current) { paint(); return; }
+      if (imgRef.current && imgUrlRef.current === page.url) { paint(); return; }
+      imgRef.current = null; imgUrlRef.current = page.url;
       const img = new Image();
       img.decoding = 'async';
       img.onload = () => { imgRef.current = img; const n = { w: img.naturalWidth, h: img.naturalHeight }; natRef.current = n; setNat(n); paint(); };
@@ -425,7 +428,7 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
   );
 }
 
-export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading }: {
+export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading, otherNote = true, fingerWritesDefault = false }: {
   runId: string; pages: InkPageInput[]; initial: InkPages | null; readOnly?: boolean; other?: OtherInk | null;
   /** Where the ink goes (23 Sep 2026): by default the marked paper's layer (/api/portal/marking/ink);
    *  a sheet being done in the app (/app/work) passes its own saver to `student_work_ink`. */
@@ -439,6 +442,10 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   /** Adrian only (22 Sep 2026: "just replace that expanded button to go into admin mode"): the ⤢ button becomes
    *  "Edit marking" and hands the page in view to the desk's marker-layer overlay (AdminMarkingPen). */
   onEditMarking?: (pageIndex: number) => void;
+  /** The shared board (SPEC-TUTOR-TOOLS §8): the "<label> are drawn on the pages below" line is noise on a live board. */
+  otherNote?: boolean;
+  /** The shared board on a phone: one finger writes from the start (there is no Pencil). */
+  fingerWritesDefault?: boolean;
 }) {
   const isAdrian = editor === 'adrian';
   const saveUrl = isAdrian ? '/api/admin/marking/teacher-ink' : '/api/portal/marking/ink';
@@ -515,7 +522,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   selectionRef.current = selection;
   // the selection's palette goes with the selection
   useEffect(() => { if (!selection) setPalette(cur => (cur === 'sel' ? null : cur)); }, [selection]);
-  const [fingerWrites, setFingerWrites] = useState(false);
+  const [fingerWrites, setFingerWrites] = useState(fingerWritesDefault);
   const [show, setShow] = useState(true);
   const [showOther, setShowOther] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
@@ -815,7 +822,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
         )}
         {hasInk && !readOnly && <button type="button" onClick={clear} className="text-xs font-semibold text-gray-500 underline underline-offset-2">Clear {mineLabel}</button>}
       </div>
-      {otherHas && other && showOther && (
+      {otherNote && otherHas && other && showOther && (
         <p className="text-[12px] text-emerald-800"><span className="font-semibold">{other.label}</span> are drawn on the pages below in their own ink{isAdrian ? '' : ' — they stay until your tutor clears them'}.</p>
       )}
       {err && <p className="text-[12px] text-rose-700">{err} — keep this page open; it tries again with your next stroke.</p>}

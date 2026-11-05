@@ -1,0 +1,59 @@
+import { describe, expect, it } from 'vitest';
+import { applyPatch, boardTitle, changedPages, displayPageCount, lastInkedPage, pollMayReplace, shareText, withPhotoAppended, MAX_BOARD_PAGES } from './shared-board';
+import type { InkPages } from './student-ink';
+
+const stroke = { tool: 'pen' as const, color: '#000', width: 3, points: [{ x: 1, y: 1, p: 0.5 }, { x: 5, y: 5, p: 0.5 }] };
+const page = (n = 1) => ({ w: 1000, h: 1414, strokes: Array.from({ length: n }, () => stroke) });
+
+describe('shared board pages', () => {
+  it('always shows one empty page after the last stored or written page', () => {
+    expect(displayPageCount(0)).toBe(1);
+    expect(displayPageCount(3)).toBe(4);
+    expect(displayPageCount(1, { 4: page() })).toBe(6);
+    expect(displayPageCount(1, {}, { 2: page() })).toBe(4);
+  });
+  it('ignores pages whose strokes were all erased', () => {
+    expect(lastInkedPage({ 5: { w: 1, h: 1, strokes: [] } }, { 1: page() })).toBe(1);
+  });
+  it('never shows more than the cap', () => {
+    expect(displayPageCount(MAX_BOARD_PAGES + 5)).toBe(MAX_BOARD_PAGES);
+  });
+  it('puts a photo after everything written, keeping every index where it was', () => {
+    const out = withPhotoAppended([{ url: 'a' }], 'p', { 2: page() });
+    expect(out).toEqual([{ url: 'a' }, { url: null }, { url: null }, { url: 'p' }]);
+    expect(withPhotoAppended([], 'p')).toEqual([{ url: 'p' }]);
+  });
+  it('refuses a photo past the cap', () => {
+    expect(withPhotoAppended(Array.from({ length: MAX_BOARD_PAGES - 1 }, () => ({ url: null })), 'p')).toBeNull();
+  });
+});
+
+describe('live patches', () => {
+  it('sends only the pages that changed, and an erased page as empty', () => {
+    const p0 = page(), p1 = page();
+    const prev: InkPages = { 0: p0, 1: p1 };
+    const next: InkPages = { 0: p0, 2: page(2) };
+    const d = changedPages(prev, next);
+    expect(Object.keys(d).sort()).toEqual(['1', '2']);
+    expect(d[1].strokes).toEqual([]);
+  });
+  it('applies a patch, dropping emptied pages and junk indices', () => {
+    const out = applyPatch({ 0: page(), 1: page() }, { 1: { w: 1, h: 1, strokes: [] }, 3: page(2), [-1]: page(), 999: page() } as InkPages);
+    expect(Object.keys(out).sort()).toEqual(['0', '3']);
+  });
+  it('lets the poll replace only when the live channel is quiet', () => {
+    expect(pollMayReplace(1000, 5000)).toBe(false);
+    expect(pollMayReplace(0, 20_000)).toBe(true);
+  });
+});
+
+describe('words', () => {
+  it('names a board', () => {
+    expect(boardTitle('  Vectors  recap ', null)).toBe('Vectors recap');
+    expect(boardTitle('', 'RI Prelim 2024 P1')).toBe('RI Prelim 2024 P1');
+    expect(boardTitle(null, null, new Date('2026-11-05T04:00:00Z'))).toBe('Board · 5 Nov');
+  });
+  it('writes the WhatsApp line with the first name', () => {
+    expect(shareText('Tan Wei Ming', 'https://x/b/k')).toBe('Hi Tan, here is our board. Open it on your phone or iPad and write with me: https://x/b/k');
+  });
+});
