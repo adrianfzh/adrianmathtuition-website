@@ -86,6 +86,7 @@ for (const slug of slugs) {
   if (/dot com|adrianmathtuition/i.test(s.beats?.at(-1)?.say || '')) errs.push('the voice does not read out the site (the ending stays quiet)');
   if (!['grape', 'ocean', 'sunset', 'lime', 'midnight', 'paper', 'mango', 'berry', 'sky', 'candy'].includes(s.look)) errs.push(`look "${s.look}" is not one of the Shorts looks`);
   if (!['boy', 'girl'].includes(s.student)) errs.push('student must be "boy" or "girl"');
+  if (!['otter', 'owl', 'cat', 'red-panda'].includes(s.animal)) errs.push('animal must be otter, owl, cat or red-panda');
   // Letters are capitals in the voice; "negative" for a negative number.
   if (/\bminus (one|two|three|four|five|six|seven|eight|nine|ten)\b(?! (C|X|K|A|B|fifteen|eight))/i.test(spoken.replace(/(\w+) minus/g, '$1 MINUSX'))) warn.push('"minus <number>" — the house voice says "negative" for a negative number');
   if (/\b(x|y|k|c|b|m)\b/.test(spoken)) warn.push('a lower-case single letter in the voice — letters are CAPITALS so the voice reads the letter');

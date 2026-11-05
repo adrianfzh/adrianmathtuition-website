@@ -56,6 +56,11 @@ const POSE = { hook: 'point', pause: 'think', wrong: 'think', why: 'point', righ
 // scholar boy or girl approved that day (docs/characters/scholars/BIBLE.md). Thinks in the pause,
 // gives the wrong answer proudly, says "oops" at the why, follows the working, cheers at the answer.
 const STUDENT_POSE = { hook: 'idle', pause: 'think', wrong: 'point', why: 'oops', right: 'think', end: 'cheer' };
+// The animal sidekick (Adrian, 5 Nov 2026: "plus an animal would perhaps be good", then "all 4, we can
+// switch around"): otter, owl, cat or red panda, `animal` in each Short (docs/characters/animals-2026-11-05).
+// Thinks beside the student in the pause, points at the trap rule, nods through the working, cheers.
+const PET_POSE = { hook: 'idle', pause: 'think', wrong: 'oops', why: 'point', right: 'nod', end: 'cheer' };
+const petSet = (a) => Object.fromEntries(['idle', 'point', 'think', 'oops', 'nod', 'cheer'].map(p => [p, pathToFileURL(path.join(ROOT, 'docs/characters/animals-2026-11-05/poses', a, `${p}.png`)).href]));
 const studentSet = (who) => Object.fromEntries(['idle', 'point', 'think', 'oops', 'nod', 'cheer'].map(p => [p, pathToFileURL(path.join(ROOT, 'docs/characters/scholars/approved', who, `${p}.png`)).href]));
 // A different look for every Short (Adrian, 5 Nov 2026: "every video can have very different feel …
 // we should have different looks all the time"). Cards stay white with dark ink on every look, so the
@@ -204,7 +209,10 @@ function pageHtml(short, tl) {
   const spose = tl.beats.map(b => ({ at: b.start, pose: STUDENT_POSE[b.part] || 'idle' }));
   const th = THEMES[short.look] || THEMES.grape;
   const STUDENT = studentSet(short.student === 'boy' ? 'boy' : 'girl');
-  const data = { BUBBLES, poses, spose, still: !!th.still, stepAt: tl.stepAt, figureAt: tl.figureAt, captions: tl.captions, wrongAt, whyAt, firstRight, pause: { start: pause.start, end: pause.end }, endAt: end.start, total: tl.total, answerAt: tl.stepAt[short.steps.findIndex(s => s.answer)] };
+  const PET = petSet(['otter', 'owl', 'cat', 'red-panda'].includes(short.animal) ? short.animal : 'otter');
+  const ppose = tl.beats.map(b => ({ at: b.start, pose: PET_POSE[b.part] || 'idle' }));
+  const imgs = (set) => Object.entries(set).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('');
+  const data = { BUBBLES, poses, spose, ppose, still: !!th.still, stepAt: tl.stepAt, figureAt: tl.figureAt, captions: tl.captions, wrongAt, whyAt, firstRight, pause: { start: pause.start, end: pause.end }, endAt: end.start, total: tl.total, answerAt: tl.stepAt[short.steps.findIndex(s => s.answer)] };
   return `<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="${KATEX_CSS}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Permanent+Marker&family=Inter:wght@400;500;600;700&display=block" rel="stylesheet">
@@ -246,7 +254,14 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:#222}
 .fig{display:block;align-self:center}
 .pausebox{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
 .pausebox .duo{display:flex;align-items:center;gap:30px}
-.pausebox .kid{position:relative;width:330px;height:330px}
+.pausebox .duo{gap:22px}
+.pausebox .kid{position:relative;width:270px;height:270px}
+.pausebox .pet{position:relative;width:230px;height:230px;align-self:flex-end}
+.pausebox .ring{width:260px!important;height:260px!important}
+.pausebox .ring svg{width:260px;height:260px}
+.pausebox .pet img,.petav img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}
+.trapline{display:flex;align-items:center;gap:14px}
+.petav{position:relative;flex:none;width:118px;height:118px;margin:-22px 0 -18px -6px}
 .pausebox .kid img,.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}
 .pausebox .ring{position:relative;width:300px;height:300px}
 .pausebox .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Permanent Marker';font-size:170px;color:${th.onbg};text-shadow:0 6px 0 ${th.shadow}}
@@ -270,12 +285,12 @@ html,body{width:${W}px;height:${H}px;overflow:hidden;background:#222}
   <div class="stage" id="stage">
     <div class="board" id="board">
       <div class="card wrong rv" id="wrong" data-at="${wrongAt}"><div class="av" id="av">${Object.entries(STUDENT).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('')}</div><div class="body"><div class="row"><span class="x">✗</span><span class="m">${tex(short.wrong.tex)}</span></div><div class="why">← ${esc(short.wrong.why)}</div></div></div>
-      <div class="trapline rv" data-at="${whyAt}">${esc(short.trap)}</div>
+      <div class="trapline rv" data-at="${whyAt}"><div class="petav" id="petav">${imgs(PET)}</div><span>${esc(short.trap)}</span></div>
       ${short.figure ? `<div class="card figcard rv" data-at="${tl.figureAt[0].at}">${figureSvg(short.figure)}</div>` : ''}
       <div class="card right rv" data-at="${firstRight}"><div class="head">✓ THE RIGHT WAY</div>${stepsHtml}</div>
     </div>
     <div class="pausebox" id="pause" style="opacity:0">
-      <div class="duo"><div class="kid" id="kid">${Object.entries(STUDENT).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('')}</div><div class="ring"><svg width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="130" fill="none" stroke="rgba(127,127,127,.25)" stroke-width="16"/><circle id="arc" cx="150" cy="150" r="130" fill="none" stroke="${th.hook}" stroke-width="16" stroke-linecap="round" transform="rotate(-90 150 150)" stroke-dasharray="816.8" stroke-dashoffset="0"/></svg><div class="num" id="num">3</div></div></div>
+      <div class="duo"><div class="kid" id="kid">${Object.entries(STUDENT).map(([p, src]) => `<img data-pose="${p}" src="${src}">`).join('')}</div><div class="ring"><svg width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="130" fill="none" stroke="rgba(127,127,127,.25)" stroke-width="16"/><circle id="arc" cx="150" cy="150" r="130" fill="none" stroke="${th.hook}" stroke-width="16" stroke-linecap="round" transform="rotate(-90 150 150)" stroke-dasharray="816.8" stroke-dashoffset="0"/></svg><div class="num" id="num">3</div></div><div class="pet" id="pet">${imgs(PET)}</div></div>
       <div class="t">Pause.<br><b>What do you think<br>the next step is?</b></div>
     </div>
   </div>
@@ -329,6 +344,17 @@ window.renderAt = (t) => {
   for (const box of [document.getElementById('kid'), document.getElementById('av')]) {
     box.querySelectorAll('img').forEach(img => { img.style.opacity = img.dataset.pose === sp ? String(sk) : '0'; });
     box.style.transform = 'translateY(' + shop.toFixed(1) + 'px) scale(' + (1 + 0.02 * Math.sin(t * 2.4 + 1)).toFixed(4) + ')';
+  }
+  // the animal: its own poses (cheer from the answer line on)
+  let pc = D.ppose[0], ps = 0;
+  for (const p of D.ppose) if (t >= p.at) { pc = p; ps = p.at; }
+  let pp = pc.pose;
+  if (D.answerAt != null && t >= D.answerAt) { pp = 'cheer'; ps = Math.max(ps, D.answerAt); }
+  const pk = Math.min(1, (t - ps) / 0.22);
+  const phop = -16 * Math.sin(Math.min(1, (t - ps) / 0.35) * Math.PI);
+  for (const box of [document.getElementById('pet'), document.getElementById('petav')]) {
+    box.querySelectorAll('img').forEach(img => { img.style.opacity = img.dataset.pose === pp ? String(pk) : '0'; });
+    box.style.transform = 'translateY(' + phop.toFixed(1) + 'px) rotate(' + (3 * Math.sin(t * 2.1 + 2)).toFixed(2) + 'deg)';
   }
   // the end: no advert screen — the trap rule pulses once, the site line fades in small
   const e = ease((t - D.endAt) / 0.5);

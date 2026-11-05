@@ -6,6 +6,7 @@
   "topic": "Vectors",
   "look": "candy",
   "student": "boy",
+  "animal": "owl",
   "hook": "Most students get this wrong",
   "question": [
     "$\\overrightarrow{OA} = \\mathbf{a}$ and $\\overrightarrow{OB} = \\mathbf{b}$.",

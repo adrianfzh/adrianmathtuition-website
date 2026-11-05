@@ -18,6 +18,10 @@ One cat try copied the reference sheet's caption into the picture — dropped.
 
 `options-on-purple.jpg` = the four cut out on the purple Shorts look. Cost: 8 pictures, about US$0.32.
 
-**Waiting for Adrian to pick one.** Then: a six-pose set by EDITING the picked picture (idle, point,
+**Adrian, 5 Nov 2026: "all 4, we can switch around"** — all four are in use, one per Short (`animal` in each `data/shorts/*.json`, rotating otter → owl → cat → red panda).
+
+**Six-pose sets** (`poses/<animal>/{idle,point,think,oops,nod,cheer}.png`, transparent, 512², bottom-aligned): made by EDITING each picture (`poses.mjs`), cut out with `scripts/shorts/cutout.py` (flood-fill from the edges — a plain colour key ate the animals' own colours). 5 of the 20 first tries were zoomed in with feet or tails cut off; the prompt now asks for a clear green margin and they were redrawn. `all-poses-on-purple.jpg` = all 24. Cost ≈ US$1.00 for the 25 pose pictures + US$0.32 for the options.
+
+Was: waiting for Adrian to pick one. Then: a six-pose set by EDITING the picked picture (idle, point,
 think, oops, nod, cheer — `../scholars/BIBLE.md` §How to make a new picture), its own bible, and a part
 in the Shorts story (e.g. it reacts to the wrong answer and holds up the trap rule at the end).

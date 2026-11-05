@@ -6,6 +6,7 @@
   "topic": "Trigonometry",
   "look": "ocean",
   "student": "boy",
+  "animal": "owl",
   "hook": "Most students get this wrong",
   "question": [
     "Solve $2\\sin x \\cos x = \\sin x$",
