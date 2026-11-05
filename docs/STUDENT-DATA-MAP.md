@@ -99,7 +99,9 @@ Key legend: **AT** = Airtable record id · **TG** = Telegram chat id · **ACCT**
 8. **Unattached rows:** 83 marked runs without a student id.
 9. **Not surveyed:** the science Supabase project, bot-side files/Fly volumes, Dropbox filing, Airtable tables other than `Students`.
 
-## 4. Recommendation — one shared "student record" reader
+## 4. Recommendation
+
+> **Step 1 BUILT 5 Nov 2026 (Adrian: "yes build it")**: `src/lib/student-record.ts` (resolver + `student-record.test.ts`), `student-record-server.ts` (Airtable + `portal_accounts` lookups), and `GET /api/internal/student-record?chatId=|accountId=|airtableId=|chatKey=` (Bearer `BOT_INTERNAL_SECRET`). Nothing calls it yet: next is switching the bot's identity lookup and the app's chat key to it (steps 3–4 below), and the weekly list of `issues`. — one shared "student record" reader
 
 **Idea.** One small function, `getStudentRecord(identity)`, that takes ANY door's identity (Telegram chat id, portal account, Airtable id, or `web-…` key) and returns the same shape:
 `{ airtableId, name, level, subjects, links: {telegramChatId, accountId, parentChatIds}, settings, examDate, ... }` — or `null` for a stranger. It reads; it does not move any data. Both repos call it (the bot over a signed internal route, as with ask-token / telegram-link, or a copy of the same query).
