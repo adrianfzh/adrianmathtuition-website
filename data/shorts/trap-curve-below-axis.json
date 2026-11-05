@@ -13,8 +13,8 @@
     "lies completely below the $x$-axis."
   ],
   "wrong": {
-    "tex": "k < -1 \\text{ or } k > 9",
-    "why": "only used the discriminant"
+    "tex": "b^2 - 4ac < 0 \\;\\text{ only}",
+    "why": "forgets the curve must open downwards"
   },
   "trap": "Below the x-axis takes TWO conditions.",
   "steps": [
@@ -23,7 +23,7 @@
       "on": "opens downwards"
     },
     {
-      "tex": "6^2 - 4k(k - 8) < 0",
+      "tex": "b^2 - 4ac = 6^2 - 4k(k - 8) < 0",
       "on": "B squared"
     },
     {
@@ -36,7 +36,7 @@
     },
     {
       "tex": "k < -1 \\text{ or } k > 9 \\;\\; (\\text{reject } k > 9)",
-      "on": "reject"
+      "on": "That gives"
     },
     {
       "tex": "k < -1",
@@ -55,11 +55,11 @@
     },
     {
       "part": "wrong",
-      "say": "Many answer K less than negative one, or K greater than nine. That uses only the discriminant."
+      "say": "Many go straight to B squared minus four A C less than zero. That is only half of it."
     },
     {
       "part": "why",
-      "say": "Below the X axis takes two things. The curve opens downwards, so K is less than zero. And it never meets the X axis, so B squared minus four A C is less than zero.",
+      "say": "Below the X axis takes two things. It opens downwards, so K is less than zero. And it never meets the X axis, so B squared minus four A C is less than zero.",
       "steps": [
         0,
         1
@@ -93,10 +93,10 @@
       "hold": 1.2
     }
   ],
-  "verify": "k, x = symbols('k x', real=True)\ndisc = 6**2 - 4*k*(k - 8)\nassert expand(disc / -4) == expand(k**2 - 8*k - 9)\nassert factor(k**2 - 8*k - 9) == (k - 9)*(k + 1)\nsol = solve_univariate_inequality(disc < 0, k, relational=False)\nassert sol == Union(Interval.open(-oo, -1), Interval.open(9, oo))\nfinal = sol.intersect(Interval.open(-oo, 0))\nassert final == Interval.open(-oo, -1)\n# k = 10 passes the discriminant but opens upwards: it is above the axis\ny10 = 10*x**2 + 6*x + 2\nassert y10.subs(x, 0) > 0\n# k = -2: every value negative\nym2 = -2*x**2 + 6*x - 10\nassert maximum(ym2, x) < 0\n",
+  "verify": "k, x = symbols('k x', real=True)\ndisc = 6**2 - 4*k*(k - 8)\nassert expand(disc / -4) == expand(k**2 - 8*k - 9)\nassert factor(k**2 - 8*k - 9) == (k - 9)*(k + 1)\nsol = solve_univariate_inequality(disc < 0, k, relational=False)\nassert sol == Union(Interval.open(-oo, -1), Interval.open(9, oo))\nfinal = sol.intersect(Interval.open(-oo, 0))\nassert final == Interval.open(-oo, -1)\n# k = 10 passes the discriminant but opens upwards: it is above the axis\ny10 = 10*x**2 + 6*x + 2\nassert y10.subs(x, 0) > 0\n# k = -2: every value negative\nym2 = -2*x**2 + 6*x - 10\nassert maximum(ym2, x) < 0\n# the tempting next step on its own lets in k > 9, where the curve opens upwards\nassert sol.intersect(Interval.open(9, oo)) != EmptySet\n",
   "youtube": {
     "title": "Curve below the x-axis: the condition everyone forgets",
-    "description": "For y = kx² + 6x + k − 8 to lie completely below the x-axis you need TWO things: it opens downwards (k < 0) AND b² − 4ac < 0. Answer: k < −1.",
+    "description": "For y = kx² + 6x + k − 8 to lie completely below the x-axis, most students go straight to b² − 4ac < 0. That is only half: it must also open downwards (k < 0). Answer: k < −1.",
     "hashtags": [
       "#shorts",
       "#math",
