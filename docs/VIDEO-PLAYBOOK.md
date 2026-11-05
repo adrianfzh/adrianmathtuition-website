@@ -446,6 +446,20 @@ Cheapest first:
   - **Pitch the product to parents.**
   - Show real screens, never mock-ups.
 
+### 4.6b Turning a character into a 3D model (noted 5 Nov 2026, Adrian asked about hi3d.ai)
+
+- **What hi3d.ai is:** one picture becomes a **3D model** (a solid figure you can turn round). It is built for **3D-printed figurines**: it splits a model into parts, picks colours for a multi-colour printer, and will print and post the figure if you have no printer.
+  - Free plan: 100+ credits, with attribution required.
+  - **Paid plans allow commercial use, and you own the models.**
+  - It has an API.
+  - It says uploads are not used for training.
+- **The same job is on fal, with the key we already hold** (checked 5 Nov 2026): `fal-ai/hunyuan3d-v3/image-to-3d`, `fal-ai/trellis` and `tripo3d/tripo/v2.5/image-to-3d`. There is no new account to make.
+- **What it is NOT:** a video maker. It does not help the clips directly.
+- **Where it could help us later:**
+  1. **Printed figurines of the scholar boy and girl** as prizes for students, or as props in promo videos. Hi3D's print-and-post service would do this.
+  2. **A 3D version of a character, posed and turned by code**, gives perfect consistency from any angle, as in the 3D Chinese animation route in [V4]. It needs rigging work (Blender or Mixamo), so it is a bigger project.
+- Our characters are flat cartoons, so a 3D model must invent their side and back. **Test with the approved front, side and back views,** not one picture.
+
 ### 4.7 The asset record (keep it with every promo clip)
 
 One line per asset in `promo/<clip>/ASSETS.md` when promo work starts:
