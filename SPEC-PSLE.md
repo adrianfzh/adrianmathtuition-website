@@ -78,6 +78,9 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     New school names: "ACS Combined" (P6 2018–20 joint ACS(J)+ACS(P) paper), Rulang, Christian Brothers,
     St Hildas, River Valley, Temasek. Doubtful: P4 2020 Henry Park may be SA1 (cover undated); P5 2023
     Rosyth's key header says Tao Nan (answers match Rosyth); P6 2018 Catholic High key header says 2017.
+- **✅ Primary extraction FINISHED 5 Nov 2026, 20:38 SGT** — 1,171 P4–P6 papers done, 35 flagged, 5 skipped,
+  1 failed, queue empty; science twins also out of writable seeds (11:21 the same day). **The shrink below is due:
+  Adrian, 6 Nov 2026 00:00: "Tomorrow"** — the next session he opens on 6 Nov should offer to start it.
 - **⏰ When the primary extraction finishes → shrink the Fly worker (Adrian, 4 Nov 2026: "let's
   finish the extraction work first. and then later bring cost down to less than US$50 per month").**
   The worker stays on performance-2x / 8 GB (≈ US$114/mo in sin) until the P5 + P6 queue is empty.
