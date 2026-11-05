@@ -5,6 +5,7 @@
 // one POST that files the run under this student. Mirrors the admin intake's
 // photo hygiene (same spread heuristic, same ~2600px cap) so a student hand-in
 // marks exactly as well as one Adrian photographs himself.
+import { usePhotoCheck } from '@/components/PhotoCheck';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { subjectLabel } from '@/lib/mark-subjects';
 import Link from 'next/link';
@@ -120,6 +121,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   family?: 'math' | 'science';
 }) {
   const isScience = family === 'science';
+  const pc = usePhotoCheck('handin'); // 📷 retake? (SPEC-PHOTO-QUALITY.md)
   const inputRef = useRef<HTMLInputElement>(null);
   const schemeRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<Page[]>([]);
@@ -216,7 +218,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         continue;
       }
       if (!f.type.startsWith('image/') && !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) continue;
-      files.push(f);
+      files.push(...await pc.check([f])); // 📷 a blurry page: retake or use anyway
     }
     const added: Page[] = [];
     let splits = 0;
@@ -470,6 +472,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const subjectDone = !isScience || !!subject;
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
+      {pc.card}
       {assignment ? (
         <div className="pt-1">
           <Link href={`/app/assignments/${assignment.id}`} className="text-sm text-gray-500 hover:text-navy">← Back to the worksheet</Link>

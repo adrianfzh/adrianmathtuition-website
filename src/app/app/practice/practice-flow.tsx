@@ -1,5 +1,6 @@
 'use client';
 
+import { usePhotoCheck } from '@/components/PhotoCheck';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import WatchIt from './watch-it';
@@ -149,6 +150,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   initialQuestion?: FixedQuestion | null;
 }) {
   const assignment = initialAssignment;
+  const pc = usePhotoCheck('practice'); // 📷 retake? (SPEC-PHOTO-QUALITY.md)
   const assignMeta = SOURCE_META[assignment?.source ?? 'adrian'];
   // Fixed ?qid= question — assignment wins if both somehow arrive.
   const fixedQ = assignment ? null : initialQuestion;
@@ -465,7 +467,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     finally { setLadderLoading(false); }
   }
 
-  async function handlePhotoPick(file: File | undefined) {
+  async function handlePhotoPick(picked: File | undefined) {
+    if (!picked) return;
+    const [file] = await pc.check([picked]);
     if (!file) return;
     setPhotoBusy(true); setError('');
     try {
@@ -608,6 +612,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   return (
     <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
+      {pc.card}
       {/* Assignment banner — replaces the title row + picker entirely. */}
       {assignment && (
         <div className="mb-4 pt-1">
