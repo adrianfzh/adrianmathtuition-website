@@ -12,7 +12,7 @@
     "for $0^\\circ \\le x \\le 360^\\circ$."
   ],
   "wrong": {
-    "tex": "x = 60^\\circ,\\ 300^\\circ \\text{ only}",
+    "tex": "\\div \\sin x:\\;\\; 2\\cos x = 1",
     "why": "divided both sides by sin x"
   },
   "trap": "Never divide by sin x. Factorise.",
@@ -49,7 +49,7 @@
     },
     {
       "part": "wrong",
-      "say": "Many divide both sides by sine X. Cosine X is a half, so X is sixty or three hundred degrees. Only two answers."
+      "say": "Many divide both sides by sine X first, to get two cosine X equals one."
     },
     {
       "part": "why",
@@ -80,7 +80,7 @@
       "hold": 1.2
     }
   ],
-  "verify": "x = symbols('x', real=True)\nsols = solveset(2*sin(x)*cos(x) - sin(x), x, Interval(0, 2*pi))\nassert sols == FiniteSet(0, pi/3, pi, 5*pi/3, 2*pi)\nassert solveset(sin(x), x, Interval(0, 2*pi)) == FiniteSet(0, pi, 2*pi)\nassert solveset(2*cos(x) - 1, x, Interval(0, 2*pi)) == FiniteSet(pi/3, 5*pi/3)\nassert [deg(s) for s in sorted(sols, key=lambda s: float(s))] == [0, 60, 180, 300, 360]\n",
+  "verify": "x = symbols('x', real=True)\nsols = solveset(2*sin(x)*cos(x) - sin(x), x, Interval(0, 2*pi))\nassert sols == FiniteSet(0, pi/3, pi, 5*pi/3, 2*pi)\nassert solveset(sin(x), x, Interval(0, 2*pi)) == FiniteSet(0, pi, 2*pi)\nassert solveset(2*cos(x) - 1, x, Interval(0, 2*pi)) == FiniteSet(pi/3, 5*pi/3)\nassert [deg(s) for s in sorted(sols, key=lambda s: float(s))] == [0, 60, 180, 300, 360]\n# the tempting next step keeps only the cos x = 1/2 answers\nassert solveset(2*cos(x) - 1, x, Interval(0, 2*pi)) != sols\n",
   "youtube": {
     "title": "Never divide by sin x (you lose 3 answers)",
     "description": "Solve 2 sin x cos x = sin x for 0° ≤ x ≤ 360°. Dividing by sin x gives 60° and 300° only. Factorise instead: sin x (2cos x − 1) = 0 gives five answers.",
