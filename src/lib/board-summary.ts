@@ -8,7 +8,6 @@
 // board's own words (lib/board-read page_text), and every number in it must be on the board — a line
 // with a number that is not is sent back once, then dropped (numbersNotOnBoard). The practice questions
 // come from the bank through the student serving door (practice_next + studentRow), never written here.
-import { createHash } from 'node:crypto';
 import type { PageText } from './shared-board';
 
 export const SUMMARY_LEVELS = ['S1', 'S2', 'EM', 'AM', 'JC'] as const;
@@ -29,7 +28,9 @@ export type BoardSummary = {
 export function summarySig(pageText: PageText): string {
   const keys = Object.keys(pageText ?? {}).map(Number).filter(Number.isInteger).sort((a, b) => a - b);
   const s = keys.map(k => `${k}:${pageText[String(k)]?.sig ?? ''}`).join('|');
-  return createHash('sha256').update(s).digest('hex').slice(0, 16);
+  // FNV-1a, twice with different seeds — a change stamp, not a secret (this file is also used in the browser).
+  const fnv = (seed: number) => { let h = seed >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };
+  return fnv(0x811c9dc5) + fnv(0x01234567);
 }
 
 /** The board's words, page by page, for the writer (empty pages left out). */
@@ -132,4 +133,51 @@ export function dropUnsupported(d: SummaryDraft, transcript: string): SummaryDra
 /** Anything worth showing? */
 export function summaryHasContent(d: SummaryDraft): boolean {
   return d.didToday.length > 0 || !!d.method || !!d.watchOut;
+}
+
+// ── The note to the parent (Adrian, 6 Nov 2026: "summary would be a good thing to send to parents" → "yes") ──
+// Made by the TUTOR, who reads and may edit it before sending it from their own WhatsApp. Three short parts in
+// everyday words — less maths than the student's summary — written as the tutor speaking to the parent.
+export type ParentNote = { worked: string; watch: string; help: string; at: string; edited?: boolean; usage?: { inTok: number; outTok: number; calls: number } };
+export const PARENT_FIELD_MAX = 400;
+
+export function buildParentPrompt(o: { transcript: string; childFirstName: string; feedback?: string }): string {
+  return `You are helping a maths tutor in Singapore write a short note to a parent after today's lesson with their child, ${o.childFirstName}.
+The lesson's whiteboard was read into text below (printed questions, the child's working, the tutor's working, red-pen marking notes).
+
+RULES
+- Use ONLY what is on the board. Every number you write must appear on the board.
+- Write as the tutor, to the parent, in warm everyday English a busy parent understands in one read. Use "${o.childFirstName}" or "they".
+- Very little maths: name the topic in plain words; at most one short expression if it really helps.
+- No warnings, no mention of how this was written.
+
+Return ONE JSON object and nothing else:
+{
+  "worked": one sentence: what we worked on today,
+  "watch": one or two sentences: the one thing to watch (a mistake on the board today, in plain words), or what went well if there was no mistake,
+  "help": one sentence: one small, concrete thing the parent can do at home this week
+}
+${o.feedback ? `\nYOUR LAST TRY WAS SENT BACK: ${o.feedback}\n` : ''}
+THE BOARD:
+${o.transcript}`;
+}
+
+export function parseParentNote(raw: string): Pick<ParentNote, 'worked' | 'watch' | 'help'> | null {
+  const m = /\{[\s\S]*\}/.exec(raw ?? '');
+  if (!m) return null;
+  let j: Record<string, unknown>;
+  try { j = JSON.parse(m[0]); } catch { return null; }
+  const f = (v: unknown) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, PARENT_FIELD_MAX) : '');
+  const out = { worked: f(j.worked), watch: f(j.watch), help: f(j.help) };
+  return out.worked && out.watch && out.help ? out : null;
+}
+
+/** The numbers in a note that are not on the board (the same rule as the summary). */
+export function parentNumbersNotOnBoard(n: Pick<ParentNote, 'worked' | 'watch' | 'help'>, transcript: string): string[] {
+  return numbersNotOnBoard({ didToday: [n.worked, n.watch, n.help], method: null, watchOut: null, topic: null, level: null }, transcript).map(x => x.number);
+}
+
+/** What the tutor sends on WhatsApp with the parent's link. */
+export function parentShareText(childFirstName: string, tutorName: string, link: string): string {
+  return `Hi, a short note on today's maths lesson with ${childFirstName} — ${tutorName}: ${link}`;
 }

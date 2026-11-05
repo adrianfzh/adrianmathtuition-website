@@ -18,8 +18,8 @@ import { bankScope } from '@/lib/qb-levels';
 import { studentRow } from '@/lib/part-syllabus';
 import { questionStructured, type BankQuestion } from '@/lib/bank-question-markdown';
 import {
-  boardTranscript, buildSummaryPrompt, dropUnsupported, levelFrom, numbersNotOnBoard, parseSummary, summaryHasContent, summarySig,
-  type BoardSummary, type SummaryDraft, type SummaryLevel, type SummaryPractice,
+  boardTranscript, buildParentPrompt, buildSummaryPrompt, dropUnsupported, levelFrom, numbersNotOnBoard, parentNumbersNotOnBoard, parseParentNote, parseSummary, summaryHasContent, summarySig,
+  type BoardSummary, type ParentNote, type SummaryDraft, type SummaryLevel, type SummaryPractice,
 } from '@/lib/board-summary';
 import type { PageText } from '@/lib/shared-board';
 
@@ -87,4 +87,33 @@ export async function makeSummary(boardId: string): Promise<MakeResult> {
   const summary: BoardSummary = { ...draft, practice, sig: summarySig(b.page_text ?? {}), at: new Date().toISOString(), usage: { inTok, outTok, calls } };
   await sb.from('shared_boards').update({ summary }).eq('id', boardId);
   return { summary };
+}
+
+/**
+ * 👪 The note to the parent (Adrian, 6 Nov 2026: "summary would be a good thing to send to parents" → "yes").
+ * The TUTOR makes it and reads it before sending, so a number not on the board is sent back once and then the
+ * note is kept as it is for the tutor to fix. Same writer, same board text as the student's summary.
+ */
+export async function makeParentNote(boardId: string): Promise<ParentNote | null> {
+  await readBoard(boardId, { gapMs: 0, max: 12 }).catch(e => console.warn('[parent note] read:', (e as Error).message));
+  const sb = getSupabaseAdmin();
+  const { data } = await sb.from('shared_boards').select('tutor_student_id, page_text').eq('id', boardId).single();
+  const b = data as { tutor_student_id: string; page_text: PageText };
+  const transcript = boardTranscript(b.page_text ?? {});
+  if (!transcript.trim()) return null;
+  const { data: st } = await sb.from('tutor_students').select('name').eq('id', b.tutor_student_id).maybeSingle();
+  const childFirstName = String((st as { name?: string } | null)?.name ?? '').trim().split(/\s+/)[0] || 'your child';
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  let inTok = 0, outTok = 0, calls = 0;
+  const ask = async (feedback?: string) => {
+    const msg = await client.messages.create({ model: SUMMARY_MODEL, max_tokens: 4000, messages: [{ role: 'user', content: buildParentPrompt({ transcript, childFirstName, feedback }) }] }, { timeout: 50_000 });
+    calls++; inTok += msg.usage?.input_tokens ?? 0; outTok += msg.usage?.output_tokens ?? 0;
+    return parseParentNote(anthropicText(msg));
+  };
+  let note = await ask();
+  if (note) {
+    const bad = parentNumbersNotOnBoard(note, transcript);
+    if (bad.length) note = (await ask(`these numbers are not on the board: ${[...new Set(bad)].join(', ')}. Use only numbers that are on the board.`)) ?? note;
+  }
+  return note ? { ...note, at: new Date().toISOString(), usage: { inTok, outTok, calls } } : null;
 }

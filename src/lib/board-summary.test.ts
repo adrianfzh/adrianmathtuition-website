@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boardTranscript, dropUnsupported, levelFrom, numbersIn, numbersNotOnBoard, parseSummary, summaryHasContent, summarySig } from './board-summary';
+import { parentNumbersNotOnBoard, parentShareText, parseParentNote, boardTranscript, dropUnsupported, levelFrom, numbersIn, numbersNotOnBoard, parseSummary, summaryHasContent, summarySig } from './board-summary';
 
 const topics = ['Quadratic Equations', 'Linear Equations'];
 const pt = { 0: { text: 'Solve x^2 - 5x + 6 = 0\n(x - 2)(x - 3) = 0\nx = 2 or x = 3', sig: 'a', at: '' }, 2: { text: '', sig: 'b', at: '' }, 1: { text: 'A0 sign error: -3x + 2x = -x', sig: 'c', at: '' } };
@@ -55,5 +55,20 @@ describe('every number must be on the board', () => {
     expect(kept.method).not.toBeNull();
     expect(summaryHasContent(kept)).toBe(true);
     expect(summaryHasContent({ didToday: [], method: null, watchOut: null, topic: null, level: null })).toBe(false);
+  });
+});
+
+
+describe('the note to the parent', () => {
+  it('needs all three parts', () => {
+    expect(parseParentNote('{"worked":"Expanding brackets.","watch":"Signs.","help":"Ask them to check signs."}')).toMatchObject({ worked: 'Expanding brackets.' });
+    expect(parseParentNote('{"worked":"x","watch":"","help":"y"}')).toBeNull();
+  });
+  it('holds its numbers to the board', () => {
+    const t = boardTranscript(pt);
+    expect(parentNumbersNotOnBoard({ worked: 'Solved x^2 - 5x + 6 = 0', watch: 'Got 42 once', help: 'Practise 10 minutes' }, t)).toEqual(['42', '10']);
+  });
+  it('writes the WhatsApp line', () => {
+    expect(parentShareText('Wei Ming', 'Ms Tan', 'https://x/p/k')).toBe("Hi, a short note on today's maths lesson with Wei Ming — Ms Tan: https://x/p/k");
   });
 });

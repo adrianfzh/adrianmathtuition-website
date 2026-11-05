@@ -397,6 +397,17 @@ refused. **Not yet tried on a real iPad with a Pencil and a real phone** — do 
     summary (kept on the summary as `usage`). First test (6 Nov 2026, E Math marked paper): it named the
     sign error from the red pen (+x for −x) and served two Expansion questions; the shown answer checked.
 
+- **👪 Send to parent** (Adrian, 6 Nov 2026: *"summary would be a good thing to send to parents"* → *"yes"*).
+  The TUTOR only (More → **Send to parent**): **Write the note** makes three short parts from the board, in
+  everyday words, as the tutor speaking — **What we worked on** · **What to watch** · **How you can help at
+  home**. The tutor reads and edits them (**Save my changes**), then **Send on WhatsApp** from their own phone
+  with a private read-only link `/p/<key>` (noindex, in robots.ts; the parent sees only the note, never the
+  board). **We never hold the parent's number** — the parent is the tutor's customer (§14.5 note: the note
+  itself is stored with us in `shared_boards.parent_note`). Same writer and board text as the summary
+  (`lib/board-summary-store makeParentNote`); a number not on the board is sent back once, then left for the
+  tutor to fix. Migration `migrations/2026-11-06-board-parent-note.sql`. First test (6 Nov 2026): it named the
+  same sign slip as the student's summary and gave one concrete thing to do at home; about US$0.01 a note.
+
 **Known gaps**: a student already on the board when the link is switched off keeps the live
 view until they reload (their saves are refused); no "clear the whole board"; no delete or
 rename button yet (the route has rename).
