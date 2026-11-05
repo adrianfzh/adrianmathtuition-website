@@ -5,8 +5,7 @@
   "levelLabel": "E Math",
   "topic": "Vectors",
   "look": "candy",
-  "student": "boy",
-  "animal": "owl",
+  "character": "otter",
   "hook": "Most students get this wrong",
   "question": [
     "$\\overrightarrow{OA} = \\mathbf{a}$ and $\\overrightarrow{OB} = \\mathbf{b}$.",

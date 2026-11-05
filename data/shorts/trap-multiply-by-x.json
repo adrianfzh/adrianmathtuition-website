@@ -5,8 +5,7 @@
   "levelLabel": "H2 Math",
   "topic": "Inequalities",
   "look": "midnight",
-  "student": "girl",
-  "animal": "otter",
+  "character": "cat",
   "hook": "Most students get this wrong",
   "question": [
     "Solve $\\dfrac{1}{x} < 2$."

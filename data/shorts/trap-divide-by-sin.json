@@ -5,8 +5,7 @@
   "levelLabel": "A Math",
   "topic": "Trigonometry",
   "look": "ocean",
-  "student": "boy",
-  "animal": "owl",
+  "character": "tutor",
   "hook": "Most students get this wrong",
   "question": [
     "Solve $2\\sin x \\cos x = \\sin x$",

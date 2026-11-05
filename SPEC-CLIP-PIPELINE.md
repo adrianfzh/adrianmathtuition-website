@@ -847,3 +847,8 @@ vector b, an unrealistic wrong answer) — fixed before any voice was paid for.
   per Short (`animal` field, rotating), six poses each (`docs/characters/animals-2026-11-05/`). The
   animal thinks beside the student in the 3-2-1, points at the trap rule from beside it, nods through
   the working and cheers at the answer and the "Remember" line.
+- *"wait, remake that first clip first. only ONE character per clip"* — **binding: one character per
+  Short**, never a cast. `character` in each JSON = one of tutor, girl, boy, otter, owl, cat, red panda,
+  rotating across Shorts. It sits in the top corner (points, gasps at the wrong answer, nods, cheers),
+  comes down beside the 3-2-1 to think, then goes back. The student-in-the-red-card and the animal
+  beside the rule are gone; check.mjs refuses a `student` or `animal` field.
