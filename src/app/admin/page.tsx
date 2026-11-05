@@ -29,6 +29,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
 import { overallTone, type Glance, type Tile, type Tone } from '@/lib/glance';
+import { subjectLine } from '@/lib/subject-labels';
 import { ADMIN_TOOLS, TAPS_KEY, TAPS_MERGED_KEY, parseTaps, topTools, type AdminTool } from '@/lib/admin-tools';
 import { countAdminOpen } from '@/components/AdminVisitCounter';
 import ProposalCard from '@/components/ProposalCard';
@@ -52,10 +53,10 @@ const CHARTS: { id: string; title: string; unit: string; light: string; dark: st
   { id: 'cost', title: 'Marking cost', unit: 'a paper', light: '#f8d08c', dark: '#96590c' },
 ];
 /** The three numbers at the very top: the glance tile each reads, and its bar colours (past days · today). */
-const NUMBERS: { id: string; title: string; light: string; dark: string }[] = [
-  { id: 'handed-in', title: 'Papers handed in', light: '#b9d3f0', dark: '#1c64b0' },
-  { id: 'practice', title: 'Practice questions done', light: '#cdc9f3', dark: '#5b50c4' },
-  { id: 'bot-asks', title: 'Bot questions asked', light: '#f3d4a6', dark: '#b45309' },
+const NUMBERS: { id: string; title: string; thing: string; light: string; dark: string }[] = [
+  { id: 'handed-in', title: 'Papers handed in', thing: 'paper', light: '#b9d3f0', dark: '#1c64b0' },
+  { id: 'practice', title: 'Practice questions done', thing: 'question', light: '#cdc9f3', dark: '#5b50c4' },
+  { id: 'bot-asks', title: 'Bot questions asked', thing: 'question', light: '#f3d4a6', dark: '#b45309' },
 ];
 /** Not on this page (his list, 6 Oct 2026) — the read still carries them for whoever wants them. */
 const NEEDS_HIDDEN = new Set(['papers-to-check']);
@@ -160,7 +161,8 @@ export default function AdminDashboard() {
   const shown: Tile[] = [...LIGHTS.map(l => tiles.get(l.id)), ...CHARTS.map(c => tiles.get(c.id)), ...needs].filter((t): t is Tile => !!t);
   const tone = data ? overallTone({ ...data, sections: [{ id: 'machine', title: '', tiles: shown }] }) : 'grey';
   const ago = data ? Math.max(0, Math.round((Date.now() - Date.parse(data.generatedAt)) / 1000)) : null;
-  const dayNow = new Date((data ? Date.parse(data.generatedAt) : Date.now()) + 8 * 3600_000).getUTCDay();
+  const atNow = data ? Date.parse(data.generatedAt) : Date.now();
+  const dayNow = new Date(atNow + 8 * 3600_000).getUTCDay();
   // a tool outside /admin is not seen by the layout's counter — count the tap here
   const tap = (href: string) => { if (!href.startsWith('/admin')) countAdminOpen(href); };
 
@@ -192,7 +194,7 @@ export default function AdminDashboard() {
 
       <main className="gl-body">
         <section className="gl-nums" aria-label="Today">
-          {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} />)}
+          {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} at={atNow} />)}
         </section>
 
         <nav className="gl-row-tools" aria-label="Most used tools">
@@ -270,11 +272,33 @@ function Light({ name, ring, t }: { name: string; ring?: boolean; t?: Tile }) {
 }
 
 const DAY_LETTER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-/** One number, large: today's count. Under it seven small bars (today last), the seven-day total, and the week's subjects. */
-function NumberTile({ n, t, today }: { n: { title: string; light: string; dark: string }; t?: Tile; today: number }) {
+/** "Today", "Yesterday", or "Tue 3 Nov" (Singapore) for the bar `i` of `count`, the last bar being `at`'s day. */
+function barDay(at: number, i: number, count: number): string {
+  const back = count - 1 - i;
+  if (back === 0) return 'Today';
+  if (back === 1) return 'Yesterday';
+  return new Date(at - back * 86400_000).toLocaleDateString('en-GB', { timeZone: 'Asia/Singapore', weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
+}
+
+/**
+ * One number, large: today's count. Under it seven small bars (today last), the seven-day
+ * total, and the week's subjects. A tap on one bar shows that day under the bars — its date,
+ * its count and its subject split — and a second tap puts it away (5 Nov 2026, Adrian: "can
+ * i tap or click on individual bars and the details is shown?"). The tile stays a link to
+ * its page; the bar tap never follows it.
+ */
+function NumberTile({ n, t, today, at }: { n: { title: string; thing: string; light: string; dark: string }; t?: Tile; today: number; at: number }) {
   const values = t?.trend ?? [];
   const max = Math.max(...values, 0);
   const total = values.reduce((a, b) => a + b, 0);
+  const [pick, setPick] = useState<number | null>(null);
+  const picked = pick != null && pick < values.length ? pick : null;
+  const pickLine = picked == null ? null : (() => {
+    const v = values[picked];
+    const split = subjectLine(t?.trendSubjects?.[picked] ?? {});
+    return `${barDay(at, picked, values.length)} · ${v} ${n.thing}${v === 1 ? '' : 's'}${split ? ' · ' + split : ''}`;
+  })();
+  const toggle = (e: React.SyntheticEvent, i: number) => { e.preventDefault(); e.stopPropagation(); setPick(p => (p === i ? null : i)); };
   const body = (
     <>
       <div className="gl-num-t">{n.title}</div>
@@ -282,15 +306,16 @@ function NumberTile({ n, t, today }: { n: { title: string; light: string; dark: 
       <div className="gl-num-u">today</div>
       {values.length > 0 && (
         <>
-          <div className="gl-num-bars" role="img" aria-label={`last ${values.length} days: ${values.join(', ')}`}>
+          <div className="gl-num-bars" aria-label={`last ${values.length} days: ${values.join(', ')}`}>
             {values.map((v, i) => (
-              <div key={i} className="gl-num-col" title={String(v)}>
-                <div className="gl-num-box"><div className="gl-num-bar" style={{ height: `${max > 0 && v > 0 ? Math.max(10, (v / max) * 100) : 0}%`, minHeight: 2, background: i === values.length - 1 ? n.dark : n.light }} /></div>
-                <span>{DAY_LETTER[(today - (values.length - 1 - i) + 70) % 7]}</span>
-              </div>
+              <span key={i} role="button" tabIndex={0} aria-pressed={picked === i} className={`gl-num-col${picked === i ? ' on' : ''}`} title={String(v)}
+                onClick={(e) => toggle(e, i)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggle(e, i); }}>
+                <span className="gl-num-box"><span className="gl-num-bar" style={{ height: `${max > 0 && v > 0 ? Math.max(10, (v / max) * 100) : 0}%`, minHeight: 2, background: i === values.length - 1 ? n.dark : n.light }} /></span>
+                <span className="gl-num-d">{DAY_LETTER[(today - (values.length - 1 - i) + 70) % 7]}</span>
+              </span>
             ))}
           </div>
-          <div className="gl-num-w">{values.length} days · {total} in all</div>
+          {pickLine ? <div className="gl-num-pick" style={{ color: n.dark }}>{pickLine}</div> : <div className="gl-num-w">{values.length} days · {total} in all</div>}
         </>
       )}
       {t?.sub && <div className="gl-num-s" title={t.sub}>{t.sub}</div>}
@@ -346,11 +371,15 @@ const CSS = `
 .gl-num-v { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; margin-top: 6px; }
 .gl-num-u { font-size: 12px; color: #6b7280; margin-top: 2px; }
 .gl-num-bars { display: flex; align-items: stretch; gap: 4px; height: 46px; margin-top: 10px; }
-.gl-num-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.gl-num-col { flex: 1; display: flex; flex-direction: column; min-width: 0; cursor: pointer; border-radius: 4px; -webkit-tap-highlight-color: transparent; }
+.gl-num-col:focus-visible { outline: 2px solid #111827; outline-offset: 1px; }
 .gl-num-box { flex: 1; display: flex; align-items: flex-end; min-height: 0; }
-.gl-num-bar { width: 100%; border-radius: 3px 3px 0 0; }
-.gl-num-col span { font-size: 10px; color: #9ca3af; text-align: center; padding-top: 2px; flex: none; line-height: 1.2; }
+.gl-num-bar { display: block; width: 100%; border-radius: 3px 3px 0 0; }
+.gl-num-col.on .gl-num-bar { box-shadow: 0 0 0 2px #111827; }
+.gl-num-d { font-size: 10px; color: #9ca3af; text-align: center; padding-top: 2px; flex: none; line-height: 1.2; }
+.gl-num-col.on .gl-num-d { color: #111827; font-weight: 700; }
 .gl-num-w { font-size: 11.5px; color: #6b7280; margin-top: 6px; line-height: 1.3; }
+.gl-num-pick { font-size: 11.5px; font-weight: 600; margin-top: 6px; line-height: 1.3; }
 .gl-num-s { font-size: 11.5px; color: #374151; margin-top: 3px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 @media (min-width: 760px) {
   .gl-nums { gap: 10px; }
@@ -359,6 +388,7 @@ const CSS = `
   .gl-num-v { font-size: 64px; }
   .gl-num-bars { height: 56px; max-width: 360px; gap: 6px; }
   .gl-num-w { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gl-num-pick { font-size: 12.5px; }
   .gl-num-s { font-size: 12.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 .gl-ships { margin-top: 18px; }

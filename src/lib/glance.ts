@@ -26,6 +26,8 @@ export interface Tile {
   href?: string;
   /** Oldest → newest, one value per day. */
   trend?: number[];
+  /** The subject split behind each `trend` value, same order — shown when a bar is tapped (5 Nov 2026). */
+  trendSubjects?: Record<string, number>[];
   /**
    * The things themselves, on the tile (6 Oct 2026, Adrian: "can i have a dash
    * board with information on the dashboard itself?") — which papers, which
@@ -81,11 +83,11 @@ export interface GlanceFacts {
   lessonsToLog: number | null;
   marked: { today: number; perDay: number[]; list?: { id: string; student: string | null; paper: string | null }[] } | null;
   /** Practice questions real students answered (lib/dash-counts.ts): today, who, the 7-day strip, and the week's subjects. */
-  practice: { students: number; questions: number; perDay: number[]; bySubject?: Record<string, number> } | null;
+  practice: { students: number; questions: number; perDay: number[]; bySubject?: Record<string, number>; perDaySubjects?: Record<string, number>[] } | null;
   /** Papers real students handed in (lib/dash-counts.ts): today, the 7-day strip, and the week's subjects. Optional so older callers still build. */
-  handedIn?: { today: number; perDay: number[]; bySubject?: Record<string, number> } | null;
+  handedIn?: { today: number; perDay: number[]; bySubject?: Record<string, number>; perDaySubjects?: Record<string, number>[] } | null;
   /** Questions the bot answered (lib/dash-counts.ts countBotAsks): today, the 7-day strip, and the week's subjects (4 Nov 2026). */
-  botAsks?: { today: number; perDay: number[]; bySubject?: Record<string, number> } | null;
+  botAsks?: { today: number; perDay: number[]; bySubject?: Record<string, number>; perDaySubjects?: Record<string, number>[] } | null;
   // The machine
   queue: { waiting: number; marking: number; oldestMinutes: number | null; list?: { student: string | null; paper: string; phase: string; waitingMinutes: number; pagesDone: number | null; pagesTotal: number | null }[] } | null;
   extraction: { waiting: number; working: number; held: number; doneToday: number; done24h: number; perDay: number[]; workingOn?: string[] } | null;
@@ -263,20 +265,20 @@ function todayTiles(f: GlanceFacts, now: number): Tile[] {
   else out.push({
     id: 'handed-in', label: 'Papers handed in', value: String(f.handedIn.today),
     sub: subjectLine(f.handedIn.bySubject ?? {}) || undefined,
-    tone: 'green', status: f.handedIn.today ? 'Coming in' : 'Quiet', href: '/admin/papers', trend: f.handedIn.perDay,
+    tone: 'green', status: f.handedIn.today ? 'Coming in' : 'Quiet', href: '/admin/papers', trend: f.handedIn.perDay, trendSubjects: f.handedIn.perDaySubjects,
   });
   if (f.practice == null) out.push(NO_READING('practice', 'Practice questions done', '/admin/students'));
   else out.push({
     id: 'practice', label: 'Practice questions done', value: String(f.practice.questions),
     sub: subjectLine(f.practice.bySubject ?? {}) || `${plural(f.practice.students, 'student')}`,
-    tone: 'green', status: f.practice.questions ? 'Practising' : 'Quiet', href: '/admin/students', trend: f.practice.perDay,
+    tone: 'green', status: f.practice.questions ? 'Practising' : 'Quiet', href: '/admin/students', trend: f.practice.perDay, trendSubjects: f.practice.perDaySubjects,
   });
   if (f.botAsks === undefined) { /* an older caller: no tile */ }
   else if (f.botAsks == null) out.push(NO_READING('bot-asks', 'Bot questions asked', '/admin/bot-analytics'));
   else out.push({
     id: 'bot-asks', label: 'Bot questions asked', value: String(f.botAsks.today),
     sub: subjectLine(f.botAsks.bySubject ?? {}) || undefined,
-    tone: 'green', status: f.botAsks.today ? 'Asking' : 'Quiet', href: '/admin/bot-analytics', trend: f.botAsks.perDay,
+    tone: 'green', status: f.botAsks.today ? 'Asking' : 'Quiet', href: '/admin/bot-analytics', trend: f.botAsks.perDay, trendSubjects: f.botAsks.perDaySubjects,
   });
   return out;
 }

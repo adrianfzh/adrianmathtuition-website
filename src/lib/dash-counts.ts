@@ -49,6 +49,8 @@ export interface DayCount {
   studentsToday: number;
   /** The window's rows per subject label (lib/dash-counts subjectLabel), most first. */
   bySubject: Record<string, number>;
+  /** The same split for EACH day, in `perDay` order — what a tap on one bar shows (5 Nov 2026). */
+  perDaySubjects: Record<string, number>[];
 }
 
 export interface HandinRow {
@@ -98,6 +100,7 @@ function bucket(items: { at: string; who: string; subject?: string | null }[], d
   const labels = Array.from({ length: days }, (_, i) => sgtDaysAgoISO(days - 1 - i, now));
   const index = new Map(labels.map((d, i) => [d, i]));
   const perDay = new Array<number>(days).fill(0);
+  const perDaySubjects = Array.from({ length: days }, () => ({} as Record<string, number>));
   const todayWho = new Set<string>();
   const bySubject: Record<string, number> = {};
   for (const it of items) {
@@ -109,8 +112,9 @@ function bucket(items: { at: string; who: string; subject?: string | null }[], d
     if (i === days - 1) todayWho.add(it.who);
     const label = subjectLabel(it.subject);
     bySubject[label] = (bySubject[label] ?? 0) + 1;
+    perDaySubjects[i][label] = (perDaySubjects[i][label] ?? 0) + 1;
   }
-  return { today: perDay[days - 1] ?? 0, perDay, total: perDay.reduce((a, b) => a + b, 0), studentsToday: todayWho.size, bySubject };
+  return { today: perDay[days - 1] ?? 0, perDay, total: perDay.reduce((a, b) => a + b, 0), studentsToday: todayWho.size, bySubject, perDaySubjects };
 }
 
 /**

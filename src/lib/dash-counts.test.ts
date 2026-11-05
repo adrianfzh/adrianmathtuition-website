@@ -47,7 +47,24 @@ describe('countHandins', () => {
   });
 
   it('nothing in is all zeros, never a gap', () => {
-    expect(countHandins([], [], 7, NOW)).toEqual({ today: 0, perDay: [0, 0, 0, 0, 0, 0, 0], total: 0, studentsToday: 0, bySubject: {} });
+    expect(countHandins([], [], 7, NOW)).toEqual({ today: 0, perDay: [0, 0, 0, 0, 0, 0, 0], total: 0, studentsToday: 0, bySubject: {}, perDaySubjects: [{}, {}, {}, {}, {}, {}, {}] });
+  });
+
+  // 5 Nov 2026 (Adrian: "can i tap or click on individual bars and the details is shown?"):
+  // every bar carries its own day's subject split, in perDay order.
+  it('each day keeps its own subject split for a tap on that bar', () => {
+    const T = typeof NOW === 'number' ? NOW : Date.parse(String(NOW));
+    const out = countBotAsks([
+      { at: new Date(T).toISOString(), chatId: 'c1', who: null, subject: 'Chemistry' },
+      { at: new Date(T).toISOString(), chatId: 'c2', who: null, subject: 'Chemistry' },
+      { at: new Date(T).toISOString(), chatId: 'c3', who: null, subject: 'Math' },
+      { at: new Date(T - 86400_000).toISOString(), chatId: 'c1', who: null, subject: 'Physics' },
+    ], [], 7, NOW);
+    expect(out.perDay.slice(-2)).toEqual([1, 3]);
+    expect(out.perDaySubjects[6]).toEqual({ Chem: 2, Maths: 1 });
+    expect(out.perDaySubjects[5]).toEqual({ Phys: 1 });
+    expect(out.perDaySubjects.slice(0, 5)).toEqual([{}, {}, {}, {}, {}]);
+    expect(out.bySubject).toEqual({ Chem: 2, Maths: 1, Phys: 1 });
   });
 
   it('counts the week per subject, in the tile words', () => {

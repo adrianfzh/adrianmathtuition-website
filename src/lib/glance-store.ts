@@ -273,7 +273,7 @@ async function handedIn(sb: Sb, weekAgo: string, now: number) {
     all<{ superseded_by: string | null }>((a, b) => sb.from('paper_marking_runs').select('superseded_by').not('superseded_by', 'is', null).gte('created_at', new Date(now - 90 * 86400_000).toISOString()).range(a, b), 3000),
   ]);
   const c = countHandins(rows.map((r) => ({ ...r, subject: r.paper_subject ?? null })), replaced.map((r) => r.superseded_by).filter((x): x is string => !!x), TREND_DAYS, now);
-  return { today: c.today, perDay: c.perDay, bySubject: c.bySubject };
+  return { today: c.today, perDay: c.perDay, bySubject: c.bySubject, perDaySubjects: c.perDaySubjects };
 }
 
 /**
@@ -296,7 +296,7 @@ async function practiceDone(sb: Sb, weekAgo: string, now: number) {
     ...h2.map((r) => ({ at: r.created_at, who: r.identity, subject: 'H2 Math' })),
   ];
   const c = countPractice(rows, TREND_DAYS, now);
-  return { students: c.studentsToday, questions: c.today, perDay: c.perDay, bySubject: c.bySubject };
+  return { students: c.studentsToday, questions: c.today, perDay: c.perDay, bySubject: c.bySubject, perDaySubjects: c.perDaySubjects };
 }
 
 /**
@@ -316,7 +316,7 @@ async function botAsks(weekAgo: string, now: number) {
     subject: typeof r.fields['Subject'] === 'string' ? (r.fields['Subject'] as string) : null,
   }));
   const c = countBotAsks(rows, [process.env.TELEGRAM_CHAT_ID || ''], TREND_DAYS, now);
-  return { today: c.today, perDay: c.perDay, bySubject: c.bySubject };
+  return { today: c.today, perDay: c.perDay, bySubject: c.bySubject, perDaySubjects: c.perDaySubjects };
 }
 
 export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {

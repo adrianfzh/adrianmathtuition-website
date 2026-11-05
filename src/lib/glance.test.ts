@@ -228,6 +228,13 @@ describe('the two number tiles (9 Oct 2026)', () => {
     expect(tile(down, 'practice')).toMatchObject({ value: '—', tone: 'grey' });
   });
 
+  it('each number tile carries the subject split behind every bar (5 Nov 2026, a tap shows it)', () => {
+    const split: Record<string, number>[] = [{}, { Chem: 1 }, {}, { Chem: 3, Maths: 1 }, {}, {}, { Phys: 2 }];
+    const g = buildGlance(facts({ botAsks: { today: 2, perDay: [0, 1, 0, 4, 0, 0, 2], bySubject: { Chem: 4, Maths: 1, Phys: 2 }, perDaySubjects: split } }), NOW);
+    expect(tile(g, 'bot-asks').trendSubjects).toEqual(split);
+    expect(tile(g, 'handed-in').trendSubjects).toBeUndefined(); // an older reading without the split still builds
+  });
+
   it('bot questions asked is the third number, with the week\'s subjects on every number tile (4 Nov 2026)', () => {
     const g = buildGlance(facts({
       botAsks: { today: 12, perDay: [20, 32, 4, 14, 0, 6, 12], bySubject: { Maths: 70, Chem: 12, Phys: 6 } },
