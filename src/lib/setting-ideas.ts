@@ -48,3 +48,41 @@ export function countLine(r: Pick<IdeaRow, 'student_count' | 'ask_count'>): stri
   const s = `${r.student_count} student${r.student_count === 1 ? '' : 's'}`;
   return r.ask_count > r.student_count ? `${s} · ${r.ask_count} asks` : s;
 }
+
+// ── The Telegram card (5 Nov 2026, Adrian: "Yes" to "when you decide on the website, the Telegram
+// card changes straight away"). The words are the bot's own (bot lib/settings-words.js
+// ideaCardText + handlers/settings.js handleIdeaCallback), so the card reads the same whichever
+// side decided. Decided → the decision line and no buttons; back to New (Undo) → the buttons again.
+
+export interface IdeaCardRow {
+  id: number; name: string; status: IdeaStatus; ask_count: number; student_count: number;
+  first_who: string | null; first_words: string | null;
+}
+
+export function ideaCardText(r: IdeaCardRow): string {
+  return [
+    '💡 New setting idea from the bot',
+    '',
+    `"${r.name}"`,
+    `Asked by: ${r.first_who || 'a student'} — "${String(r.first_words || '').slice(0, 200)}"`,
+    `Students asking: ${r.student_count}${r.ask_count > r.student_count ? ` (${r.ask_count} asks)` : ''}`,
+    '',
+    'The bot did not change anything. 👍 Add it puts it on the to-build list (nothing is built or switched on). 👎 No stops these alerts.',
+  ].join('\n');
+}
+
+export const DECISION_LINE: Record<Exclude<IdeaStatus, 'new'>, string> = {
+  approved: '👍 Added to the to-build list on the admin site. Nothing was built or switched on.',
+  declined: '👎 Declined on the admin site — no more alerts about this idea.',
+};
+
+/** What the Telegram card should become after a decision on the website. */
+export function ideaCardEdit(r: IdeaCardRow): { text: string; reply_markup: { inline_keyboard: { text: string; callback_data: string }[][] } } {
+  if (r.status === 'new') {
+    return { text: ideaCardText(r), reply_markup: { inline_keyboard: [[
+      { text: '👍 Add it', callback_data: `sg_ok:${r.id}` },
+      { text: '👎 No', callback_data: `sg_no:${r.id}` },
+    ]] } };
+  }
+  return { text: `${ideaCardText(r)}\n\n${DECISION_LINE[r.status]}`, reply_markup: { inline_keyboard: [] } };
+}
