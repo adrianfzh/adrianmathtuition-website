@@ -326,7 +326,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const job = (j: string) => safe(() => lastJob(sb, j));
 
   const [
-    questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew,
+    questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew, settingIdeasNew,
     shipsList, flaggedList, proposalLevels,
     lessons, toLog, marked, practice, handed, asks,
     q, ext, tw, jb, lg, disk, bot, fileBackup, backupCheck, leakTest,
@@ -339,6 +339,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
     safe(() => count(sb.from('paper_library').select('id', { count: 'exact', head: true }).eq('kind', 'source').in('status', ['flagged', 'failed']))),
     safe(() => count(sb.from('portal_event_log').select('id', { count: 'exact', head: true }).eq('kind', 'submit:failed').gte('created_at', new Date(now - 86400_000).toISOString()))),
     safe(() => count(sb.from('portal_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
+    safe(() => count(sb.from('setting_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
     safe(async () => {
       const { data, error } = await sb.from('proposal_requests').select('slug, action, result, requested_at').in('status', ['failed', 'needs_session'])
         .gte('requested_at', new Date(now - 7 * 86400_000).toISOString()).order('requested_at', { ascending: false }).limit(LIST_ROWS);
@@ -392,7 +393,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
 
   const line = (j: (JobLine & { meta?: unknown }) | null): JobLine | null => (j ? { ok: j.ok, at: j.at, summary: j.summary } : null);
   return {
-    questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins, suggestionsNew,
+    questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins, suggestionsNew, settingIdeasNew,
     shipsFailedList: shipsList, extractionFlaggedList: flaggedList, questionProposalsByLevel: proposalLevels,
     lessonsToday: lessons, lessonsToLog: toLog?.total ?? null, lessonsToLogDays: toLog?.days ?? null, marked, practice, handedIn: handed, botAsks: asks,
     queue: q, extraction: ext, twins: tw, jobs: jb, logins: lg, disk,

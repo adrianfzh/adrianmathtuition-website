@@ -10,7 +10,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
     { label: 'Schedule', href: '/admin/schedule', emoji: '📅' }, { label: 'Log lessons', href: '/admin/log', emoji: '✏️' },
     { label: 'Students', href: '/admin/students', emoji: '👤' }, { label: 'Exams', href: '/admin/exams', emoji: '📊' },
     { label: 'Follow-ups', href: '/admin/followups', emoji: '📌' }, { label: 'Parent digests', href: '/admin/digests', emoji: '📬' },
-    { label: 'Waitlist', href: '/admin/waitlist', emoji: '⏳' }, { label: 'Suggestions', href: '/admin/suggestions', emoji: '💡' },
+    { label: 'Waitlist', href: '/admin/waitlist', emoji: '⏳' }, { label: 'Suggestions', href: '/admin/suggestions', emoji: '💡' }, { label: 'Setting ideas', href: '/admin/setting-ideas', emoji: '⚙️' },
     { label: 'Staff rulebook', href: '/admin/rulebook', emoji: '📏' },
   ] },
   { group: 'Marking', links: [

@@ -78,6 +78,8 @@ export interface GlanceFacts {
   failedHandins: number | null;
   /** 💡 Students' suggestions not yet looked at (status 'new'). */
   suggestionsNew: number | null;
+  /** ⚙️ Setting ideas from the bot not yet decided (status 'new', 5 Nov 2026). Optional: older facts lack it. */
+  settingIdeasNew?: number | null;
   // Today
   lessonsToday: LessonLink[] | null;
   lessonsToLog: number | null;
@@ -223,6 +225,7 @@ function needsTiles(f: GlanceFacts): Tile[] {
     wide: flagged.length > 0,
   });
   add(f.suggestionsNew, { id: 'suggestions', label: 'Suggestions (new)', sub: 'from students', href: '/admin/suggestions' });
+  add(f.settingIdeasNew ?? null, { id: 'setting-ideas', label: 'Setting ideas (new)', sub: 'students asked the bot', href: '/admin/setting-ideas' });
   const byLevel = f.questionProposalsByLevel ?? [];
   add(f.questionProposals, {
     id: 'question-proposals', label: 'Questions to vet', sub: 'written by the sheets', href: '/admin/question-proposals',
