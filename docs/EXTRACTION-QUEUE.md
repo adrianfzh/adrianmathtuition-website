@@ -589,6 +589,17 @@ bucket `sources/_grail/<subject>/`) and filed them `library` because no level ex
 
 ## 4b. The rules in plain words + the extraction learner (5 Oct 2026)
 
+> **6 Nov 2026 — decided on /admin, not Telegram** (Adrian: *"can we just put all this on admin
+> itself, then i will act on it (don't put on telegram)"* … *"put them all on main admin page (not
+> separate pages)"*). "Decide here" on `/admin` (`components/DecideHere.tsx`, `/api/admin/decide`,
+> `lib/decide.ts`) carries: proposed rules (Ship · Change · Drop — files the same
+> `proposal_requests` row), proposals whose newest ship failed (Try again · Drop · Copy for a
+> session), flagged papers (Fine as it is → `done` · Try again → `queued`), and questions to vet
+> (Publish · Reject). Quiet since then: the learner's per-rule Telegram question
+> (bot `extraction-rule-ask`), the worker's reply to a website tap (bot `website-tap-reply`), the
+> Monday questions-to-vet reminder (website `question-proposals-nudge`). Turn one back on by
+> deleting its line in `quiet-messages`.
+
 Adrian, 5 Oct 2026: *"do extraction learning from its own flags too"*, then *"are standing rules
 fixed?"* → *"yes do that"*.
 
