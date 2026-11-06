@@ -71,6 +71,7 @@ import { reissueLine, parseReissueReason } from '@/lib/reissue-message';
 import { activePaperNotice, buildPaperNotice, describeRefs, parseNoticeKind } from '@/lib/paper-notice';
 import { missingAfterMarking } from '@/lib/handin-check';
 import { gapsForRun, gapWatchReason, pageGapAlert } from '@/lib/page-gap-repair';
+import { unlessQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -1016,7 +1017,7 @@ export async function POST(req: NextRequest) {
         const runForClosure = { id: run.id, student_id: run.student_id, student_name: run.student_name, paper_name: run.paper_name, result_json: run.result_json };
         try {
           after(async () => {
-            const r = await recordSheetClosure(supa, runForClosure, (line) => sendTelegram(line, 'marking'));
+            const r = await recordSheetClosure(supa, runForClosure, (line) => unlessQuiet('practice-again-closure', () => sendTelegram(line, 'marking')));
             if (!r.ok) console.warn('[closure] skipped', run.id, r.reason);
           });
         } catch (err) { console.warn('[closure] scheduling failed:', (err as Error).message); }
@@ -1039,7 +1040,8 @@ export async function POST(req: NextRequest) {
 
     // Told at the moment it goes out, not six hours later by the sweep and not
     // by the student. Fail-soft: a Telegram hiccup never un-releases a paper.
-    for (const line of gapAlerts) await sendTelegram(line, 'marking').catch(() => {});
+    // switched off 6 Nov 2026 (lib/quiet-messages 'missing-marked-pages'); the page-gap sweep still repairs them
+    for (const line of gapAlerts) await unlessQuiet('missing-marked-pages', () => sendTelegram(line, 'marking')).catch(() => {});
 
     queuePostReleaseEnrichment(enrichQueue);
 

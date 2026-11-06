@@ -24,6 +24,7 @@ import {
   tallyMathFirstAttempts, tallySummary, planMathLevel, mathWeeklyLine, MIN_FIRST_ATTEMPTS,
   type MathAttempt, type MathDifficultyStored, type MathChange,
 } from '@/lib/practice-difficulty';
+import { quietOk } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -180,7 +181,8 @@ async function weekly(sb: ReturnType<typeof createServiceClient>, dry: boolean) 
   const changes: MathChange[] = net.map(c => ({ from_level: c.first, to_level: c.to_level, starting_level: c.starting_level, attempts: c.attempts, wrong: c.wrong, label: esc(labels.get(c.question_id) || c.question_id.slice(0, 8)) }));
   const text = mathWeeklyLine(changes);
   let sent = false;
-  if (!dry && text) sent = await sendTelegram(text, 'students').catch(() => false);
+  // switched off 6 Nov 2026 (lib/quiet-messages): a quiet line counts as sent, so the moves are still marked reported
+  if (!dry && text) sent = await quietOk('practice-levels', () => sendTelegram(text, 'students')).catch(() => false);
   if (!dry && list.length && (sent || !text)) {
     await sb.from('math_practice_difficulty_changes').update({ reported_at: new Date().toISOString() }).in('id', list.map(c => c.id));
   }

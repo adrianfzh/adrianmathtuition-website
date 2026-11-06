@@ -28,8 +28,10 @@ import { sweepNotebooks } from '@/lib/retention-notebook-store';
 import { LOGIN_TROUBLE_KEEP_DAYS, LOGIN_TROUBLE_KINDS } from '@/lib/login-trouble';
 import { sendTelegram } from '@/lib/telegram';
 import { cronAuth } from '@/lib/cron-auth';
+import { unlessQuiet } from '@/lib/quiet-messages';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
-const notify_ops = (text: string) => sendTelegram(text, 'ops');
+// every line here is switched off (6 Nov 2026, lib/quiet-messages 'retention'); job_runs still records the run
+const notify_ops = (text: string) => unlessQuiet('retention', () => sendTelegram(text, 'ops'));
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;

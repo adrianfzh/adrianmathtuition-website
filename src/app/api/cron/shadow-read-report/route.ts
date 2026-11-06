@@ -17,6 +17,7 @@ import { shadowReport } from '@/lib/shadow-read-report';
 import { loadShadowSummary } from '@/lib/shadow-read-store';
 import { fileForBrief } from '@/lib/staff-inbox';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -28,8 +29,9 @@ export async function GET(req: NextRequest) {
   try {
     const s = await loadShadowSummary();
     const msg = shadowReport(s);
-    if (msg) await sendTelegram(msg, 'marking').catch(() => {});
-    if (msg) await fileForBrief({ family: 'shadow-read', label: 'Cheaper-reader report', body: msg });
+    const off = isQuiet('shadow-read-report'); // the Telegram is switched off (6 Nov 2026); the brief copy still files
+    if (msg && !off) await sendTelegram(msg, 'marking').catch(() => {});
+    if (msg) await fileForBrief({ family: 'shadow-read', label: 'Cheaper-reader report', body: msg, sentAlso: !off });
     const papers = s.arms[0]?.all.papers ?? 0;
     const diffs = s.arms[0]?.diffs.length ?? 0;
     await logJobRun('shadow-read-report', true, papers ? `${papers} papers, ${diffs} parts to adjudicate` : 'nothing shadowed yet').catch(() => {});

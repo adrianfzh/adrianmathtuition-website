@@ -4,9 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+// The Telegram is switched off (6 Nov 2026, lib/quiet-messages 'payment-marking-reminder'); the brief copy still files.
 const notify_money = async (text: string) => {
-  const sent = await sendTelegram(text, 'money');
-  await fileForBrief({ family: 'payment-reminder', label: 'Invoice run: mark payments', body: text });
+  const quiet = isQuiet('payment-marking-reminder');
+  const sent = quiet ? true : await sendTelegram(text, 'money');
+  await fileForBrief({ family: 'payment-reminder', sentAlso: !quiet, label: 'Invoice run: mark payments', body: text });
   return sent;
 };
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -14,6 +16,7 @@ import { getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor, buildPaymentReminderMessage } from '@/lib/invoice-run-mode';
 import { fileForBrief } from '@/lib/staff-inbox';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 

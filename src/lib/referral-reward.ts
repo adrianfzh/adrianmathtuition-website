@@ -23,6 +23,7 @@ import {
   creditManualFallbackMessage,
   creditReceiptMessage,
 } from './referral-invoice-credit';
+import { isQuiet } from '@/lib/quiet-messages';
 
 /** S$10 of pass time at S$29 / 30 days ≈ 10.3 → 10 days. */
 export const REFERRAL_REWARD_DAYS = 10;
@@ -80,8 +81,10 @@ export async function rewardInviterForPaidPass(
         payerDisplayName: payer?.display_name,
         paymentReference: args.paymentReference,
       });
+      // the done-for-him lines are switched off (6 Nov 2026, lib/quiet-messages 'referral-reward');
+      // the manual fallback below still sends — it needs him
       if (credit.status === 'applied') {
-        await notify_students(
+        if (!isQuiet('referral-reward')) await notify_students(
           creditReceiptMessage({ payerName, inviterName, targetMonth: credit.targetMonth }),
         );
       } else if (credit.status === 'failed') {
@@ -99,7 +102,7 @@ export async function rewardInviterForPaidPass(
         source: 'referral',
         reference: `referral:${args.paymentReference}`,
       });
-      if (!r.duplicate) {
+      if (!r.duplicate && !isQuiet('referral-reward')) {
         await notify_students(
           `🎁 Referral converted: ${payerName} paid — ${inviterName} auto-earned +${REFERRAL_REWARD_DAYS} days ` +
             `(S$10 of pass time; now expires ${r.expiresAt}).`,

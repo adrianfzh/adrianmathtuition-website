@@ -14,6 +14,7 @@ import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { sgtTodayISO } from '@/lib/sgt';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -72,7 +73,7 @@ export async function GET(req: Request) {
     }
   }
   const summary = runs.length ? `${sent} science paper${sent === 1 ? '' : 's'} into the marking queue${failed ? `, ${failed} not queued` : ''}` : 'nothing waiting';
-  if (runs.length) sendTelegram(`📥 Midnight queue (${today}): ${summary}\n${lines.join('\n')}`, 'marking').catch(() => {});
+  if (runs.length && !isQuiet('midnight-queue')) sendTelegram(`📥 Midnight queue (${today}): ${summary}\n${lines.join('\n')}`, 'marking').catch(() => {});
   await logJobRun('daily-queue', failed === 0, summary).catch(() => {});
   return NextResponse.json({ ok: failed === 0, today, sent, failed });
 }

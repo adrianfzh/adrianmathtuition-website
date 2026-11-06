@@ -14,6 +14,7 @@ import { verifyAgentAuth } from '@/lib/agent-auth';
 import { SLOT_ACCOUNTS, offKeys, slotAccountRows } from '@/lib/slot-accounts';
 import { getSlotAccounts, setSlotAccount, getSlotUsage, mergeSlotUsage } from '@/lib/slot-accounts-store';
 import { sendTelegram } from '@/lib/telegram';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
   if (!known || typeof body.on !== 'boolean') return NextResponse.json({ error: 'email (a known slot account) and on (boolean) are required' }, { status: 400 });
   try {
     const map = await setSlotAccount(email, body.on, 'adrian');
-    sendTelegram(body.on
+    if (!isQuiet('switch-echo')) sendTelegram(body.on
       ? `⏻ Slots ON for ${email} — the picker may choose it again from the next job.`
       : `⏻ Slots OFF for ${email} — the picker never chooses it; whatever a slot holds on it finishes first.`, 'marking').catch(() => {});
     const usage = await getSlotUsage().catch(() => ({}));

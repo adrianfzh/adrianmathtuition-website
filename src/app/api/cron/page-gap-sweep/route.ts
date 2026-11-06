@@ -54,6 +54,7 @@ import {
   gapsForRun, gapPageNumbers, pageGapAlert, repairPageGaps, alreadyReported, gapCheckStamp,
   type GapRunRow,
 } from '@/lib/page-gap-repair';
+import { isQuiet, unlessQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 // Redraws are the slow part (a page render on the bot, 10–60 s each). The sweep
@@ -228,8 +229,8 @@ export async function GET(req: NextRequest) {
         + `Check ADMIN_PASSWORD on the deployment.\n${SITE}/admin/ops`;
     }
 
-    for (const line of lines) await sendTelegram(line, 'marking').catch(() => {});
-    if (faultLine) await raiseAlert('page-gap-selffix', 'marking', faultLine).catch(() => {});
+    for (const line of lines) await unlessQuiet('missing-marked-pages', () => sendTelegram(line, 'marking')).catch(() => {}); // switched off 6 Nov 2026
+    if (faultLine) { if (!isQuiet('page-gap-selffix')) await raiseAlert('page-gap-selffix', 'marking', faultLine).catch(() => {}); }
     else await clearAlert('page-gap-selffix', '✅ The page-gap self-fix works again.', { category: 'marking' }).catch(() => null);
 
     const repaired = report.reduce((n, r) => n + r.repaired, 0);

@@ -15,6 +15,7 @@ import { suggestionsOpen } from '@/lib/portal-beta';
 import { cleanSuggestion, isRecentDuplicate, senderFields, suggestionTelegramLine } from '@/lib/suggestions';
 import { insertSuggestion, recentSuggestions } from '@/lib/suggestions-store';
 import { sendTelegram } from '@/lib/telegram';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +37,8 @@ export async function POST(req: NextRequest) {
       text: cleaned.text,
     });
     // One line to the students topic; a Telegram hiccup never fails the student's send.
-    await sendTelegram(suggestionTelegramLine({ name, anonymous, text: cleaned.text }), 'students').catch(() => false);
+    // switched off 6 Nov 2026 (lib/quiet-messages) — the suggestion is still stored
+    if (!isQuiet('student-suggestion')) await sendTelegram(suggestionTelegramLine({ name, anonymous, text: cleaned.text }), 'students').catch(() => false);
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('[suggestions]', (e as Error).message);

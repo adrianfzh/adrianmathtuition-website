@@ -16,6 +16,7 @@ import { buildWeeklyCost, weeklyCostMessage } from '@/lib/weekly-cost';
 import { loadWeeklyCost } from '@/lib/weekly-cost-store';
 import { fileForBrief } from '@/lib/staff-inbox';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -29,8 +30,9 @@ export async function GET(req: NextRequest) {
     const w = buildWeeklyCost(await loadWeeklyCost());
     const message = weeklyCostMessage(w);
     if (!dry) {
-      await sendTelegram(message, 'money').catch(() => {});
-      await fileForBrief({ family: 'weekly-cost', label: 'Weekly cost check', body: message });
+      const quiet = isQuiet('weekly-cost'); // the Telegram is switched off (6 Nov 2026); the brief copy still files
+      if (!quiet) await sendTelegram(message, 'money').catch(() => {});
+      await fileForBrief({ family: 'weekly-cost', label: 'Weekly cost check', body: message, sentAlso: !quiet });
       await logJobRun('weekly-cost', true, `${w.papers} papers, US$${w.avg ?? 0} a paper, ${w.savings.length} saving(s) ready`).catch(() => {});
     }
     return NextResponse.json({ ok: true, dry, message, summary: w });

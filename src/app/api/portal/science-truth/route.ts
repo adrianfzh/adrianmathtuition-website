@@ -14,6 +14,7 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { parseTeacherTotal, teacherTotalRow, teacherTotalSummary, TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
 import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
   }
 
   const summary = teacherTotalSummary(truth, { awarded: aiAwarded, max: aiMax });
-  sendTelegram(
+  if (!isQuiet('teacher-mark')) sendTelegram( // switched off 6 Nov 2026 (lib/quiet-messages)
     `📏 <b>${escapeTelegramHtml(account.display_name || 'A student')}</b> entered the teacher’s mark for “${escapeTelegramHtml(run.paper_name || 'a science paper')}” (${subject}): ${escapeTelegramHtml(summary.line)}${existing?.id ? ' (updated)' : ''}`,
     'marking',
   ).catch(() => {});

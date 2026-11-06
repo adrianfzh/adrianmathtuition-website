@@ -11,6 +11,7 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { portalIdentity } from '@/lib/portal-auth';
 import { parseReportBody, reportReasonText } from '@/lib/practice-photo';
 import { sendTelegram } from '@/lib/telegram';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,7 +52,8 @@ export async function POST(req: Request) {
     await admin.from('portal_assignments').update({ status: 'revoked', note: `Reported: ${reasonText}`.slice(0, 300) }).eq('id', row.id);
   }
   try {
-    await sendTelegram(`🚩 Practice photo reported by ${identity} — ${row.title}: ${reasonText}\nhttps://www.adrianmathtuition.com/admin/generated`, 'students');
+    // switched off 6 Nov 2026 (lib/quiet-messages) — the report is still stored on the question
+    if (!isQuiet('practice-photo-reported')) await sendTelegram(`🚩 Practice photo reported by ${identity} — ${row.title}: ${reasonText}\nhttps://www.adrianmathtuition.com/admin/generated`, 'students');
   } catch (e) { console.error('[practice-photo/report] telegram:', (e as Error).message); }
   return NextResponse.json({ ok: true });
 }

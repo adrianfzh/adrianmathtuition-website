@@ -15,6 +15,7 @@ import { sgtTodayISO } from '@/lib/sgt';
 import { buildReminderEmail } from '@/lib/overdue-reminders';
 import { loadReminderPlan, reminderLines, REMINDER_LOG_TYPE } from '@/lib/overdue-reminders-store';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -81,7 +82,8 @@ export async function GET(req: NextRequest) {
     }
 
     const lines = reminderLines(plan, students);
-    if (lines.length) {
+    // the all-fine version is switched off (6 Nov 2026, lib/quiet-messages); a reminder that failed still tells Adrian
+    if (lines.length && (failed.length || !isQuiet('payment-reminders-sent'))) {
       await sendTelegram(
         `📨 <b>Payment reminders — ${today}</b>\n` +
         `For students who got no bill today (unpaid bills show on everyone else's bill).\n\n` +

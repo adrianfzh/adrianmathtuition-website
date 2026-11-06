@@ -10,6 +10,7 @@ import { fileForBrief } from '@/lib/staff-inbox';
 import { weeklyMessage } from '@/lib/question-health';
 import { weekCounts } from '@/lib/question-health-store';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -23,9 +24,10 @@ export async function GET(req: NextRequest) {
     const c = await weekCounts();
     const quiet = !c.on && !c.checked && !c.pausedWaiting;
     const text = weeklyMessage(c);
-    const sent = !dry && !quiet ? await sendTelegram(text) : false;
-    if (!dry && !quiet) await fileForBrief({ family: 'question-health', label: 'Question check', body: text });
-    if (!dry) await logJobRun('question-health-weekly', true, quiet ? 'switched off, nothing to say' : `${c.checked} checked, ${c.fixed} fixed, ${c.paused} paused, ${c.retired} retired${sent ? ', message sent' : ', message NOT sent'}`, { ...c, sent });
+    const off = isQuiet('question-health'); // the Telegram is switched off (6 Nov 2026); the brief copy still files
+    const sent = !dry && !quiet && !off ? await sendTelegram(text) : false;
+    if (!dry && !quiet) await fileForBrief({ family: 'question-health', label: 'Question check', body: text, sentAlso: !off });
+    if (!dry) await logJobRun('question-health-weekly', true, quiet ? 'switched off, nothing to say' : `${c.checked} checked, ${c.fixed} fixed, ${c.paused} paused, ${c.retired} retired${off ? ', message switched off' : sent ? ', message sent' : ', message NOT sent'}`, { ...c, sent });
     return NextResponse.json({ ok: true, dry, quiet, sent, counts: c, message: text });
   } catch (e) {
     if (!dry) await logJobRun('question-health-weekly', false, (e as Error).message.slice(0, 200));

@@ -11,6 +11,7 @@ import { sessionAccount } from '@/lib/portal-auth';
 import { createServiceClient } from '@/lib/supabase-server';
 import { changedRecently, passwordChangedLine } from '@/lib/password-changed';
 import { sendTelegram } from '@/lib/telegram';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
   const where = body.where === 'reset' ? 'reset' : 'settings';
   try {
     const { data } = await createServiceClient().auth.admin.getUserById(account.id);
-    if (changedRecently(data.user?.updated_at, Date.now())) {
+    if (changedRecently(data.user?.updated_at, Date.now()) && !isQuiet('password-changed')) { // switched off 6 Nov 2026 (lib/quiet-messages)
       await sendTelegram(passwordChangedLine({ name: account.display_name, email: account.email, where }), 'students').catch(() => false);
     }
   } catch (e) {

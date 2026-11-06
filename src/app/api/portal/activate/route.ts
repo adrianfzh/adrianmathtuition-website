@@ -15,6 +15,7 @@ import { POLICY_VERSION } from '@/lib/portal-consent';
 import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
 import { claimInvite, releaseInvite, finishInvite } from '@/lib/invite-claim';
+import { isQuiet } from '@/lib/quiet-messages';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
 
@@ -141,8 +142,8 @@ export async function POST(req: NextRequest) {
   // Tell Adrian the invite landed (30 Aug 2026 — self-serve signups via
   // /api/portal/join have always pinged him; his OWN invited students
   // activating did not, so a sent invite just went quiet either way).
-  // Best-effort: a Telegram failure must never fail an activation.
-  notify_students(
+  // Best-effort: a Telegram failure must never fail an activation. Switched off 6 Nov 2026 (lib/quiet-messages).
+  if (!isQuiet('portal-activated')) notify_students(
     `🎓 <b>${escapeHtml(displayName || email)}</b> activated their student portal account` +
     `${level ? ` (${escapeHtml(level)})` : ''}.`
   ).catch(() => {});

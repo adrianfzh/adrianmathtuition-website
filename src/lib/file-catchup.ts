@@ -25,7 +25,7 @@
 // lib/paper-folder.ts path rule, so the two cannot drift.
 import { getSupabaseAdmin } from './supabase';
 import { sendTelegram } from './telegram';
-import { unlessQuiet } from './quiet-messages';
+import { unlessQuiet, quietOk } from './quiet-messages';
 import { fetchOurFile, isOurFileUrl } from './student-files';
 import { uploadFile } from './dropbox';
 import { markedAiPath, paperFolder, RETURNED_NAME, type PaperRun } from './paper-folder';
@@ -207,7 +207,8 @@ export async function sweepUnfiledPapers({ dry = false, now = new Date() }: { dr
     const byId = new Map(picks.map(r => [r.id, r]));
     const due = out.items.filter(i => i.error && shouldAlertUnfiled(byId.get(i.runId) || { released_at: null }, now));
     if (due.length) {
-      const sent = await sendTelegram(unfiledAlertLine(due), 'marking');
+      // switched off 6 Nov 2026 (lib/quiet-messages 'dropbox-not-filed') — counts as told, so the schedule still moves on
+      const sent = await quietOk('dropbox-not-filed', () => sendTelegram(unfiledAlertLine(due), 'marking'));
       if (sent) {
         for (const i of due) {
           const { data: row } = await sb.from('paper_marking_runs').select('result_json').eq('id', i.runId).maybeSingle();

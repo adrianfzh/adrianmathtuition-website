@@ -38,6 +38,7 @@ import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
 import { FIX_EVENT_KINDS, isFixEventKind, sanitizeFixDetail } from '@/lib/fix-one-events';
 import { SCIENCE_FEEDBACK_DAILY_CAP, SCIENCE_FEEDBACK_KIND, sanitizeScienceFeedback, scienceFeedbackLine } from '@/lib/science-feedback';
+import { isQuiet } from '@/lib/quiet-messages';
 
 // A hand-in that failed on the phone after every retry (lib/submit-failure.ts,
 // 7 Sep 2026): its own family, a small cap, a detail payload, and one Telegram
@@ -127,7 +128,7 @@ export async function POST(req: NextRequest) {
         .eq('id', feedback.runId).eq('student_id', identity).maybeSingle<{ paper_name: string | null }>();
       if (!run) return NextResponse.json({ error: 'Not found' }, { status: 404 });
       await svc.from('portal_event_log').insert({ identity, kind, detail: feedback });
-      await sendTelegram(scienceFeedbackLine(account.display_name, run.paper_name, feedback), 'marking').catch(() => {});
+      if (!isQuiet('science-feedback')) await sendTelegram(scienceFeedbackLine(account.display_name, run.paper_name, feedback), 'marking').catch(() => {});
     } else if (fixDetail) {
       // Only a paper this student owns; fix:shown once per run per SGT day.
       const { data: run } = await svc.from('paper_marking_runs').select('id')

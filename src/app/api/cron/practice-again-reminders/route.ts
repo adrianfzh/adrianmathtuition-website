@@ -16,6 +16,7 @@ import { sendPushToStudent } from '@/lib/portal-push';
 import { resolveRecipient } from '@/lib/student-recipient';
 import { REMINDERS_PAUSED, pickDue, nudgeText, nudgePush, nudgeSummaryLine, FIRST_NUDGE_AFTER_DAYS, type RequiredSheetRow, type NudgeSent } from '@/lib/practice-again-reminders';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -80,7 +81,7 @@ export async function GET(req: NextRequest) {
   }
 
   const line = nudgeSummaryLine(sent);
-  if (line) await sendTelegram(line, 'marking').catch(() => {});
+  if (line && !isQuiet('practice-again-nudges')) await sendTelegram(line, 'marking').catch(() => {}); // switched off 6 Nov 2026
   const summary = `${sent.length} nudged of ${rows.length} compulsory sheets open${failures.length ? `; ${failures.length} failure(s)` : ''}`;
   await logJobRun('practice-again-reminders', failures.length === 0, summary).catch(() => {});
   return NextResponse.json({ ok: true, open: rows.length, nudged: sent.length, sent, failures });

@@ -24,6 +24,7 @@ import {
 } from '@/lib/holiday-optout';
 import { pressNotice } from '@/lib/optout-notice';
 import { roster, studentRate } from '@/lib/optout-rollup';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -154,6 +155,8 @@ async function notify(
   keeping: string[],
   leftAlone: string[],
 ): Promise<void> {
+  // one line per opt-out is switched off (6 Nov 2026, lib/quiet-messages); the holiday roll-up still sends
+  if (isQuiet('holiday-optout-each')) return;
   try {
     const [rate, people] = await Promise.all([
       studentRate(studentId).catch(() => null),

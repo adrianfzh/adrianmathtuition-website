@@ -14,6 +14,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { clashes, lessonRestoreFields, lessonsToRecreate, type DiscontinueSnapshot, type ExistingLesson } from '@/lib/reinstate';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 
@@ -62,7 +63,8 @@ export async function POST(req: NextRequest) {
   invalidateScheduleStatics();
   await sb.from('student_discontinue_log').update({ reinstated_at: new Date().toISOString(), reinstate_result: result }).eq('id', log.id);
   try {
-    await sendTelegram(`↩ Reinstated ${log.student_name || studentId}: ${result.enrollmentsRestored} enrolment(s) back, ${result.lessonsRecreated} lesson(s) re-created${result.invoicesVoidedEarlier.length ? `; ${result.invoicesVoidedEarlier.length} invoice(s) voided at discontinue stay voided — check them` : ''}.`, 'students');
+    // the echo is switched off (6 Nov 2026, lib/quiet-messages) — it still sends when voided invoices need checking
+    if (result.invoicesVoidedEarlier.length || !isQuiet('reinstated-echo')) await sendTelegram(`↩ Reinstated ${log.student_name || studentId}: ${result.enrollmentsRestored} enrolment(s) back, ${result.lessonsRecreated} lesson(s) re-created${result.invoicesVoidedEarlier.length ? `; ${result.invoicesVoidedEarlier.length} invoice(s) voided at discontinue stay voided — check them` : ''}.`, 'students');
   } catch { /* silent */ }
   return NextResponse.json({ ok: true, ...result });
 }

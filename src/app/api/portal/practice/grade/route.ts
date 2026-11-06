@@ -33,6 +33,7 @@ import { gradableRow, readFixCache } from '@/lib/fix-one';
 import { fixOneOpenFor, learnLoopOpenFor } from '@/lib/portal-beta';
 import { loopTopic, LOOP_DAILY_CAP, type LoopMeta } from '@/lib/learn-loop';
 import { loopTypes, studentLoopLevel } from '@/lib/learn-loop-store';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -182,7 +183,7 @@ export async function POST(req: NextRequest) {
       })
       .select('id').single();
     if (insSErr) console.error('[practice-grade] science attempt insert failed:', insSErr.message);
-    if (sres.parseRetried) {
+    if (sres.parseRetried && !isQuiet('grade-json-retry')) { // switched off 6 Nov 2026 (lib/quiet-messages)
       notify_students(`⚠️ ${sciLevel.label} practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
     }
     return NextResponse.json({ attemptId: insS?.id ?? null, result: sres, weaknessTags: [] });
@@ -427,7 +428,8 @@ export async function POST(req: NextRequest) {
       : assignment.source === 'find'
         ? `🔍 ${who} did a question they found (${what})`
         : `📬 ${who} did your assigned question (${what})`;
-    notify_students(
+    // switched off 6 Nov 2026 (lib/quiet-messages)
+    if (!isQuiet('practice-done')) notify_students(
       `${lead} — ${result.score}/${result.outOf}`
       + (assignment.status === 'marked' ? ' (re-marked)' : '')
       + `\nhttps://www.adrianmathtuition.com/admin/students/${account.airtable_student_id}`
@@ -437,7 +439,7 @@ export async function POST(req: NextRequest) {
   // Alerts: only true anomalies page Adrian in real time (a 9:30pm daily digest
   // covers normal grades — see /api/portal/practice-digest). Anomaly = the model
   // needed a retry to produce valid JSON, i.e. lower confidence in the grade.
-  if (result.parseRetried) {
+  if (result.parseRetried && !isQuiet('grade-json-retry')) { // switched off 6 Nov 2026 (lib/quiet-messages)
     notify_students(
       `⚠️ Portal grade needed a JSON retry (lower confidence) — ${account.display_name || account.email}, ${q.topics?.[0] || '?'}, ${result.score}/${result.outOf}. Worth a spot-check.`
     ).catch(() => {});

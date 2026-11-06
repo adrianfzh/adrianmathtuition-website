@@ -13,6 +13,7 @@ import {
   attemptClears, relockItems, nextOpenItem, planDone,
   type ClearRule, type ItemKind, type ItemState, type LossClass, type PlanStatus,
 } from '@/lib/remediation';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export type PlanRow = {
   id: string;
@@ -181,7 +182,8 @@ export async function reconcilePlan(plan: PlanRow, items: ItemRow[]): Promise<Re
     // moment the next wave gets picked — the count query rides inside the same
     // fire-and-forget so it can never slow the page either.
     const finished = plan;
-    (async () => {
+    // switched off 6 Nov 2026 (lib/quiet-messages); the stuck-on-a-step doorbell below still rings
+    if (!isQuiet('game-plan-finished')) (async () => {
       let shelfLine = '';
       try {
         const { count } = await sb.from('student_shelf')

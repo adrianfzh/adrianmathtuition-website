@@ -37,7 +37,8 @@ import { logJobRun } from '@/lib/job-log';
 import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
-const notify_ops = (text: string) => sendTelegram(text, 'ops');
+// switched off 6 Nov 2026 (lib/quiet-messages): 'graduates-offboarded' for the 🎓 summary, 'offboarding' for a failed run
+const notify_ops = (text: string, family = 'offboarding') => unlessQuiet(family, () => sendTelegram(text, 'ops'));
 import { cronAuth } from '@/lib/cron-auth';
 import {
   decideDeactivation,
@@ -45,6 +46,7 @@ import {
   INACTIVITY_DAYS,
   type AirtableEnrollmentRecord,
 } from '@/lib/deactivate-inactive';
+import { unlessQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -171,6 +173,7 @@ async function run(req: NextRequest) {
           `from the portal: ${names}. No active enrollment for ${INACTIVITY_DAYS}+ days — they now see the ` +
           `S$29 pass gate; all their data stays. Reactivate any time: /api/admin/passes {action:'reactivate'}.` +
           (errors.length ? `\n⚠ ${errors.length} account${errors.length === 1 ? '' : 's'} skipped on error — next month retries.` : ''),
+        'graduates-offboarded',
       ).catch(() => {});
     }
 

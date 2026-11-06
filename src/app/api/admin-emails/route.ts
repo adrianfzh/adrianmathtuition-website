@@ -6,6 +6,7 @@ const notify_money = (text: string) => sendTelegram(text, 'money');
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -164,8 +165,9 @@ export async function POST(req: NextRequest) {
       }),
     });
 
-    // Notify on Telegram (the admin explicitly wants resend confirmations).
-    await notify_money(
+    // Notify on Telegram. The ↩ "Email resent" echo is switched off (6 Nov 2026, lib/quiet-messages);
+    // a resend that was NOT delivered still tells Adrian.
+    if (!delivered || !isQuiet('email-resent-echo')) await notify_money(
       delivered
         ? `↩ <b>Email resent</b>\n${subject}\nTo: ${toEmail}${pdfUrl ? '\n📎 PDF attached' : ''}`
         : `⚠️ <b>Resend NOT delivered (${failEvent})</b>\n${subject}\nTo: ${toEmail}\nThe address is blocked by the email provider — verify it / clear the suppression in Resend.`,

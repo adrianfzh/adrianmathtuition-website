@@ -88,6 +88,7 @@ export async function checkDelivery(
  */
 export async function alertVerificationBlind(where: string, reason: string, count = 1): Promise<void> {
   try {
+    if ((await import('./quiet-messages')).isQuiet('email-verify-off')) return; // switched off 6 Nov 2026
     const { sendTelegram } = await import('./telegram');
     await sendTelegram(
       `⚠️ <b>Email delivery verification is OFF</b>\n` +

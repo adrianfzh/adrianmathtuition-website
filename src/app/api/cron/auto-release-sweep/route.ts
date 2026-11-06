@@ -12,6 +12,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { sweepCandidates, sweepVerdict, SWEEP_WINDOW_DAYS, type SweepRow } from '@/lib/auto-release-sweep';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
       if (res.ok && one?.released) {
         record = { at: now.toISOString(), outcome: 'released', via: one.via, sweep: true, attempts: 1, ...(Array.isArray(one.watch) && one.watch.length ? { watch: one.watch } : {}) };
         const watch = Array.isArray(one.watch) && one.watch.length ? `\n⚠️ Watch out for: ${one.watch.join(' · ')} — ${desk}` : '';
-        await sendTelegram(`✅ Released to ${who} on a retry — ${r.paper_name || 'their paper'} (the automatic release had failed earlier).${watch}`, 'marking').catch(() => {});
+        if (!isQuiet('release-retry')) await sendTelegram(`✅ Released to ${who} on a retry — ${r.paper_name || 'their paper'} (the automatic release had failed earlier).${watch}`, 'marking').catch(() => {});
         out.push({ id: r.id, ok: true, note: 'released' });
       } else if (res.ok && one && one.released === false) {
         record = { at: now.toISOString(), outcome: 'refused', note: String(one.note || 'refused').slice(0, 160), sweep: true, attempts: 1 };

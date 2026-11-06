@@ -14,6 +14,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { fileBackupLine, fileBackupProblems } from '@/lib/file-backup';
 import { runFileBackup } from '@/lib/file-backup-store';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -40,13 +41,13 @@ export async function GET(req: NextRequest) {
       caughtUp: pending === 0, expiredRemoved: r.expiredRemoved,
     });
     // onlyIfNew: the table is this job's dedupe — one line per run of failures, not one a night
-    if (problems.length) await raiseAlert('file-backup', 'ops', `🗄 ${line}`, { onlyIfNew: true }).catch(() => {});
+    if (problems.length) { if (!isQuiet('file-backup')) await raiseAlert('file-backup', 'ops', `🗄 ${line}`, { onlyIfNew: true }).catch(() => {}); }
     else await clearAlert('file-backup', '✅ The file backup works again.', { category: 'ops' }).catch(() => null);
     return NextResponse.json({ ok: problems.length === 0, line, ...r });
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[file-backup] failed:', msg);
-    await raiseAlert('file-backup', 'ops', `🗄 The file backup could not run: ${msg.slice(0, 200)}`, { onlyIfNew: true, plain: true }).catch(() => {});
+    if (!isQuiet('file-backup')) await raiseAlert('file-backup', 'ops', `🗄 The file backup could not run: ${msg.slice(0, 200)}`, { onlyIfNew: true, plain: true }).catch(() => {});
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

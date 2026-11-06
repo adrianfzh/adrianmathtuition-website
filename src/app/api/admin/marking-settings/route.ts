@@ -14,6 +14,7 @@ import { getMacOnlySetting, getScienceOpenSetting, getVisionBatchSetting, setMac
 import { sendTelegram } from '@/lib/telegram';
 import { LESSON_LINE_SETTING, lessonLineOn } from '@/lib/next-lesson-store';
 import { setMarkingSwitch } from '@/lib/marking-settings';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,21 +36,21 @@ export async function POST(req: NextRequest) {
   try {
     if (typeof body.macOnly === 'boolean') {
       const value = await setMacOnly(body.macOnly, 'adrian', note);
-      sendTelegram(body.macOnly
+      if (!isQuiet('switch-echo')) sendTelegram(body.macOnly
         ? '🖥 Mac plan only switched ON from mark-paper — nothing goes to the API: no ⚡ full-price runs, no ☁️ batch, no takeovers. Every paper waits for a Mac slot.'
         : '☁️ Mac plan only switched OFF from mark-paper — the normal split is back: the Mac gets a head start, the worker takes the rest.', 'marking').catch(() => {});
       return NextResponse.json({ macOnly: value });
     }
     if (typeof body.scienceOpen === 'boolean') {
       const value = await setScienceOpen(body.scienceOpen, 'adrian', note);
-      sendTelegram(body.scienceOpen
+      if (!isQuiet('switch-echo')) sendTelegram(body.scienceOpen
         ? '🧪 Science tab OPENED to students from mark-paper — every signed-in student now sees Math | Science and can hand in physics / chemistry / biology papers. Marks are labelled an estimate; the feedback comes first.'
         : '🧪 Science tab CLOSED to students from mark-paper — students see the maths app only; your admin preview still has it.', 'marking').catch(() => {});
       return NextResponse.json({ scienceOpen: value });
     }
     if (typeof body.visionBatch === 'boolean') {
       const value = await setVisionBatch(body.visionBatch, 'adrian', note);
-      sendTelegram(body.visionBatch
+      if (!isQuiet('switch-echo')) sendTelegram(body.visionBatch
         ? '🌙 Gemini Batch switched ON from /admin/switches — a queued paper\'s first vision round goes to the Batch API at half price and may wait up to an hour. ⚡ Mark now still goes live.'
         : '☀️ Gemini Batch switched OFF from /admin/switches — every vision call is live again: full price, no waiting.', 'marking').catch(() => {});
       return NextResponse.json({ visionBatch: value });

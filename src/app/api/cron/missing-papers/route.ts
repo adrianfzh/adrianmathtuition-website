@@ -26,6 +26,7 @@ import { runPaperFields } from '@/lib/extraction-inbox';
 import { groupMissingPapers, missingPapersLine, missingPaperKey, type MissingPaperRun, type MissingPaperGroup } from '@/lib/missing-papers';
 import { fileForBrief } from '@/lib/staff-inbox';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -96,8 +97,9 @@ export async function GET(req: NextRequest) {
 
     const groups = candidates.filter((g) => !held.has(g.key));
     const line = missingPapersLine(groups);
-    if (line) await sendTelegram(line, 'marking').catch(() => {});
-    if (line) await fileForBrief({ family: 'missing-papers', label: 'Papers we do not hold', body: line });
+    const off = isQuiet('missing-papers'); // the Telegram is switched off (6 Nov 2026); the brief copy still files
+    if (line && !off) await sendTelegram(line, 'marking').catch(() => {});
+    if (line) await fileForBrief({ family: 'missing-papers', label: 'Papers we do not hold', body: line, sentAlso: !off });
 
     const summary = groups.length
       ? `${groups.length} paper${groups.length === 1 ? '' : 's'} missing, ${groups.reduce((n, g) => n + g.count, 0)} hand-in${groups.reduce((n, g) => n + g.count, 0) === 1 ? '' : 's'}`

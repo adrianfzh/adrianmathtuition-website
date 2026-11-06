@@ -14,6 +14,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { leakTestLine } from '@/lib/leak-test';
 import { controlProblems, mintTestSession, otherStudentProbes, probeLeaks, tableLeaks } from '@/lib/leak-test-store';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[leak-test] could not run:', msg);
-    await raiseAlert('leak-test', 'ops', `🔒 The weekly leak test could not run: ${msg.slice(0, 200)}`, { plain: true }).catch(() => {});
+    if (!isQuiet('leak-test-norun')) await raiseAlert('leak-test', 'ops', `🔒 The weekly leak test could not run: ${msg.slice(0, 200)}`, { plain: true }).catch(() => {});
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

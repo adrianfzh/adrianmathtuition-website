@@ -28,6 +28,7 @@ import { escapeTelegramHtml } from '@/lib/telegram-html';
 import { sendTelegram } from '@/lib/telegram';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { lostTopics, pickTopics, cleanNote } from '@/lib/practice-again-topics';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 
@@ -197,6 +198,7 @@ async function log(
 
 /** One line to the marking topic. Best-effort — the job is queued either way. */
 function tell(who: string | null | undefined, papers: StudentBatchRun[], subject: string | undefined, wave: number, topics: string[] = [], note = ''): void {
+  if (isQuiet('practice-again-request')) return; // switched off 6 Nov 2026 (lib/quiet-messages)
   const names = papers.map(p => escapeTelegramHtml(shortPaperName(displayPaperName(p.paper_name, p.student_name))));
   sendTelegram(
     practiceAgainRequestLine({

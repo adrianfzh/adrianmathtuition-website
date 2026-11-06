@@ -42,6 +42,7 @@ import {
   validateInviteRef,
   validateJoinSignup,
 } from '@/lib/portal-join';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 
@@ -98,7 +99,8 @@ export async function POST(req: NextRequest) {
         sent = inv.ok;
         if (!inv.ok) console.warn('[portal-join] matched student, invite email failed:', (await inv.json().catch(() => ({}))).error || inv.status);
       } catch (e) { console.warn('[portal-join] matched student, invite call failed:', (e as Error).message); }
-      notify_students(matchedSignupTelegramText(studentName, v.email, sent)).catch(() => {});
+      // the all-fine line is switched off (6 Nov 2026, lib/quiet-messages); ⚠️ invite-failed still sends
+      if (!sent || !isQuiet('public-signup-existing')) notify_students(matchedSignupTelegramText(studentName, v.email, sent)).catch(() => {});
       if (!sent) {
         return NextResponse.json({ error: `We recognised you as one of our students, but the activation email could not be sent just now — ask your tutor for your invite link.` }, { status: 502 });
       }

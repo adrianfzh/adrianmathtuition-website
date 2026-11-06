@@ -18,6 +18,7 @@ import { getSlotAccounts, getSlotUsage, getMarkingAlarms, setMarkingAlarms } fro
 import { loginHealths, renewedLogins, signinWarnings, stallDecision, type QueuedPaper, type SigninTold, type StallState } from '@/lib/marking-stall';
 import { isBenchRun } from '@/lib/desk-state';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -52,7 +53,8 @@ export async function GET(req: NextRequest) {
       // 🧹 4 Nov 2026 (Adrian: "Yes, as a rule"): every ⏸ line (the first and each 2-hourly repeat) is
       // kept under 'marking-stall' and DELETED once the reason goes away; the 🔑/🗝 sign-in lines under
       // 'signin-ends:<login>' are deleted once that login is signed in again (src/lib/alert-notices.ts).
-      if (stall.message && await raiseAlert('marking-stall', undefined, esc(stall.message))) sent.push('stall');
+      // the ⏸ line is switched off (6 Nov 2026, lib/quiet-messages) — remembered as told, so the state still moves on
+      if (stall.message && (isQuiet('marking-stall') || await raiseAlert('marking-stall', undefined, esc(stall.message)))) sent.push('stall');
       if (!stall.reason) { const c = await clearAlert('marking-stall', '▶ Marking is moving again.'); if (c && c.open) sent.push('stall cleared'); }
       for (const w of warn.send) if (await raiseAlert(`signin-ends:${w.key}`, undefined, esc(w.text))) sent.push(`signin:${w.key}`);
       for (const k of renewedLogins((alarms.signin ?? {}) as SigninTold, warn.told)) {

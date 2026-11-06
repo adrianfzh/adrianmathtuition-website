@@ -41,6 +41,9 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
+// The routine sheet lines are switched off (6 Nov 2026, lib/quiet-messages): photo-sheet, self-study-sheet,
+// sheet-release, sheet-revision. The student's own message (tellStudent) is never quiet.
+const notify_as = (family: string) => (text: string) => unlessQuiet(family, () => notify_marking(text));
 import { logJobRun } from '@/lib/job-log';
 import { offKeys } from '@/lib/slot-accounts';
 import { countPhotoWaiting, PRACTICE_PHOTO_PREFIX, type PhotoQueueRow } from '@/lib/practice-photo';
@@ -67,6 +70,7 @@ import { sendPushToStudent } from '@/lib/portal-push';
 import { resolveRecipient } from '@/lib/student-recipient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DiagnosisSkill } from '@/lib/sheet-diagnosis';
+import { isQuiet, unlessQuiet } from '@/lib/quiet-messages';
 
 // The waiting list (SPEC-PRACTICE-PHOTO §14, 24 Sep 2026): a job with a
 // scheduled_for day is invisible to peek/next until that Singapore day.
@@ -98,7 +102,7 @@ async function finishPhotoSheet(sb: SupabaseClient, job: SheetJob, result: Sheet
     .eq('sheet_job_id', job.id).eq('source', 'practice-photo').maybeSingle<{ id: string }>();
   if (isNoSheet(result)) {
     if (asg) await sb.from('portal_assignments').update({ status: 'revoked', revoked_at: new Date().toISOString(), note: result.reason }).eq('id', asg.id).eq('status', 'writing');
-    notify_marking(`📷 Practice sheet for <b>${who}</b>: nothing written — ${result.reason}`).catch(() => {});
+    notify_as('photo-sheet')(`📷 Practice sheet for <b>${who}</b>: nothing written — ${result.reason}`).catch(() => {});
     tellStudent(identity, 'Your practice sheet', `We could not write a sheet from those photos: ${result.reason}`, '/app/practice').catch(() => {});
     logJobRun('sheet-worker', true, `${who}: practice sheet — nothing written`).catch(() => {});
     return NextResponse.json({ ok: true, photoSheet: true, noSheet: true });
@@ -111,7 +115,7 @@ async function finishPhotoSheet(sb: SupabaseClient, job: SheetJob, result: Sheet
     } catch (e) { console.warn('[sheet-jobs] photo sheet PDF not copied', (e as Error).message); }
   }
   if (!pdfUrl) {
-    notify_marking(`⚠️ Practice sheet for <b>${who}</b> was written (${result.pdf_path || 'no pdf_path'}) but its PDF could not be copied into the app — the row stays “Writing…”. Re-run done once the file is in Dropbox.`).catch(() => {});
+    notify_as('sheet-needs-you')(`⚠️ Practice sheet for <b>${who}</b> was written (${result.pdf_path || 'no pdf_path'}) but its PDF could not be copied into the app — the row stays “Writing…”. Re-run done once the file is in Dropbox.`).catch(() => {});
     return NextResponse.json({ ok: false, photoSheet: true, error: 'pdf not copied' }, { status: 502 });
   }
   const questions = sanitizeSheetQuestions((result as { questions?: unknown }).questions).questions;
@@ -128,7 +132,7 @@ async function finishPhotoSheet(sb: SupabaseClient, job: SheetJob, result: Sheet
   const n = questions.length;
   tellStudent(identity, 'Your practice sheet is ready', `${n ? `${n} question${n === 1 ? '' : 's'}` : 'Questions'} from the photos you sent — open Practice to do it.`, url).catch(() => {});
   const np = job.photos?.length ?? 0;
-  notify_marking(`📷 Practice sheet written for <b>${who}</b> — ${n} question${n === 1 ? '' : 's'} from ${np} photo${np === 1 ? '' : 's'}${job.worked_example ? ' · worked example' : ''}`).catch(() => {});
+  notify_as('photo-sheet')(`📷 Practice sheet written for <b>${who}</b> — ${n} question${n === 1 ? '' : 's'} from ${np} photo${np === 1 ? '' : 's'}${job.worked_example ? ' · worked example' : ''}`).catch(() => {});
   logJobRun('sheet-worker', true, `${who}: practice sheet, ${n} questions`).catch(() => {});
   return NextResponse.json({ ok: true, photoSheet: true, assignmentId: asg?.id ?? null, questions: n });
 }
@@ -324,7 +328,7 @@ export async function POST(req: NextRequest) {
     const held = await deleteHeldPracticeItems(sb, job.id);
     // Telegram gets plain maths and a whole sentence (Adrian, 8 Sep 2026: "telegram
     // message sent cut halfway" — 200 characters of raw LaTeX).
-    notify_marking(`✏️ ${job.student_name || job.airtable_student_id} — sheet sent back to the worker for a revision (${source === 'adrian' ? 'your note' : 'after a page re-mark'}):\n${clip(plainMath(instructions), 600)}`).catch(() => {});
+    notify_as('sheet-revision')(`✏️ ${job.student_name || job.airtable_student_id} — sheet sent back to the worker for a revision (${source === 'adrian' ? 'your note' : 'after a page re-mark'}):\n${clip(plainMath(instructions), 600)}`).catch(() => {});
     return NextResponse.json({ ok: true, jobId: job.id, round, heldItemsDeleted: held.deleted });
   }
 
@@ -421,9 +425,9 @@ export async function POST(req: NextRequest) {
       // The student asked for this one (8 Sep 2026): the app tells them there
       // was nothing worth another go; Adrian hears it too, once.
       if (job.requested_by === 'student') {
-        notify_marking(`📘 <b>${job.student_name || job.airtable_student_id}</b>${job.paper_name ? ` — ${job.paper_name}` : ''}: asked for Practice Again from the app — the worker found nothing worth practising, so no sheet goes out and the app says so.`).catch(() => {});
+        notify_as('sheet-revision')(`📘 <b>${job.student_name || job.airtable_student_id}</b>${job.paper_name ? ` — ${job.paper_name}` : ''}: asked for Practice Again from the app — the worker found nothing worth practising, so no sheet goes out and the app says so.`).catch(() => {});
       }
-      notify_marking(completionMessage(job, result)).catch(() => {});
+      notify_as('self-study-sheet')(completionMessage(job, result)).catch(() => {});
       logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, diagnosis: false, rebuilt: false });
     }
@@ -458,7 +462,7 @@ export async function POST(req: NextRequest) {
       const { count } = await sb.from('authored_question_proposals').select('id', { count: 'exact', head: true }).eq('sheet_job_id', job.id);
       authoredLine = authoredItemsLine(handback.questions as { question_id?: string | null }[], count ?? 0);
     } catch { /* a nicety */ }
-    notify_marking(completionMessage(job, result, { heldItemsLine: held.line, authoredLine }))
+    notify_as('self-study-sheet')(completionMessage(job, result, { heldItemsLine: held.line, authoredLine }))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed${held.created || held.already ? ` · ${held.created + held.already} practice items held` : ''}`).catch(() => {});
@@ -506,28 +510,28 @@ export async function POST(req: NextRequest) {
       if (studentAsked) {
         if (!gate.ok) {
           await sb.from('sheet_jobs').update({ stage: `held — ${gate.reasons[0]}` }).eq('id', job.id);
-          notify_marking(requestedHeldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
+          notify_as('sheet-needs-you')(requestedHeldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
           return;
         }
         const sent = await deliverRequestedSheet(req, paJob.run_id);
         if (sent.ok) {
           await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'sent — the student asked for it' }).eq('id', job.id);
-          notify_marking(requestedSentLine(who, job.paper_name, gate.watch)).catch(() => {});
+          notify_as('sheet-release')(requestedSentLine(who, job.paper_name, gate.watch)).catch(() => {});
         } else {
           await sb.from('sheet_jobs').update({ stage: `send stopped — ${sent.error.slice(0, 120)}` }).eq('id', job.id);
-          notify_marking(requestedStoppedLine(who, job.paper_name, sent.error, deskUrl)).catch(() => {});
+          notify_as('sheet-needs-you')(requestedStoppedLine(who, job.paper_name, sent.error, deskUrl)).catch(() => {});
         }
         return;
       }
       if (hours > 0 && gate.ok) {
         const at = new Date(Date.now() + hours * 3600_000).toISOString();
         await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
-        notify_marking(scheduledLine(at, deskUrl, who, job.paper_name, gate.watch)).catch(() => {});
+        notify_as('sheet-release')(scheduledLine(at, deskUrl, who, job.paper_name, gate.watch)).catch(() => {});
       } else if (hours > 0) {
         // A held sheet SAYS so on the desk (17 Sep 2026): the stage used to stay
         // at "filing", so a held sheet looked in progress and was never sent.
         await sb.from('sheet_jobs').update({ held_at: new Date().toISOString(), stage: `held — ${gate.reasons[0]}` }).eq('id', job.id);
-        notify_marking(heldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
+        notify_as('sheet-needs-you')(heldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
       }
     };
     if (process.env.MARKING_EXAMPLE_CHECK !== '0' && result.docx_path && process.env.ANTHROPIC_API_KEY) {
@@ -562,7 +566,7 @@ export async function POST(req: NextRequest) {
             stage: `revise ${round}/${MAX_REVISIONS} — example check: ${nDis} disagreement${nDis === 1 ? '' : 's'}`,
             result: { ...stored, example_check: check, revise: { round, examples: check.disagreements.map(d => ({ example: d.example, issue: d.issue })) } },
           }).eq('id', job.id);
-          notify_marking(`🔁 ${who} — sheet sent back to the worker (round ${round}/${MAX_REVISIONS}): a second reader disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}`).catch(() => {});
+          notify_as('sheet-revision')(`🔁 ${who} — sheet sent back to the worker (round ${round}/${MAX_REVISIONS}): a second reader disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}`).catch(() => {});
           console.log(`[sheet-jobs] example check ${job.id}: ${nDis} disagreement(s) → revision round ${round}`);
           return NextResponse.json({ ok: true, revise: { round, examples: check.disagreements }, diagnosis: false, rebuilt: false });
         }
@@ -572,7 +576,7 @@ export async function POST(req: NextRequest) {
           ...(held ? { stage: `held — example check: ${nDis} disagreement${nDis === 1 ? '' : 's'} after ${MAX_REVISIONS} rewrites` } : {}),
         }).eq('id', job.id);
         if (held) {
-          notify_marking(`⚠️ ${who} — the sheet is HELD: after ${MAX_REVISIONS} rewrites a second reader still disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
+          notify_as('sheet-needs-you')(`⚠️ ${who} — the sheet is HELD: after ${MAX_REVISIONS} rewrites a second reader still disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
         } else {
           // ── Release by silence (Adrian, 6 Sep 2026: "12 hours") ──────────────
           // The sheet passed its gates: Adrian's sheets are scheduled to go out
@@ -660,7 +664,7 @@ export async function POST(req: NextRequest) {
         const demoted = diagnosis.skills.filter(s => s.slipOnly);
         if (demoted.length) {
           const what = demoted.map(s => `${s.title}${s.questions.length ? ` (${s.questions.join(', ')})` : ''}`).join('; ');
-          notify_marking(`⚠️ ${who} — the sheet teaches a slip: ${what}. The marker's kinds say the method was right there (arithmetic / copied wrongly / sign / rounding), so the cover leads with the next skill. The sheet still has the section — ✏️ Revise it if you agree.`).catch(() => {});
+          notify_as('sheet-revision')(`⚠️ ${who} — the sheet teaches a slip: ${what}. The marker's kinds say the method was right there (arithmetic / copied wrongly / sign / rounding), so the cover leads with the next skill. The sheet still has the section — ✏️ Revise it if you agree.`).catch(() => {});
         }
         if (!diagnosisStored) {
           rebuild = { rebuilt: false, skipped: 'diagnosis not stored' };
@@ -737,7 +741,7 @@ export async function POST(req: NextRequest) {
       if (spentPhoto) {
         await sb.from('portal_assignments').update({ status: 'revoked', revoked_at: new Date().toISOString() })
           .eq('sheet_job_id', job.id).eq('status', 'writing');
-        notify_marking(`⚠️ Practice sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b>\n${msg}`).catch(() => {});
+        notify_as('sheet-needs-you')(`⚠️ Practice sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b>\n${msg}`).catch(() => {});
         tellStudent(job.airtable_student_id, 'Your practice sheet', 'We could not write a sheet from those photos this time. Try again with clearer photos.', '/app/practice').catch(() => {});
       }
       return NextResponse.json({ ok: true, requeued: !spentPhoto, photoSheet: true });
@@ -752,7 +756,7 @@ export async function POST(req: NextRequest) {
       await sb.from('sheet_jobs')
         .update({ status: 'done', result, stage: 'no sheet needed', completed_at: new Date().toISOString(), error: null, claimed_by: null, claimed_at: null, heartbeat_at: null })
         .eq('id', body.id);
-      notify_marking(completionMessage(job, result)).catch(() => {});
+      notify_as('self-study-sheet')(completionMessage(job, result)).catch(() => {});
       logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, requeued: false });
     }
@@ -761,7 +765,7 @@ export async function POST(req: NextRequest) {
       .update({ status: spent ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })
       .eq('id', body.id);
     if (spent && job) {
-      notify_marking(`⚠️ Self-study sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b> (${job.paper_name || 'paper'})\n${msg}`).catch(() => {});
+      notify_as('sheet-needs-you')(`⚠️ Self-study sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b> (${job.paper_name || 'paper'})\n${msg}`).catch(() => {});
     }
     return NextResponse.json({ ok: true, requeued: !spent });
   }
@@ -813,7 +817,7 @@ export async function POST(req: NextRequest) {
  * is logged and nothing else changes.
  */
 async function sendSheetFiles(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: SheetFiledResult | null): Promise<void> {
-  if (!result) return;
+  if (!result || isQuiet('self-study-sheet')) return; // the files ride the switched-off self-study line (6 Nov 2026)
   const who = job.student_name || 'A student';
   const tag = job.paper_name ? ` (${job.paper_name})` : '';
   if (result.pdf_path) {

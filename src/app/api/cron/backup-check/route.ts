@@ -16,6 +16,7 @@ import { raiseAlert, clearAlert } from '@/lib/alert-notices';
 import { allProblems, backupCheckLine } from '@/lib/backup-check';
 import { runBackupCheck } from '@/lib/backup-check-store';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -38,14 +39,14 @@ export async function GET(req: NextRequest) {
         files: result.files.length,
         managedChecked: result.managed.some((m) => m.checked),
       });
-      if (problems.length) await raiseAlert('backup-check', 'ops', `🗄 ${line}`).catch(() => {});
+      if (problems.length) { if (!isQuiet('backup-check')) await raiseAlert('backup-check', 'ops', `🗄 ${line}`).catch(() => {}); }
       else await clearAlert('backup-check', '✅ The backup check passes again.', { category: 'ops' }).catch(() => null);
     }
     return NextResponse.json({ ok: problems.length === 0, line, problems, ...result });
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[backup-check] failed:', msg);
-    if (!quick) await raiseAlert('backup-check', 'ops', `🗄 Backup check could not run: ${msg.slice(0, 200)}`, { plain: true }).catch(() => {});
+    if (!quick && !isQuiet('backup-check')) await raiseAlert('backup-check', 'ops', `🗄 Backup check could not run: ${msg.slice(0, 200)}`, { plain: true }).catch(() => {});
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

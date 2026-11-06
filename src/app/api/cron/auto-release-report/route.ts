@@ -23,6 +23,7 @@ import { shadowLine } from '@/lib/shadow-read-report';
 import { loadShadowSummary } from '@/lib/shadow-read-store';
 import { fileForBrief } from '@/lib/staff-inbox';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -115,8 +116,10 @@ export async function GET(req: NextRequest) {
     }
   } catch (e) { console.warn('[auto-release-report] safety lines skipped:', (e as Error).message); }
   const reportText = report.telegram + measure + (paused ? '\n⏸ Auto-release has been switched OFF — turn it back on from the desk when you are happy.' : '');
-  await sendTelegram(reportText, 'marking').catch(() => {});
-  await fileForBrief({ family: 'auto-release-report', label: 'Auto-release report', body: reportText });
+  // switched off 6 Nov 2026 (lib/quiet-messages) — except the week auto-release was switched OFF for him
+  const off = !paused && isQuiet('auto-release-report');
+  if (!off) await sendTelegram(reportText, 'marking').catch(() => {});
+  await fileForBrief({ family: 'auto-release-report', label: 'Auto-release report', body: reportText, sentAlso: !off });
   await logJobRun('auto-release-report', true, `${report.released} auto-released, ${report.changed} changed after${paused ? ' — PAUSED' : ''}`).catch(() => {});
   return NextResponse.json({ ok: true, ...report, paused });
 }

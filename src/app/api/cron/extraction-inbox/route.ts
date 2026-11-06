@@ -46,6 +46,7 @@ import { describeParts, partFileName } from '@/lib/paper-book-split';
 import { sendTelegram } from '@/lib/telegram';
 import { sweepHandoffs, deleteFinishedStudentWorkSources } from '@/lib/handin-extraction-store';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -138,7 +139,7 @@ async function remarkUngroundedRuns(
       const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
       out.queued.push(run.id);
-      await sendTelegram(regroundNotice(label, run), 'marking').catch(() => {});
+      if (!isQuiet('extraction-inbox')) await sendTelegram(regroundNotice(label, run), 'marking').catch(() => {});
     } catch (e) {
       out.errors.push(`${run.id}: ${(e as Error).message.slice(0, 120)}`);
       await stamp(false).catch(() => {});
@@ -175,7 +176,7 @@ async function markerHalf(
       item.remarked = { runs: re.queued, ...(re.over ? { overCap: re.over } : {}), ...(re.errors.length ? { errors: re.errors } : {}) };
     }
     if (re.over) {
-      await sendTelegram(`📥 ${libraryLabel(lib.row)} is in. ${REMARK_CAP} papers were re-marked against it; ${re.over} more are waiting — re-mark them from the desk.`, 'marking').catch(() => {});
+      if (!isQuiet('extraction-inbox')) await sendTelegram(`📥 ${libraryLabel(lib.row)} is in. ${REMARK_CAP} papers were re-marked against it; ${re.over} more are waiting — re-mark them from the desk.`, 'marking').catch(() => {});
     }
   } catch (err) {
     item.marker = `marker row failed: ${((err as Error).message || String(err)).slice(0, 120)}`;

@@ -21,6 +21,7 @@ import { checkScore, tutorMarkedRunRow, TUTOR_MARKED_MAX_PAGES } from '@/lib/tut
 import { readTutorTotal } from '@/lib/tutor-marked-reader';
 import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
   }
 
   const who = escapeTelegramHtml(account.display_name || 'A student');
-  sendTelegram(
+  if (!isQuiet('tutor-marked-filed')) sendTelegram( // switched off 6 Nov 2026 (lib/quiet-messages)
     `📝 <b>${who}</b> filed a paper you marked on paper — “${escapeTelegramHtml(paperName)}”, ${score!.awarded}/${score!.max} (${scoreFrom === 'read' ? 'total read off the page' : 'score typed by the student'}). Kept in their Papers, no marking.`,
     'marking',
   ).catch(() => {});

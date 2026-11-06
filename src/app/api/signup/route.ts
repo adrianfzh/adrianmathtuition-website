@@ -16,6 +16,7 @@ import { REC_ID_RE, appendReferrerMarker } from '@/lib/referral-link';
 import { sgtDateISO } from '@/lib/sgt';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { trialCreditLine, type TrialRow } from '@/lib/trial-booking';
+import { isQuiet } from '@/lib/quiet-messages';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -685,7 +686,8 @@ export async function POST(request: NextRequest) {
             }}),
           });
         } catch (markErr) { console.error('[signup] mark-sent failed (non-fatal):', (markErr as Error).message); }
-        try { await notify_students(`📤 First invoice <b>auto-emailed</b> to ${sanitize(parentName)} with the welcome email ✓ ($${firstInvoiceMeta!.amount.toFixed(2)}, marked Sent)`); } catch { /**/ }
+        // switched off 6 Nov 2026 (lib/quiet-messages); the FAILED version below still sends
+        if (!isQuiet('first-invoice-auto-emailed')) try { await notify_students(`📤 First invoice <b>auto-emailed</b> to ${sanitize(parentName)} with the welcome email ✓ ($${firstInvoiceMeta!.amount.toFixed(2)}, marked Sent)`); } catch { /**/ }
       } else if (attachInvoice && !welcome.sent) {
         try { await notify_students(`⚠️ First-invoice auto-send FAILED for ${sanitize(studentName)} (${welcome.error || 'unknown'}). Invoice is still Draft — use 📤 Review &amp; Send.`); } catch { /**/ }
       } else if (!welcome.sent) {

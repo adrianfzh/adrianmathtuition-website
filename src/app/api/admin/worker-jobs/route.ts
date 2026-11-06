@@ -11,6 +11,7 @@ import { verifyAgentAuth } from '@/lib/agent-auth';
 import { WORKER_JOBS, isWorkerJob, offJobs, workerJobRows } from '@/lib/worker-jobs';
 import { getWorkerJobs, setWorkerJob } from '@/lib/worker-jobs-store';
 import { sendTelegram } from '@/lib/telegram';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   const job = WORKER_JOBS.find(j => j.key === body.job)!;
   try {
     const map = await setWorkerJob(job.key, body.on, 'adrian');
-    sendTelegram(body.on
+    if (!isQuiet('switch-echo')) sendTelegram(body.on
       ? `🎚 ${job.label} is ON — the worker starts it again within two minutes.`
       : `🎚 ${job.label} is OFF — no new run starts; one already running finishes.`, 'ops').catch(() => {});
     return NextResponse.json({ jobs: workerJobRows(map), off: offJobs(map) });

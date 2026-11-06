@@ -23,6 +23,7 @@ import { FINAL_EXTRAS_FORMULA, isFinalExtrasInvoice } from '@/lib/graduation';
 import { isCleanAdhocInvoice, previousMonthLabel } from '@/lib/adhoc-billing';
 import { getPriorBalance } from '@/lib/invoice-consolidate';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -398,7 +399,8 @@ export async function POST(req: NextRequest) {
       .map((d: any) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`).join('\n');
     const failedLines = (sm.errors || [])
       .map((e: any) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');
-    await notify_money(
+    // the all-fine "✅ Invoices delivered" is switched off (6 Nov 2026, lib/quiet-messages); DELIVERY ISSUES still sends
+    if ((sm.failed || 0) > 0 || !isQuiet('invoices-delivered-ok')) await notify_money(
       `${(sm.failed || 0) > 0 ? '⚠️ <b>Invoices — DELIVERY ISSUES</b>' : '✅ <b>Invoices delivered</b>'} — ${sm.month || getInvoiceMonth().label}\n\n` +
         `Delivered: ${sm.sent || 0} | Not delivered: ${sm.failed || 0}` +
         (sentLines ? `\n\n${sentLines}` : '') +
@@ -967,7 +969,8 @@ export async function POST(req: NextRequest) {
           ? '\u26a0\ufe0f <b>Invoices \u2014 DELIVERY ISSUES</b>'
           : '\u2705 <b>Invoices delivered</b>');
     // Skipped when notify=false (bulk "Send All Approved" posts ONE consolidated summary at the end).
-    if (notify) {
+    // the all-fine "delivered" summary is switched off (6 Nov 2026, lib/quiet-messages); DELIVERY ISSUES still sends
+    if (notify && (failedCount > 0 || !isQuiet('invoices-delivered-ok'))) {
       await notify_money(
         `${summaryHeader} \u2014 ${currentMonth}\n\n` +
           `Delivered: ${sentCount} | Not delivered: ${failedCount}${waSent ? ` | Also on WhatsApp: ${waSent}` : ''}` +

@@ -12,6 +12,7 @@ import { parseReadReply, validateRead, validatePointsRead, nextStep, buildReport
 import { sendTelegram } from './telegram';
 import { placeBand, placePrompt, parsePlace, PLACE_KIND } from './humanities-place';
 import { modelPrompt, parseModel, isTop, MODEL_WRITE_KIND, MODEL_CHECK_KIND, type ModelState } from './humanities-model';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const HUMANITIES_READ_KIND = 'humanities-read';
 /** The plan reader's model alias (plan_reads takes sonnet · opus · haiku). The bench in SPEC-HUMANITIES.md §4 chose it. */
@@ -131,7 +132,7 @@ export async function settleHumanitiesRun(runId: string): Promise<void> {
   }
   if (wrote?.length && step.do !== 'marked' && run.source !== 'calibration') {
     const rep = (row.report as Parameters<typeof telegramLine>[0]['report']) ?? null;
-    await sendTelegram(telegramLine({ studentName: run.student_name, skill: String(run.skill), report: rep, held: step.do === 'held', heldReason: (row.held_reason as string) ?? null, error: step.do === 'failed' ? step.error : null }), 'marking').catch(() => false);
+    if (!isQuiet('humanities-held')) await sendTelegram(telegramLine({ studentName: run.student_name, skill: String(run.skill), report: rep, held: step.do === 'held', heldReason: (row.held_reason as string) ?? null, error: step.do === 'failed' ? step.error : null }), 'marking').catch(() => false);
   }
 }
 

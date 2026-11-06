@@ -37,7 +37,7 @@ import { sgtTodayISO } from '@/lib/sgt';
 import { findDuplicate, duplicateMessage, type DuplicateMatch } from '@/lib/duplicate-handin';
 import { handinFingerprints, earlierHandins, fingerprintOf, logDuplicateHandin } from '@/lib/duplicate-handin-store';
 import { sendTelegram } from '@/lib/telegram';
-import { unlessQuiet } from '@/lib/quiet-messages';
+import { unlessQuiet, isQuiet } from '@/lib/quiet-messages';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
@@ -348,7 +348,7 @@ export async function POST(req: Request) {
         const message = duplicateMessage(dup, { added });
         await logDuplicateHandin(admin, studentId, { of: dup.run.id, match: 'photos', paper_name: paperName, photo_urls: photoUrls, shared: dup.shared, added });
         const who = account.display_name || 'A student';
-        notify_marking(`🔁 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” again — the same pages as “${escapeTelegramHtml(dup.run.paper_name || 'the earlier one')}”.\n${added ? `${added} new page${added === 1 ? '' : 's'} added to it; ` : ''}it is marked once.`).catch(() => {});
+        if (!isQuiet('handin-duplicate')) notify_marking(`🔁 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” again — the same pages as “${escapeTelegramHtml(dup.run.paper_name || 'the earlier one')}”.\n${added ? `${added} new page${added === 1 ? '' : 's'} added to it; ` : ''}it is marked once.`).catch(() => {});
         return NextResponse.json({ ok: true, runId: dup.run.id, duplicateOf: dup.run.id, message, ...(added ? { added } : {}) });
       }
       // The new pages could not be added (marking already under way): file it as its own

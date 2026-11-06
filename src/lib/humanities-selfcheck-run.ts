@@ -15,6 +15,7 @@ import {
   auditPrompt, parseAudit, typesToLearn, draftPrompt, parseDraft, scoreTest, spreadSample,
   SELFCHECK_DAILY_CAP, TEST_SEEDED, TEST_MISSED, type MissRow, type TestCase,
 } from './humanities-selfcheck';
+import { isQuiet } from '@/lib/quiet-messages';
 
 const AUDIT_KIND = 'humanities-audit';
 const DRAFT_KIND = 'humanities-rule-draft';
@@ -250,6 +251,6 @@ export async function runSelfcheck(): Promise<SelfcheckRun> {
   const drafted = await draftRules();
   const audited = await queueAudits();
   // Only a rule going live is news; a dropped one is on the page.
-  for (const l of decidedLines.filter(x => x.includes('learned a rule'))) await sendTelegram(l, 'marking').catch(() => {});
+  if (!isQuiet('humanities-learned')) for (const l of decidedLines.filter(x => x.includes('learned a rule'))) await sendTelegram(l, 'marking').catch(() => {});
   return { audited, settled, drafted, tested, decided: decidedLines.length };
 }

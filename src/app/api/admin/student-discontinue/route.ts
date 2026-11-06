@@ -8,6 +8,7 @@ import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { LESSON_RESTORE_FIELDS, type DiscontinueSnapshot } from '@/lib/reinstate';
 import { draftFinalExtrasInvoice, setLeavingStatus, type FinalBill } from '@/lib/final-extras-store';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 
@@ -163,7 +164,9 @@ export async function POST(req: NextRequest) {
     const reviewLine = result.invoicesToReview.length
       ? `\n⚠️ Review ${result.invoicesToReview.length} sent invoice(s): ${result.invoicesToReview.map((i: any) => `${i.month} $${i.amount} (${i.status})`).join(', ')}`
       : '';
-    await notify_students(
+    // the echo is switched off (6 Nov 2026, lib/quiet-messages) — it still sends when a bill needs his eye
+    const needsHim = result.invoicesToReview.length > 0 || !!result.finalBill?.unmarked.length;
+    if (needsHim || !isQuiet('discontinued-echo')) await notify_students(
       `⏹ <b>Discontinued: ${studentName}</b>\n` +
       `Effective: ${effectiveDate}${reason ? `\nReason: ${String(reason).trim()}` : ''}\n` +
       `Enrolments ended: ${result.enrollmentsEnded} · Future lessons removed: ${result.lessonsDeleted}\n` +

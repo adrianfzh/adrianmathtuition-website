@@ -39,6 +39,7 @@ import { sgtTodayISO, sgtDateISO } from '@/lib/sgt';
 import { putStudentFile, handinKey } from '@/lib/student-files';
 import { sendTelegram } from '@/lib/telegram';
 import type { SheetJobPhoto } from '@/lib/sheet-jobs';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -186,7 +187,7 @@ export async function POST(req: Request) {
 
   const who = escapeHtml(account.display_name || identity);
   const when = place.waits ? `queued for ${dayWord(place.day, today)}` : 'writing now';
-  sendTelegram(
+  if (!isQuiet('photo-sheet')) sendTelegram( // switched off 6 Nov 2026 (lib/quiet-messages)
     `📷 <b>${who}</b> sent ${photos.length} photo${photos.length === 1 ? '' : 's'} for a practice sheet — ${when}` +
     `${ask.workedExample ? ' · with a worked example' : ''}${photos.some(p => !p.subgroup) ? ' · ⚠️ a photo could not be filed under a sub-skill' : ''}`,
     'marking',
