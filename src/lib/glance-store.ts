@@ -21,6 +21,7 @@ import { isScience, type StuckSubject } from '@/lib/stuck-topics';
 import { TWINS_PER_SKILL, mathGapSummary, type MathTwinUnit } from '@/lib/twin-gates';
 import { perDay, sumPerDay, type GlanceFacts, type JobLine, type LessonLink } from '@/lib/glance';
 import { countBotAsks, countHandins, countPractice, subjectLabel, type AskRow, type HandinRow, type PracticeRow } from '@/lib/dash-counts';
+import { stillFailed, type ReqRow } from './decide';
 
 const BOT_HEALTH_URL = 'https://adrianmath-telegram-math-bot.fly.dev/health';
 /** The levels the twins lanes write for (as scripts/ops-status.mjs counts them). */
@@ -324,6 +325,15 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const midnight = sgtDayStartISO(now);
   const weekAgo = sgtDayStartISO(sgtDaysAgoISO(TREND_DAYS - 1, now));
   const job = (j: string) => safe(() => lastJob(sb, j));
+  // a proposal counts as "did not ship" only while its NEWEST request failed (6 Nov 2026: all nine
+  // counted then had shipped on a later tap) — lib/decide.ts stillFailed
+  const failedNow = (async () => {
+    const { data, error } = await sb.from('proposal_requests').select('slug, action, status, failure_kind, result, requested_at')
+      .gte('requested_at', new Date(now - 7 * 86400_000).toISOString()).limit(1000);
+    if (error) throw new Error(error.message);
+    return stillFailed((data ?? []) as ReqRow[]);
+  })();
+  failedNow.catch(() => {}); // read through safe() below
 
   const [
     questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew, settingIdeasNew,
@@ -334,18 +344,13 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   ] = await Promise.all([
     safe(() => count(sb.from('authored_question_proposals').select('id', { count: 'exact', head: true }).eq('status', 'pending'))),
     safe(() => count(sb.from('extraction_rules').select('id', { count: 'exact', head: true }).eq('status', 'proposed'))),
-    safe(() => count(sb.from('proposal_requests').select('id', { count: 'exact', head: true }).in('status', ['failed', 'needs_session']).gte('requested_at', new Date(now - 7 * 86400_000).toISOString()))),
+    safe(async () => (await failedNow).length),
     safe(() => papersToCheck(sb)),
     safe(() => count(sb.from('paper_library').select('id', { count: 'exact', head: true }).eq('kind', 'source').in('status', ['flagged', 'failed']))),
     safe(() => count(sb.from('portal_event_log').select('id', { count: 'exact', head: true }).eq('kind', 'submit:failed').gte('created_at', new Date(now - 86400_000).toISOString()))),
     safe(() => count(sb.from('portal_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
     safe(() => count(sb.from('setting_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
-    safe(async () => {
-      const { data, error } = await sb.from('proposal_requests').select('slug, action, result, requested_at').in('status', ['failed', 'needs_session'])
-        .gte('requested_at', new Date(now - 7 * 86400_000).toISOString()).order('requested_at', { ascending: false }).limit(LIST_ROWS);
-      if (error) throw new Error(error.message);
-      return (data ?? []).map((r) => ({ slug: String(r.slug), action: String(r.action), result: (r.result as string | null) ?? null, at: String(r.requested_at) }));
-    }),
+    safe(async () => (await failedNow).slice(0, LIST_ROWS).map((r) => ({ slug: r.slug, action: r.action, result: r.result ?? null, at: r.requested_at }))),
     safe(async () => {
       const { data, error } = await sb.from('paper_library').select('source_file, status, notes').eq('kind', 'source').in('status', ['flagged', 'failed'])
         .order('status', { ascending: true }).order('finished_at', { ascending: false, nullsFirst: false }).limit(LIST_ROWS);

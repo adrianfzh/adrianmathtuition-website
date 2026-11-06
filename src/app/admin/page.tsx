@@ -33,6 +33,7 @@ import { subjectLine } from '@/lib/subject-labels';
 import { ADMIN_TOOLS, TAPS_KEY, TAPS_MERGED_KEY, parseTaps, topTools, type AdminTool } from '@/lib/admin-tools';
 import { countAdminOpen } from '@/components/AdminVisitCounter';
 import ProposalCard from '@/components/ProposalCard';
+import DecideHere from '@/components/DecideHere';
 import type { OpenProposal, RequestState } from '@/lib/overnight';
 
 const REFRESH_MS = 60_000;
@@ -219,10 +220,16 @@ export default function AdminDashboard() {
               <section className="gl-chips" aria-label="Needs you">
                 {needs.map(t => {
                   const body = <><b style={{ color: TONE_COLOUR[t.tone] }}>{t.value}</b> {t.label.toLowerCase()}</>;
+                  // "#decide-…" opens that group of Decide here, below (6 Nov 2026)
+                  if (t.href?.startsWith('#')) return <a key={t.id} href={t.href} className="gl-chip" onClick={() => setTimeout(() => window.dispatchEvent(new HashChangeEvent('hashchange')), 0)}>{body}</a>;
                   return t.href ? <Link key={t.id} href={t.href} className="gl-chip">{body}</Link> : <span key={t.id} className="gl-chip">{body}</span>;
                 })}
               </section>
             )}
+
+            {/* the extraction rules, failed ships, flagged papers and questions to vet — decided here,
+                not in Telegram (6 Nov 2026, Adrian: "put them all on main admin page (not separate pages)") */}
+            <DecideHere onChange={() => load(true)} />
 
             <section className="gl-charts">
               {CHARTS.map(c => <Chart key={c.id} c={c} t={tiles.get(c.id)} today={dayNow} />)}

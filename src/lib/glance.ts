@@ -212,15 +212,16 @@ function needsTiles(f: GlanceFacts): Tile[] {
       wide: list.length > 0,
     });
   }
-  add(f.rulesProposed, { id: 'rules', label: 'Extraction rules to decide', href: '/admin/extraction-rules' });
+  // the four below are decided in "Decide here" on /admin itself (6 Nov 2026) — the href opens that group
+  add(f.rulesProposed, { id: 'rules', label: 'Extraction rules to decide', href: '#decide-rules' });
   const ships = f.shipsFailedList ?? [];
   add(f.shipsFailed, {
-    id: 'ships-failed', label: 'Proposals that did not ship', sub: 'last 7 days · ask a session', tone: 'red',
+    id: 'ships-failed', label: 'Proposals that did not ship', sub: 'last 7 days', tone: 'red', href: '#decide-ships',
     ...capRows(ships.map((p) => ({ main: p.slug, note: shipWhy(p.result), tone: 'red' as Tone })), f.shipsFailed ?? 0), wide: ships.length > 0,
   });
   const flagged = f.extractionFlaggedList ?? [];
   add(f.extractionFlagged, {
-    id: 'extraction-flagged', label: 'Extraction papers flagged', href: '/admin/library',
+    id: 'extraction-flagged', label: 'Extraction papers flagged', href: '#decide-papers',
     ...capRows(flagged.map((p) => ({ main: p.file.replace(/\.pdf$/i, ''), note: p.status === 'failed' ? 'failed' : shortNote(p.note), tone: p.status === 'failed' ? 'red' as Tone : undefined })), f.extractionFlagged ?? 0),
     wide: flagged.length > 0,
   });
@@ -228,7 +229,7 @@ function needsTiles(f: GlanceFacts): Tile[] {
   add(f.settingIdeasNew ?? null, { id: 'setting-ideas', label: 'Setting ideas (new)', sub: 'students asked the bot', href: '/admin/setting-ideas' });
   const byLevel = f.questionProposalsByLevel ?? [];
   add(f.questionProposals, {
-    id: 'question-proposals', label: 'Questions to vet', sub: 'written by the sheets', href: '/admin/question-proposals',
+    id: 'question-proposals', label: 'Questions to vet', sub: 'written by the sheets', href: '#decide-questions',
     rows: byLevel.length ? byLevel.map((l) => ({ main: l.level, note: plural(l.n, 'question') })) : undefined,
   });
   return out;

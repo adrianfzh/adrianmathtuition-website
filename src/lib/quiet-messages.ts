@@ -13,6 +13,9 @@ export const QUIET: Readonly<Record<string, string>> = Object.freeze({
   'find-review-empty': '2026-10-08',    // the Find-a-question digest on a day with nothing for Adrian — no finds (8 Oct), or no wrong match (16 Oct)
   'desk-reminder': '2026-10-08',
   'dropbox-tray': '2026-10-16',         // 🗑 / 🗄 "Dropbox tray: N paper folders removed / archived" — Adrian: "there is no need to send me this anymore"; the clean-up carries on        // 🗂 "N marked papers waiting on the desk" at 08:00 — the brief shows the number
+  // Adrian, 6 Nov 2026: "can we just put all this on admin itself, then i will act on it (don't put on
+  // telegram)" → "yes" — the questions to vet are decided in "Decide here" on /admin.
+  'question-proposals-nudge': '2026-11-06', // 📥 Monday "questions waiting to be vetted"
 });
 
 // RULE: a switched-off message is never a failed send. A job that stamps job_runs from the

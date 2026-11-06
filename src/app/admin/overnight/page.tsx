@@ -156,7 +156,7 @@ export default function OvernightPage() {
                   {needsAll.map((t) => {
                     const body = <><b className="text-amber-700">{t.value}</b> {t.label.toLowerCase()}</>;
                     return t.href
-                      ? <Link key={t.id} href={t.href} className="bg-white border border-neutral-200 rounded-full px-3 py-1.5 text-sm text-neutral-700">{body}</Link>
+                      ? <Link key={t.id} href={t.href.startsWith('#decide-') ? `/admin${t.href}` : t.href} className="bg-white border border-neutral-200 rounded-full px-3 py-1.5 text-sm text-neutral-700">{body}</Link>
                       : <span key={t.id} className="bg-white border border-neutral-200 rounded-full px-3 py-1.5 text-sm text-neutral-700">{body}</span>;
                   })}
                 </div>

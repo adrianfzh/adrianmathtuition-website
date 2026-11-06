@@ -3,7 +3,7 @@
 // One proposal waiting for his Ship, with ✅ Ship · ✏️ Change · 🗑 Drop. Shown on the /admin
 // dashboard itself (23 Oct 2026, Adrian: "just put it on the page itself, so i will see
 // immediately and act on it") and on /admin/overnight. Files the same request the Telegram
-// buttons file (POST /api/admin/overnight); the answer still comes in Telegram.
+// buttons file (POST /api/admin/overnight); the answer shows on the card (bot lib/quiet-messages.js 'website-tap-reply', 6 Nov 2026).
 
 import { useState } from 'react';
 import { requestWords, waitingWords, type OpenProposal, type RequestState } from '@/lib/overnight';
@@ -28,7 +28,7 @@ export default function ProposalCard({ p, req, onDone }: { p: OpenProposal; req?
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d?.error || `HTTP ${r.status}`);
-      setMsg({ text: d.duplicate ? d.message : 'Sent. The answer comes in Telegram.' });
+      setMsg({ text: d.duplicate ? d.message : 'Sent. The answer shows here.' });
       setChanging(false); setNote('');
       onDone();
     } catch (e) { setMsg({ text: (e as Error).message, bad: true }); }

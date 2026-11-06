@@ -165,12 +165,12 @@ export function latestRequests(rows: RequestState[]): Record<string, RequestStat
 /** The one line a card shows once something was asked of it. */
 export function requestWords(r: RequestState): string {
   const busy = r.status === 'pending' || r.status === 'running';
-  const verb = r.action === 'ship' ? ['Shipping', 'Shipped', 'Did not ship'] : r.action === 'drop' ? ['Dropping', 'Dropped', 'Not dropped'] : ['Changing', 'Changed — the new version is in Telegram', 'Not changed'];
-  if (busy) return `⏳ ${verb[0]}… the answer comes in Telegram`;
+  const verb = r.action === 'ship' ? ['Shipping', 'Shipped', 'Did not ship'] : r.action === 'drop' ? ['Dropping', 'Dropped', 'Not dropped'] : ['Changing', 'Changed — the new version comes back to this list', 'Not changed'];
+  if (busy) return `⏳ ${verb[0]}… usually a few minutes`;
   if (r.status === 'done') return `✅ ${verb[1]}`;
   // clashed with newer work; a session has to redo it (22 Oct 2026)
   if (r.status === 'needs_session') return `🛠 ${verb[2]} — it clashes with newer work, a session has to redo it`;
-  return `❌ ${verb[2]} — see Telegram`;
+  return `❌ ${verb[2]} — see "Decide here" above`;
 }
 
 // ── Last night and the week, from the logbook ─────────────────────────────────

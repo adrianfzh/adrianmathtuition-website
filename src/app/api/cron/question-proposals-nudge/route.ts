@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { logJobRun } from '@/lib/job-log';
 import { nudgeMessage, RIPE_DAYS } from '@/lib/question-proposals';
 import { cronAuth } from '@/lib/cron-auth';
+import { isQuiet } from '@/lib/quiet-messages';
 
 export const runtime = 'nodejs';
 
@@ -40,7 +41,8 @@ export async function GET(req: NextRequest) {
     const rows = data ?? [];
     const msg = nudgeMessage(rows, Date.now());
 
-    if (msg) {
+    // quiet since 6 Nov 2026 — the list is on /admin; the run is still stamped fine (quiet-messages.ts RULE)
+    if (msg && !isQuiet('question-proposals-nudge')) {
       await sendTelegramWithButtons(msg, [[{
         text: '📥 Vet them',
         url: 'https://www.adrianmathtuition.com/admin/question-proposals',
