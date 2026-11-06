@@ -21,6 +21,12 @@ be like most Apple apps - sleek and modern."* Also: a monthly subscription plus 
 - **Look:** sleek and modern, like Apple's own apps — plain white/grey grounds, one accent colour,
   large clear type, rounded cards. Mock-up (iPad home, writing page, checked page, iPhone today,
   iPhone marked paper): https://claude.ai/artifact/Rd39fpZqFs2QK6f2NEyafJ
+  **Background stays cream, not grey (Adrian, 6 Nov 2026, after a cream-vs-grey before/after:
+  "the background for option b is a no-go").** The student app keeps its warm cream ground
+  (`bg-[hsl(45,100%,98%)]` in `src/app/app/layout.tsx`); do not propose Apple grey again.
+  **Colour is welcome — "the app is for students remember?"** (same day): keep colour, but give
+  it a meaning (a subject's colour, green = done well, red = marks lost) and use it the same way
+  on every page. Review + options: https://claude.ai/artifact/4cRA1dZE8Zhs4g2a9J3NEb
 - **First version:** hand in + marked papers, notes with Check this page, a push when a paper is
   marked. iPad + iPhone first.
 - **Free vs paid (a proposal, not decided):** free = notes, ready-made topic notes, a few Asks a day,
