@@ -102,5 +102,18 @@ General AIs (ChatGPT, Gemini) don't know the student's school, exams or mistakes
 (e.g. LearnVector, from 2027) are general and worldwide. This app is Singapore-exam specific, with
 real marking and a record of each student's mistakes.
 
+**WizzTutor** (added 6 Nov 2026, Adrian: "Yes" — after the AI news bot listed it as a "new AI maths
+tutor aimed at Singapore students"; it launched July 2025): the closest local rival. Browser app,
+P5 to Sec 5 E Math / A Math (Express + NA), no JC, no science. 10,000+ questions, chatbot hints,
+photo homework help, "mark my work" from a photo (full-paper marking NOT shown anywhere), weekly
+parent report, stylus working board. Free tier, then S$25/week, S$74/month, S$730/year ("$2 a
+day"). Founders: a former MOE teacher + an ex-Grab operator; "over 1,000 users" (Sep 2025, their own
+paid article). Our bank on 6 Nov 2026: about 65,000 current-syllabus maths questions (≈50,000 for
+P5–Sec 5 alone, five times theirs; ≈12,000 JC) plus about 54,000 science. Where we win: whole
+papers marked in red pen, JC, science, the record of each student's mistakes, a real tutor behind
+it. Where they win: price and open sign-up, writing on the screen. Their S$74/month is the price
+parents will compare a public launch against — lead with marking; the five-times-bigger bank is the
+second point, not the first.
+
 **Not decided yet:** the app's name and brand, its face (a character/avatar, to be designed
 carefully), final prices, and when the app separates from AdrianMath.
