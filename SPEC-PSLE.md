@@ -79,8 +79,19 @@ for psle Tys - past 10 years"*. Maths and science only; English and Chinese come
     St Hildas, River Valley, Temasek. Doubtful: P4 2020 Henry Park may be SA1 (cover undated); P5 2023
     Rosyth's key header says Tao Nan (answers match Rosyth); P6 2018 Catholic High key header says 2017.
 - **✅ Primary extraction FINISHED 5 Nov 2026, 20:38 SGT** — 1,171 P4–P6 papers done, 35 flagged, 5 skipped,
-  1 failed, queue empty; science twins also out of writable seeds (11:21 the same day). **The shrink below is due:
-  Adrian, 6 Nov 2026 00:00: "Tomorrow"** — the next session he opens on 6 Nov should offer to start it.
+  1 failed, queue empty; science twins also out of writable seeds (11:21 the same day).
+- **🪶 The shrink, 6 Nov 2026 (Adrian: "we can shrink the fly machines").**
+  1. Worker DONE (bot `1948f522`): shared-cpu-2x / 4 GB, 1 extraction lane (15-min check, not 2-min — the 2-min
+     check counted as busy and kept it awake all day after the queue emptied), 1 science-twin lane, LANE_BUDGET 2,
+     MAX_SESSIONS 2. Sleeps after 10 quiet minutes as before.
+  2. Marker sleep — code shipped (bot `lib/marker-sleep.js`): stops after `MARKER_IDLE_STOP_MIN` quiet minutes, the
+     app wakes it every 30 s when a paper waits and runs the worker wakes; the marker alarm ignores a marker asleep
+     on purpose. **Inert until the `FLY_BOT_TOKEN` secret (a deploy token for the bot app) is set and
+     `MARKER_IDLE_STOP_MIN = '15'` is added to bot `fly.toml` [env]** — storing the secret needs Adrian's OK.
+  3. The app machine stays at 2 GB: ▶ Mark and the desk redraw still draw there; 1 GB would save ≈US$5/mo for a
+     real risk of the app falling over — not worth it.
+  4. Spare machines on a growing queue: not built — with the queue light for months, one marker + one worker that
+     wake on demand cover it. Build it when hand-ins grow again.
 - **⏰ When the primary extraction finishes → shrink the Fly worker (Adrian, 4 Nov 2026: "let's
   finish the extraction work first. and then later bring cost down to less than US$50 per month").**
   The worker stays on performance-2x / 8 GB (≈ US$114/mo in sin) until the P5 + P6 queue is empty.
