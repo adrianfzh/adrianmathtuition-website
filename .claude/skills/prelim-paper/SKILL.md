@@ -5,6 +5,10 @@ description: Generate a complete S4 prelim exam paper (AM or EM, Paper 1 or 2) b
 
 # Prelim paper generator
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 Assembles a real-questions prelim paper from the blueprint + QB. The blueprint
 carries the empirical structure of 474 real papers; your job is faithful
 assembly plus the judgment a human setter would add. DB access: Supabase MCP

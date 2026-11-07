@@ -1,0 +1,633 @@
+Singapore–Cambridge General Certificate of Education
+          Advanced Level Higher 1 (2027)
+
+               Mathematics
+              (Syllabus 8865)
+
+        © MOE & Cambridge University Press & Assessment 2025
+                8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+CONTENTS
+                                                                  Page
+PREAMBLE                                                             3
+SYLLABUS AIMS                                                        3
+ASSESSMENT OBJECTIVES (AO)                                           3
+USE OF A GRAPHING CALCULATOR (GC)                                    4
+LIST OF FORMULAE AND RESULTS                                         4
+INTEGRATION AND APPLICATION                                          4
+SCHEME OF EXAMINATION PAPERS                                         5
+CONTENT OUTLINE                                                      5
+MATHEMATICAL NOTATION                                               10
+
+                                       2
+                        8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+PREAMBLE
+The applications of mathematics extend beyond the sciences and engineering domains. A basic understanding of
+mathematics and statistics, and the ability to think mathematically and statistically are essential for an educated
+and informed citizenry. For example, social scientists use mathematics to analyse data, support decision
+making, model behaviour, and study social phenomena.
+
+H1 Mathematics provides students with a foundation in mathematics and statistics that will support their
+business or social sciences studies at the university. It is particularly appropriate for students without O-Level
+Additional Mathematics because it offers an opportunity for them to learn important mathematical concepts and
+skills in algebra and calculus that were taught in Additional Mathematics. Students will also learn basic
+statistical methods that are necessary for studies in business and social sciences.
+
+SYLLABUS AIMS
+The aims of H1 Mathematics are to enable students to:
+
+(a) acquire mathematical concepts and skills to support their tertiary studies in business and the social
+    sciences
+
+(b) develop thinking, reasoning, communication and modelling skills through a mathematical approach to
+    problem-solving
+
+(c) connect ideas within mathematics and apply mathematics in the context of business and social sciences
+
+(d) experience and appreciate the value of mathematics in life and other disciplines.
+
+ASSESSMENT OBJECTIVES (AO)
+The assessment will test candidates’ abilities to:
+
+      AO1           Use mathematical techniques and procedures
+                    •   Recall facts, formulae and notation and use them directly.
+                    •   Read and use information from tables, graphs, diagrams and texts.
+                    •   Carry out straightforward mathematical procedures.
+
+      AO2           Formulate and solve problems including those in real-world contexts
+                    •   Select relevant mathematical concept or strategy to apply.
+                    •   Formulate problems into mathematical expressions or models.
+                    •   Integrate mathematical concepts to solve mathematical problems.
+                    •   Translate between equivalent forms of mathematical expressions or statements.
+                    •   Interpret results in the context of a given problem.
+
+      AO3           Reason and communicate mathematically
+                    •   Explain the choice of mathematical models or strategies.
+                    •   Make deductions, inferences and generalisations.
+                    •   Formulate conjectures and justify mathematical statements.
+                    •   Construct mathematical arguments and proofs.
+
+                                                         3
+                        8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+Approximate weightings for the assessment objectives are as follows:
+
+    AO1          40%
+
+    AO2          55%
+
+    AO3           5%
+
+USE OF A GRAPHING CALCULATOR (GC)
+The use of an approved GC without computer algebra system will be expected. The examination papers will be
+set with the assumption that candidates will have access to GC. As a general rule, unsupported answers
+obtained from GC are allowed unless the question states otherwise. Where unsupported answers from GC are
+not allowed, candidates must present the mathematical steps using mathematical notations and not calculator
+commands. For questions where graphs are used to find a solution, candidates should sketch these graphs as
+part of their answers. Incorrect answers without working will receive no marks. However, if there is written
+evidence of using GC correctly, method marks may be awarded.
+
+Candidates should be aware that there are limitations inherent in GC. For example, answers obtained by tracing
+along a graph to find roots of an equation may not produce the required accuracy.
+
+LIST OF FORMULAE AND RESULTS
+Candidates will be provided in the examination with a list of formulae and results.
+
+INTEGRATION AND APPLICATION
+Notwithstanding the presentation of the topics in the syllabus document, it is envisaged that some examination
+questions may integrate ideas from more than one topic, and that topics may be tested in the contexts of
+problem solving and application of mathematics.
+
+Possible list of H1 Mathematics applications and contexts:
+
+ Applications and contexts                                  Some possible topics involved
+
+ Optimisation problems (e.g. maximising profits,            Inequalities; System of linear equations; Calculus
+ minimising costs)
+
+ Population growth, radioactive decay                       Exponential and logarithmic functions
+
+ Financial maths (e.g. profit and cost analysis,            Equations and inequalities; Probability; Sampling
+ demand and supply, banking, insurance)                     distributions; Correlation and regression
+
+ Games of chance, elections                                 Probability
+
+ Standardised testing                                       Normal distribution; Probability
+
+ Market research (e.g. consumer preferences,                Sampling distributions; Hypothesis testing;
+ product claims)                                            Correlation and regression
+
+                                                        4
+                        8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+ Applications and contexts                                  Some possible topics involved
+
+ Clinical research (e.g. correlation studies)               Sampling distributions; Hypothesis testing;
+                                                            Correlation and regression
+
+The list illustrates some types of contexts in which the mathematics learnt in the syllabus may be applied, and is
+by no means exhaustive. While problems may be set based on these contexts, no assumptions will be made
+about the knowledge of these contexts. All information will be self-contained within the problem.
+
+SCHEME OF EXAMINATION PAPERS
+For the examination in H1 Mathematics, there will be one 3-hour paper marked out of 100 as follows:
+
+Section A (Pure Mathematics – 40 marks) will consist of about 5 questions of different lengths and marks
+based on the Pure Mathematics section of the syllabus.
+
+Section B (Probability and Statistics – 60 marks) will consist of 6 to 8 questions of different lengths and marks
+based on the Probability and Statistics section of the syllabus.
+
+There will be one question on the application of Mathematics in real-world contexts, including those from
+business and the social sciences. This question will carry at least 12 marks and may require concepts and skills
+from more than one topic.
+
+Candidates will be expected to answer all questions.
+
+CONTENT OUTLINE
+
+         Topics/Sub-topics                                   Content
+
+ SECTION A: PURE MATHEMATICS
+
+ 1       Functions and Graphs
+
+ 1.1     Exponential and logarithmic functions and           Include:
+         Graphing techniques                                 •    concept of function as a rule or relationship
+                                                                  where for every input there is only one output
+                                                             •    functions ex and ln x and their graphs
+                                                             •    exponential growth and decay
+                                                             •    logarithmic growth
+                                                             •    equivalence of y = ex and x = ln y
+                                                             •    laws of logarithms
+                                                             •    use of a graphing calculator or graphing
+                                                                  software to graph a given function
+                                                             •    characteristics of graphs such as symmetry,
+                                                                  intersections with the axes, turning points and
+                                                                  asymptotes (horizontal and vertical)
+
+                                                             Exclude:
+                                                             •   problems involving finding domain and range
+                                                             •   use of notation f : x  x 2 + 5
+                                                             •   change of base of logarithms
+
+                                                        5
+                        8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+      Topics/Sub-topics                            Content
+
+1.2   Equations and inequalities                   Include:
+                                                   •    conditions for a quadratic equation to have (i)
+                                                        two real roots, (ii) two equal roots, and (iii) no
+                                                        real roots
+                                                   •    conditions for ax2 + bx + c to be always positive
+                                                        (or always negative)
+                                                   •    solving simultaneous equations, one linear
+                                                        and one quadratic, by substitution
+                                                   •    solving quadratic equations and inequalities in
+                                                        one unknown analytically
+                                                   •    solving inequalities by graphical methods
+                                                   •    formulating an equation or a system of linear
+                                                        equations from a problem situation
+                                                   •    finding the approximate solution of an
+                                                        equation or a system of linear equations using
+                                                        a graphing calculator or a graphing software
+
+2     Calculus
+
+2.1   Differentiation                              Include:
+                                                   •    derivative of f(x) as the gradient of the tangent
+                                                        to the graph of y = f(x) at a point
+                                                   •    derivatives of xn for any rational n, ex, ln x,
+                                                        together with constant multiples, sums and
+                                                        differences
+                                                   •    chain rule
+                                                   •    graphical interpretation of f ′ ( x ) > 0 , f ′ ( x ) = 0
+                                                        and f ′ ( x ) < 0
+                                                   •    use of the first derivative test or second
+                                                        derivative test to determine the nature of the
+                                                        stationary points (local maximum and
+                                                        minimum points and points of inflexion) in
+                                                        simple cases
+                                                   •    locating maximum and minimum points using
+                                                        a graphing calculator or a graphing software
+                                                   •    finding the approximate value of a derivative at
+                                                        a given point using a graphing calculator or a
+                                                        graphing software
+                                                   •    problems involving tangents to curves
+                                                   •    local maxima and minima problems
+
+                                                   Exclude:
+                                                   •   finding derivatives from first principles
+                                                   •   derivatives of products and quotients of
+                                                       functions
+                                                               dy 1
+                                                   •   use of     =
+                                                               dx ddyx
+                                                   •    differentiation of functions defined implicitly or
+                                                        parametrically
+                                                   •    non-stationary points of inflexion
+                                                   •    problems connecting the graph of y = f(x) to
+                                                        the graph of y = f ′ ( x )
+
+                                               6
+                    8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+      Topics/Sub-topics                        Content
+
+2.2   Integration                              Include:
+                                               •    integration as the reverse of differentiation
+                                               •    integration of xn for any rational n, and ex,
+                                                    together with constant multiples, sums and
+                                                    differences
+                                               •    integration of (ax + b)n for any rational n, and
+                                                    e(ax+b)
+                                               •    definite integral as the area under a curve
+                                               •    evaluation of definite integrals
+                                               •    finding the area of a region bounded by a
+                                                    curve and lines parallel to the coordinate axes,
+                                                    between a curve and a line, or between two
+                                                    curves
+                                               •    finding the approximate value of a definite
+                                                    integral using a graphing calculator or a
+                                                    graphing software
+
+                                               Exclude:
+                                               •   finding definite integral as a limit of sum
+                                               •   approximation of area under a curve using the
+                                                   trapezium rule
+                                               •   area below x-axis
+
+SECTION B: PROBABILITY AND STATISTICS
+
+3     Probability and Statistics
+
+3.1   Probability                              Include:
+                                               •    addition and multiplication principles for
+                                                    counting
+                                               •    concepts of permutation n Pr and( )
+                                                    combination     (C)
+                                                                      n
+                                                                            r
+
+                                               •    arrangements of distinct objects in a line
+                                                    including cases involving restriction
+                                               •    addition and multiplication of probabilities
+                                               •    mutually exclusive events and independent
+                                                    events
+                                               •    use of tables of outcomes, Venn diagrams,
+                                                    tree diagrams, and permutations and
+                                                    combinations techniques to calculate
+                                                    probabilities
+                                               •    calculation of conditional probabilities in
+                                                    simple cases
+                                               •    use of:
+                                                     P ( A′ ) = 1 − P ( A )
+                                                    P ( A ∪ B )= P ( A ) + P ( B ) − P ( A ∩ B )
+                                                                 P ( A ∩ B)
+                                                    P ( A B) =
+                                                                   P ( B)
+
+                                           7
+                      8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+       Topics/Sub-topics                         Content
+
+3.2    Binomial distribution                     Include:
+                                                 •    concept of discrete random variables*.
+                                                 •    concept of binomial distribution B(n,p) and use
+                                                      of B(n,p) as a probability model, including
+                                                      conditions under which the binomial
+                                                      distribution is a suitable model
+                                                 •    mean and variance of a binomial distribution
+                                                      (without proof)
+
+3.3    Normal distribution                       Include:
+                                                 •    concept of continuous random variables*
+                                                 •    concept of a normal distribution as an example
+                                                      of a continuous probability model and its mean
+                                                      and variance; use of N(µ,σ2) as a probability
+                                                      model
+                                                 •    standard normal distribution
+                                                 •    finding the value of P(X < x1) or a related
+                                                      probability given the values of x1, µ, σ
+                                                 •    symmetry of the normal curve and its
+                                                      properties
+                                                 •    finding a relationship between x1 ,  µ ,  σ given
+                                                      the value of P ( X < x1 ) or a related probability
+                                                 •    solving problems involving the use of
+                                                      E ( aX + b ) and Var ( aX + b )
+                                                 •    solving problems involving the use of
+                                                      E ( aX + bY ) and Var ( aX + bY ) , where X and Y
+                                                      are independent
+
+                                                 Exclude normal approximation to binomial
+                                                 distribution.
+
+3.4    Sampling                                  Include:
+                                                 •    concepts of population and simple random
+                                                      sample
+                                                 •    concept of the sample mean X as a random
+                                                                                                σ2
+                                                      variable with E ( X ) = µ and Var ( X ) =
+                                                                                                 n
+                                                 •    distribution of sample mean from a normal
+                                                      population
+                                                 •    use of the Central Limit Theorem to treat
+                                                      sample mean as having normal distribution
+                                                      when the sample size is sufficiently large (e.g.
+                                                      n ⩾ 30)
+                                                 •    use of unbiased estimates of the population
+                                                      mean and variance from a sample, including
+                                                      cases where the data are given in summarised
+                                                      form ∑ x and ∑ x 2 , or ∑ ( x − a ) and ∑ ( x − a )
+                                                                                                          2
+
+* For teaching and learning only.
+
+                                             8
+                    8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+      Topics/Sub-topics                        Content
+
+3.5   Hypothesis testing                       Include:
+                                               •    concepts of null hypothesis (H0) and
+                                                    alternative hypotheses (H1), test statistic,
+                                                    critical region, critical value, level of
+                                                    significance and p-value
+                                               •    formulation of hypotheses and testing for a
+                                                    population mean based on
+                                                    - a sample from a normal population of
+                                                          known variance
+                                                    - a large sample from any population
+                                               •    1-tail and 2-tail tests
+                                               •    interpretation of the results of a hypothesis
+                                                    test in the context of the problem
+
+                                               Exclude the use of the term ‘Type I error’, concept
+                                               of Type II error and testing the difference between
+                                               two population means.
+
+3.6   Correlation and Linear regression        Include:
+                                               •    use of scatter diagram to judge if there is a
+                                                    plausible linear relationship between the two
+                                                    variables
+                                               •    correlation coefficient as a measure of the fit
+                                                    of a linear model to the scatter diagram
+                                               •    interpreting the product moment correlation
+                                                    coefficient (in particular, values close to −1, 0
+                                                    and 1)
+                                               •    concepts of linear regression and method of
+                                                    least squares to find the equation of the
+                                                    regression line
+                                               •    concepts of interpolation and extrapolation
+                                               •    use of the appropriate regression line to make
+                                                    prediction or estimate a value in practical
+                                                    situations, including explaining how well the
+                                                    situation is modelled by the linear regression
+                                                    model
+
+                                               Exclude:
+                                               •   problems involving derivation of formulae
+                                               •   relationship r 2 = b1b2 , where b1 and b2 are
+                                                    regression coefficients
+                                               •    hypothesis tests
+                                               •    transformation to achieve linearity of
+                                                    regression model
+
+                                           9
+                        8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+MATHEMATICAL NOTATION
+The list which follows summarises the notation used in Singapore-Cambridge Mathematics examinations.
+Although primarily directed towards A-Level, the list also applies, where relevant, to examinations at all other
+levels.
+
+ 1. Set Notation
+ ∈                  is an element of
+ ∉                  is not an element of
+ {x1, x2, …}        the set with elements x1, x2, …
+ {x: …}             the set of all x such that
+ n(A)               the number of elements in set A
+ ∅                  the empty set
+                    universal set
+ A′                 the complement of the set A
+
+ ℤ                  the set of integers, {0, ±1, ±2, ±3, …}
+ ℤ+                 the set of positive integers, {1, 2, 3, …}
+ ℚ                  the set of rational numbers
+
+ ℚ+                 the set of positive rational numbers, {x ∈ ℚ: x > 0}
+
+ ℚ 0+               the set of positive rational numbers and zero, {x ∈ ℚ: x ⩾ 0}
+
+ ℝ                  the set of real numbers
+
+ ℝ+                 the set of positive real numbers, {x ∈ ℝ: x > 0}
+
+ ℝ 0+               the set of positive real numbers and zero, {x ∈ ℝ: x ⩾ 0}
+
+ ℝn                 the real n-tuples
+ ℂ                  the set of complex numbers
+ ⊆                  is a subset of
+ ⊂                  is a proper subset of
+ ⊈                  is not a subset of
+ ⊄                  is not a proper subset of
+ ∪                  union
+ ∩                  intersection
+
+ [a, b]             the closed interval {x ∈ℝ: a ⩽ x ⩽ b}
+
+ [a, b)             the interval {x ∈ℝ: a ⩽ x < b}
+
+ (a, b]             the interval {x ∈ℝ: a < x ⩽ b}
+
+ (a, b)             the open interval {x ∈ℝ: a < x < b}
+
+                                                          10
+                     8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+2. Miscellaneous Symbols
+=                is equal to
+≠                is not equal to
+≡                is identical to or is congruent to
+≈                is approximately equal to
+∝                is proportional to
+<                is less than
+⩽; ≯             is less than or equal to; is not greater than
+>                is greater than
+⩾; ≮             is greater than or equal to; is not less than
+∞                infinity
+
+3. Operations
+    n
+
+∑a
+i =1
+         i       a1 + a2 + ... + an
+
+n
+     a           the nth root of the real number a
+a                the modulus of the real number a
+
+n!               n factorial for n ∈ ℤ+ ∪ {0}, (0! = 1)
+
+n                                              n!
+               the binomial coefficient                , for n, r ∈ ℤ+ ∪ {0}, 0 ⩽ r ⩽ n
+r                                         r! (n − r )!
+                 n(n − 1)...(n − r + 1)
+                                        , for n ∈ ℚ, r ∈ ℤ+∪ {0}
+                           r!
+
+                                                          11
+                               8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+4. Functions
+f                             the function f
+f(x)                          the value of the function f at x
+f: A →B                       f is a function under which each element of set A has an image in set B
+f: x ↦y                       the function f maps the element x to the element y
+f –1                          the inverse of the function f
+gf                            the composite function of f and g which is defined by gf(x) = g(f(x))
+
+lim f(x)                      the limit of f(x) as x tends to a
+x→ a
+
+Δx ; δ x                      an increment of x
+dy
+                              the derivative of y with respect to x
+dx
+
+dn y
+                              the nth derivative of y with respect to x
+dx n
+f'(x), f''(x), …, f (n)(x)    the first, second, … nth derivatives of f(x) with respect to x
+
+∫ y dx                        indefinite integral of y with respect to x
+
+        b
+∫ y dx  a
+                              the definite integral of y with respect to x for values of x between a and b
+
+x , 
+     x, …                     the first, second, …derivatives of x with respect to time
+∂z
+                              the partial derivative of z with respect to x
+∂x
+
+∂2 z
+                              the partial derivative of z with respect to x then with respect to y
+∂y∂x
+fx                            the partial derivative of f with respect to x
+fxy                           the partial derivative of f with respect to x then with respect to y
+
+5. Exponential and Logarithmic Functions
+e                            base of natural logarithms
+e , exp x
+    x
+                             exponential function of x
+log a x                      logarithm to the base a of x
+ln x                         natural logarithm of x
+lg x                         logarithm of x to base 10
+
+6. Circular Functions and Relations
+sin, cos, tan,                
+cosec, sec, cot                the circular functions
+                              
+sin–1, cos–1, tan–1           
+cosec–1, sec–1, cot–1          the inverse circular functions
+                              
+
+                                                                  12
+                     8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+7. Complex Numbers
+i              the square root of –1
+z              a complex number, z           = x + iy
+
+                                             = r(cos θ + i sin θ ), r ∈ℝ+
+
+                                             = reiθ, r ∈ℝ+
+
+Re z           the real part of z, Re (x + iy) = x
+Im z           the imaginary part of z, Im (x + iy) = y
+
+    z          the modulus of z, x + iy =      x 2 + y 2 , r (cosθ + i sinθ ) = r
+
+arg z          the argument of z, arg(r(cos θ + i sin θ )) = θ , –π < θ ⩽ π
+
+z*             the complex conjugate of z, (x + iy)* = x – iy
+
+8. Matrices
+M              a matrix M
+M–1            the inverse of the square matrix M
+MT             the transpose of the matrix M
+det M          the determinant of the square matrix M
+
+9. Vectors
+ x
+             a column vector in xy-plane
+ y
+ x
+ 
+ y           a column vector in xyz-space
+z
+ 
+a              the vector a
+
+ AB            the vector represented in magnitude and direction by the directed line segment AB
+
+â              a unit vector in the direction of the vector a
+i, j, k        unit vectors in the directions of the cartesian coordinate axes
+
+     a         the magnitude of a
+                            
+    AB         the magnitude of AB
+
+a.b            the scalar product of a and b
+a×b            the vector product of a and b
+
+                                                        13
+                       8865 MATHEMATICS GCE ADVANCED LEVEL H1 SYLLABUS
+
+10. Probability and Statistics
+A, B, C, etc.      events
+A∪B                union of events A and B
+A∩B                intersection of the events A and B
+P(A)               probability of the event A
+A'                 complement of the event A, the event ‘not A’
+P(A | B)           probability of the event A given the event B
+X, Y, R, etc.      random variables
+x, y, r, etc.      value of the random variables X, Y, R, etc.
+
+x1, x2, …          observations
+
+f1, f2,…           frequencies with which the observations, x1, x2, …occur
+
+p(x)               the value of the probability function P(X = x) of the discrete random variable X
+
+p1, p2,…           probabilities of the values x1, x2, …of the discrete random variable X
+f(x), g(x)…        the value of the probability density function of the continuous random variable X
+F(x), G(x)…        the value of the (cumulative) distribution function P(X ⩽ x) of the random variable X
+
+E(X)               expectation of the random variable X
+E[g(X)]            expectation of g(X)
+Var(X)             variance of the random variable X
+B(n, p)            binomial distribution, parameters n and p
+Po(μ)              Poisson distribution, mean μ
+                                                   1
+Geo(p)             Geometric distribution, mean
+                                                   p
+
+N(μ, σ2)           normal distribution, mean μ and variance σ2
+μ                  population mean
+σ2                 population variance
+σ                  population standard deviation
+x                  sample mean
+ 2
+s                  unbiased estimate of population variance from a sample
+r                  linear product-moment correlation coefficient for a sample
+
+                                                        14
+

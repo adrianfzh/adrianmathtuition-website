@@ -1,0 +1,934 @@
+Singapore–Cambridge General Certificate of Education
+          Advanced Level Higher 2 (2027)
+
+               Mathematics
+              (Syllabus 9758)
+
+        © MOE & Cambridge University Press & Assessment 2025
+                9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+CONTENTS
+                                                                  Page
+PREAMBLE                                                             3
+SYLLABUS AIMS                                                       3
+ASSESSMENT OBJECTIVES (AO)                                          3
+USE OF A GRAPHING CALCULATOR (GC)                                   4
+LIST OF FORMULAE AND RESULTS                                        4
+INTEGRATION AND APPLICATION                                         4
+SCHEME OF EXAMINATION PAPERS                                        5
+CONTENT OUTLINE                                                     6
+ASSUMED KNOWLEDGE                                                   14
+MATHEMATICAL NOTATION                                               16
+
+                                       2
+                        9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+PREAMBLE
+Mathematics is a basic and important discipline that contributes to the developments and understandings of
+sciences and other disciplines. It is used by scientists, engineers, business analysts and psychologists, etc. to
+model, understand and solve problems in their respective fields. A good foundation in mathematics and the
+ability to reason mathematically are therefore essential for students to be successful in their pursuit of various
+disciplines.
+
+H2 Mathematics is designed to prepare students for a range of university courses, including mathematics,
+sciences, engineering and related courses, where a good foundation in mathematics is required. It develops
+mathematical thinking and reasoning skills that are essential for further learning of mathematics. Through
+applications of mathematics, students also develop an appreciation of mathematics and its connections to other
+disciplines and to the real world.
+
+SYLLABUS AIMS
+The aims of H2 Mathematics are to enable students to:
+
+(a) acquire mathematical concepts and skills to prepare for their tertiary studies in mathematics, sciences,
+    engineering and other related disciplines
+
+(b) develop thinking, reasoning, communication and modelling skills through a mathematical approach to
+    problem-solving
+
+(c) connect ideas within mathematics and apply mathematics in the contexts of sciences, engineering and
+    other related disciplines
+
+(d) experience and appreciate the nature and beauty of mathematics and its value in life and other disciplines.
+
+ASSESSMENT OBJECTIVES (AO)
+The assessment will test candidates' abilities to:
+
+      AO1           Use mathematical techniques and procedures
+                    •   Recall facts, formulae and notation and use them directly.
+                    •   Read and use information from tables, graphs, diagrams and texts.
+                    •   Carry out straightforward mathematical procedures.
+
+      AO2           Formulate and solve problems including those in real-world contexts
+                    •   Select relevant mathematical concept or strategy to apply.
+                    •   Formulate problems into mathematical expressions or models.
+                    •   Integrate mathematical concepts to solve mathematical problems.
+                    •   Translate between equivalent forms of mathematical expressions or statements.
+                    •   Interpret results in the context of a given problem.
+
+      AO3           Reason and communicate mathematically
+                    •   Explain the choice of mathematical models or strategies.
+                    •   Make deductions, inferences and generalisations.
+                    •   Formulate conjectures and justify mathematical statements.
+                    •   Construct mathematical arguments and proofs.
+
+                                                         3
+                        9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+Approximate weightings for the assessment objectives are as follows:
+
+    AO1           30%
+
+    AO2           60%
+
+    AO3           10%
+
+USE OF A GRAPHING CALCULATOR (GC)
+The use of an approved GC without computer algebra system will be expected. The examination papers will be
+set with the assumption that candidates will have access to GC. As a general rule, unsupported answers
+obtained from GC are allowed unless the question states otherwise. Where unsupported answers from GC are
+not allowed, candidates must present the mathematical steps using mathematical notations and not calculator
+commands. For questions where graphs are used to find a solution, candidates should sketch these graphs as
+part of their answers. Incorrect answers without working will receive no marks. However, if there is written
+evidence of using GC correctly, method marks may be awarded.
+
+Candidates should be aware that there are limitations inherent in GC. For example, answers obtained by tracing
+along a graph to find roots of an equation may not produce the required accuracy.
+
+LIST OF FORMULAE AND RESULTS
+Candidates will be provided in the examination with a list of formulae and results.
+
+INTEGRATION AND APPLICATION
+Notwithstanding the presentation of the topics in the syllabus document, it is envisaged that some examination
+questions may integrate ideas from more than one topic, and that topics may be tested in the contexts of
+problem solving and application of mathematics.
+
+Possible list of H2 Mathematics applications and contexts:
+
+ Applications and contexts                                  Some possible topics involved
+
+ Kinematics and dynamics (e.g. free fall, projectile        Functions; Calculus; Vectors
+ motion, collisions)
+
+ Optimisation problems (e.g. maximising strength,           Inequalities; System of linear equations; Calculus
+ minimising surface area)
+
+ Electrical circuits                                        Complex numbers; Calculus
+
+ Population growth, radioactive decay, heating and          Differential equations
+ cooling problems
+
+ Financial maths (e.g. banking, insurance)                  Sequences and series; Probability; Sampling
+                                                            distributions
+
+ Standardised testing                                       Normal distribution; Probability
+
+                                                        4
+                        9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+ Applications and contexts                                  Some possible topics involved
+
+ Market research (e.g. consumer preferences, product        Sampling distributions; Hypothesis testing;
+ claims)                                                    Correlation and regression
+
+ Clinical research (e.g. correlation studies)               Sampling distributions; Hypothesis testing;
+                                                            Correlation and regression
+
+The list illustrates some types of contexts in which the mathematics learnt in the syllabus may be applied, and is
+by no means exhaustive. While problems may be set based on these contexts, no assumptions will be made
+about the knowledge of these contexts. All information will be self-contained within the problem.
+
+SCHEME OF EXAMINATION PAPERS
+For the examination in H2 Mathematics, there will be two 3-hour papers, each carrying 50% of the total mark,
+and each marked out of 100, as follows:
+
+PAPER 1 (3 hours)
+A paper consisting of 10 to 12 questions of different lengths and marks based on the Pure Mathematics section
+of the syllabus.
+
+There will be one question on application of Mathematics in real-world contexts, including those from sciences
+and engineering. This question will carry at least 12 marks and may require concepts and skills from more than
+one topic.
+
+Candidates will be expected to answer all questions.
+
+PAPER 2 (3 hours)
+A paper consisting of two sections, Sections A and B.
+
+Section A (Pure Mathematics – 40 marks) will consist of 4 to 5 questions of different lengths and marks based
+on the Pure Mathematics section of the syllabus.
+
+Section B (Probability and Statistics – 60 marks) will consist of 6 to 8 questions of different lengths and marks
+based on the Probability and Statistics section of the syllabus.
+
+There will be one question in Section B on application of Mathematics in real-world contexts, including those
+from sciences and engineering. This question will carry at least 12 marks and may require concepts and skills
+from more than one topic.
+
+Candidates will be expected to answer all questions.
+
+                                                        5
+                      9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+CONTENT OUTLINE
+Knowledge of the content of the O-Level Mathematics syllabus is assumed. The assumed knowledge for O-
+Level Additional Mathematics is appended after this section.
+
+       Topic/Sub-topics                             Content
+
+ SECTION A: PURE MATHEMATICS
+
+ 1     Functions and graphs
+
+ 1.1   Functions                                    Include:
+                                                    •    concepts of function, domain and range
+                                                    •    inverse functions and composite functions
+                                                    •    conditions for the existence of inverse functions
+                                                         and composite functions
+                                                    •    domain restriction to obtain an inverse function
+                                                    •    relationship between graphs of a one-to-one
+                                                         function and its inverse
+
+                                                                                                  -1   -1 -1
+                                                    Exclude the use of the relation (fg) = g f , and
+                                                    restriction of domain to obtain a composite function.
+
+ 1.2   Graphs and transformations                   Include:
+                                                    •    use of a graphing calculator or a graphing
+                                                         software to graph a given function
+                                                    •    important characteristics of graphs such as
+                                                         symmetry, intersections with the axes, turning
+                                                         points and asymptotes of the following:
+                                                         y 2 = ax ; x 2 = by
+                                                         x2        y2
+                                                             2
+                                                               +        1
+                                                                        =
+                                                         a         b2
+                                                         x2        y2          y2        x2
+                                                             2
+                                                               −       2
+                                                                         1
+                                                                         = ;       2
+                                                                                     −        1
+                                                                                              =
+                                                         a         b           b         a2
+                                                               ax + b
+                                                         y=
+                                                               cx + d
+                                                            ax 2 + bx + c
+                                                         y=
+                                                                dx + e
+                                                    •   equations of asymptotes, axes of symmetry, and
+                                                        restrictions on the possible values of x and/or y
+                                                    •   effect of transformations on the graph of y = f ( x )
+                                                        as represented by y = af ( x ) ,=y f ( x) + a ,
+                                                        y f ( x + a ) and y = f ( ax ) and combinations of
+                                                        =
+                                                        these transformations
+                                                    •   relating the graphs of y = f ( x ) , y = f ( x ) , and
+                                                                 1
+                                                         y=           to the graph of y = f ( x )
+                                                               f ( x)
+                                                    •   simple parametric equations and their graphs
+
+                                                    6
+                     9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                               Content
+
+1.3   Equations and inequalities                     Include:
+                                                     •    formulating an equation, a system of linear
+                                                          equations, or inequalities from a problem situation
+                                                     •    solving an equation exactly or approximately using
+                                                          a graphing calculator or a graphing software
+                                                     •    solving a system of linear equations using a
+                                                          graphing calculator or a graphing software
+                                                                                               f ( x)
+                                                     •    solving inequalities of the form              > 0 where
+                                                                                               g ( x)
+                                                          f ( x ) and g ( x ) are linear expressions or
+                                                          quadratic expressions
+                                                     •    concept of x , and use of relations
+                                                          x − a < b ⇔ a − b < x < a + b and
+                                                          x − a > b ⇔ x < a − b or x > a + b
+                                                     •    solving inequalities by graphical methods
+
+2     Sequences and series
+
+2.1   Sequences and series                           Include:
+                                                     •    concepts of sequence and series for finite and
+                                                          infinite cases
+                                                     •    sequence as function y = f ( n ) where n is a
+                                                          positive integer
+                                                     •    relationship between un (the nth term) and Sn (the
+                                                          sum to n terms)
+                                                     •    sequence given by a formula for the nth term
+                                                     •    sequence generated by the relation un +1 = f ( un ) ,
+                                                          including the use of a graphing calculator or a
+                                                          computer to generate the sequence
+                                                     •    sum and difference of two series
+                                                     •    convergence of a series and the sum to infinity
+                                                     •    formula for the nth term and the sum of a finite
+                                                          arithmetic series
+                                                     •    formula for the nth term and the sum of a finite
+                                                          geometric series
+                                                     •    condition for convergence of an infinite geometric
+                                                          series
+                                                     •    formula for the sum to infinity of a convergent
+                                                          geometric series
+
+3     Vectors
+
+3.1   Basic properties of vectors in two and three   Include:
+      dimensions                                     •    addition and subtraction of vectors, multiplication
+                                                          of a vector by a scalar, and their geometrical
+                                                          interpretations
+                                                     •    position vectors, displacement vectors and
+                                                          direction vectors
+                                                     •    magnitude of a vector
+                                                     •    unit vectors
+                                                     •    distance between two points
+                                                     •    collinearity
+
+                                                     7
+                     9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                         Content
+
+                                               •    use of the ratio theorem in geometrical
+                                                    applications
+
+3.2   Scalar and vector products in vectors    Include:
+                                               •    concepts of scalar product and vector product of
+                                                    vectors and their properties
+                                               •    angle between two vectors
+                                               •    geometrical meanings of a.nˆ and a × nˆ , where
+                                                    n̂ is a unit vector
+
+                                               Exclude triple products a.b × c and a × b × c
+
+3.3   Three-dimensional vector geometry        Include:
+                                               •    vector and cartesian equations of lines and planes
+                                               •    foot of the perpendicular and distance from a point
+                                                    to a line or to a plane
+                                               •    angle between two lines, between a line and a
+                                                    plane, or between two planes
+                                               •    relationships between
+                                                    (i) two lines (coplanar or skew)
+                                                    (ii) a line and a plane
+                                                    (iii) two planes
+
+                                               Exclude:
+                                               •   shortest distance between two skew lines
+                                               •   common perpendicular to two skew lines
+
+4     Introduction to Complex numbers
+
+4.1   Complex numbers expressed in cartesian   Include:
+      form and Argand diagrams                 •    extension of the number system from real
+                                                    numbers to complex numbers
+                                               •    complex roots of quadratic equations
+                                               •    modulus, argument and conjugate of a complex
+                                                    number
+                                               •    four operations of complex numbers
+                                               •    equality of complex numbers
+                                               •    conjugate roots of a polynomial equation with real
+                                                    coefficients
+                                               •    representation of complex numbers in the Argand
+                                                    diagram
+                                               •    geometrical effects of conjugation, negation,
+                                                    addition, subtraction, and multiplication by i
+
+                                               Exclude complex numbers expressed in polar (or
+                                               modulus-argument) form and exponential form.
+
+                                               8
+                        9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                         Content
+
+5     Calculus
+
+5.1   Differentiation                          Include:
+                                               •    graphical interpretation of
+                                                    (i)     f ' ( x ) > 0, f ' ( x ) = 0 and f ' ( x ) < 0
+                                                     (ii)      f '' ( x ) > 0 and f '' ( x ) < 0
+                                               •     relating the graph of y = f ' ( x ) to the graph of
+                                                      y = f ( x)
+                                               •     differentiation of simple functions defined implicitly
+                                                     or parametrically
+                                               •     determining the nature of the stationary points
+                                                     (local maximum and minimum points and points of
+                                                     inflexion) analytically, in simple cases, using the
+                                                     first derivative test or the second derivative test
+                                               •     locating maximum and minimum points using a
+                                                     graphing calculator or a graphing software
+                                               •     finding the approximate value of a derivative at a
+                                                     given point using a graphing calculator or a
+                                                     graphing software
+                                               •     problems involving tangents and normals to
+                                                     curves, including cases where the curve is defined
+                                                     implicitly or parametrically
+                                               •     local maxima and minima problems
+                                               •     connected rates of change problems
+
+                                               Exclude non-stationary points of inflexion and finding
+                                               second derivative of functions defined parametrically.
+
+5.2   Maclaurin series                         Include:
+                                                                                                       n
+                                               •     standard series expansion of (1 + x) for any
+                                                                      x
+                                                     rational n , e , sin x, cosx and ln (1+ x )
+                                               •     derivation of the first few terms of the Maclaurin
+                                                     series by
+                                                     -    repeated differentiation, e.g. secx
+                                                     -    repeated implicit differentiation, e.g.
+                                                            y3 + y 2 + y = x2 − 2 x
+                                                                                                   x
+                                                     -     using standard series, e.g. e cos 2 x ,
+                                                               1+ x 
+                                                            ln       
+                                                                1− x 
+                                               •     range of values of x for which a standard series
+                                                     converges
+                                               •     concept of Maclaurin’s series as an approximation
+                                                     of a function
+                                               •     small angle approximations: sin x ≈ x,
+                                                     cos x ≈ 1 − 12 x 2 , tan x ≈ x
+
+                                               Exclude problems involving derivation of the general
+                                               term of a series.
+
+                                               9
+                      9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                       Content
+
+5.3   Integration techniques                 Include:
+                                             •    integration of
+                                                                        n
+                                                  f ' ( x ) f ( x )  (including n = −1 ), f ' ( x ) ef ( x )
+                                                  sin 2 x, cos 2 x, tan 2 x
+                                                        1           1    1            1
+                                                    2       2
+                                                                ,   ,   and  
+                                                                       2   2
+                                                   a +x      a −x a −x
+                                                                    2       2     x − a2
+                                                                                    2
+
+                                             •    integration by a given substitution
+                                             •    integration by parts
+
+                                             Exclude reduction formulae.
+
+5.4   Definite integrals                     Include:
+                                             •    concept of definite integral as a limit of sum
+                                             •    definite integral as the area under a curve
+                                             •    evaluation of definite integrals
+                                             •    area of a region bounded by a curve and lines
+                                                  parallel to the coordinate axes, between a curve
+                                                  and a line, or between two curves
+                                             •    area below the x-axis
+                                             •    volume of revolution about the x- or y-axis
+                                             •    finding the approximate value of a definite integral
+                                                  using a graphing calculator or a graphing software
+
+                                             Exclude area and volume of revolution about the x-axis
+                                             or y-axis where curve is defined parametrically.
+
+5.5   Differential equations                 Include:
+                                             •    solving for the general solutions and particular
+                                                  solutions of differential equations of the form
+                                                  dy
+                                                     = f ( x ) g ( y ) , including reducing a given
+                                                  dx
+                                                  differential equation to this form by means of a
+                                                  given substitution
+                                             •    formulating a differential equation from a problem
+                                                  situation
+                                             •    interpreting a differential equation and its solution
+                                                  in terms of a problem situation
+
+                                            10
+                     9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                      Content
+
+SECTION B: PROBABILITY AND STATISTICS
+
+6     Probability and Statistics
+
+6.1   Probability                           Include:
+                                            •    addition and multiplication principles for counting
+                                                                          n
+                                            •    concepts of permutation ( Pr ) and combination
+                                                 ( n Cr )
+                                            •    arrangements of objects in a line or in a circle,
+                                                 including cases involving repetition and restriction
+                                            •    addition and multiplication of probabilities
+                                            •    mutually exclusive events and independent events
+                                            •    use of tables of outcomes, Venn diagrams, tree
+                                                 diagrams, and permutations and combinations
+                                                 techniques to calculate probabilities
+                                            •    calculation of conditional probabilities in simple
+                                                 cases
+                                            •    use of:
+                                                 P ( A ') = 1 − P ( A)
+                                                 P ( A ∪ B )= P ( A ) + P ( B ) − P ( A ∩ B )
+                                                               P ( A ∩B )
+                                                 P ( A|B ) =
+                                                                 P ( B)
+
+6.2   Discrete random variables             Include:
+                                            •    concept of discrete random variables, probability
+                                                 distributions, expectations and variances
+                                            •    concept of binomial distribution B ( n, p ) as an
+                                                 example of a discrete probability distribution and
+                                                 use of B ( n, p ) as a probability model, including
+                                                 conditions under which the binomial distribution is
+                                                 a suitable model
+                                            •    use of mean and variance of binomial distribution
+                                                 (without proof)
+
+                                            Exclude finding cumulative distribution function of a
+                                            discrete random variable.
+
+                                           11
+                      9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+       Topic/Sub-topics                      Content
+
+6.3    Normal distribution                   Include:
+                                             •    concept of continuous random variables*
+                                             •    concept of a normal distribution as an example of
+                                                  a continuous probability model and its mean and
+                                                                       (
+                                                 variance; use of N µ , σ
+                                                                            2
+                                                                                ) as a probability model
+                                             •   standard normal distribution
+                                             •   finding the value of P ( X < x1 ) or a related
+                                                 probability, given the values of x1 ,  µ ,  σ
+                                             •   symmetry of the normal curve and its properties
+                                             •   finding a relationship between x1 ,  µ ,  σ given the
+                                                 value of P ( X < x1 ) or a related probability
+                                             •   solving problems involving the use of E ( aX + b )
+                                                 and Var ( aX + b )
+                                             •   solving problems involving the use of E ( aX + bY )
+                                                 and Var ( aX + bY ) , where X and Y are
+                                                 independent
+
+                                             Exclude normal approximation to binomial distribution.
+
+6.4    Sampling                              Include:
+                                             •    concepts of population and simple random sample
+                                             •    concept of the sample mean X as a random
+                                                                                                 σ2
+                                                 variable with E ( X ) = µ and Var ( X ) =
+                                                                                            n
+                                             •   distribution of sample mean from a normal
+                                                 population
+                                             •   use of the Central Limit Theorem to treat sample
+                                                 mean as having normal distribution when the
+                                                 sample size is sufficiently large (e.g. n ≥ 30 )
+                                             •   use of unbiased estimates of the population mean
+                                                 and variance from a sample, including cases
+                                                 where the data are given in summarised form ∑ x
+                                                          2
+                                                 and ∑ x , or ∑ ( x − a ) and ∑ ( x − a )
+                                                                                            2
+
+* For teaching and learning only.
+
+                                            12
+                     9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                      Content
+
+6.5   Hypothesis testing                    Include:
+                                            •    concepts of null hypothesis ( H 0 ) and alternative
+                                                 hypotheses ( H1 ) , test statistic, critical region,
+                                                 critical value, level of significance, and p-value
+                                            •    formulation of hypotheses and testing for a
+                                                 population mean based on
+                                                 -     a sample from a normal population of known
+                                                       variance
+                                                 -     a large sample from any population
+                                            •    1-tail and 2-tail tests
+                                            •    interpretation of the results of a hypothesis test in
+                                                 the context of the problem
+
+                                            Exclude the use of the term ‘Type I error’, concept of
+                                            Type II error and testing the difference between two
+                                            population means.
+
+6.6   Correlation and linear regression     Include:
+                                            •    use of scatter diagram to judge if there is a
+                                                 plausible linear relationship between the two
+                                                 variables
+                                            •    correlation coefficient as a measure of the fit of a
+                                                 linear model to the scatter diagram
+                                            •    interpreting the product moment correlation
+                                                 coefficient (in particular, values close to −1, 0 and
+                                                 1)
+                                            •    concepts of linear regression and method of least
+                                                 squares to find the equation of the regression line
+                                            •    concepts of interpolation and extrapolation
+                                            •    use of the appropriate regression line to make
+                                                 prediction or estimate a value in practical
+                                                 situations, including explaining how well the
+                                                 situation is modelled by the linear regression
+                                                 model
+                                            •    use of a square, reciprocal or logarithmic
+                                                 transformation to achieve linearity
+
+                                            Exclude:
+                                            •   problems involving derivation of formulae
+                                                 relationship r = b1b2 , where b1 and b2 are
+                                                                2
+                                            •
+                                                 regression coefficients
+                                            •    hypothesis tests
+
+                                           13
+                      9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+ASSUMED KNOWLEDGE
+
+Content from O-Level Additional Mathematics
+
+ALGEBRA
+
+A1    Quadratic functions; Equations and inequalities
+      •  Finding the maximum or minimum value of a quadratic function using the method of completing
+         the square
+      •  Conditions for a quadratic equation to have:
+         (i) two real roots
+         (ii) two equal roots
+         (iii) no real roots
+      •  Conditions for ax2 + bx + c to be always positive (or always negative)
+      •  Solving simultaneous equations in two variables by substitution, with one of the equations being a
+         linear equation
+
+A2    Surds
+      •   Four operations on surds, including rationalising the denominator
+      •   Solving equations involving surds.
+
+A3    Polynomials and partial fractions
+      •   Multiplication and division of polynomials
+      •   Use of remainder and factor theorems
+      •   Partial fractions with cases where the denominator is not more complicated than:
+          -    (ax + b)(cx + d)
+          -    (ax + b)(cx + d)2
+          -    (ax + b)(x2 + c2)
+
+A4    Exponential and logarithmic functions
+      •   Exponential and logarithmic functions ax , ex , loga x , ln x and their graphs, including:
+          -    laws of logarithms
+          -    equivalence of y = ax and x = logay
+          -    change of base of logarithms
+      •   Simplifying expressions and solving simple equations involving exponential and logarithmic
+          functions
+
+GEOMETRY AND TRIGONOMETRY
+
+B5    Coordinate geometry in two dimensions
+      •   Coordinate geometry of the circle with the equation in the form
+          (x – a)2 + (y – b)2 = r 2 or x2 + y2 + 2gx + 2fy + c = 0
+
+B6    Trigonometric functions, identities and equations
+      •    Six trigonometric functions, and principal values of the inverses of sine, cosine and tangent
+      •    Trigonometric equations and identities (see List of Formulae)
+      •    Expression of a cos θ + b sin θ in the forms R sin(θ ± α) and R cos(θ ± α)
+
+                                                     14
+                       9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+Content from O-Level Additional Mathematics
+
+CALCULUS
+
+C7    Differentiation and integration
+      •    Derivative of f(x) as the gradient of the tangent to the graph of y = f(x) at a point
+      •    Derivative as rate of change
+      •    Derivatives of xn for any rational n, sin x, cos x, tan x, ex and ln x, together with constant multiples,
+           sums and differences
+      •    Use of Chain Rule
+      •    Derivatives of products and quotients of functions
+      •    Increasing and decreasing functions
+      •    Stationary points (maximum and minimum turning points and points of inflexion)
+      •    Use of second derivative test to discriminate between maxima and minima
+      •    Connected rates of change
+      •    Maxima and minima problems
+      •    Integration as the reverse of differentiation
+      •    Integration of xn for any rational n, ex, sin x, cos x, sec2 x and their constant multiples, sums and
+           differences
+      •    Integration of (ax + b)n for any rational n, sin(ax + b), cos(ax + b) and eax + b
+
+                                                         15
+                        9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+MATHEMATICAL NOTATION
+The list which follows summarises the notation used in Singapore–Cambridge Mathematics examinations.
+Although primarily directed towards A-Level, the list also applies, where relevant, to examinations at all other
+levels.
+
+1. Set Notation
+∈                  is an element of
+∉                  is not an element of
+{x1, x2, …}        the set with elements x1, x2, …
+{x: …}             the set of all x such that
+n(A)               the number of elements in set A
+∅                  the empty set
+                   universal set
+A′                 the complement of the set A
+
+ℤ                  the set of integers, {0, ±1, ±2, ±3, …}
+ℤ+                 the set of positive integers, {1, 2, 3, …}
+ℚ                  the set of rational numbers
+
+ℚ+                 the set of positive rational numbers, {x ∈ ℚ: x > 0}
+
+     +
+ℚ0                 the set of positive rational numbers and zero, {x ∈ ℚ: x ⩾ 0}
+
+ℝ                  the set of real numbers
+
+ℝ+                 the set of positive real numbers, {x ∈ ℝ: x > 0}
+
+     +
+ℝ0                 the set of positive real numbers and zero, {x ∈ ℝ: x ⩾ 0}
+
+ℝn                 the real n-tuples
+ℂ                  the set of complex numbers
+⊆                  is a subset of
+⊂                  is a proper subset of
+⊈                  is not a subset of
+⊄                  is not a proper subset of
+∪                  union
+∩                  intersection
+
+[a, b]             the closed interval {x ∈ℝ: a ⩽ x ⩽ b}
+
+[a, b)             the interval {x ∈ℝ: a ⩽ x < b}
+
+(a, b]             the interval {x ∈ℝ: a < x ⩽ b}
+
+(a, b)             the open interval {x ∈ℝ: a < x < b}
+
+                                                         16
+                       9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+2. Miscellaneous Symbols
+
+=                is equal to
+
+≠                is not equal to
+
+≡                is identical to or is congruent to
+
+≈                is approximately equal to
+
+∝                is proportional to
+
+<                is less than
+
+⩽; ≯             is less than or equal to; is not greater than
+
+>                is greater than
+
+⩾; ≮             is greater than or equal to; is not less than
+
+∞                infinity
+
+3. Operations
+    n
+
+∑a
+i =1
+            i    a1 + a2 + ... + an
+
+n
+        a        the nth root of the real number a
+
+a                the modulus of the real number a
+
+n!               n factorial for n ∈ ℤ+ ∪ {0}, (0! = 1)
+
+n                                              n!
+               the binomial coefficient                , for n, r ∈ ℤ+ ∪ {0}, 0 ⩽ r ⩽ n
+r                                         r! (n − r )!
+                 n(n − 1)...(n − r + 1)
+                                        , for n ∈ ℚ, r ∈ ℤ+∪ {0}
+                           r!
+
+                                                          17
+                                9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+4. Functions
+f                                 the function f
+f(x)                              the value of the function f at x
+f: A →B                           f is a function under which each element of set A has an image in set B
+f: x ↦y                           the function f maps the element x to the element y
+
+f –1                              the inverse of the function f
+
+gf                                the composite function of f and g which is defined by gf(x) = g(f(x))
+
+lim f(x)                          the limit of f(x) as x tends to a
+x→a
+
+Δx ; δ x                          an increment of x
+
+dy
+                                  the derivative of y with respect to x
+dx
+
+dn y                              the nth derivative of y with respect to x
+ dx n
+f'(x), f''(x), …, f (n)(x)        the first, second, … nth derivatives of f(x) with respect to x
+
+∫ y dx                            indefinite integral of y with respect to x
+
+      b
+∫ y dx
+     a
+                                  the definite integral of y with respect to x for values of x between a and b
+
+  , 
+ x   x,…                          the first, second, …derivatives of x with respect to time
+∂z
+                                  the partial derivative of z with respect to x
+∂x
+∂2 z
+                                  the partial derivative of z with respect to x then with respect to y
+∂y∂x
+
+fx                                the partial derivative of f with respect to x
+fxy                               the partial derivative of f with respect to x then with respect to y
+
+5. Exponential and Logarithmic Functions
+
+e                            base of natural logarithms
+ex, exp x                    exponential function of x
+
+log a x                      logarithm to the base a of x
+
+ln x                         natural logarithm of x
+
+lg x                         logarithm of x to base 10
+
+                                                                      18
+                             9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+6. Circular Functions and Relations
+sin, cos, tan,                    
+cosec, sec, cot                    the circular functions
+                                  
+sin–1, cos–1, tan–1               
+cosec–1, sec–1, cot–1              the inverse circular functions
+                                  
+
+7. Complex Numbers
+i                       the square root of –1
+z                       a complex number, z           = x + iy
+                                                                                     +
+                                                      = r(cos θ + i sin θ ), r ∈ℝ
+
+                                                                     +
+                                                      = reiθ, r ∈ℝ
+
+Re z                    the real part of z, Re (x + iy) = x
+Im z                    the imaginary part of z, Im (x + iy) = y
+
+    z                   the modulus of z, x + iy =      x 2 + y 2 , r (cosθ + i sinθ ) = r
+
+arg z                   the argument of z, arg(r(cos θ + i sin θ )) = θ , –π < θ ⩽ π
+
+z*                      the complex conjugate of z, (x + iy)* = x – iy
+
+8. Matrices
+M                       a matrix M
+M–1                     the inverse of the square matrix M
+
+MT                      the transpose of the matrix M
+det M                   the determinant of the square matrix M
+
+                                                                  19
+                  9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+9. Vectors
+ x
+           a column vector in xy-plane
+ y
+
+ x
+           a column vector in xyz-space
+ y
+z
+ 
+a            the vector a
+
+AB           the vector represented in magnitude and direction by the directed line segment AB
+
+â            a unit vector in the direction of the vector a
+i, j, k      unit vectors in the directions of the cartesian coordinate axes
+
+    a        the magnitude of a
+                            
+ AB          the magnitude of AB
+
+a.b          the scalar product of a and b
+a×b          the vector product of a and b
+
+                                                   20
+                         9758 MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+10. Probability and Statistics
+A, B, C, etc.      events
+A∪B                union of events A and B
+A∩B                intersection of the events A and B
+P(A)               probability of the event A
+
+A'                 complement of the event A, the event ‘not A’
+
+P(A | B)           probability of the event A given the event B
+X, Y, R, etc.      random variables
+x, y, r, etc.      value of the random variables X, Y, R, etc.
+
+x1, x2, …          observations
+
+f1, f2,…           frequencies with which the observations, x1, x2, …occur
+
+p(x)               the value of the probability function P(X = x) of the discrete random variable X
+
+p1, p2,…           probabilities of the values x1, x2, …of the discrete random variable X
+f(x), g(x)…        the value of the probability density function of the continuous random variable X
+F(x), G(x)…        the value of the (cumulative) distribution function P(X ⩽ x) of the random variable X
+
+E(X)               expectation of the random variable X
+E[g(X)]            expectation of g(X)
+
+Var(X)             variance of the random variable X
+
+B(n, p)            binomial distribution, parameters n and p
+Po(μ)              Poisson distribution, mean μ
+                                                   1
+Geo(p)             Geometric distribution, mean
+                                                   p
+
+N(μ, σ2)           normal distribution, mean μ and variance σ2
+μ                  population mean
+
+σ2                 population variance
+σ                  population standard deviation
+x                  sample mean
+ 2
+s                  unbiased estimate of population variance from a sample
+
+r                  linear product-moment correlation coefficient for a sample
+
+                                                        21
+

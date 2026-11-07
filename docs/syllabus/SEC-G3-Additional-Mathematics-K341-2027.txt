@@ -1,0 +1,565 @@
+Singapore–Cambridge Secondary Education Certificate (2027)
+
+      G3 Additional Mathematics
+           (Syllabus K341)
+
+           © MOE & Cambridge University Press & Assessment 2025
+       K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENTS
+                                                                             Page
+INTRODUCTION                                                                    3
+AIMS                                                                             3
+ASSESSMENT OBJECTIVES                                                            4
+SCHEME OF ASSESSMENT                                                             5
+USE OF CALCULATORS                                                               5
+SUBJECT CONTENT                                                                  6
+MATHEMATICAL FORMULAE                                                            9
+MATHEMATICAL NOTATION                                                            10
+
+                                          2
+       K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+INTRODUCTION
+The syllabus prepares students adequately for A-Level H2 Mathematics, where a strong foundation in
+algebraic manipulation skills and mathematical reasoning skills are required. The content is organised into
+three strands, namely, Algebra, Geometry and Trigonometry, and Calculus. Besides conceptual understanding
+and skill proficiency explicated in the content strands, important mathematical processes such as reasoning,
+communication and application (including the use of models) are also emphasised and assessed. The
+G3 Additional Mathematics syllabus assumes knowledge of G3 Mathematics.
+
+AIMS
+
+The G3 Additional Mathematics syllabus aims to enable students who have an aptitude and interest in
+mathematics to:
+
+•   acquire mathematical concepts and skills for higher studies in mathematics and to support learning
+    in the other subjects, with emphasis in the sciences, but not limited to the sciences
+
+•   develop thinking, reasoning, communication, application and metacognitive skills through a
+    mathematical approach to problem-solving
+
+•   connect ideas within mathematics and between mathematics and the sciences through applications of
+    mathematics; and
+
+•   appreciate the abstract nature and power of mathematics.
+
+                                                       3
+       K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+ASSESSMENT OBJECTIVES
+
+The assessment will test candidates' abilities to:
+
+AO1 Use and apply standard techniques
+     •   recall and use facts, terminology and notation
+     •   read and use information directly from tables, graphs, diagrams and texts
+     •   carry out routine mathematical procedures
+
+AO2 Solve problems in a variety of contexts
+     •    interpret information to identify the relevant mathematics concept, rule or formula to use
+     •    translate information from one form to another
+     •    make and use connections across topics/subtopics
+     •    formulate problems into mathematical terms
+     •    analyse and select relevant information and apply appropriate mathematical techniques to solve
+          problems
+     •    interpret results in the context of a given problem
+
+AO3 Reason and communicate mathematically
+     •   justify mathematical statements
+     •   provide explanation in the context of a given problem
+     •   write mathematical arguments and proofs
+
+Approximate weightings for the assessment objectives are as follows:
+
+                 AO1                  35%
+
+                 AO2                  50%
+
+                 AO3                  15%
+
+                                                      4
+         K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SCHEME OF ASSESSMENT
+
+     Paper       Duration                         Description                            Marks         Weighting
+
+                              There will be 12 – 14 questions of varying marks
+                 2 hours      and lengths, up to 10 marks per question.
+     Paper 1                                                                               90              50%
+                15 minutes
+                              Candidates are required to answer ALL questions.
+
+                              There will be 9 – 11 questions of varying marks and
+                 2 hours      lengths, up to 12 marks per question.
+     Paper 2                                                                               90              50%
+                15 minutes
+                              Candidates are required to answer ALL questions.
+
+NOTES
+
+1.     Omission of essential working will result in loss of marks.
+
+2.     Relevant mathematical formulae will be provided for candidates.
+
+3.     Give non-exact numerical answers correct to 3 significant figures, or 1 decimal place in the case of
+       angles in degrees, unless a different level of accuracy is specified in the question. In questions which
+       explicitly require an answer to be shown to be correct to a specific accuracy, the answer must be first
+       shown to a higher degree of accuracy.
+
+4.     SI units will be used in questions involving mass and measures.
+       Both the 12-hour and 24-hour clock may be used for quoting times of the day. In the 24-hour clock, for
+       example, 3.15 a.m. will be denoted by 03 15; 3.15 p.m. by 15 15.
+
+5.     Candidates are expected to be familiar with the solidus notation for the expression of compound units,
+       e.g. 5 m/s for 5 metres per second.
+
+6.     Unless the question requires the answer in terms of π, the calculator value for π or π = 3.142 should be
+       used.
+
+7.     Spaces will be provided in each question paper for working and answers.
+
+USE OF CALCULATORS
+An approved calculator may be used in both Paper 1 and Paper 2.
+
+                                                           5
+       K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUBJECT CONTENT
+Knowledge of the content of G3 Mathematics syllabus is assumed in the syllabus below and will not be tested
+directly, but it may be required indirectly in response to questions on other topics.
+
+       Topic/Sub-topics                                           Content
+
+  ALGEBRA
+
+  A1    Quadratic functions     •    Finding the maximum or minimum value of a quadratic function using
+                                     the method of completing the square
+                                •    Conditions for y = ax 2 + bx + c to be always positive (or always
+                                     negative)
+                                •    Using quadratic functions as models
+
+  A2    Equations and           •   Conditions for a quadratic equation to have:
+        inequalities                (i)     two real roots
+                                    (ii)    two equal roots
+                                    (iii)   no real roots
+                                    and related conditions for a given line to:
+                                    (i)     intersect a given curve
+                                    (ii)    be a tangent to a given curve
+                                    (iii)   not intersect a given curve
+                                •   Solving simultaneous equations in two variables by substitution, with one
+                                    of the equations being a linear equation
+                                •   Solving quadratic inequalities, and representing the solution on the
+                                    number line
+
+  A3    Surds                   •   Four operations on surds, including rationalising the denominator
+                                •   Solving equations involving surds
+
+  A4    Polynomials and         •   Multiplication and division of polynomials
+        partial fractions       •   Use of remainder and factor theorems, including factorising polynomials
+                                    and solving cubic equations
+                                •   Use of:
+                                         a3ௗௗb3ௗ ௗ(a b)(a2ௗ–ௗabௗௗb2)
+                                         aௗ–ௗbௗ ௗ a – b)(aௗௗab ௗb2)
+                                •   Partial fractions with cases where the denominator is no more
+                                    complicated than:
+                                        (ax b) (cx d)
+                                        (ax b) (cx d)2
+                                        (ax b) (x2 c2)
+
+  A5    Binomial                •   Use of the Binomial Theorem for positive integer n
+        expansions                                               n
+                                •   Use of the notations n ! and  
+                                                                 r 
+                                                            n
+                                •   Use of the general term   a n −r b r , 0 ⩽ r ⩽ n
+                                                            r 
+                                    (knowledge of the greatest term and properties of the coefficients is not
+                                    required)
+
+                                                      6
+     K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+     Topic/Sub-topics                                                  Content
+
+A6    Exponential and          •   Exponential and logarithmic functions ax, ex, loga x,Qௗx and their graphs,
+      logarithmic                  including
+      functions                         laws of logarithms
+                                        equivalence of y = a x and x = loga y
+                                       change of base of logarithms
+                               •   Simplifying expressions and solving simple equations involving
+                                   exponential and logarithmic functions
+                               •   Using exponential and logarithmic functions as models
+
+GEOMETRY AND TRIGONOMETRY
+
+G1    Trigonometric            •    Six trigonometric functions for angles of any magnitude (in degrees or
+      functions, identities         radians)
+      and equations            •    Principal values of sin–1x, cos–1x, tan–1x
+                               •    Exact values of the trigonometric functions for special angles
+                                                        π π π
+                                    (30°, 45°, 60°) or ( , , )
+                                                        6 4 3
+                               •    Amplitude, periodicity and symmetries related to sine and cosine
+                                    functions
+                                                                           x
+                               •                          =
+                                    Graphs of yௗ ௗa VLQௗ bx ௗௗc, y a sin   + c , yௗ ௗa FRVௗ bx ௗௗc,
+                                                                           b
+                                           x
+                              =  y a cos   + c and yௗ ௗa WDQௗ bx), where a is real, b is a positive
+                                           b
+                                integer and c is an integer.
+                              • Use of:
+                                      sin A          cos A
+                                = tan A,       = cot A, sin2ௗAௗௗFRV2ௗAௗ ௗ
+                                      cos A          sin A
+                                     sec2ௗAௗ ௗௗௗWDQ2ௗA, cosec2ௗAௗ ௗௗௗFRW2ௗA
+                                     the expansions of sin ( A ± B ) , cos ( A ± B ) and tan ( A ± B )
+                                         the formulae for sin2A , cos2A and tan2A
+                                         the expression of a cos θ + b sinθ in the form R cos(θ ± α ) or
+                                        R sin(θ ± α )
+                               •    Simplification of trigonometric expressions
+                               •    Solution of simple trigonometric equations in a given interval (excluding
+                                    general solution)
+                               •    Proofs of simple trigonometric identities
+                               •    Using trigonometric functions as models
+
+G2    Coordinate               •    Condition for two lines to be parallel or perpendicular
+      geometry in two          •    Midpoint of line segment
+      dimensions               •    Area of rectilinear figure
+                               •    Coordinate geometry of circles in the form:
+                                    –    ( x − a )2 + ( y − b )2 r
+                                                                =  2
+
+                                    –    x 2 + y 2 + 2gx + 2fy + c =0
+                                    (excluding problems involving two circles)
+                               •    Transformation of given relationships, including y = ax n and
+                                    y = kb x , to linear form to determine the unknown constants from a
+                                    straight line graph
+
+                                                       7
+        K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+       Topic/Sub-topics                                                        Content
+
+  G3     Proofs in plane           •     Use of:
+         geometry                          properties of parallel lines cut by a transversal, perpendicular and
+                                           angle bisectors, triangles, special quadrilaterals and circles ∗ • 1
+                                            congruent and similar triangles ∗
+                                            midpoint theorem
+                                            tangent-chord theorem (alternate segment theorem)
+
+  CALCULUS
+
+  C1     Differentiation and       •     Derivative of f( x ) as the gradient of the tangent to the graph of y = f( x )
+         integration                     at a point
+                                   •     Derivative as rate of change
+                                   •     Use of standard notations
+                                                                dy d2 y    d dy
+                                         f ′( x ), f ′′( x ),     ,     [=  ( )]
+                                                                dx dx 2 dx dx
+                                   •     Derivatives of x n , for any rational nVLQௗx, FRVௗxWDQௗx, exDQG,Qௗx
+                                         together with constant multiples, sums and differences
+                                   •     Derivatives of products and quotients of functions
+                                   •     Use of Chain Rule
+                                   •     Increasing and decreasing functions
+                                   •     Stationary points (maximum and minimum turning points and stationary
+                                         points of inflexion)
+                                   •     Use of second derivative test to discriminate between maxima and
+                                         minima
+                                   •     Apply differentiation to gradients, tangents and normals, connected rates
+                                         of change and maxima and minima problems
+                                   •     Integration as the reverse of differentiation
+                                   •     Integration of x n for any rational n, sin x, cos x, sec 2 x and e x ,
+                                         together with constant multiples, sums and differences
+                                                                        n
+                                   •     Integration of ( ax + b ) for any rational n, sin (ax + b ),
+                                         cos ( ax + b ) and e( ax + b )
+                                   •     Definite integral as area under a curve
+                                   •     Evaluation of definite integrals
+                                   •     Finding the area of a region bounded by a curve and line(s) (excluding
+                                         area of region between 2 curves)
+                                   •     Finding areas of regions below the x-axis
+                                   •     Application of differentiation and integration to problems involving
+                                         displacement, velocity and acceleration of a particle moving in a straight
+                                         line
+
+∗ These are properties learnt in G3 Mathematics
+
+                                                                    8
+         K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+MATHEMATICAL FORMULAE
+                                                             1.    ALGEBRA
+
+Quadratic Equation
+    For the equation ax2 + bx + c = 0
+                                                                  −b ± b 2 − 4ac
+                                                            x=
+                                                                       2a
+
+Binomial expansion
+                                                            n           n                 n
+                                        ( a + b )n = a n +   a n −1b +   a n −2b2 + ... +   a n −r br + ... + bn ,
+                                                            1            2                r
+
+                                    n        n!       n ( n − 1) ... ( n − r + 1)
+                              =
+  where n is a positive integer and   =
+                                     r  r!( n − r ) !              r!
+
+                                                      2.     TRIGONOMETRY
+
+Identities
+
+                                                          sin2 A + cos2 A = 1
+                                                          sec2 A = 1 + tan2 A
+                                                         cosec2 A = 1 + cot2 A
+                                                sin( A ±
+                                                     =   B) sin A cos B ± cos A sin B
+                                               cos( A ± B) =
+                                                           cos A cos B  sin A sin B
+                                                                   tan A ± tan B
+                                                     tan( A ± B ) =
+                                                                  1  tan A tan B
+                                                           sin 2 A = 2sin A cos A
+                                       cos 2 A = cos A − sin 2 A = 2 cos 2 A − 1 = 1 − 2sin 2 A
+                                                      2
+
+                                                                   2 tan A
+                                                       tan 2 A =
+                                                                 1 − tan 2 A
+
+Formulae for ∆ABC
+                                                             a       b        c
+                                                            = =
+                                                           sin A sin B sin C
+                                                          a2 = b2 + c2 – 2bc cos A
+                                                                   1
+                                                               ∆ = bc sin A
+                                                                   2
+
+                                                                      9
+          K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+MATHEMATICAL NOTATION
+The list which follows summarises the notation used in Cambridge’s Mathematics examinations. Although
+primarily directed towards A-Level, the list also applies, where relevant, to examinations at all other levels.
+
+ 1. Set Notation
+ ∈                   is an element of
+ ∉                   is not an element of
+ {x1, x2, …}         the set with elements x1, x2, …
+ {x: …}              the set of all x such that
+ n(A)                the number of elements in set A
+ ∅                   the empty set
+                     universal set
+ A′                  the complement of the set A
+ ℤ                   the set of integers, {0, ±1, ±2, ±3, …}
+ ℤ                  the set of positive integers, {1, 2, 3, …}
+ ℚ                   the set of rational numbers
+ ℚ                  the set of positive rational numbers, {x ∈ ℚ: x > 0}
+      +
+ ℚ0                  the set of positive rational numbers and zero, {x ∈ ℚ: x ⩾ 0}
+
+ ℝ                   the set of real numbers
+ ℝ                  the set of positive real numbers, {x ∈ ℝ: x > 0}
+
+ ℝ 0+                the set of positive real numbers and zero, {x ∈ ℝ: x ⩾ 0}
+
+ ℝn                  the real n-tuples
+ ℂ                   the set of complex numbers
+ ⊆                   is a subset of
+ ⊂                   is a proper subset of
+ ⊈                   is not a subset of
+ ⊄                   is not a proper subset of
+ ∪                   union
+ ŀ                   intersection
+ [a, b]              the closed interval {x ∈ℝ: a ⩽ x ⩽ b}
+ [a, b)              the interval {x ∈ℝ: a ⩽ x < b}
+ (a, b]              the interval {x ∈ℝ: a < x ⩽ b}
+ (a, b)              the open interval {x ∈ℝ: a < x < b}
+
+                                                           10
+             K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+2. Miscellaneous Symbols
+=                      is equal to
+                      is not equal to
+Ł                      is identical to or is congruent to
+§                      is approximately equal to
+∝                      is proportional to
+<                      is less than
+⩽; ≯                   is less than or equal to; is not greater than
+>                      is greater than
+⩾; ≮                   is greater than or equal to; is not less than
+∞                      infinity
+
+3. Operations
+a b                  a plus b
+a–b                    a minus b
+a × b, ab, a.b         a multiplied by b
+             a
+a ÷ b,         , a/b   a divided by b
+             b
+a:b                    the ratio of a to b
+    n
+
+∑a
+i =1
+         i             a1 a2 an
+
+     a                 the positive square root of the real number a
+
+a                      the modulus of the real number a
+
+n!                     n factorial for n ∈ ℤ∪ {0}, (0! = 1)
+
+n                                                          n!
+                       the binomial coefficient                      , for n, r ∈ ℤ∪ {0}, 0 ⩽ r ⩽ n
+                                                    r ! ( n − r )!
+r 
+                                            n ( n − 1) ... ( n − r + 1)
+                                                                          , for n ∈ ℚ, r ∈ ℤ∪ {0}
+                                                        r!
+
+                                                                     11
+           K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+4. Functions
+f                                         the function f
+f(x)                                      the value of the function f at x
+f: A ĺB                                   f is a function under which each element of set A has an image in set B
+f: x ↦y                                   the function f maps the element x to the element y
+f –1                                      the inverse of the function f
+
+g o f, gf                                 the composite function of f and g which is defined by
+                                          (g o f)(x) or gf(x) = g(f(x))
+
+    lim                                   the limit of f(x) as x tends to a
+x →a f(x)
+
+∆x; δx                                    an increment of x
+dy
+                                          the derivative of y with respect to x
+dx
+
+    dn y
+                                          the nth derivative of y with respect to x
+dx n
+
+f ′ ( x ) , f ′′ ( x ) , , f ( ) ( x )
+                             n
+                                          the first, second, … nth derivatives of f(x) with respect to x
+
+∫ y dx                                    indefinite integral of y with respect to x
+
+     b
+∫ y dx
+    a
+                                          the definite integral of y with respect to x for values of x between a and b
+
+x , x , …                              the first, second, …derivatives of x with respect to time
+
+5. Exponential and Logarithmic Functions
+e                                  base of natural logarithms
+ex, exp x                          exponential function of x
+logax                              logarithm to the base a of x
+ln x                               natural logarithm of x
+lg x                               logarithm of x to base 10
+
+6. Circular Functions and Relations
+sin, cos, tan,
+cosec, sec, cot
+                                            } the circular functions
+sin–1, cos–1, tan–1
+cosec–1, sec–1, cot–1
+                                            } the inverse circular functions
+
+                                                                          12
+           K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+7. Complex Numbers
+i                   the square root of –1
+z                   a complex number,         z = x  iy
+
+                    a complex number,         z = r(cos θ LVLQ θ ), r ∈ℝ 0+
+
+                    a complex number,         z = reiθ, r ∈ℝ 0+
+
+Re z                the real part of z, Re (x Ly) = x
+Im z                the imaginary part of z, Im (x Ly) = y
+
+    z               the modulus of z, x + iy =      x 2 + y 2 , r ( cos θ + i sinθ ) r
+                                                                                    =
+
+arg z               the argument of z, arg(r(cos θ LVLQ θ )) = θ , –π < θ ⩽ π
+z*                  the complex conjugate of z, (x + iy)* = x – iy
+
+8. Matrices
+M                   a matrix M
+M    –1
+                    the inverse of the square matrix M
+MT                  the transpose of the matrix M
+det M               the determinant of the square matrix M
+
+9. Vectors
+a                   the vector a
+
+AB                  the vector represented in magnitude and direction by the directed line segment AB
+â                   a unit vector in the direction of the vector a
+i, j, k             unit vectors in the directions of the Cartesian coordinate axes
+    a               the magnitude of a
+                                 
+    AB              the magnitude of AB
+
+a.b                 the scalar product of a and b
+a×b                 the vector product of a and b
+
+                                                           13
+        K341 G3 ADDITIONAL MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+10. Probability and Statistics
+A, B, C, etc.      events
+A∪B                union of events A and B
+A ŀB              intersection of the events A and B
+P(A)               probability of the event A
+A'                 complement of the event A, the event ‘not A’
+P(A | B)           probability of the event A given the event B
+X, Y, R, etc.      random variables
+x, y, r, etc.      value of the random variables X, Y, R, etc.
+x1, x2, …          observations
+
+f1, f2,…           frequencies with which the observations, x1, x2 …occur
+
+p(x)               the value of the probability function P(X = x) of the discrete random variable X
+p1, p2…            probabilities of the values x1, x2, …of the discrete random variable X
+f(x), g(x)…        the value of the probability density function of the continuous random variable X
+F(x), G(x)…        the value of the (cumulative) distribution function P(X ⩽ x) of the random variable X
+E(X)               expectation of the random variable X
+E[g(X)]            expectation of g(X)
+Var(X)             variance of the random variable X
+B(n, p)            binominal distribution, parameters n and p
+Po(μ)              Poisson distribution, mean μ
+N(μ, σ2)           normal distribution, mean μ and variance σ2
+μ                  population mean
+σ2                 population variance
+σ                  population standard deviation
+
+x                  sample mean
+                   unbiased estimate of population variance from a sample,
+s2
+                           1
+                                 ∑(x − x)
+                                            2
+                =s2
+                         n −1
+φ                  probability density function of the standardised normal variable with distribution N (0, 1)
+Φ                  corresponding cumulative distribution function
+ρ                  linear product-moment correlation coefficient for a population
+r                  linear product-moment correlation coefficient for a sample
+
+                                                        14
+

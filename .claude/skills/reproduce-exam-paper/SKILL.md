@@ -5,6 +5,10 @@ description: Rebuild a scanned exam paper as a clean, professionally typeset PDF
 
 # Reproduce an exam paper
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 Rebuild a scanned paper as typeset LaTeX so the maths is real type rather than a
 photocopy, while the page layout stays faithful to the original: same question
 order, same working space, same answer lines, same pagination.

@@ -1,0 +1,704 @@
+Singapore–Cambridge General Certificate of Education
+          Advanced Level Higher 2 (2027)
+
+        Further Mathematics
+          (Syllabus 9649)
+
+        © MOE & Cambridge University Press & Assessment 2025
+           9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+CONTENTS
+                                                                     Page
+PREAMBLE                                                                3
+SYLLABUS AIMS                                                          3
+ASSESSMENT OBJECTIVES (AO)                                             3
+USE OF A GRAPHING CALCULATOR (GC)                                      4
+LIST OF FORMULAE AND RESULTS                                           4
+INTEGRATION AND APPLICATION                                            4
+SCHEME OF EXAMINATION PAPERS                                           5
+CONTENT OUTLINE                                                        6
+MATHEMATICAL NOTATION                                                  11
+
+                                      2
+                  9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+PREAMBLE
+Mathematics drives many of the advancements in sciences, engineering, economics and technology. It is at the
+heart of many of the innovative products and services today. A strong grounding in mathematics is essential for
+students who aspire to be scientists or engineers or any other professionals who require mathematical tools to
+solve complex problems.
+
+H2 Further Mathematics is designed for students who are mathematically-inclined and who intend to specialise
+in mathematics, sciences or engineering or disciplines with higher demand on mathematical skills. It extends
+and expands on the range of mathematics and statistics topics in H2 Mathematics and provides these students
+with a head start in learning a wider range of mathematical methods and tools that are useful for solving more
+complex problems in mathematics and statistics.
+
+H2 Further Mathematics is to be offered with H2 Mathematics as a double mathematics course.
+
+SYLLABUS AIMS
+The aims of H2 Further Mathematics are to enable students to:
+
+(a) acquire a wider range of mathematical concepts and stronger set of mathematical skills for their tertiary
+    studies in mathematics, sciences, engineering and other related disciplines with a heavier demand on
+    mathematics
+
+(b) develop thinking, reasoning, communication and modelling skills through a mathematical approach to
+    problem solving
+
+(c) connect ideas within mathematics and apply mathematics in the contexts of sciences, engineering and
+    other related disciplines
+
+(d) experience and appreciate the rigour and abstraction in the discipline.
+
+ASSESSMENT OBJECTIVES (AO)
+The assessment will test candidates’ abilities to:
+
+      AO1           Use mathematical techniques and procedures
+                    •   recall facts, formulae and notation and use them directly
+                    •   read and use information from tables, graphs, diagrams and texts
+                    •   carry out straightforward mathematical procedures
+
+      AO2           Formulate and solve problems including those in real-world contexts
+                    •   select relevant mathematical concept or strategy to apply
+                    •   formulate problems into mathematical expressions or models
+                    •   integrate mathematical concepts to solve mathematical problems
+                    •   translate between equivalent forms of mathematical expressions or statements
+                    •   interpret results in the context of a given problem
+
+      AO3           Reason and communicate mathematically
+                    •   explain the choice of mathematical models or strategies
+                    •   make deductions, inferences and generalisations
+                    •   formulate conjectures and justify mathematical statements
+                    •   construct mathematical arguments and proofs
+
+                                                        3
+                   9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+Approximate weightings for the assessment objectives are as follows:
+
+    AO1           30%
+
+    AO2           60%
+
+    AO3           10%
+
+USE OF A GRAPHING CALCULATOR (GC)
+The use of an approved GC without computer algebra system will be expected. The examination papers will be
+set with the assumption that candidates will have access to GC. As a general rule, unsupported answers
+obtained from GC are allowed unless the question states otherwise. Where unsupported answers from GC are
+not allowed, candidates must present the mathematical steps using mathematical notations and not calculator
+commands. For questions where graphs are used to find a solution, candidates should sketch these graphs as
+part of their answers. Incorrect answers without working will receive no marks. However, if there is written
+evidence of using GC correctly, method marks may be awarded.
+
+Candidates should be aware that there are limitations inherent in GC. For example, answers obtained by tracing
+along a graph to find roots of an equation may not produce the required accuracy.
+
+LIST OF FORMULAE AND RESULTS
+Candidates will be provided in the examination with a list of formulae and results.
+
+INTEGRATION AND APPLICATION
+Notwithstanding the presentation of the topics in the syllabus document, it is envisaged that some examination
+questions may integrate ideas from more than one topic, and that topics may be tested in the contexts of
+problem solving and application of mathematics.
+
+Possible list of H2 Further Mathematics applications and contexts:
+
+ Applications and contexts                                         Some possible topics involved
+
+ Kinematics and dynamics (e.g. free fall, projectile               Functions; Calculus; Vectors
+ motion, orbital motion, collisions)
+
+ Movie graphics                                                    Vectors
+
+ Optimisation problems (e.g. maximising strength,                  Inequalities; System of linear equations; Calculus
+ minimising surface area)
+
+ Electrical circuits (including alternating current circuit)       Complex numbers; Calculus
+
+ Population growth (e.g. spread of diseases),                      Differential equations
+ radioactive decay, heating and cooling problems,
+ mixing, chemical changes, charging
+
+ Search engines, cryptography, digital music                       Matrices and linear spaces
+
+                                                               4
+                  9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+ Applications and contexts                                  Some possible topics involved
+
+ Financial maths (e.g. banking, insurance)                  Sequences and series; Probability; Sampling
+                                                            distributions
+
+ Standardised testing                                       Normal distribution; Probability
+
+ Market research (e.g. consumer preferences, product        Sampling distributions; Hypothesis testing;
+ claims)                                                    Correlation and regression
+
+ Clinical research (e.g. correlation studies)               Sampling distributions; Hypothesis testing;
+                                                            Correlation and regression
+
+ Polling                                                    Confidence intervals; Hypothesis testing
+
+ Genetics                                                   Chi-square tests
+
+The list illustrates some types of contexts in which the mathematics learnt in the syllabus may be applied and is
+by no means exhaustive. While problems may be set based on these contexts, no assumptions will be made
+about the knowledge of these contexts. All information will be self-contained within the problem.
+
+SCHEME OF EXAMINATION PAPERS
+For the examination in H2 Further Mathematics, there will be two 3-hour papers, each carrying 50% of the total
+mark, and each marked out of 100, as follows:
+
+PAPER 1 (3 hours)
+A paper consisting of 10 to 12 questions of different lengths and marks based on the Pure Mathematics section
+of the syllabus.
+
+There will be one question on the application of mathematics in real-world contexts, including those from
+sciences and engineering. The question will carry at least 12 marks and may require concepts and skills from
+more than one topic.
+
+Candidates will be expected to answer all questions.
+
+PAPER 2 (3 hours)
+A paper consisting of two sections, Sections A and B.
+
+Section A (Pure Mathematics – 50 marks) will consist of 5 to 6 questions of different lengths and marks based
+on the Pure Mathematics section (i.e. Algebra and Calculus, and Discrete Mathematics, Matrices and Numerical
+Methods) of the syllabus.
+
+Section B (Probability and Statistics – 50 marks) will consist of 5 to 6 questions of different lengths and marks
+based on the Probability and Statistics section of the syllabus.
+
+There will be one question in Section B on application of mathematics in real-world contexts, including those
+from sciences and engineering. The question will carry at least 12 marks and may require concepts and skills
+from more than one topic.
+
+Candidates will be expected to answer all questions.
+
+                                                        5
+                 9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+CONTENT OUTLINE
+Knowledge of the content of H2 Mathematics is assumed.
+
+       Topic/Sub-topics                             Content
+
+ SECTION A: PURE MATHEMATICS
+
+ 1     Algebra and Calculus
+
+ 1.1   Complex numbers                              Include:
+                                                    •    complex numbers expressed in the form
+                                                         r ( cosθ + isinθ ) , reiθ , where r > 0 and
+                                                         −π < θ  π
+                                                    •    multiplication and division of two complex
+                                                         numbers expressed in polar form and their
+                                                         geometrical interpretations
+                                                    •    loci of simple equations and inequalities such as
+                                                          z − c  r , z − a = z − b and arg ( z − a ) =
+                                                                                                      α
+                                                         (excluding loci of z − a = k z − b , where k ≠ 1
+                                                         and arg ( z − a ) − arg ( z − b ) =
+                                                                                           α)
+                                                    •    use of de Moivre’s theorem to find the powers and
+                                                         𝑛𝑛th roots of a complex number, and to derive
+                                                         trigonometric identities
+
+ 1.2   Polar coordinates                            Include:
+                                                    •    simple polar curves (for 0 θ < 2π or −π < θ  π
+                                                         or a subset of either of these intervals; and where
+                                                         𝑟𝑟 is non-negative throughout the domain)
+                                                                              1 β 2
+                                                    •    use of formula A =
+                                                                              2 α∫ r dθ for the area of a
+                                                         sector
+                                                    •    arc length of curves defined in polar form
+
+ 1.3   Applications of definite integrals           Include:
+                                                    •    arc length of curves defined in cartesian form
+                                                    •    volume of revolution about the x- or y-axis for
+                                                         curves defined in cartesian form using discs or
+                                                         shells as appropriate
+                                                    •    surface area of revolution about the x- or y-axis for
+                                                         curves defined in cartesian form
+
+ 1.4   Functions of two variables                   Include:
+                                                    •    functions of two variables and surfaces
+                                                         z = f ( x, y )
+                                                    •    first order and second order partial derivatives
+                                                    •    minimum, maximum and saddle points
+                                                    •    normal and tangent planes and local linearisation
+                                                    •    directional derivatives and gradient
+                                                    •    quadratic approximations
+                                                    •    local maximum and minimum problems
+
+                                                    Exclude Jacobian matrix, Lagrange multipliers and
+                                                    constrained optimisation.
+
+                                                   6
+                 9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+       Topic/Sub-topics                         Content
+
+1.5    Differential equations                   Include:
+                                                •    analytical solution of first order and second order
+                                                     linear differential equations of the form:
+                                                           dy
+                                                     (i)       + p ( x) y q (
+                                                                         =    x ) , using an integrating
+                                                           dx
+                                                          factor
+                                                             d2 y          dy
+                                                     (ii)         2
+                                                                      +a           0 , where a, b ∈ ℝ
+                                                                              + by =
+                                                             dx            dx
+                                                             d2 y          dy
+                                                     (iii)        2
+                                                                      +a      + by f
+                                                                                  =  ( x ) , where a, b ∈ ℝ and
+                                                             dx            dx
+                                                           f(x) is a polynomial or pekx or p cos(kx) + q
+                                                           sin(kx)
+                                                           including those that can be reduced to the
+                                                           above by means of a given substitution
+                                                •    relationship between the solution of a non-
+                                                     homogenous equation and the associated
+                                                     homogenous equation
+                                                •    family of solution curves
+                                                •    phase lines and slope fields*
+                                                •    exponential growth model
+                                                •    logistic growth model, equilibrium points and their
+                                                     stability, and harvesting
+
+2      Discrete Mathematics, Matrices and Numerical Methods
+
+2.1    Recurrence relations                     Include:
+                                                •    behaviour of a sequence, such as the limiting
+                                                     behaviour of a sequence
+                                                •    solution of
+                                                     (i) First order linear (homogeneous and non-
+                                                           homogeneous) recurrence relations with
+                                                           constant coefficients of the form
+                                                           un = aun −1 + b, a, b ∈ , a ≠ 0
+                                                     (ii) Second order linear homogeneous
+                                                          recurrence relations with constant coefficients
+                                                          including those that can be transformed to the
+                                                          above by means of a given substitution
+                                                •    modelling with recurrence relations of the forms
+                                                     above
+
+* For teaching and learning only.
+
+                                                7
+               9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                    Content
+
+2.2   Matrices and linear spaces          Include:
+                                          •    use of matrices to represent a set of linear
+                                               equations
+                                          •    operations on 3 × 3 matrices
+                                          •    determinant of a square matrix and inverse of a
+                                               non-singular matrix (2 × 2 and 3 × 3 matrices only)
+                                          •    use of matrices to solve a set of linear equations
+                                               (including row reduction and echelon forms, and
+                                               geometrical interpretation of the solution)
+                                          •    linear transformations and matrices from
+                                                 n →  m , where n, m ⩽ 3
+                                          •    eigenvalues and eigenvectors of square matrices
+                                                (2 × 2 and 3 × 3 matrices, restricted to cases
+                                               where the eigenvalues are real)
+                                          •    diagonalisation of a square matrix M by
+                                              expressing the matrix in the form QDQ -1 , where
+                                               D is a diagonal matrix of eigenvalues and Q is a
+                                              matrix whose columns are eigenvectors, and use
+                                              of this expression such as to find the powers of
+                                               M
+                                          •   linear spaces and subspaces, and the axioms
+                                              (restricted to spaces of finite dimension over the
+                                              field of real numbers only)
+                                          •   linear independence and span
+                                          •   basis and dimension (in simple cases), including
+                                              use of terms such as ‘column space’, ‘row space’,
+                                              ‘range space’ and ‘null space’
+                                          •   rank of a square matrix and relation between rank,
+                                              dimension of null space and order of the matrix
+
+2.3   Numerical methods                   Include:
+                                          • location of roots of an equation by simple graphical
+                                              or numerical methods
+                                          • approximation of roots of equations using linear
+                                              interpolation and Newton-Raphson method, with
+                                              the aid of a computer, including cases where each
+                                              method fails to converge to the required root
+                                          • iterations involving recurrence relations of the form
+                                               xn +1 = F ( xn ) , including cases where the method
+                                              fails to converge
+                                          •   approximation of integral of a function using the
+                                              trapezium rule and Simpson’s rule, with the aid of a
+                                              computer
+                                          •   approximation of solutions of first order differential
+                                              equations using Euler method (including the use of
+                                              the improved Euler formula), with the aid of a
+                                              computer
+
+                                          8
+               9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                    Content
+
+SECTION B: PROBABILITY AND STATISTICS
+
+3         Probability and Statistics
+
+3.1   Discrete random variables           Include:
+                                          •    use of Poisson distribution Po ( µ ) and geometric
+                                               distribution Geo(p) as probability models, including
+                                               conditions under which each distribution is a
+                                               suitable model
+                                          •    mean and variance for Poisson and geometric
+                                               distributions
+                                          •    additive property of the Poisson distribution
+
+3.2   Continuous random variables         Include:
+                                          •    probability density function of a continuous
+                                               random variable and its mean and variance
+                                               (includes ‘piecewise’ probability density function)
+                                          •    cumulative distribution function and its relationship
+                                               with the probability density function
+                                          •    concepts of median and mode of a continuous
+                                               random variable
+                                                                                    ∞
+                                          •    use of the result E ( g ( x ) ) =   ∫ −∞g ( x ) f ( x ) dx in
+                                               simple cases, where f ( x ) is the probability
+
+                                                                                    ( )
+                                               density function of X and g x is a function of
+                                               X
+                                          •    uniform distribution and exponential distribution as
+                                               probability models
+                                          •    relationship between Poisson and exponential
+                                               distributions
+
+                                          9
+               9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+      Topic/Sub-topics                              Content
+
+3.3   Hypothesis testing and Confidence intervals   Include:
+                                                    •    formulation of hypotheses and testing for a
+                                                         population mean using a small sample drawn from
+                                                         a normal population of unknown variance using a
+                                                         t-test
+                                                    •    formulation of hypotheses for the difference of
+                                                         population means, and apply, as appropriate:
+                                                         -     a paired sample t-test
+                                                         -     a test using a normal distribution
+                                                    •    contingency tables and χ 2 -tests of:
+                                                         -     goodness of fit
+                                                         -     independence
+                                                         (excluding Yates’ correction for continuity)
+                                                    •    connection between confidence interval and
+                                                         hypothesis test
+                                                    •    confidence interval for the population mean based
+                                                         on:
+                                                         -     a random sample from a normal population of
+                                                               known variance
+                                                         -     a small random sample drawn from a normal
+                                                               population of unknown variance
+                                                         -     a large random sample from any population
+                                                    •    confidence interval for population proportion
+                                                         (including concept of sample proportion) from a
+                                                         large random sample
+                                                    •    interpretation of confidence intervals and the
+                                                         results of a hypothesis test in the context of the
+                                                         problem
+
+                                                     Exclude the use of the term ‘Type I error’, concept of
+                                                     Type II error and power of a test.
+
+3.4   Non-parametric tests                          Include:
+                                                    •    formulation of hypotheses and testing for:
+                                                         -     a population median using Sign test
+                                                         -     identical probability distributions for two
+                                                               sampled populations in a paired difference
+                                                               design using Wilcoxon matched-pair signed
+                                                               rank test
+                                                    •    advantages and disadvantages of non-parametric
+                                                         tests
+
+                                                    Exclude treatment of tied ranks.
+
+                                                    10
+                   9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+MATHEMATICAL NOTATION
+The list which follows summarises the notation used in Singapore–Cambridge Mathematics examinations.
+Although primarily directed towards A-Level, the list also applies, where relevant, to examinations at all other
+levels.
+
+ 1. Set Notation
+
+ ∈                  is an element of
+
+ ∉                  is not an element of
+
+ {x1, x2, …}        the set with elements x1, x2, …
+
+ {x: …}             the set of all x such that
+
+ n(A)               the number of elements in set A
+
+ ∅                  the empty set
+
+                    universal set
+
+ A′                 the complement of the set A
+
+ ℤ                  the set of integers, {0, ±1, ±2, ±3, …}
+
+ ℤ+                 the set of positive integers, {1, 2, 3, …}
+
+ ℚ                  the set of rational numbers
+
+ ℚ+                 the set of positive rational numbers, {x ∈ ℚ: x > 0}
+
+ ℚ 0+               the set of positive rational numbers and zero, {x ∈ ℚ: x ⩾ 0}
+
+ ℝ                  the set of real numbers
+
+ ℝ+                 the set of positive real numbers, {x ∈ ℝ: x > 0}
+
+ ℝ 0+               the set of positive real numbers and zero, {x ∈ ℝ: x ⩾ 0}
+
+ ℝn                 the real n-tuples
+
+ ℂ                  the set of complex numbers
+
+ ⊆                  is a subset of
+
+ ⊂                  is a proper subset of
+
+ ⊈                  is not a subset of
+
+ ⊄                  is not a proper subset of
+
+ ∪                  union
+
+                                                         11
+         9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+∩         intersection
+
+[a, b]    the closed interval {x ∈ℝ: a ⩽ x ⩽ b}
+
+[a, b)    the interval {x ∈ℝ: a ⩽ x < b}
+
+(a, b]    the interval {x ∈ℝ: a < x ⩽ b}
+
+(a, b)    the open interval {x ∈ℝ: a < x < b}
+
+                                                12
+                9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+2. Miscellaneous Symbols
+
+=                is equal to
+
+≠                is not equal to
+
+≡                is identical to or is congruent to
+
+≈                is approximately equal to
+
+∝                is proportional to
+
+<                is less than
+
+⩽; ≯             is less than or equal to; is not greater than
+
+>                is greater than
+
+⩾; ≮             is greater than or equal to; is not less than
+
+∞                infinity
+
+3. Operations
+    n
+
+∑a
+i =1
+         i       a1 + a2 + ... + an
+
+n
+     a           the nth root of the real number a
+
+a                the modulus of the real number a
+
+n!               n factorial for n ∈ ℤ+ ∪ {0}, (0! = 1)
+
+n                                              n!
+             the binomial coefficient                , for n, r ∈ ℤ+ ∪ {0}, 0 ⩽ r ⩽ n
+ r                                        r! (n − r )!
+                 n(n − 1)...(n − r + 1)
+                                        , for n ∈ ℚ, r ∈ ℤ+∪ {0}
+                           r!
+
+                                                          13
+                      9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+4. Functions
+f                                 the function f
+f(x)                              the value of the function f at x
+f: A →B                           f is a function under which each element of set A has an image in set B
+f: x ↦y                           the function f maps the element x to the element y
+f –1                              the inverse of the function f
+
+gf                                the composite function of f and g which is defined by gf(x) = g(f(x))
+
+lim f(x)                          the limit of f(x) as x tends to a
+x→ a
+
+Δx ; δx                           an increment of x
+ dy
+                                  the derivative of y with respect to x
+ dx
+
+dn y
+                                  the nth derivative of y with respect to x
+dx n
+f'(x), f''(x), …, f (n)(x)        the first, second, … nth derivatives of f(x) with respect to x
+
+∫ y dx                            indefinite integral of y with respect to x
+
+        b
+∫ y dx
+     a
+                                  the definite integral of y with respect to x for values of x between a and b
+
+x , x , …                      the first, second, …derivatives of x with respect to time
+∂z
+                                  the partial derivative of z with respect to x
+∂x
+∂2 z
+                                  the partial derivative of z with respect to x then with respect to y
+∂y∂x
+
+fx                                the partial derivative of f with respect to x
+fxy                               the partial derivative of f with respect to x then with respect to y
+
+5. Exponential and Logarithmic Functions
+e                            base of natural logarithms
+e , exp x
+    x
+                             exponential function of x
+
+log a x                      logarithm to the base a of x
+
+ln x                         natural logarithm of x
+lg x                         logarithm of x to base 10
+
+6. Circular Functions and Relations
+sin, cos, tan,
+cosec, sec, cot
+                                     } the circular functions
+sin–1, cos–1, tan–1
+cosec–1, sec–1, cot–1                }   the inverse circular functions
+
+                                                                  14
+              9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+7. Complex Numbers
+i               the square root of –1
+z               a complex number, z           = x + iy
+                                              = r(cos θ + i sin θ ), r ∈ℝ +
+
+                                              = reiθ, r ∈ℝ +
+
+Re z            the real part of z, Re (x + iy) = x
+Im z            the imaginary part of z, Im (x + iy) = y
+
+    z           the modulus of z, x + iy =       x 2 + y 2 , r (cosθ + i sinθ ) = r
+
+arg z           the argument of z, arg(r(cos θ + i sin θ )) = θ , –π < θ ⩽ π
+z*              the complex conjugate of z, (x + iy)* = x – iy
+
+8. Matrices
+M               a matrix M
+M–1             the inverse of the square matrix M
+
+MT              the transpose of the matrix M
+det M           the determinant of the square matrix M
+
+9. Vectors
+ x
+             a column vector in xy-plane
+ y
+
+ x
+ 
+ y           a column vector in xyz-space
+z
+ 
+a              the vector a
+
+    AB         the vector represented in magnitude and direction by the directed line segment AB
+
+â              a unit vector in the direction of the vector a
+i, j, k        unit vectors in the directions of the cartesian coordinate axes
+
+    a          the magnitude of a
+
+    AB         the magnitude of AB
+
+a.b            the scalar product of a and b
+a×b            the vector product of a and b
+
+                                                         15
+                 9649 FURTHER MATHEMATICS GCE ADVANCED LEVEL H2 SYLLABUS
+
+10. Probability and Statistics
+A, B, C, etc.      events
+A∪B                union of events A and B
+A∩B                intersection of the events A and B
+P(A)               probability of the event A
+A'                 complement of the event A, the event ‘not A’
+
+P(A | B)           probability of the event A given the event B
+X, Y, R, etc.      random variables
+x, y, r, etc.      value of the random variables X, Y, R, etc.
+
+x1, x2, …          observations
+
+f1, f2,…           frequencies with which the observations, x1, x2, …occur
+
+p(x)               the value of the probability function P(X = x) of the discrete random variable X
+
+p1, p2,…           probabilities of the values x1, x2, …of the discrete random variable X
+f(x), g(x)…        the value of the probability density function of the continuous random variable X
+F(x), G(x)…        the value of the (cumulative) distribution function P(X ⩽ x) of the random variable X
+
+E(X)               expectation of the random variable X
+E[g(X)]            expectation of g(X)
+Var(X)             variance of the random variable X
+
+B(n, p)            binomial distribution, parameters n and p
+Po(μ)              Poisson distribution, mean μ
+                                                   1
+Geo(p)             Geometric distribution, mean
+                                                   p
+
+N(μ, σ2)           normal distribution, mean μ and variance σ2
+μ                  population mean
+
+σ2                 population variance
+σ                  population standard deviation
+x                  sample mean
+s2                 unbiased estimate of population variance from a sample
+r                  linear product-moment correlation coefficient for a sample
+
+                                                        16
+

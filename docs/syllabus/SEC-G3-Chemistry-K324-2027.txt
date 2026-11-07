@@ -1,0 +1,1514 @@
+Singapore–Cambridge Secondary Education Certificate (2027)
+
+                  G3 Chemistry
+                 (Syllabus K324)
+
+           © MOE & Cambridge University Press & Assessment 2025
+          K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENTS
+                                                                       Page
+INTRODUCTION                                                              3
+AIMS                                                                     3
+PRACTICES OF SCIENCE                                                     4
+DISCIPLINARY IDEAS OF CHEMISTRY                                          5
+ASSESSMENT OBJECTIVES                                                    5
+SCHEME OF ASSESSMENT                                                     7
+CONTENT STRUCTURE                                                        9
+SUBJECT CONTENT                                                          10
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS                             25
+PRACTICAL ASSESSMENT                                                     26
+NOTES FOR QUALITATIVE ANALYSIS                                           30
+THE PERIODIC TABLE OF ELEMENTS                                           31
+MATHEMATICAL REQUIREMENTS                                                32
+GLOSSARY OF TERMS USED IN CHEMISTRY PAPERS                               33
+SPECIAL NOTE                                                             34
+
+                                      2
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+INTRODUCTION
+The Secondary Education Certificate G3 Chemistry Syllabus is designed to place less emphasis on factual
+materials while having a greater emphasis on the understanding and application of scientific concepts and
+principles. This approach has been adopted in recognition of the need for students to develop skills that will be
+of long-term value in an increasingly complex and globalised world, rather than focusing on large quantities of
+factual material, which may have only short-term relevance.
+
+It is envisaged that teaching and learning programmes based on this syllabus will feature a wide variety of
+learning experiences designed to promote acquisition of scientific expertise and understanding, and to develop
+values and attitudes relevant to science. Teachers are encouraged to use a combination of appropriate
+strategies including developing practical work for their students to facilitate a greater understanding of the
+subject. It is expected that students will apply investigative and problem-solving skills and effectively
+communicate the theoretical concepts covered in this course.
+
+AIMS
+The aims of a course based on this syllabus should be to:
+
+1.   provide a worthwhile educational experience for all students, whether or not they go on to study science
+     beyond this level.
+
+2.   develop in students the understanding and skills relevant to the practices of science, and enable them to
+
+     2.1 appreciate practical applications of Chemistry in the real world
+
+     2.2 deepen their interest in Chemistry for future learning and work
+
+     2.3 become scientifically literate citizens who can innovate and seize opportunities in the 21st century
+
+     2.4 develop a way of thinking to approach, analyse and solve problems by explaining macroscopic
+         characteristics and changes in chemical systems through the use of sub-microscopic and symbolic
+         representations.
+
+3.   develop in students the values, ethics and attitudes relevant to science such as
+
+     3.1 curiosity – desiring to explore the environment and question what is found
+
+     3.2 creativity – seeking innovative and relevant ways to solve problems
+
+     3.3 integrity – handling and communicating data and information with complete honesty
+
+     3.4 objectivity – seeking data and information to validate observations and explanations without bias
+
+     3.5 open-mindedness – accepting all knowledge as tentative and suspending judgement, tolerance for
+         ambiguity, willingness to change views if the evidence is convincing
+
+     3.6 resilience – not giving up on the pursuit of answers/solutions, willingness to take risks and embrace
+         failure as part of the learning process
+
+     3.7 responsibility – showing care and concern for living things and awareness of our responsibility for the
+         quality of the environment
+
+     3.8 healthy scepticism – questioning the observations, methods, processes and data, as well as trying to
+         review one’s own ideas.
+
+                                                        3
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICES OF SCIENCE
+The Practices of Science represent the set of established procedures and practices associated with scientific
+inquiry, what scientific knowledge is and how it is generated and established, and how Science is applied in
+society respectively. It consists of three components:
+
+1.   Demonstrating Ways of Thinking and Doing in Science (WoTD)
+
+     1.1 Posing questions and defining problems
+
+     1.2 Designing investigations
+
+     1.3 Conducting experiments and testing solutions
+
+     1.4 Analysing and interpreting data
+
+     1.5 Communicating, evaluating and defending ideas with evidence
+
+     1.6 Making informed decisions and taking responsible actions
+
+     1.7 Using and developing models
+
+     1.8 Constructing explanations and designing solutions
+
+2.   Understanding the Nature of Scientific Knowledge (NOS)
+
+     2.1 Science is an evidence-based, model-building enterprise concerned with understanding the natural
+         world
+
+     2.2 Science assumes there are natural causes for physical phenomena and an order and consistency in
+         natural systems
+
+     2.3 Scientific knowledge is generated using a set of established procedures and practices, and through a
+         process of critical debate within the scientific community
+
+     2.4 Scientific knowledge is reliable and durable, yet open to change in the light of new evidence
+
+3.   Relating Science, Technology, Society and Environment (STSE)
+
+     3.1 There are risks and benefits associated with the applications of science in society. Science and its
+         applications have the potential to bring about both benefits and harm to society
+
+     3.2 Applications of science often have ethical, social, economic and environmental implications
+
+     3.3 Applications of new scientific discoveries often inspire technological advancements while advances
+         in technology motivate scientists to ask new questions and/or empower scientists in their inquiry
+         (e.g. collecting more precise data or carrying out more complex data analysis)
+
+The Practices of Science serve to highlight that the discipline of Science is more than the acquisition of a body
+of knowledge (e.g. scientific facts, concepts, laws, and theories); it is also a way of thinking and doing. In
+particular, it is important to appreciate that the cognitive, epistemic and social aspects of the Practices of
+Science are intricately related. For example, observation of events can lead to the generation of scientific
+knowledge which is, simultaneously, shaped by the beliefs of scientific knowledge. In addition, scientists
+develop models to construct theories, based on the assumption that there is order and consistency in natural
+systems. The practice of theory-making, in turn, reinforces the explanatory power of scientific knowledge. The
+scientific endeavour is embedded in the wider ethical, social, economic and environmental contexts.
+
+                                                        4
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+DISCIPLINARY IDEAS OF CHEMISTRY
+The disciplinary ideas of Chemistry described below represent the overarching ideas which can be applied to
+explain, analyse and solve a variety of problems that seek to address the broader questions of what matter is
+and how particles interact with one another. Equipping students with a coherent view and conceptual framework
+facilitates the application and transfer of learning. These disciplinary ideas can be revisited and deepened at
+higher levels of learning and beyond the schooling years.
+
+1.   Matter is made up of a variety of chemical elements, each with characteristic properties, and the smallest
+     particle that characterises a chemical element is an atom.
+
+2.   The structure of matter and its chemical and physical properties are determined by the arrangement of
+     particles and electrostatic interactions between them.
+
+3.   Energy changes across and within systems usually occur during physical and chemical changes, when
+     there is rearrangement of particles.
+
+4.   Energy plays a key role in influencing the rate and extent of physical and chemical changes.
+
+5.   Matter and energy are conserved in all physical and chemical changes.
+
+ASSESSMENT OBJECTIVES
+The Assessment Objectives listed below reflect those parts of the Aims and Practices of Science that will be
+assessed.
+
+A    Knowledge with Understanding
+
+Candidates should be able to demonstrate knowledge and understanding in relation to:
+
+1.   scientific phenomena, facts, laws, definitions, concepts and theories
+
+2.   scientific vocabulary, terminology and conventions (including symbols, quantities and units contained in
+     Signs, Symbols and Systematics 16–19, Association for Science Education, 2000)
+
+3.   scientific instruments and apparatus, including techniques of operation and aspects of safety
+
+4.   scientific quantities and their determination
+
+5.   scientific and technological applications with their social, economic and environmental implications.
+
+The syllabus content defines the factual knowledge that candidates may be required to recall and explain.
+Questions testing these objectives will often begin with one of the following words: define, state, name,
+describe, explain or outline (see the Glossary of Terms).
+
+                                                        5
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+B    Handling Information and Solving Problems
+
+Candidates should be able (in words or by using symbolic, graphical and numerical forms of presentation) to:
+
+1.   locate, select, organise and present information from a variety of sources
+
+2.   translate information from one form to another
+
+3.   manipulate numerical and other data
+
+4.   use information to identify patterns, report trends and draw inferences
+
+5.   present reasoned explanations for phenomena, patterns and relationships
+
+6.   make predictions and propose hypotheses
+
+7.   solve problems.
+
+These Assessment Objectives cannot be precisely specified in the syllabus content because questions testing
+such skills may be based on information which is unfamiliar to the candidate. In answering such questions,
+candidates are required to use principles and concepts that are within the syllabus and apply them in a logical,
+reasoned or deductive manner to a novel situation. Questions testing these objectives will often begin with one
+of the following words: predict, deduce, suggest, calculate or determine (see the Glossary of Terms).
+
+C    Experimental Skills and Investigations
+
+Candidates should be able to:
+
+1.   follow a sequence of instructions
+
+2.   use techniques, apparatus and materials
+
+3.   make and record observations, measurements and estimates
+
+4.   interpret and evaluate observations and experimental results
+
+5.   plan investigations, select techniques, apparatus and materials
+
+6.   evaluate methods and suggest possible improvements.
+
+Weighting of Assessment Objectives
+
+Theory Papers (Papers 1 and 2)
+
+A    Knowledge with Understanding, approximately 45% of the marks with approximately 15% allocated to
+     recall.
+
+B    Handling Information and Solving Problems, approximately 55% of the marks.
+
+                                                        6
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Practical Assessment (Paper 3)
+
+Paper 3 will assess appropriate aspects of assessment objectives C1 to C6 in the following skill areas:
+
+•   Planning (P)
+
+•   Manipulation, measurement and observation (MMO)
+
+•   Presentation of data and observations (PDO)
+
+•   Analysis, conclusions and evaluation (ACE)
+
+The assessment of Planning (P) will have a weighting of 15%. The assessment of skill areas MMO, PDO and
+ACE will have a weighting of 85%.
+
+SCHEME OF ASSESSMENT
+Candidates are required to enter for Papers 1, 2 and 3.
+
+    Paper     Type of Paper                                     Duration           Marks            Weighting
+
+      1       Multiple Choice                                      1h                40                30%
+
+      2       Structured and Free Response                     1 h 45 min            80                50%
+
+      3       Practical                                        1 h 50 min            40                20%
+
+Theory Papers
+
+Paper 1 (1 h, 40 marks)
+
+This paper consists of 40 compulsory multiple choice items.
+
+A copy of the Periodic Table of Elements will be printed as part of this Paper.
+
+Paper 2 (1 h 45 min, 80 marks)
+This paper consists of two sections.
+
+Section A will carry 70 marks and will consist of a variable number of compulsory structured questions. The last
+two questions will carry 20 marks, one of which is a data-based question requiring candidates to interpret, evaluate
+or solve problems using a stem of information. The data-based question will carry 8–12 marks.
+
+Section B will carry 10 marks and will consist of two questions. Candidates must answer only one out of these
+two questions.
+
+A copy of the Periodic Table of Elements will be printed as part of this Paper.
+
+                                                         7
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Practical Assessment
+
+Paper 3 (1h 50 min, 40 marks)
+
+This paper consists of a variable number of compulsory practical questions.
+
+One, or more, of the questions may incorporate assessment of Planning (P) and require candidates to apply
+and integrate knowledge and understanding from different sections of the syllabus. The assessment of PDO
+and ACE may include questions on data-analysis which do not require practical equipment and apparatus.
+
+Candidates are not allowed to refer to notebooks, textbooks or any other information during the assessment.
+
+A copy of the Notes for Qualitative Analysis will be printed as part of this Paper.
+
+                                                          8
+               K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENT STRUCTURE
+
+Sections                                   Topics
+
+I.    Matter – Structures and Properties   1.    Experimental Chemistry
+                                           2.    The Particulate Nature of Matter
+                                           3.    Chemical Bonding and Structure
+
+II.   Chemical Reactions                   4.    Chemical Calculations
+                                           5.    Acid-Base Chemistry
+                                           6.    Qualitative Analysis
+                                           7.    Redox Chemistry
+                                           8.    Patterns in the Periodic Table
+                                           9.    Chemical Energetics
+                                           10.   Rate of Reactions
+
+III. Chemistry in a Sustainable World      11. Organic Chemistry
+                                           12. Maintaining Air Quality
+
+                                                 9
+                    K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUBJECT CONTENT
+SECTION I:             MATTER – STRUCTURES AND PROPERTIES
+
+Overview
+
+Matter is understood in terms of particles, the way particles are arranged and the forces that hold them together.
+Evidence of the particulate nature of matter come from daily observable phenomena such as diffusion and
+crystal growth. The simplest particle is known as an atom, which consists of sub-atomic particles like protons,
+neutrons and electrons. A myriad of molecules with different properties are formed from the atoms of hundreds
+of elements discovered to date. The physical properties of a substance are determined by how its particles are
+arranged (i.e. structure) and the strength of the electrostatic forces between them.
+
+Chemistry is typically an experimental science and relies primarily on practical work. This section also examines
+the appropriate use of simple apparatus and chemicals, and experimental techniques.
+
+1.   Experimental Chemistry
+
+Content
+
+1.1 Experimental Design
+
+1.2 Methods of Purification and Analysis
+
+Learning Outcomes
+
+Candidates should be able to:
+
+1.1 Experimental Design
+
+     (a)   name appropriate apparatus for the measurement of time, temperature, mass and volume; including
+           burettes, pipettes, measuring cylinders and gas syringes
+
+     (b)   suggest suitable apparatus, given relevant information, for a variety of simple experiments, including
+           drying and collection of gases and measurement of rates of reaction
+           (drying agents will be limited to calcium oxide, concentrated sulfuric acid and fused calcium chloride).
+
+1.2 Methods of Purification and Analysis
+
+     (a) describe methods of separation and purification for the components of mixtures, to include:
+           (i)    use of a suitable solvent, filtration and crystallisation or evaporation
+           (ii)   sublimation
+           (iii) distillation and fractional distillation (see also 11.1(b))
+           (iv) use of a separating funnel
+           (v) paper chromatography
+
+     (b) suggest suitable separation and purification methods, given information about the substances involved
+         in the following types of mixtures:
+           (i)    solid-solid
+           (ii)   solid-liquid
+           (iii) liquid-liquid (miscible and immiscible)
+
+     (c) interpret paper chromatograms including comparison with ‘known’ samples and the use of Rf values
+
+                                                             10
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+     (d) explain the need to use locating agents in the chromatography of colourless compounds
+           (knowledge of specific locating agents is not required)
+
+     (e) deduce from given melting point and boiling point data the identities of substances and their purity
+
+     (f)   explain the importance of measuring the purity in substances used in everyday life, e.g. foodstuffs and
+           drugs.
+
+2.   The Particulate Nature of Matter
+
+Content
+
+2.1 Kinetic Particle Theory
+
+2.2 Atomic Structure
+
+Learning Outcomes
+
+Candidates should be able to:
+
+2.1 Kinetic Particle Theory
+
+     (a) describe the solid, liquid and gaseous states of matter and explain their interconversion in terms of the
+         kinetic particle theory and of the energy changes involved
+
+     (b) describe and explain evidence for the movement of particles in liquids and gases
+           (the treatment of Brownian motion is not required)
+
+     (c) explain everyday effects of diffusion in terms of particles, e.g. the spread of perfumes and cooking
+         aromas; tea and coffee grains in water
+
+     (d) state qualitatively the effect of molecular mass on the rate of diffusion and explain the dependence of
+         rate of diffusion on temperature.
+
+2.2 Atomic Structure
+
+     (a) state the relative charges and approximate relative masses of a proton, a neutron and an electron
+
+     (b) describe, with the aid of diagrams, the structure of an atom as consisting of protons and neutrons
+         (nucleons) in the nucleus and electrons arranged in shells (energy levels)
+           (knowledge of s, p, d and f classification is not required; a copy of the Periodic Table will be available
+           in Papers 1 and 2)
+
+     (c) define proton (atomic) number and nucleon (mass) number
+
+     (d) interpret and use nuclide notations such as 126 C
+
+     (e) define the term isotopes
+
+     (f)   deduce the numbers of protons, neutrons and electrons in atoms and ions given proton and nucleon
+           numbers.
+
+                                                          11
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+3.   Chemical Bonding and Structure
+
+Content
+
+3.1 Ionic Bonding
+
+3.2 Covalent Bonding
+
+3.3 Metallic Bonding
+
+3.4 Structure and Properties of Materials
+
+Learning Outcomes
+
+Candidates should be able to:
+
+3.1 Ionic Bonding
+
+     (a) describe the formation of ions by electron loss/gain and that these ions usually have the electronic
+         configuration of a noble gas
+
+     (b) describe, including the use of ‘dot-and-cross’ diagrams, the formation of ionic bonds between
+         metals and non-metals, e.g. NaCl ; MgCl 2
+
+     (c) state that ionic materials contain a giant lattice in which the ions are held by electrostatic attraction,
+         e.g. NaCl
+          (candidates will not be required to draw diagrams of ionic lattices)
+
+     (d) relate the physical properties (including electrical property) of ionic compounds to their lattice structure
+         (see also 3.4(g)).
+
+3.2 Covalent Bonding
+
+     (a) describe the formation of a covalent bond by the sharing of a pair of electrons and that the atoms in
+         the molecules usually have the electronic configuration of a noble gas
+
+     (b) describe, using ‘dot-and-cross’ diagrams, the formation of covalent bonds between non-metallic
+         elements, e.g. H2; O2; H2O; CH4; CO2
+
+     (c) deduce the arrangement of electrons in other covalent molecules
+
+     (d) relate the physical properties (including electrical property) of covalent substances to their structure
+         and bonding (see also 3.4(g)).
+
+3.3 Metallic Bonding
+
+     (a) describe metals as a lattice of positive ions in a ‘sea of electrons’
+
+     (b) describe the general physical properties of metals as solids having high melting and boiling points,
+         malleable, good conductors of heat and electricity in terms of their structure (see also 3.4(g)).
+
+                                                          12
+                  K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+3.4 Structure and Properties of Materials
+
+    (a) describe the differences between elements, compounds and mixtures
+
+    (b) describe an alloy as a mixture of a metal with another element, e.g. brass; stainless steel
+
+    (c) identify representations of metals and alloys from diagrams of structures
+
+    (d) explain why alloys have different physical properties to their constituent elements
+
+    (e) compare the structures of the following substances in order to deduce their properties:
+          (i)    simple molecular substances, e.g. methane, iodine
+          (ii)   macromolecules, e.g. poly(ethene)
+          (iii) giant covalent substances, e.g. sand (silicon dioxide), diamond, graphite
+          (see also 3.4(g))
+
+    (f)   compare the bonding and structures of diamond and graphite in order to deduce their properties such
+          as electrical conductivity, lubricating or cutting action
+          (candidates will not be required to draw the structures)
+
+    (g) deduce the physical and chemical properties of substances from their structures and bonding and vice
+        versa (see also 3.1(d), 3.2(d), 3.3(b) and 3.4(e)).
+
+                                                        13
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION II:         CHEMICAL REACTIONS
+
+Overview
+
+This section provides an understanding of the changes at the sub-microscopic level during chemical reactions.
+Different types of chemical reactions (acid-base, precipitation and redox reactions) are delved into and lay the
+foundation for understanding what happens to energy and rate of reactions during a chemical change. The
+study of reactions also reveals patterns in the chemical properties of substances, leading to the organisation of
+elements in the Periodic Table.
+
+In all chemical reactions, matter is conserved and this is illustrated by balanced chemical equations. Chemists
+use symbols and formulae to construct these chemical equations, from which the molar ratios are used to
+quantify the amount of reactants and products in a reaction.
+
+4.   Chemical Calculations
+
+Content
+
+4.1 Formulae and Equation Writing
+
+4.2 The Mole Concept and Stoichiometry
+
+Learning Outcomes
+
+Candidates should be able to:
+
+4.1 Formulae and Equation Writing
+
+     (a) state the symbols of the elements and formulae of the compounds mentioned in the syllabus
+
+     (b) deduce the formulae of simple compounds from the relative numbers of atoms present and vice versa
+
+     (c) deduce the formulae of ionic compounds from the charges on the ions present and vice versa
+
+     (d) interpret chemical equations with state symbols
+
+     (e) construct chemical equations, with state symbols, including ionic equations.
+
+4.2 The Mole Concept and Stoichiometry
+
+     (a) define relative atomic mass, Ar
+
+     (b) define relative molecular mass, Mr, and calculate relative molecular mass (and relative formula mass)
+         as the sum of relative atomic masses
+
+     (c) define the term mole in terms of the Avogadro constant
+
+     (d) calculate the percentage mass of an element in a compound when given appropriate information
+
+     (e) calculate empirical and molecular formulae from relevant data
+
+     (f)   calculate stoichiometric reacting masses and volumes of gases (one mole of gas occupies 24 dm3 at
+           room temperature and pressure); calculations involving the idea of limiting reactants may be set
+           (knowledge of the gas laws and the calculations of gaseous volumes at different temperatures and
+           pressures are not required)
+
+                                                        14
+                    K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+      (g) apply the concept of solution concentration (in mol/dm3 or g/dm3) to process the results of volumetric
+          experiments (e.g. titration) and to solve simple problems
+            (appropriate guidance will be provided where unfamiliar reactions are involved)
+
+      (h) calculate % yield and % purity.
+
+5.    Acid-Base Chemistry
+
+Content
+
+5.1     Acids and Bases
+
+5.2     Salts
+
+5.3     Ammonia
+
+Learning Outcomes
+
+Candidates should be able to:
+
+5.1 Acids and Bases
+
+      (a) describe the meanings of the terms acid and alkali in terms of the ions they produce in aqueous
+          solution and their effects on Universal Indicator
+
+      (b) describe neutrality and relative acidity and alkalinity, in terms of
+            (i)    relative H+ and OH- ion concentrations,
+            (ii)   colour in Universal Indicator, and
+            (iii) the pH scale
+            (calculation of pH from hydrogen ion concentration is not required)
+
+      (c) describe qualitatively the difference between strong and weak acids in terms of the extent of ionisation
+
+      (d) describe the characteristic properties of acids as in reactions with metals, bases and carbonates to
+          form salts
+
+      (e) describe the reaction between hydrogen ions and hydroxide ions to produce water,
+          H+ + OH– → H2O, as neutralisation
+
+      (f)   describe the importance of controlling the pH in soils and how excess acidity can be treated using
+            calcium hydroxide
+
+      (g) describe the characteristic properties of bases in reactions with acids and with ammonium salts
+
+      (h) classify oxides as acidic, basic, amphoteric or neutral based on metallic/non-metallic character.
+
+5.2 Salts
+
+      (a) describe the techniques used in the preparation, separation and purification of salts as examples of
+          some of the techniques specified in Section 1.2(a) (methods for preparation should include
+          precipitation and titration together with reactions of acids with metals, insoluble bases and insoluble
+          carbonates)
+
+      (b) describe the general rules of solubility for common salts to include nitrates, chlorides (including those
+          of silver and lead), sulfates (including those of barium, calcium and lead), carbonates, hydroxides,
+          salts of Group 1 cations and ammonium salts
+
+      (c) suggest a method of preparing a given salt from suitable starting materials, given appropriate
+          information.
+
+                                                             15
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+5.3 Ammonia
+
+     (a) describe the use of nitrogen, from air, and hydrogen, from the cracking of crude oil, in the manufacture
+         of ammonia
+
+     (b) state that some chemical reactions are reversible, e.g. manufacture of ammonia
+
+     (c) interpret data relating to the conditions used in industry for processes involving reversible reactions,
+         e.g. manufacture of ammonia by the Haber Process
+          (knowledge of Le Chatelier’s Principle is not required).
+
+6.   Qualitative Analysis
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the use of aqueous sodium hydroxide and/or aqueous ammonia to identify the following aqueous
+    cations through the formation of precipitates (if any) and their subsequent solubility: aluminium, ammonium
+    (together with evolution of ammonia gas upon warming), calcium, copper(II), iron(II), iron(III) and zinc
+     (formulae of complex ions are not required)
+
+(b) describe tests to identify the following anions: carbonate (by the addition of dilute acid and subsequent use
+    of limewater); chloride (by reaction of an aqueous solution with nitric acid and aqueous silver nitrate);
+    iodide (by reaction of an aqueous solution with nitric acid and aqueous silver nitrate); nitrate (by reduction
+    with aluminium in aqueous sodium hydroxide to ammonia and subsequent use of damp red litmus paper)
+    and sulfate (by reaction of an aqueous solution with nitric acid and aqueous barium nitrate)
+
+(c) describe tests to identify the following gases: ammonia (using damp red litmus paper); carbon dioxide
+    (using limewater); chlorine (using damp litmus paper); hydrogen (using a burning splint); oxygen (using a
+    glowing splint) and sulfur dioxide (using acidified potassium manganate(VII)).
+
+7.   Redox Chemistry
+
+Content
+
+7.1 Oxidation and Reduction
+
+7.2 Electrochemistry
+
+Learning Outcomes
+
+Candidates should be able to:
+
+7.1 Oxidation and Reduction
+
+     (a) define oxidation and reduction (redox) in terms of oxygen/hydrogen gain/loss
+
+     (b) define redox in terms of electron transfer and changes in oxidation state
+
+     (c) identify redox reactions in terms of oxygen/hydrogen gain/loss, electron gain/loss and changes in
+         oxidation state
+
+     (d) describe the use of aqueous potassium iodide and acidified potassium manganate(VII) in testing for
+         oxidising and reducing agents from the resulting colour changes.
+
+                                                        16
+                  K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+7.2 Electrochemistry
+
+    (a) describe electrolysis as the conduction of electricity through an ionic compound (an electrolyte), when
+        molten or dissolved in water, leading to chemical changes (including decomposition) at the electrodes
+
+    (b) describe electrolysis as evidence for the existence of ions which are held in a lattice when solid but
+        which are free to move when molten or in solution
+
+    (c) describe, in terms of the mobility of ions present and the electrode products, the electrolysis of molten
+        sodium chloride, using inert electrodes
+
+    (d) predict the likely products of the electrolysis of a molten binary ionic compound using inert electrodes
+
+    (e) apply the idea of selective discharge based on
+          (i)    cations: linked to the reactivity series (see also 8.4)
+          (ii)   anions: halides, hydroxides and sulfates (e.g. aqueous copper(II) sulfate and dilute sodium
+                 chloride solution (as essentially the electrolysis of water))
+          (iii) concentration effects (as in the electrolysis of concentrated and dilute aqueous sodium chloride)
+          (in all cases above, inert electrodes are used)
+
+    (f)   predict the likely products of the electrolysis of an aqueous electrolyte, given relevant information
+
+    (g) construct ionic equations for the reactions occurring at the electrodes during the electrolysis, given
+        relevant information
+
+    (h) describe the electrolysis of aqueous copper(II) sulfate with copper electrodes as a means of purifying
+        copper
+          (no technical details are required)
+
+    (i)   describe the electroplating of metals, e.g. copper plating, and state one use of electroplating
+
+    (j)   describe the production of electrical energy from simple cells (i.e. two electrodes in an electrolyte)
+          linked to the reactivity series (see also 8.4) and redox reactions (in terms of electron transfer)
+
+    (k)   describe hydrogen, derived from water or hydrocarbons, as a potential fuel, reacting with oxygen to
+          generate electricity directly in a hydrogen fuel cell
+          (details of the construction and operation of a fuel cell are not required).
+
+                                                            17
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+8.   Patterns in the Periodic Table
+
+Content
+
+8.1 Periodic Trends
+
+8.2 Group Properties
+
+8.3 Transition Elements
+
+8.4 Reactivity Series
+
+Learning Outcomes
+
+Candidates should be able to:
+
+8.1 Periodic Trends
+
+     (a) describe the Periodic Table as an arrangement of the elements in the order of increasing proton
+         (atomic) number
+
+     (b) describe how the position of an element in the Periodic Table is related to proton number and
+         electronic configuration
+
+     (c) describe the relationship between number of outer (valence) electrons and the ionic charge of an ion
+         for the first twenty elements
+
+     (d) explain the similarities between the elements in the same group of the Periodic Table in terms of their
+         electronic configuration
+
+     (e) describe the change from metallic to non-metallic character from left to right across a period of the
+         Periodic Table
+
+     (f)   describe the relationship between number of outer (valence) electrons and metallic/non-metallic
+           character
+
+     (g) predict the properties of elements in Group 1 and Group 17 using the Periodic Table.
+
+8.2 Group Properties
+
+     (a) describe lithium, sodium and potassium in Group 1 (the alkali metals) as a collection of relatively soft,
+         low density metals showing a trend in melting point and in their reaction with water
+
+     (b) describe chlorine, bromine and iodine in Group 17 (the halogens) as a collection of diatomic non-
+         metals showing a trend in colour, state and their displacement reactions with solutions of other halide
+         ions
+
+     (c) describe the elements in Group 18 (the noble gases) as a collection of monoatomic elements that are
+         chemically unreactive and hence important in providing an inert environment, e.g. argon and neon in
+         light bulbs; helium in balloons; argon in the manufacture of steel
+
+     (d) describe the lack of reactivity of the noble gases in terms of their electronic configurations.
+
+8.3 Transition Elements
+
+     (a) describe typical transition elements as metals having high melting point, high density, variable
+         oxidation state and forming coloured compounds
+
+     (b) state that the elements and/or their compounds are often able to act as catalysts (see also 10(d)).
+
+                                                         18
+                   K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+8.4 Reactivity Series
+
+     (a) place in order of reactivity calcium, copper, (hydrogen), iron, lead, magnesium, potassium, silver,
+         sodium and zinc by reference to
+           (i)    the reactions, if any, of the metals with water, steam and dilute hydrochloric acid
+           (ii)   the reduction, if any, of their oxides by carbon and/or by hydrogen
+
+     (b) describe the reactivity series as related to the tendency of a metal to form its positive ion, illustrated by
+         its reaction with
+           (i)    the aqueous ions of the other listed metals
+           (ii)   the oxides of the other listed metals
+
+     (c) deduce the order of reactivity from a given set of experimental results
+
+     (d) describe the action of heat on the carbonates of the listed metals and relate thermal stability to the
+         reactivity series
+
+     (e) describe the ease of obtaining metals from their ores by relating the elements to their positions in the
+         reactivity series
+
+     (f)   describe the essential conditions for the corrosion (rusting) of iron as the presence of oxygen and
+           water; prevention of rusting can be achieved by placing a barrier around the metal, e.g. painting;
+           greasing; plastic coating; galvanising
+
+     (g) describe the sacrificial protection of iron by a more reactive metal in terms of the reactivity series
+         where the more reactive metal corrodes preferentially, e.g. underwater pipes have a piece of
+         magnesium attached to them.
+
+9.   Chemical Energetics
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the meaning of enthalpy change in terms of exothermic (∆H negative) and endothermic
+    (∆H positive) reactions
+
+(b) represent energy changes by energy profile diagrams, including reaction enthalpy changes and activation
+    energies (see also 10(c), 10(d))
+
+(c) describe bond breaking as an endothermic process and bond making as an exothermic process
+
+(d) explain qualitatively overall enthalpy changes in terms of the energy changes associated with the breaking
+    and making of covalent bonds.
+
+                                                           19
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+10. Rate of Reactions
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the effect of concentration, pressure, particle size and temperature on the rates of reactions and
+    explain these effects in terms of collisions between reacting particles
+
+(b) define the term catalyst and describe the effect of catalysts (including enzymes) on the rates of reactions
+
+(c) explain how pathways with lower activation energies account for the increase in rates of reactions (see also
+    9(b))
+
+(d) state that some compounds act as catalysts in a range of industrial processes and that enzymes are
+    biological catalysts (see also 8.3(b), 9(b), 10(c) and 12(d))
+
+(e) suggest a suitable method for investigating the effect of a given variable on the rate of a reaction
+
+(f)   interpret data obtained from experiments concerned with rate of reaction.
+
+                                                        20
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION III:       CHEMISTRY IN A SUSTAINABLE WORLD
+
+Overview
+
+Ubiquitous in modern life, organic compounds range from the fuels we burn, the materials we use such as
+plastics to the food we eat. Urbanisation, industrialisation, increasing population and economic development
+especially in developing countries also create a huge demand for consumption of material goods and energy,
+accelerating the rate of waste output and emissions of pollutants. The excessive use of crude oil and its
+products results in detrimental effects on the environment and sustainability. Chemists have made significant
+contributions towards reducing these effects and improving sustainability through innovative use of chemical
+knowledge.
+
+In this section, knowledge and concepts from other topics within the syllabus are applied to assess the impacts
+of the consumption of organic compounds like fuels and plastics, the environmental issues related to their use
+and the solutions afforded by chemistry.
+
+11.   Organic Chemistry
+
+Content
+
+11.1 Fuels and Crude Oil
+
+11.2 Hydrocarbons
+
+11.3 Alcohols, Carboxylic Acids and Esters
+
+11.4 Polymers
+
+In describing reactions, candidates will be expected to quote the reagents, e.g. aqueous bromine, and
+the essential conditions, e.g. high temperature and pressure. Detailed conditions involving specific
+temperature and pressure values are not required.
+
+Learning Outcomes
+
+Candidates should be able to:
+
+11.1 Fuels and Crude Oil
+
+      (a) name natural gas, mainly methane, and crude oil as non-renewable sources of energy
+
+      (b) describe crude oil as a mixture of hydrocarbons and its separation by fractional distillation to yield
+          fractions which have competing uses as fuels and as a source of chemicals (see also 1.2(a))
+
+      (c) describe biofuel (exemplified by bioethanol from sugarcane) as a renewable alternative to natural
+          gas and crude oil
+
+      (d) describe how biofuel, when compared to fossil fuels, can be more environmentally sustainable in
+          terms of carbon dioxide emission (see also 12(g)).
+
+                                                        21
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+11.2 Hydrocarbons
+
+     (a) describe a homologous series as a group of compounds with a general formula, similar chemical
+         properties and showing a gradation in physical properties as a result of increase in the size and
+         mass of the molecules, e.g. melting and boiling points; viscosity
+
+     (b) describe the alkanes as a homologous series of saturated hydrocarbons with the general formula
+         CnH2n+2
+
+     (c) draw the structures of branched and unbranched alkanes, C1 to C4, and name the unbranched
+         alkanes methane to butane
+
+     (d) define isomerism and identify isomers
+
+     (e) describe alkanes (exemplified by methane) as being generally unreactive except in terms of
+         combustion and substitution by chlorine
+
+     (f)   describe the alkenes as a homologous series of unsaturated hydrocarbons with the general formula
+           CnH2n
+
+     (g) draw the structures of branched and unbranched alkenes, C2 to C4, and name the unbranched
+         alkenes ethene to butene
+
+     (h) describe the manufacture of alkenes and hydrogen by cracking hydrocarbons and recognise that
+         cracking is essential to match the demand for fractions containing smaller molecules from the
+         refinery process
+
+     (i)   describe the difference between saturated and unsaturated hydrocarbons from their molecular
+           structures and by using aqueous bromine
+
+     (j)   describe the reactions of alkenes (exemplified by ethene) in terms of combustion, polymerisation
+           (see also 11.4(b)), and the addition with bromine, steam and hydrogen
+
+     (k) state the meaning of polyunsaturated when applied to food products
+
+     (l)   describe the manufacture of margarine by the addition of hydrogen to unsaturated vegetable oils to
+           form a solid product.
+
+11.3 Alcohols, Carboxylic Acids and Esters
+
+     (a) describe the alcohols as a homologous series containing the –OH group
+
+     (b) draw the structures of branched and unbranched alcohols, C1 to C4, and name the unbranched
+         alcohols methanol to butanol
+
+     (c) describe the reactions of alcohols in terms of combustion and oxidation to carboxylic acids
+
+     (d) describe the formation of ethanol by the catalysed addition of steam to ethene and by fermentation of
+         glucose
+
+     (e) describe the carboxylic acids as a homologous series containing the –CO2H group
+
+     (f)   draw the structures of carboxylic acids, C1 to C4, and name the unbranched acids methanoic acid to
+           butanoic acid
+
+     (g) describe the carboxylic acids as weak acids, reacting with carbonates, bases and some metals
+
+                                                      22
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+    (h) describe the formation of ethanoic acid by the oxidation of ethanol by atmospheric oxygen or
+        acidified potassium manganate(VII)
+
+    (i)    describe the reaction of a carboxylic acid with an alcohol to form an ester, e.g. ethyl ethanoate
+
+    (j)    deduce the name and formula of an ester from the unbranched carboxylic acid, C1 to C4, and
+           alcohol, C1 to C4, and vice versa.
+
+11.4 Polymers
+
+    (a) describe polymers as large molecules built up from small units (monomers), different polymers
+        having different units and/or different linkages
+
+    (b) describe the formation of poly(ethene) as an example of addition polymerisation of ethene as the
+        monomer (see also 11.2(j))
+
+    (c) state some uses of poly(ethene) as a typical plastic, e.g. plastic bags; clingfilm
+
+    (d) deduce the structure of the polymer product from a given monomer and vice versa
+
+    (e) describe nylon, a polyamide, and Terylene, a polyester, as condensation polymers, the partial
+        structure of nylon being represented as
+
+          and the partial structure of Terylene as
+
+          (details of manufacture and mechanisms of these polymerisations are not required)
+
+    (f)    state some typical uses of man-made fibres such as nylon and Terylene, e.g. clothing; curtain
+           materials; fishing line; parachutes; sleeping bags
+
+    (g) describe the pollution problems caused by the disposal of non-biodegradable plastics
+
+    (h) describe two methods of recycling plastics as
+           (i)   physical method (exemplified by melting small pieces of poly(ethene) waste into pellets)
+           (ii) chemical method (exemplified by depolymerisation and cracking of plastic waste into
+                chemical feedstock and fuel respectively)
+
+    (i)    describe depolymerisation as a process in which polymers are broken down into their monomers,
+           exemplified by hydrolysis of polyesters using acid as a catalyst
+
+           (details of mechanisms are not required)
+
+    (j)    discuss the social, economic and environmental issues of recycling plastics.
+
+                                                        23
+                    K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+12. Maintaining Air Quality
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the volume composition of gases present in dry air as being approximately 78% nitrogen, 21%
+    oxygen and the remainder being noble gases (with argon as the main constituent) and carbon dioxide
+
+(b) name some common atmospheric pollutants, e.g. carbon monoxide; methane; nitrogen oxides (NO and
+    NO2); ozone; sulfur dioxide; unburned hydrocarbons
+
+(c) state the sources of these pollutants as
+      (i)    carbon monoxide from incomplete combustion of carbon-containing substances
+      (ii)   nitrogen oxides from lightning activity and internal combustion engines
+      (iii) sulfur dioxide from volcanoes and combustion of fossil fuels
+
+(d) describe the reactions used in possible solutions to the problems arising from some of the pollutants
+    named in (b)
+      (i)    the redox reactions in catalytic converters to remove combustion pollutants (see also 10(d))
+      (ii)   the use of calcium carbonate to reduce the effect of ‘acid rain’ and in flue gas desulfurisation
+
+(e) discuss some of the effects of these pollutants on health and on the environment
+      (i)    the toxic nature of carbon monoxide
+      (ii)   the role of nitrogen dioxide and sulfur dioxide in the formation of ‘acid rain’ and its effects on
+             respiration and buildings
+
+(f)   discuss the importance of the ozone layer and the problems involved with the depletion of ozone by
+      reaction with chlorine-containing compounds, chlorofluorocarbons (CFCs)
+
+(g) describe the carbon cycle in simple terms, to include
+      (i)    the processes of combustion, respiration and photosynthesis
+      (ii)   how the carbon cycle regulates the amount of carbon dioxide in the atmosphere
+      (see also 11.1(d))
+
+(h) state that carbon dioxide and methane are greenhouse gases and may contribute to global warming; give
+    the sources of these gases and describe the potential effects of increased levels of these greenhouse
+    gases, including more extreme weather events and melting of polar ice.
+
+                                                             24
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS
+The list below is intended as a guide to the more important quantities which might be encountered in teaching
+and used in question papers. The list is not exhaustive.
+
+Quantity                                        Symbol                         Unit
+
+Base quantities
+mass                                            m                              g, kg, tonne
+length                                          l                              cm, m
+time                                            t                              s, min
+amount of substance                             n                              mol
+
+Other quantities
+temperature                                     θ, t                           °C
+volume                                          V                              cm3, m3, dm3
+density                                         ρ                              g / cm3, kg / m3
+atomic mass                                     ma                             g
+
+           {                  } mass
+               atomic
+relative                                        Ar                             –
+               isotopic
+molecular mass                                  m                              g
+relative molecular mass                         Mr                             –
+molar mass                                      M                              g / mol
+nucleon number                                  A                              –
+proton number                                   Z                              –
+neutron number                                  N                              –
+enthalpy change of reaction                     ∆H                             J, kJ, J / mol, kJ / mol
+bond energy                                     –                              kJ / mol
+concentration                                   c                              mol / dm3, g / dm3
+pH                                              pH                             –
+
+                                                       25
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICAL ASSESSMENT
+Scientific subjects are, by their nature, experimental. It is therefore important that an assessment of a
+candidate’s knowledge and understanding of science should include a component relating to practical work and
+experimental skills.
+
+This assessment is provided in Paper 3 as a formal practical test and is outlined in the Scheme of Assessment.
+
+Paper 3 Practical
+
+This paper is designed to assess a candidate's competence in those practical skills which can realistically be
+assessed within the context of a formal practical assessment.
+
+Candidates will be assessed in the following skill areas:
+
+(a) Planning (P)
+
+    Candidates should be able to:
+    •    identify key variables for a given question/problem
+    •    outline an experimental procedure to investigate the question/problem
+    •    describe how the data should be used in order to reach a conclusion
+    •    identify the risks of the experiment and state precautions that should be taken to keep risks to a
+         minimum
+
+(b) Manipulation, measurement and observation (MMO)
+
+    Candidates should be able to:
+    •     set up apparatus correctly by following written instructions or diagrams
+    •     use common laboratory apparatus and techniques to collect data and make observations
+    •     describe and explain how apparatus and techniques are used correctly
+    •     make and record accurate observations with good details and measurements to an appropriate
+          degree of precision
+    •     make appropriate decisions about measurements or observations
+
+(c) Presentation of data and observations (PDO)
+
+    Candidates should be able to:
+    •     present all information in an appropriate form
+    •     manipulate measurements effectively for analysis
+    •     present all quantitative data to an appropriate number of decimal places/significant figures
+
+(d) Analysis, conclusions and evaluation (ACE)
+
+    Candidates should be able to:
+    •     analyse and interpret data or observations appropriately in relation to the task
+    •     draw conclusion(s) from the interpretation of experimental data or observations and underlying
+          principles
+    •     make predictions based on their data and conclusions
+    •     identify significant sources of errors and explain how they affect the results
+    •     state and explain how significant errors may be overcome or reduced, as appropriate, including how
+          experimental procedures may be improved
+
+                                                        26
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+One, or more, of the questions may incorporate some assessment of skill area P, set in the context of the
+syllabus content, requiring candidates to apply and integrate knowledge and understanding from different
+sections of the syllabus. It may also require the treatment of given experimental data in drawing relevant
+conclusion and analysis of proposed plan.
+
+The assessment of skills MMO, PDO and ACE will be set mainly in the context of the syllabus content. The
+assessment of PDO and ACE may also include questions on data-analysis which do not require practical
+equipment and apparatus.
+
+Within the Scheme of Assessment, the practical paper constitutes 20% of the Secondary Education Certificate
+G3 Chemistry examination. It is therefore recommended that the schemes of work include learning opportunities
+that apportion a commensurate amount of time for the development and acquisition of practical skills.
+
+Candidates should be able to use appropriate apparatus/equipment to record a range of measurements such as
+mass, length, time, volume and temperature. In addition, candidates are expected to have been exposed to a
+range of experimental techniques in the following areas:
+
+1.   Titration, e.g. acid-base titration (with suitable indicators such as methyl orange, screened methyl orange, and
+     thymolphthalein). Other types of titrations may also be required, and where appropriate, sufficient working
+     details will be given.
+
+2.   Speeds of reaction that may involve measuring of quantities, e.g. temperature, volume, length, mass or time
+     measurements
+
+3.   Experiments involving separation techniques such as paper chromatography, filtration and distillation
+
+4.   Salt preparation
+
+5.   Gas collection
+     Candidates would not be required to carry out drying of gases during practical examination.
+
+6.   Qualitative inorganic analysis involving an element, a compound or a mixture, including displacement
+     reactions and tests for oxidising and reducing agents. Candidates should be familiar with the reactions of
+     cations, reactions of anions and tests for gases as detailed in the Notes for Qualitative Analysis.
+
+     Candidates would not be required to carry out tests involving sulfur dioxide gas.
+
+     Reactions involving ions not included in the Notes for Qualitative Analysis may be tested: in such cases,
+     candidates will not be expected to identify the ions but only to draw conclusions of a general nature.
+
+     Candidates should not attempt tests, other than those specified, on substances, except when it is
+     appropriate to test for a gas.
+
+7.   Qualitative organic analysis requiring a knowledge of simple organic reactions as outlined in Topic 11
+     Organic Chemistry, e.g. test-tube reactions indicating the presence of unsaturation (C=C) may be set, but
+     this would be for the testing of observation skills and drawing general conclusions only.
+
+This is not intended to be an exhaustive list. Candidates are expected to be familiar with the use of data-
+loggers. Assessment of Skill P may include the appropriate use of data-loggers.
+
+Responsibility for safety matters rests with Centres.
+
+Candidates are not allowed to refer to notebooks, textbooks or any other information in the practical
+examination. Notes for Qualitative Analysis will be included in the question paper for the use of candidates in the
+examination. Candidates may be required to carry out simple calculations.
+
+                                                          27
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Practical Techniques
+
+The following notes are intended to give schools and candidates an indication of the accuracy that is expected
+in titration and general instructions for qualitative analysis.
+
+(a) Candidates should normally record burette readings to the nearest 0.05 cm3 and they should ensure that
+    they have carried out a sufficient number of titrations, e.g. in an experiment with a good end-point, two titres
+    within 0.20 cm3.
+
+(b) In qualitative analysis, candidates should use approximately 1 cm depth of a solution (1–2 cm3) for each
+    test and add reagents slowly, ensuring good mixing, until no further change is seen. Candidates should
+    indicate at what stage a change occurs. Answers should include details of colour changes and precipitates
+    formed, and the name and test for any gases evolved.
+
+Apparatus List
+
+This list given below has been drawn up in order to give guidance to Centres concerning the apparatus that is
+expected to be generally available for examination purposes. The list is not intended to be exhaustive, in
+particular, items (such as Bunsen burners, tripods, test-tube holders) that are commonly regarded as standard
+equipment in a chemical laboratory are not included.
+
+Unless otherwise stated, the rate of allocation is ‘per candidate’.
+
+one burette, 50 cm3
+one pipette, 25 cm3
+a supply of dropping pipettes
+one pipette filler
+two conical flasks within the range 150 cm3 to 250 cm3
+measuring cylinders, 10 cm3, 25 cm3, 50 cm3 and 100 cm3
+one filter funnel
+beakers, squat form with lip: 100 cm3 and 250 cm3
+thermometer: –10° C to +110° C at 1° C graduations
+a polystyrene or other plastic beaker of approximate capacity 150 cm3
+test-tubes (Pyrex or hard glass), approximately 125 mm × 15 mm
+boiling tubes, approximately 150 mm × 25 mm
+one-hole bung, which fits a boiling tube, connected to rubber or plastic tubing
+a tub of at least 1 dm3 capacity
+a pair of tongs
+a ceramic crucible (15 cm3 to 30 cm3) with lid and means of support for heating, such as triangle clay pipe or
+wire gauze
+stopwatch to measure to an accuracy of about 1 s
+balance, single-pan, direct reading, 0.01 g or better (1 per 8–12 candidates)
+stand and clamp suitable for a burette and measuring cylinders
+wash bottle
+glass rod
+one white tile
+
+The apparatus and material requirements for Paper 3 will vary year on year. Centres will be notified in advance
+of the details of the apparatus and materials required for each practical examination.
+
+                                                         28
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Reagents
+
+This list given below has been drawn up in order to give guidance to Centres concerning the standard reagents
+that are expected to be generally available for examination purposes. The list is not intended to be exhaustive
+and Centres will be notified in advance of the full list of all reagents that are required for each practical
+examination.
+
+hydrochloric acid (approximately 1.0 mol/dm3)
+nitric acid (approximately 1.0 mol/dm3)
+sulfuric acid (approximately 0.5 mol/dm3)
+aqueous ammonia (approximately 1.0 mol/dm3)
+aqueous sodium hydroxide (approximately 1.0 mol/dm3)
+aqueous barium nitrate (approximately 0.2 mol/dm3)
+aqueous silver nitrate (approximately 0.05 mol/dm3)
+limewater (a saturated solution of calcium hydroxide)
+aqueous potassium manganate(VII) (approximately 0.02 mol/dm3)
+aqueous potassium iodide (approximately 0.1 mol/dm3)
+aluminium foil
+red and blue litmus paper and Universal Indicator paper
+
+                                                      29
+                    K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+NOTES FOR QUALITATIVE ANALYSIS
+Test for anions
+
+ anion                     test                                        test result
+
+ carbonate (CO32–)         add dilute acid                             effervescence, carbon dioxide produced
+
+ chloride (Cl –)           acidify with dilute nitric acid, then add   white ppt.
+ [in solution]             aqueous silver nitrate
+
+ iodide (I–)               acidify with dilute nitric acid, then add   yellow ppt.
+ [in solution]             aqueous silver nitrate
+
+ nitrate (NO3–)            add aqueous sodium hydroxide, then          ammonia produced
+ [in solution]             aluminium foil; warm carefully
+
+ sulfate (SO42–)           acidify with dilute nitric acid, then add   white ppt.
+ [in solution]             aqueous barium nitrate
+
+Test for aqueous cations
+
+ cation                   effect of aqueous sodium hydroxide           effect of aqueous ammonia
+
+ aluminium (Al 3+)        white ppt., soluble in excess giving a       white ppt., insoluble in excess
+                          colourless solution
+
+ ammonium (NH4+)          ammonia produced on warming                  –
+
+ calcium (Ca2+)           white ppt., insoluble in excess              no ppt.
+
+ copper(II) (Cu2+)        light blue ppt., insoluble in excess         light blue ppt., soluble in excess giving a
+                                                                       dark blue solution
+
+ iron(II) (Fe2+)          green ppt., insoluble in excess              green ppt., insoluble in excess
+
+ iron(III) (Fe3+)         red-brown ppt., insoluble in excess          red-brown ppt., insoluble in excess
+
+ zinc (Zn2+)              white ppt., soluble in excess giving a       white ppt., soluble in excess giving a
+                          colourless solution                          colourless solution
+
+Test for gases
+
+ gas                               test and test result
+
+ ammonia (NH3)                     turns damp red litmus paper blue
+
+ carbon dioxide (CO2)              gives white ppt. with limewater
+                                   (ppt. dissolves with excess CO2)
+
+ chlorine (Cl2)                    bleaches damp litmus paper
+
+ hydrogen (H2)                     ‘pops’ with a lighted splint
+
+ oxygen (O2)                       relights a glowing splint
+
+ sulfur dioxide (SO2)              turns aqueous acidified potassium manganate(VII) from purple to colourless
+
+                                                          30
+K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+                            31
+                K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+MATHEMATICAL REQUIREMENTS
+Candidates should be able to:
+
+1.   add, subtract, multiply and divide
+
+2.   use averages, decimals, fractions, percentages, ratios and reciprocals
+
+3.   recognise and use standard notation
+
+4.   use direct and inverse proportion
+
+5.   use positive, whole number indices
+
+6.   draw charts and graphs from given data
+
+7.   interpret charts and graphs
+
+8.   select suitable scales and axes for graphs
+
+9.   make approximate evaluations of numerical expressions
+
+10. recognise and use the relationship between length, surface area and volume, and their units on metric
+    scales
+
+11. recognise and convert between appropriate units
+
+12. solve equations of the form x = yz for any one term when the other two are known
+
+13. comprehend and use the symbols/notations <, >, ≈, /, ∝
+
+14. comprehend how to handle numerical work so that significant figures are neither lost unnecessarily nor
+    used beyond what is justified.
+
+                                                      32
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+GLOSSARY OF TERMS USED IN CHEMISTRY PAPERS
+It is hoped that the glossary (which is relevant only to science papers) will prove helpful to candidates as a
+guide, i.e. it is neither exhaustive nor definitive. The glossary has been deliberately kept brief not only with
+respect to the number of terms included but also to the descriptions of their meanings. Candidates should
+appreciate that the meaning of a term must depend in part on its context.
+
+1.   Calculate is used when a numerical answer is required. In general, working should be shown, especially
+     where two or more steps are involved.
+
+2.   Classify requires candidates to group things based on common characteristics.
+
+3.   Comment is intended as an open-ended instruction, inviting candidates to recall or infer points of interest
+     relevant to the context of the question, taking account of the number of marks available.
+
+4.   Compare requires candidates to provide both similarities and differences between things or concepts.
+
+5.   Construct is often used in relation to chemical equations where a candidate is expected to write a balanced
+     equation, not by factual recall but by analogy or by using information in the question.
+
+6.   Define (the term(s)…) is intended literally. Only a formal statement or equivalent paraphrase being
+     required.
+
+7.   Describe requires candidates to state in words (using diagrams where appropriate) the main points of the
+     topic. It is often used with reference either to particular phenomena or to particular experiments. In the
+     former instance, the term usually implies that the answer should include reference to (visual) observations
+     associated with the phenomena. In the latter instance, the answer may often follow a standard pattern,
+     e.g. Apparatus, Method, Measurement, Results and Precautions.
+
+     In other contexts, describe and give an account of should be interpreted more generally, i.e. the candidate
+     has greater discretion about the nature and the organisation of the material to be included in the answer.
+     Describe and explain may be coupled in a similar way to state and explain.
+
+8.   Determine often implies that the quantity concerned cannot be measured directly but is obtained by
+     calculation, substituting measured or known values of other quantities into a standard formula.
+
+9.   Discuss requires candidates to give a critical account of the points involved in the topic.
+
+10. Estimate implies a reasoned order of magnitude statement or calculation of the quantity concerned, making
+    such simplifying assumptions as may be necessary about the points of principle and about values of
+    quantities not otherwise included in the question.
+
+11. Explain may imply reasoning or some reference to theory, depending on the context.
+
+12. Find is a general term that may be variously interpreted as calculate, measure, determine, etc.
+
+13. List requires a number of points, generally each of one word, with no elaboration. Where a given number of
+    points is specified, this should not be exceeded.
+
+14. Measure implies that the quantity concerned can be directly obtained from a suitable measuring
+    instrument, e.g. length, using a rule, or angle, using a protractor.
+
+15. Outline implies brevity, i.e. restricting the answer to giving essentials.
+
+16. Predict or deduce implies that the candidate is not expected to produce the required answer by recall but
+    by making a logical connection between other pieces of information. Such information may be wholly given
+    in the question or may depend on answers extracted from an earlier part of the question. Predict also
+    implies a concise answer with no supporting statement required.
+
+                                                          33
+                 K324 G3 CHEMISTRY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+17. Sketch, when applied to graph work, implies that the shape and/or position of the curve need only be
+    qualitatively correct, but candidates should be aware that, depending on the context, some quantitative
+    aspects may be looked for, e.g. passing through the origin, having the intercept, asymptote or discontinuity
+    at a particular value.
+
+     In diagrams, sketch implies that a simple, freehand drawing is acceptable; nevertheless, care should be
+     taken over proportions and the clear exposition of important details.
+
+18. State implies a concise answer with little or no supporting argument, e.g. a numerical answer that can be
+    obtained ‘by inspection’.
+
+19. Suggest is used in two main contexts, i.e. either to imply that there is no unique answer, or to imply that
+    candidates are expected to apply their general knowledge to a ‘novel’ situation, one that may be formally
+    ‘not in the syllabus’.
+
+20. What do you understand by/What is meant by (the term(s)...) normally implies that a definition should be
+    given, together with some relevant comment on the significance or context of the term(s) concerned,
+    especially where two or more terms are included in the question.
+
+     The amount of supplementary comment intended should be interpreted in light of the indicated mark value.
+
+SPECIAL NOTE
+Nomenclature
+
+Candidates will be expected to be familiar with the nomenclature used in the syllabus. The proposals in ‘Signs,
+Symbols and Systematics’ (The Association for Science Education Companion to 16–19 Science, 2000) will
+generally be adopted although the traditional names sulfate, sulfite, nitrate, nitrite, sulfurous and nitrous acids
+will be used in question papers. Sulfur (and all compounds of sulfur) will be spelt with f (not with ph) in question
+papers, however candidates can use either spelling in their answers.
+
+It is intended that, in order to avoid difficulties arising out of the use of l as the symbol for litre, use of dm3 in
+place of l or litre will be made.
+
+In chemistry, full structural formulae (displayed formulae) in answers should show in detail both the relative
+placing of atoms and the number of bonds between the atoms. Hence, –CONH2 and –CO2H are not satisfactory
+as full structural formulae, although either of the usual symbols for the benzene ring is acceptable.
+
+Units and significant figures
+
+Candidates should be aware that misuse of units and/or significant figures, i.e. failure to quote units where
+necessary, the inclusion of units in quantities defined as ratios or quoting answers to an inappropriate number of
+significant figures, is liable to be penalised.
+
+Calculators
+
+An approved calculator may be used in all papers.
+
+                                                            34
+

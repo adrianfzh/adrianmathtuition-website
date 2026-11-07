@@ -5,6 +5,10 @@ description: "Audit and correct Adrian's Singapore math teaching notes (.docx) �
 
 # Correcting Adrian's math notes
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 Adrian tutors Singapore secondary (EM/AM), JC (H2) and lower-sec maths. His notes live in
 `AdrianMathNotes/Notes/<LEVEL>/` (LEVEL = AM, EM, JC, S1, S2). A parallel `Revision/` tree exists.
 He reviews every corrected file himself, so the goal is a clean, verified, clearly-marked draft —

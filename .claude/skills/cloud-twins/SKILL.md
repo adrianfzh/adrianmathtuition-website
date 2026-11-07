@@ -5,6 +5,10 @@ description: Write twins (our own questions, maths or science) from a claude.ai 
 
 # Cloud twins — the playbook
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 Adrian, 5 Oct 2026: cloud sessions may write twins, maths and science, **without the database
 master key ever reaching the cloud**. Everything goes through five doors (`figure`, `figure-need`, `queue`, `retire`, `submit`) on the website with
 `AGENT_TOKEN_TWINS` (docs/CLOUD.md §Cloud twins). The server re-runs every deterministic gate

@@ -5,6 +5,10 @@ description: Enrich the question bank — extract missing `answer` fields from e
 
 # QB enrichment — answers first, solutions second
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 Why this matters: `practice-questions.js`' candidate filter REQUIRES a non-empty
 `answer` — every row without one is invisible to practice generation, worksheet
 matching and grading. As of 2026-08-04: **12,914 rows have a solution but no

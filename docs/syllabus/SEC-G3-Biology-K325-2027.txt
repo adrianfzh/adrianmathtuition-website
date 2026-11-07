@@ -1,0 +1,1394 @@
+Singapore–Cambridge Secondary Education Certificate (2027)
+
+                   G3 Biology
+                 (Syllabus K325)
+
+           © MOE & Cambridge University Press & Assessment 2025
+           K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENTS
+                                                                      Page
+INTRODUCTION                                                             3
+AIMS                                                                     3
+PRACTICES OF SCIENCE                                                     4
+ASSESSMENT OBJECTIVES                                                    5
+SCHEME OF ASSESSMENT                                                     7
+DISCIPLINARY IDEAS OF BIOLOGY                                            8
+CONTENT STRUCTURE                                                        9
+SUBJECT CONTENT                                                         10
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS                            25
+PRACTICAL ASSESSMENT                                                    25
+GLOSSARY OF TERMS USED IN BIOLOGY PAPERS                                28
+SPECIAL NOTE                                                            29
+
+                                      2
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+INTRODUCTION
+The G3 Biology syllabus is designed to have less emphasis on factual materials, but a much greater emphasis
+on the understanding and application of scientific concepts and principles. This approach has been adopted in
+recognition of the need for students to develop skills that will be of long-term value in an increasingly complex
+and globalised world, rather than focusing on large quantities of factual material, which may have only short-
+term relevance.
+
+It is envisaged that teaching and learning programmes based on this syllabus will feature a wide variety of
+learning experiences designed to promote acquisition of scientific expertise and understanding, and to develop
+values and attitudes relevant to science. Teachers are encouraged to use a combination of appropriate
+strategies in teaching topics in this syllabus. The assessment will be specifically intended to test skills,
+comprehension and insight in familiar and unfamiliar contexts.
+
+AIMS
+The aims of a course based on this syllabus should be to:
+
+1.   provide a worthwhile educational experience for all students, whether or not they go on to study science
+     beyond this level
+
+2.   develop in students the understanding, and skills relevant to the practices of science, and enable them to
+
+     2.1 appreciate practical applications of Biology in the real world
+
+     2.2 deepen their interest in Biology for future learning and work
+
+     2.3 become scientifically literate citizens who can innovate and seize opportunities in the 21st century
+
+     2.4 understand how living organisms work to sustain life and use the disciplinary ideas in Biology to
+         approach, analyse and solve problems in biological systems.
+
+3.   develop in students the values, ethics and attitudes relevant to science such as
+
+     3.1 curiosity – desiring to explore the environment and question what is found
+
+     3.2 creativity – seeking innovative and relevant ways to solve problems
+
+     3.3 integrity – handling and communicating data and information with complete honesty
+
+     3.4 objectivity – seeking data and information to validate observations and explanations without bias
+
+     3.5 open-mindedness – accepting all knowledge as tentative and suspending judgement, tolerance for
+         ambiguity, willingness to change views if the evidence is convincing
+
+     3.6 resilience – not giving up on the pursuit of answers/solutions, willingness to take risks and embrace
+         failure as part of the learning process
+
+     3.7 responsibility – showing care and concern for living things and awareness of our responsibility for the
+         quality of the environment
+
+     3.8 healthy scepticism – questioning the observations, methods, processes and data, as well as trying to
+         review one’s own ideas.
+
+                                                         3
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICES OF SCIENCE
+The Practices of Science represent the set of established procedures and practices associated with scientific
+inquiry, what scientific knowledge is and how it is generated and established, and how Science is applied in
+society respectively. It consists of three components:
+
+1.   Demonstrating Ways of Thinking and Doing in Science (WoTD)
+
+     1.1 Posing questions and defining problems
+
+     1.2 Designing investigations
+
+     1.3 Conducting experiments and testing solutions
+
+     1.4 Analysing and interpreting data
+
+     1.5 Communicating, evaluating and defending ideas with evidence
+
+     1.6 Making informed decisions and taking responsible actions
+
+     1.7 Using and developing models
+
+     1.8 Constructing explanations and designing solutions
+
+2.   Understanding the Nature of Scientific Knowledge (NOS)
+
+     2.1 Science is an evidence-based, model-building enterprise concerned with understanding the natural
+         world
+
+     2.2 Science assumes there are natural causes for physical phenomena and an order and consistency in
+         natural systems
+
+     2.3 Scientific knowledge is generated using a set of established procedures and practices, and through a
+         process of critical debate within the scientific community
+
+     2.4 Scientific knowledge is reliable and durable, yet open to change in the light of new evidence
+
+3.   Relating Science, Technology, Society and Environment (STSE)
+
+     3.1 There are risks and benefits associated with the applications of science in society. Science and its
+         applications have the potential to bring about both benefits and harm to society
+
+     3.2 Applications of science often have ethical, social, economic and environmental implications
+
+     3.3 Applications of new scientific discoveries often inspire technological advancements while advances in
+         technology motivate scientists to ask new questions and/or empower scientists in their inquiry (e.g.
+         collecting more precise data or carrying out more complex data analysis)
+
+The Practices of Science serve to highlight that the discipline of Science is more than the acquisition of a body
+of knowledge (e.g. scientific facts, concepts, laws, and theories); it is also a way of thinking and doing. In
+particular, it is important to appreciate that the cognitive, epistemic and social aspects of the Practices of
+Science are intricately related. For example, observation of events can lead to the generation of scientific
+knowledge which is, simultaneously, shaped by the beliefs of scientific knowledge. In addition, scientists
+develop models to construct theories, based on the assumption that there is order and consistency in natural
+systems. The practice of theory-making, in turn, reinforces the explanatory power of scientific knowledge. The
+scientific endeavour is embedded in the wider ethical, social, economic and environmental contexts.
+
+                                                        4
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+ASSESSMENT OBJECTIVES
+These describe the knowledge, skills and abilities which candidates are expected to demonstrate at the end of
+the course. They reflect those aspects of the aims which will be assessed.
+
+A    Knowledge with Understanding
+
+Candidates should be able to demonstrate knowledge and understanding in relation to:
+
+1.   scientific phenomena, facts, laws, definitions, concepts, theories;
+
+2.   scientific vocabulary, terminology, conventions (including symbols, quantities and units contained in Signs,
+     Symbols and Systematics 16–19, Association for Science Education, 2000 and the recommendations on
+     terms, units and symbols in ‘Biological Nomenclature 4th Edition (2009)’ published by the Institute of
+     Biology, in conjunction with the Association for Science Education);
+
+3.   scientific instruments and apparatus, including techniques of operation and aspects of safety;
+
+4.   scientific quantities and their determination;
+
+5.   scientific and technological applications with their social, economic and environmental implications.
+
+The subject content defines the factual knowledge that candidates may be required to recall and explain.
+Questions testing those objectives will often begin with one of the following words: define, state, describe,
+explain or outline. (See the Glossary of Terms)
+
+B    Handling Information and Solving Problems
+
+Candidates should be able – in words or by using symbolic, graphical and numerical forms of presentation – to:
+
+1.   locate, select, organise and present information from a variety of sources;
+
+2.   translate information from one form to another;
+
+3.   manipulate numerical and other data;
+
+4.   use information to identify patterns, report trends and draw inferences;
+
+5.   present reasoned explanations for phenomena, patterns and relationships;
+
+6.   make predictions and propose hypotheses;
+
+7.   solve problems.
+
+These assessment objectives cannot be precisely specified in the subject content because questions testing
+such skills may be based on information which is unfamiliar to the candidate. In answering such questions,
+candidates are required to use principles and concepts that are within the syllabus and apply them in a logical,
+reasoned or deductive manner to a novel situation. Questions testing these objectives will often begin with one
+of the following words: predict, suggest, calculate or determine. (See the Glossary of Terms)
+
+                                                         5
+                    K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+C    Experimental Skills and Investigations
+
+Candidates should be able to:
+
+1.   follow a sequence of instructions;
+
+2.   use techniques, apparatus and materials;
+
+3.   make and record observations, measurements and estimates;
+
+4.   interpret and evaluate observations and experimental results;
+
+5.   plan investigations, select techniques, apparatus and materials;
+
+6.   evaluate methods and suggest possible improvements.
+
+Weighting of Assessment Objectives
+
+Theory Papers (Papers 1 and 2)
+
+A    Knowledge with Understanding, approximately 45% of the marks.
+
+B    Handling Information and Solving Problems, approximately 55% of the marks.
+
+Practical Assessment (Paper 3)
+
+C    Experimental Skills and Investigations, 100% of the marks.
+
+Paper 3 will assess appropriate aspects of objectives C1 to C6 in the following skill areas
+
+•    Planning (P)
+
+•    Manipulation, measurement and observation (MMO)
+
+•    Presentation of data and observations (PDO)
+
+•    Analysis, conclusions and evaluation (ACE)
+
+The assessment of Planning (P) will have a weighting of 15%. The assessment of skill areas MMO, PDO and
+ACE will have a weighting of 85%.
+
+                                                        6
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SCHEME OF ASSESSMENT
+Candidates are required to enter for Papers 1, 2 and 3.
+
+ Paper          Type of Paper                                 Duration       Marks             Weighting
+
+ 1              Multiple Choice                               1h             40                30%
+
+ 2              Structured and free-response questions        1h 45 min      80                50%
+
+ 3              Practical                                     1 hr 50 min    40                20%
+
+Theory Papers
+
+Paper 1 (1 h, 40 marks)
+
+This paper will consist of 40 compulsory multiple choice items.
+
+Paper 2 (1 h 45 min, 80 marks)
+
+This paper will consist of two sections.
+
+Section A will carry 70 marks and will contain a number of compulsory structured questions, with one free
+response question and one data-based question as the last two questions. The last two questions will carry a
+total of 20 marks. The data-based question requires candidates to interpret, evaluate or solve problems using a
+stem of information. The data-based question will carry 8–12 marks.
+
+Section B will carry 10 marks and will consist of two free response questions. Candidates must answer only one
+out of these two questions.
+
+Practical
+Paper 3 (1 h 50 min, 40 marks)
+
+This paper will comprise two to three compulsory practical questions, based mainly on Assessment Objective C.
+
+One or more of the questions may incorporate assessment of Planning (P) and require candidates to apply and
+integrate knowledge and understanding from different sections of the syllabus. The assessment of PDO and
+ACE may include questions on data-analysis which do not require practical equipment and apparatus.
+
+Candidates are not allowed to refer to notebooks, textbooks or any other information during the assessment.
+
+                                                          7
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+DISCIPLINARY IDEAS OF BIOLOGY
+The disciplinary ideas of Biology described below represent the overarching ideas which can be applied to
+explain, analyse and solve a variety of problems that seek to address the broader question of how living
+organisms work to sustain life. The purpose of equipping students with an understanding of these ideas is to
+develop in them a coherent view and conceptual framework of scientific knowledge to facilitate the application
+and transfer of learning. These ideas can be revisited throughout the syllabus, deepened at higher levels of
+learning and beyond the schooling years.
+
+1.   The Cell – Diverse life forms are similar in that their basic unit are cells.
+
+2.   Structure and Function – Structure and function of organisms from the molecular to the organ system
+     levels are related to each other.
+
+3.   Systems – Biological systems interact among themselves and with the environment resulting in the flow of
+     energy and nutrients.
+
+4.   Energy – To ensure survival, living organisms obtain, transform and utilise energy from the external world.
+
+5.   Homeostasis, Co-ordination and Response – Living organisms detect changes both from the
+     surrounding environment and within themselves so that they are able to respond to these changes to
+     maintain a constant internal environment needed for sustaining life.
+
+6.   Heredity – Genetic information is passed down from parents to offspring during reproduction to ensure the
+     continuity of life.
+
+7.   Evolution – The diversity of living organisms is achieved through a process of evolution, driven by
+     mechanisms such as natural selection.
+
+                                                           8
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENT STRUCTURE
+
+THEMES                                     Topics
+
+I.      Cells and The Chemistry of Life    1.       Cell Structure and Organisation
+                                           2.       Movement of Substances
+                                           3.       Biological Molecules
+
+II.    The Human Body – Maintaining Life   4.       Nutrition in Humans
+                                           5.       Transport in Humans
+                                           6.       Respiration in Humans
+                                           7.       Excretion in Humans
+                                           8.       Homeostasis, Co-ordination and Response in
+                                                    Humans
+                                           9.       Infectious Diseases in Humans
+
+III.   Living Together – Plants, Animals   10. Nutrition and Transport in Flowering Plants
+       and Ecosystems                      11. Organisms and their Environment
+
+IV.     Continuity of Life                 12. Molecular Genetics
+                                           13. Reproduction
+                                           14. Inheritance
+
+                                                9
+                      K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUBJECT CONTENT
+SECTION I:            CELLS AND THE CHEMISTRY OF LIFE
+
+Overview
+
+Living things are different from non-living things in their ability to grow, reproduce, move, and respond to
+change. Understanding what makes these characteristics of life possible requires an appreciation of the
+hierarchical organisation of life (from cells → tissues → organs → systems → organism) and the processes
+needed to sustain life at each level.
+
+In this section, we begin by exploring life at the smallest level. Amidst the great diversity of living organisms on
+earth, all living organisms are fundamentally similar at the smallest level; they are all made of cells and a
+common set of carbon-based molecules. Physiological processes in living organisms can be explained through
+activities happening at the cellular level. For instance, the transport of oxygen around the body is made possible
+by red blood cells that bind oxygen to haemoglobin.
+
+At the molecular level, living organisms are made of four elements carbon, hydrogen, oxygen and nitrogen.
+These elements make life possible as they combine to form macromolecules such as carbohydrates, proteins
+and fats, which are needed to sustain life by providing energy, building cellular structures, and for growth and
+repair.
+
+The overarching ideas of this section are cells as the basic unit of life, correlation between structure and
+function and how living organisms obtain, transform and utilise energy from the external world at the cellular
+level to sustain life. Knowing how life works at the cellular and molecular level will provide students with a
+foundation to understand processes needed to sustain life at the tissue, organ and system levels, which are
+covered in subsequent sections of this syllabus.
+
+1.   Cell Structure and Organisation
+
+Content
+
+•    Plant and Animal Cells
+
+•    Cell Specialisation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify and state the functions of the following cell structures (including organelles) of typical plant and
+    animal cells from diagrams, light micrographs and as seen under the light microscope using prepared
+    slides and fresh material treated with an appropriate temporary staining technique:
+
+     •    cell wall
+
+     •    cell membrane
+
+     •    cytoplasm
+
+     •    nucleus
+
+     •    cell vacuoles (large, sap-filled in plant cells, small, temporary in animal cells)
+
+     •    chloroplasts
+
+                                                          10
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(b) identify and state the functions of the following membrane systems and organelles from diagrams and
+    electron micrographs:
+
+     •    endoplasmic reticulum
+
+     •    Golgi body
+
+     •    mitochondria
+
+     •    ribosomes
+
+(c) compare the structure of typical animal and plant cells
+
+(d) explain how the structures of specialised cells are adapted to their functions (e.g. muscle cell – many
+    mitochondria to supply more energy, root hair cell – large surface area of cell membrane for greater
+    absorption, red blood cell – lack of nucleus allowing it to transport more oxygen)
+
+2.   Movement of Substances
+
+Content
+
+     •    Diffusion
+
+     •    Osmosis
+
+     •    Active Transport
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) define diffusion and describe its role in nutrient uptake and gaseous exchange in plants and humans
+
+(b) define osmosis, investigate and describe the effects of osmosis on plant and animal tissues
+
+(c) define active transport and discuss its importance as an energy-consuming process by which substances
+    are transported against a concentration gradient, as in ion uptake by root hairs and uptake of glucose by
+    cells in the villi
+
+                                                       11
+                     K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+3.    Biological Molecules
+
+Content
+
+•     Carbohydrates, Fats and Proteins
+
+•     Enzymes
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) list the chemical elements which make up:
+
+      •   carbohydrates
+
+      •   fats
+
+      •   proteins
+
+(b) state the main roles of carbohydrates, fats and proteins in living organisms:
+
+      •   carbohydrates as an immediate source of energy
+
+      •   fats for insulation and long-term storage of energy
+
+      •   proteins for growth and repair of cells
+
+(c) describe and carry out tests for:
+
+      •   starch (using iodine in potassium iodide solution)
+
+      •   reducing sugars (using Benedict’s solution)
+
+      •   protein (using biuret solution)
+
+      •   fats (using ethanol)
+
+(d) state that large molecules are synthesised from smaller basic units:
+
+      •   cellulose, glycogen and starch from glucose
+
+      •   polypeptides and proteins from amino acids
+
+      •   lipids such as fats from glycerol and fatty acids
+
+(e) explain the mode of action of enzymes in terms of an active site, enzyme-substrate complex, lowering of
+    activation energy and enzyme specificity using the ‘lock and key’ hypothesis
+
+(f)   investigate and explain the effects of temperature and pH on the rate of enzyme catalysed reactions
+
+                                                         12
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION II:         THE HUMAN BODY – MAINTAINING LIFE
+
+Overview
+
+Life is sustained through the integrated organisation of the whole organism. In humans, the maintenance and
+regulation of life processes include nutrition, transport, respiration, excretion, homeostasis and co-ordination
+and response.
+
+Living systems utilise energy and macromolecules to maintain life processes such as growth, reproduction and
+homeostasis. Interactions also exist between living systems within organisms, which are often accompanied by
+the transfer of energy between matter and transfer or exchange of matter. Each system has their component
+parts, characterised by the division of labour. This division of labour enables an organism to function efficiently
+and allows for the various systems to work together as a co-ordinated whole. The co-ordinated response across
+systems to maintain optimal internal environments stimulated by external and internal changes forms the basis
+of homeostasis.
+
+The threat of diseases disrupts the maintenance of important life processes and the functioning of human body
+systems. In ancient times, the concept of ‘catching’ a disease was unheard of, and diseases were even thought
+to be caused by the imbalance of ‘humours’ (internal fluids) within the body. However, with the invention of the
+microscope, we have found out that infectious diseases are often caused by pathogens, e.g. viruses and
+bacteria.
+
+The overarching ideas in the study of this section are the co-ordination of the human body system as a whole
+and the correlation between structure and function.
+
+4.   Nutrition in Humans
+
+Content
+
+•    Human Digestive System
+
+•    Physical and Chemical Digestion
+
+•    Absorption and Assimilation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the functions of the various parts of the digestive system: mouth, salivary glands, oesophagus,
+    stomach, duodenum, pancreas, gall bladder, liver, ileum, colon, rectum, anus, in relation to ingestion,
+    digestion, absorption, assimilation and egestion of food, as appropriate
+
+(b) describe peristalsis in terms of rhythmic wave-like contractions of the muscles to mix and propel the
+    contents of the alimentary canal
+
+(c) describe the functions of enzymes (e.g. amylase, maltase, protease, lipase) in digestion, listing the
+    substrates and end-products
+
+(d) explain how the structure of a villus, including the capillaries and lacteal, is suited for its function of
+    absorption
+
+(e) state the function of the hepatic portal vein as the transport of blood rich in absorbed nutrients from the
+    small intestine to the liver
+
+                                                           13
+                    K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(f)   state the role of the liver in:
+
+      •    conversion of glucose to glycogen and vice versa
+
+      •    fat digestion
+
+      •    metabolism of amino acids and formation of urea
+
+      •    breakdown of alcohol
+
+      •    breakdown of hormones
+
+(g) outline the effects of alcohol consumption on the brain (e.g. increased reaction time, reduced self-control),
+    the long-term effects of excessive consumption (e.g. liver disease and brain damage) and the social
+    implications
+
+5.    Transport in Humans
+
+Content
+
+•     Parts and Functions of the Circulatory System
+
+•     Blood
+
+•     Heart and Cardiac Cycle
+
+•     Coronary Heart Disease
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify the main blood vessels to and from the heart, lungs, liver and kidney
+
+(b) relate the structures of arteries, veins and capillaries to their functions (specific names of muscle layers in
+    arteries and veins are not required)
+
+(c) describe the transfer of materials between capillaries and tissue fluid
+
+(d) state the components of blood and their roles in transport and defence:
+
+      •    red blood cells – haemoglobin for oxygen transport
+
+      •    plasma – transport of blood cells, ions, soluble food substances, hormones, carbon dioxide, urea,
+           vitamins, plasma proteins
+
+      •    white blood cells – phagocytosis, antibody formation and tissue rejection
+
+      •    platelets – fibrinogen to fibrin, causing clotting
+
+(e) list the different ABO blood groups and describe all possible combinations for the donor and recipient in
+    blood transfusions
+
+(f)   describe the structure and function of the heart in terms of muscular contraction and the working of valves
+
+(g) outline the cardiac cycle in terms of what happens during systole and diastole (histology of the heart
+    muscle, names of nerves and transmitter substances are not required)
+
+(h) describe coronary heart disease in terms of the occlusion of coronary arteries and list the possible causes,
+    such as unhealthy diet, sedentary lifestyle, and smoking, stating the possible preventative measures
+
+                                                            14
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+6.    Respiration in Humans
+
+Content
+
+•     Human Gas Exchange
+
+•     Cellular Respiration
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify the larynx, trachea, bronchi, bronchioles, alveoli and associated capillaries and state their functions
+    in human gaseous exchange
+
+(b) describe the process of breathing and the role of cilia, diaphragm, ribs and internal and external intercostal
+    muscles
+
+(c) explain how the structure of an alveolus is suited for its function of gaseous exchange
+
+(d) state the major toxic components of tobacco smoke – nicotine, tar and carbon monoxide, and describe their
+    effects on health
+
+(e) define aerobic respiration in human cells as the release of energy by the breakdown of glucose in the
+    presence of oxygen and state the equation, in words and symbols
+
+(f)   define anaerobic respiration in human cells as the release of energy by the breakdown of glucose in the
+      absence of oxygen and state the word equation
+
+(g) explain why cells respire anaerobically during vigorous exercise resulting in an oxygen debt that is removed
+    by rapid, deep breathing after exercise
+
+7.    Excretion in Humans
+
+Content
+
+•     Structure and Function of Kidneys
+
+•     Kidney Dialysis
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) define excretion and explain the importance of removing nitrogenous and other compounds from the body
+
+(b) identify the kidneys, ureter, bladder and urethra and state their functions in excretion
+
+(c) outline the function of the nephron with reference to ultra-filtration and selective reabsorption in the
+    production of urine
+
+(d) outline the mechanism of dialysis in the case of kidney failure
+
+                                                         15
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+8.    Homeostasis, Co-ordination and Response in Humans
+
+Content
+
+•     Principles of Homeostasis
+
+•     Hormonal Control
+
+•     Nervous Control
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) define homeostasis as the maintenance of a constant internal environment
+
+(b) explain the basic principles of homeostasis in terms of stimulus resulting from a change in the internal
+    environment, a corrective mechanism and negative feedback
+
+(c) describe the maintenance of a constant body temperature in humans in terms of the role of:
+
+      •    temperature receptors in the skin detecting changes in temperature
+
+      •    sweating
+
+      •    shivering
+
+      •    altering blood flow through blood vessels near the skin surface
+
+      •    the co-ordinating role of the hypothalamus
+
+(d) define a hormone as a chemical substance, produced by a gland, carried by the blood, which alters the
+    activity of one or more specific target organs
+
+(e) explain what is meant by an endocrine gland, with reference to the islets of Langerhans in the pancreas
+
+(f)   explain how blood glucose concentration is regulated by insulin and glucagon as a homeostatic mechanism
+
+(g) describe type 2 diabetes mellitus in terms of a persistently higher than normal blood glucose concentration
+    due to the body's resistance to insulin or insufficient production of insulin
+
+(h) identify the risk factors of (e.g. unhealthy diet and sedentary lifestyle) and ways to manage type 2 diabetes
+    mellitus
+
+(i)   outline the role of anti-diuretic hormone (ADH) in osmoregulation
+
+(j)   state that the nervous system – brain, spinal cord and nerves, serves to co-ordinate and regulate bodily
+      functions
+
+(k) outline how receptors, sensory neurones, relay neurones (located in the spinal cord or brain), motor
+    neurones and effectors work together to produce a co-ordinated response in a reflex action as a result of a
+    specific stimulus
+
+(l)   describe the structure of the eye as seen in front view and in horizontal section
+
+(m) state the principal functions of component parts of the eye in producing a focused image of near and
+    distant objects on the retina
+
+(n) describe the pupil reflex in response to bright and dim light
+
+                                                         16
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+9.    Infectious Diseases in Humans
+
+Content
+
+•     Organisms affecting Human Health
+
+•     Influenza and Pneumococcal Disease
+
+•     Prevention and Treatment of Infectious Diseases
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) state that infectious diseases can be spread from person to person whereas non-infectious diseases
+    cannot and identify examples of each
+
+(b) explain that infectious diseases are caused by pathogens such as bacteria and viruses and can be spread
+    from person to person through body fluids, food and water
+
+(c) state that a typical virus has a protein coat enclosing its genetic material and reproduces only in living host
+    cells
+
+(d) state that a typical bacteria cell has a cell wall and DNA without a nucleus; some are pathogenic and some
+    non-pathogenic
+
+(e) state the signs and symptoms of:
+
+      •   influenza – caused by the influenza virus
+
+      •   pneumococcal disease – caused by the bacteria, pneumococcus
+
+(f)   describe the transmission and methods to reduce the transmission of:
+
+      •   influenza virus
+
+      •   pneumococcus
+
+(g) state that vaccines contain an agent that resembles a pathogen and prevent infectious diseases by
+    stimulating white blood cells to quickly produce antibodies when the pathogen invades
+
+(h) explain that antibiotics target bacteria by preventing synthesis of cellular structures but are ineffective
+    against viruses due to structural and reproductive differences
+
+(i)   discuss how the misuse and overuse of antibiotics may accelerate the emergence of antibiotic-resistant
+      bacteria
+
+                                                         17
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION III:          LIVING TOGETHER – PLANTS, ANIMALS AND ECOSYSTEMS
+
+Overview
+
+The sun is the principal source of energy for almost all living organisms on earth, without which, life will not exist
+as it is today. Green plants are able to capture and convert light energy to useful chemical forms through the
+unique process of photosynthesis. Other organisms depend on this energy captured by plants through direct or
+indirect feeding relationships to sustain life.
+
+The study of ecology will further explain how all organisms are interdependent on the transfer of energy and
+matter in this intricate web of life. Humans are by far the singular most influential species in ensuring the
+conservation of the fragile ecosystem and thus, there are important lessons to be learnt from this highly
+interdependent relationship among organisms. In the face of global warming as one of the major challenges
+confronting the world now, examining how human actions can reduce the effects of global warming takes on a
+pressing urgency to ensure the sustainability of the environment and life on Earth.
+
+The overarching idea of this section is the interaction between organisms in the ecosystem for the sustainability
+of life through the transfer of energy and matter.
+
+10. Nutrition and Transport in Flowering Plants
+
+Content
+
+•     Plant Structure
+
+•     Photosynthesis
+
+•     Transpiration
+
+•     Translocation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify the cellular and tissue structure of a dicotyledonous leaf, as seen in transverse section using the
+    light microscope and describe the significance of these features in terms of their functions, such as the
+
+      •   distribution of chloroplasts for photosynthesis
+
+      •   stomata and mesophyll cells for gaseous exchange
+
+      •   vascular bundles for transport
+
+(b) identify the positions of and explain the functions of xylem vessels and phloem (sieve tube elements and
+    companion cells) in sections of a herbaceous dicotyledonous leaf and stem, under the light microscope
+
+(c) explain how the structure of a root hair cell is suited for its function of water and ion uptake
+
+(d) state that chlorophyll absorbs light energy and converts it into chemical energy for the formation of
+    carbohydrates and their subsequent uses
+
+(e) briefly explain why most forms of life are completely dependent on photosynthesis
+
+(f)   state the equation, in words and symbols, for photosynthesis (details of light-dependent and light-
+      independent stages are not required)
+
+(g) describe how carbon dioxide reaches mesophyll cells in a leaf
+
+                                                            18
+                    K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(h) investigate and discuss the effects of varying light intensity, carbon dioxide concentration and temperature
+    on the rate of photosynthesis (e.g. in submerged aquatic plant)
+
+(i)   discuss light intensity, carbon dioxide concentration and temperature as limiting factors on the rate of
+      photosynthesis
+
+(j)   define the term transpiration and explain that transpiration is a consequence of gaseous exchange in plants
+
+(k) explain the movement of water between plant cells, and between them and the environment in terms of
+    water potential (calculations on water potential are not required)
+
+(l)   outline the pathway by which water is transported into the roots and through the xylem vessels to the
+      leaves by transpiration pull
+
+(m) investigate and explain:
+
+      •    the effects of variation of air movement, temperature, humidity and light intensity on transpiration rate
+
+      •    how wilting occurs
+
+(n) define the term translocation as the transport of food (mainly sucrose) in the phloem tissue and illustrate
+    the process through translocation studies
+
+11. Organisms and their Environment
+
+Content
+
+•     Energy Flow
+
+•     Food Chains and Food Webs
+
+•     Carbon Cycle and Global Warming
+
+•     Effects of Man on the Ecosystem
+
+•     Conservation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the non-cyclical nature of energy flow
+
+(b) describe the roles of producers, consumers and decomposers in food chains and food webs
+
+(c) explain how energy losses occur along food chains, and discuss the efficiency of energy transfer between
+    trophic levels
+
+(d) describe and interpret pyramids of numbers and biomass
+
+(e) describe how carbon is cycled within an ecosystem and outline the role of forests and oceans as carbon
+    sinks
+
+(f)   describe how human activities, such as deforestation and use of fossil fuels, cause an increase in
+      atmospheric carbon dioxide concentration, leading to global warming
+
+(g) discuss how human actions can reduce the effects of global warming
+
+                                                         19
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(h) describe the effects of pollution caused by:
+
+      •   sewage in water
+
+      •   plastic wastes in the marine environment
+
+      •   insecticides and their biomagnification up food chains, impacting on top carnivores
+
+(i)   discuss how the conservation of species and sustainable use of natural resources contribute to the
+      maintenance of biodiversity and a balanced ecosystem (e.g. coral reef, tropical rainforest, mangrove)
+
+                                                        20
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION IV:         CONTINUITY OF LIFE
+
+Overview
+
+The many aspects of structure and function that we have examined in this syllabus can be viewed in the widest
+context as various adaptations aimed at ensuring reproductive success. Reproduction is vital for the survival of
+species across generations.
+
+In this section, we examine the processes that contribute to the continuity of life. These processes include how
+genes interact to produce hereditary characteristics in the offspring and how genetic information is passed from
+one generation to the next.
+
+Some important scientists who contributed to findings in this section include Gregor Mendel – who published his
+observations from breeding experiments on pea plants and James Watson and Francis Crick – who developed
+the model for deoxyribonucleic acid (DNA), a molecule that was deduced as the hereditary material that is
+passed down through generations. Models aid in the visualisation of science and led to the breakthrough of the
+discovery of the double-helix molecule – DNA.
+
+The overarching ideas of this section are the storage of genetic information in the DNA and the passing down of
+genetic information through generations to ensure the continuity of life.
+
+12. Molecular Genetics
+
+Content
+
+•     The Structure of DNA
+
+•     From DNA to Proteins
+
+•     Genetic Engineering
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) outline the relationships among DNA, genes and chromosomes
+
+(b) state that DNA is a double helix comprising two strands of nucleotides, each nucleotide formed of a sugar,
+    a phosphate group and one of four different bases
+
+(c) state the rule of complementary base pairing
+
+(d) state that each gene:
+
+      •   is a sequence of nucleotides, as part of a DNA molecule
+
+      •   codes for one polypeptide
+
+      •   is a unit of inheritance
+
+(e) state that DNA is used to carry the genetic code, which is used to synthesise specific polypeptides (details
+    of transcription and translation are not required)
+
+(f)   state that genes may be transferred from the cells of one organism to the cells of another to form
+      transgenic organisms
+
+                                                        21
+                      K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(g) briefly explain how a gene that controls the production of human insulin can be inserted into bacterial DNA
+    to produce human insulin in medical biotechnology
+
+(h) discuss the possible benefits and ethical considerations of genetic engineering, in medicine and production
+    of economically important plants and animals
+
+13. Reproduction
+
+Content
+
+•     Asexual Reproduction
+
+•     Cell Division
+
+•     Sexual Reproduction in Flowering Plants
+
+•     Sexual Reproduction in Humans
+
+•     Sexually Transmitted Diseases
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) define asexual reproduction as the process resulting in the production of genetically identical offspring from
+    one parent
+
+(b) state that mitosis is a type of cell division giving rise to genetically identical cells in which the chromosome
+    number is maintained
+
+(c) state the importance of mitosis in growth, repair and asexual reproduction
+
+(d) define sexual reproduction as the process involving the fusion of nuclei of male and female gametes to
+    form a zygote and the production of genetically dissimilar offspring
+
+(e) define the terms haploid and diploid, and explain the need for a reduction division process prior to
+    fertilisation in sexual reproduction
+
+(f)   state what is meant by homologous pairs of chromosomes
+
+(g) state that meiosis is a type of cell division that gives rise to genetically dissimilar cells in which the
+    chromosome number is halved due to the separation of homologous chromosomes
+
+(h) state that meiosis is used in the formation of gametes
+
+(i)   identify, using a hand lens if necessary, the sepals, petals, stamens and carpels of insect-pollinated,
+      dicotyledonous flowers, and examine the pollen grains under a light microscope
+
+(j)   state the functions of the sepals, petals, anthers and carpels
+
+(k) identify, using a hand lens if necessary, the stamens and stigmas of wind-pollinated flowers, and examine
+    the pollen grains under a light microscope
+
+(l)   outline the process of pollination and distinguish between self-pollination and cross-pollination
+
+(m) compare, using fresh specimens, an insect-pollinated and a wind-pollinated flower and explain their
+    differences
+
+(n) outline the growth of the pollen tube and its entry into the ovule followed by fertilisation (production of
+    endosperm and details of development are not required)
+
+                                                          22
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(o) identify the male reproductive system and state the functions of: testes, scrotum, sperm ducts, prostate
+    gland, urethra and penis
+
+(p) identify the female reproductive system and state the functions of: ovaries, oviducts, uterus, cervix and
+    vagina
+
+(q) outline the menstrual cycle with reference to the alternation of menstruation and ovulation, the natural
+    variation in its length, and the fertile and infertile phases of the cycle with reference to the effects of
+    progesterone and oestrogen only
+
+(r)   describe fertilisation and early development of the zygote simply in terms of the formation of a ball of cells
+      which becomes implanted in the wall of the uterus
+
+(s) state the functions of the amniotic sac and the amniotic fluid
+
+(t)   describe the function of the placenta and umbilical cord in relation to exchange of dissolved nutrients,
+      gases and excretory products (structural details are not required)
+
+(u) discuss the transmission of human immunodeficiency virus (HIV) and methods to reduce transmission
+
+14. Inheritance
+
+Content
+
+•     The Passage of Genetic Information from Parent to Offspring
+
+•     Monohybrid Crosses
+
+•     Variation
+
+•     Natural Selection
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) distinguish between the terms gene and allele
+
+(b) explain the terms dominant, recessive, codominant, homozygous, heterozygous, phenotype and genotype
+
+(c) predict the results of simple crosses with expected ratios of 3:1 and 1:1, using the terms homozygous,
+    heterozygous, F1 generation and F2 generation
+
+(d) explain why observed ratios often differ from expected ratios, especially when there are small numbers of
+    progeny
+
+(e) use genetic diagrams to solve problems involving monohybrid inheritance
+
+(f)   explain co-dominance and multiple alleles with reference to the inheritance of the ABO blood group
+      phenotypes (A, B, AB, O) and the gene alleles (IA, IB and IO)
+
+(g) describe the determination of sex in humans – XX and XY chromosomes
+
+(h) describe mutation as a change in the sequence of a gene such as in sickle cell anaemia, or in the
+    chromosome number, such as the 47 chromosomes in the condition known as Down syndrome
+
+(i)   name ionising radiation (e.g. X-ray) and chemical mutagens as factors which may increase the rate of
+      mutation
+
+(j)   distinguish between continuous and discontinuous variation and give examples of each
+
+                                                          23
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(k) state that variation and competition lead to differential survival of, and reproduction by, those organisms
+    best fitted to the environment
+
+(l)   give examples of environmental factors that act as forces of natural selection
+
+(m) explain the role of natural selection as a possible mechanism for evolution which is a gradual change in the
+    inheritable characteristics of a population over time
+
+                                                        24
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS
+The list below is intended as a guide to the more important quantities which might be encountered in teaching
+and learning. This list is not exhaustive.
+
+  Quantity                                         Symbol                        Unit
+  length                                           l                             mm, cm, m
+  area                                             A                             cm2, m2
+  volume                                           V                             cm3, dm3, m3
+  mass                                             m                             mg, g, kg
+  concentration                                    c                             g / dm3
+  time                                             t                             s, ms, min,
+  pH                                               pH                            –
+  temperature                                      T                             °C
+  energy                                           E                             J
+
+PRACTICAL ASSESSMENT
+Scientific subjects are, by their nature, experimental. It is therefore important that an assessment of a
+candidate's knowledge and understanding of Science should include a component relating to practical work and
+experimental skills.
+
+This assessment is provided in Paper 3 as a formal practical test and is outlined in the Scheme of Assessment.
+
+Paper 3
+This paper is designed to assess a candidate's competence in those practical skills which can realistically be
+assessed within the context of a formal test of limited duration.
+
+Candidates will be assessed in the following skill areas:
+
+(a) Planning (P)
+
+    Candidates should be able to:
+    •   identify key variables for a given question/problem
+    •   outline an experimental procedure to investigate the question/problem
+    •   describe how the data should be used in order to reach a conclusion
+    •   identify the risks of the experiment and state precautions that should be taken to keep risks to a
+        minimum
+
+(b) Manipulation, measurement and observation (MMO)
+
+    Candidates should be able to:
+    •   set up apparatus correctly by following written instructions or diagrams
+    •   use common laboratory apparatus and techniques to collect data and make observations
+    •   describe and explain how apparatus and techniques are used correctly
+    •   make and record accurate observations with good details and measurements to an appropriate
+        degree of precision
+    •   make appropriate decisions about measurements or observations
+
+                                                        25
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(c) Presentation of data and observations (PDO)
+
+     Candidates should be able to:
+     •   present all information in an appropriate form
+     •   manipulate measurements effectively for analysis
+     •   present all quantitative data to an appropriate number of decimal places/significant figures
+
+(d) Analysis, conclusions and evaluation (ACE)
+
+     Candidates should be able to:
+     •   analyse and interpret data or observations appropriately in relation to the task
+     •   draw conclusion(s) from the interpretation of experimental data or observations and underlying
+         principles
+     •   make predictions based on their data and conclusions
+     •   identify significant sources of errors and explain how they affect the results
+     •   state and explain how significant errors may be overcome or reduced, as appropriate, including how
+         experimental procedures may be improved.
+
+One, or more, of the questions may incorporate some assessment of skill area P, set in the context of the
+syllabus content, requiring candidates to apply and integrate knowledge and understanding from different
+sections of the syllabus. It may also require the treatment of given experimental data in drawing relevant
+conclusion and analysis of proposed plan.
+
+The assessment of skill areas MMO, PDO and ACE will be set mainly in the context of the syllabus content.
+The assessment of PDO and ACE may also include questions on data-analysis which do not require practical
+equipment and apparatus.
+
+The material used in experiments will be closely related to the subject matter of the syllabus but will not
+necessarily be limited to the particular types mentioned in the curriculum content.
+
+Candidates may be asked to carry out exercises comprising:
+
+1.   simple physiological experiments, involving tests for food substances, enzyme reactions,
+     hydrogencarbonate indicator solution, cobalt(II) chloride paper and so on
+
+2.   simple physiological experiments, involving the use of sharp instruments such as mounted needles,
+     scalpels, knives, forceps and scissors on plant or animal materials (accurate observations of these
+     specimens will need a hand lens of not less than ×6 magnification for each candidate)
+
+3.   manipulative skills in assembling apparatus, in using chemical reagents and in using such instruments as
+     mounted needles, scalpels and razor blades, forceps and scissors
+
+4.   measurements using appropriate instruments (e.g. thermometer, syringe, measuring cylinder, ruler and so
+     on) and simple arithmetical calculations
+
+5.   familiar and unfamiliar techniques to record observations and make deductions from them
+
+6.   recognition and observation of features of familiar and unfamiliar biological specimens, recording
+     observations and making deductions about functions of whole specimens or their parts
+
+7.   clear line drawings of the specimens provided, indicating magnification and labelling familiar structures
+
+This is not intended to be an exhaustive list. Candidates are expected to be familiar with the use of data-
+loggers. Assessment of Skill P may include the appropriate use of data-loggers.
+
+When planning practical work, teachers should make sure that they do not contravene any school, education
+authority or government regulations which restrict the sampling, in educational establishments, of urine, saliva,
+blood or other bodily secretions and tissues. Candidates should also be aware of the need to take simple
+precautions for safety and/or accuracy.
+
+                                                        26
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Within the Scheme of Assessment, the practical paper constitutes 20% of the G3 Biology examination. It is
+therefore recommended that the schemes of work include learning opportunities that apportion a commensurate
+amount of time for the development and acquisition of practical skills.
+
+Apparatus List
+
+This list given below has been drawn up in order to give guidance to Centres concerning the apparatus that is
+expected to be generally available for examination purposes. The list is not intended to be exhaustive and
+practical examinations may require additional apparatus and materials. General laboratory glassware and items
+that are commonly regarded as standard equipment in a Biology laboratory (e.g. Bunsen burner, tripod and
+gauze, safety goggles, paper towels and so on) are not included in this list.
+
+Unless otherwise stated, the rate of allocation is ‘per candidate’.
+
+Light microscope, with high-, medium- and low-power objective lens (2 candidates to 1)
+Microscope slides and coverslips
+Mounted needle
+Hand lens (not less than ×6)
+Half metre rule or metre rule
+30 cm plastic ruler with a mm scale
+Syringes (e.g. 1 cm3, 5 cm3, 10 cm3)
+Dropper/Pasteur pipettes
+Measuring cylinders
+Beakers
+Petri dishes
+Test-tubes (some of which should be heat-resistant)
+Test-tube rack and holder
+Boiling tubes
+Boiling tube rack
+Glass rod
+Rubber bungs to fit test-tubes and boiling tubes
+Knife or scalpel
+Forceps
+Capillary tubes
+Visking tubings
+Rubber tubings
+Thermometer: –10° C to +110° C
+Stopwatch
+White tile
+Filter funnel and paper
+Pestle and mortar
+Spatulas
+Glass marker pen
+Cotton wool
+Black paper
+Aluminium foil
+Balance, single pan, direct reading, 0.01 g or better (1 per 8–12 candidates)
+Retort stand and clamp
+Bench lamp with 60W bulb
+Distilled/deionised water in a wash bottle
+Cutting mat
+
+The apparatus and material requirements for Paper 3 will vary year on year. Centres will be notified in advance
+of the details of the apparatus and materials required for each practical examination.
+
+                                                         27
+                   K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Reagents
+
+This list given below has been drawn up in order to give guidance to Centres concerning the standard reagents
+that are expected to be generally available for examination purposes. The list is not intended to be exhaustive
+and Centres would be notified in advance of the full list of all the reagents that are required for each practical
+examination.
+
+Iodine solution, in a container with a dropping pipette
+Benedict’s solution, in a container with a dropping pipette
+Ethanol (denatured), flammable – in a stoppered bottle with a dropping pipette
+Biuret reagent, in a container with a dropping pipette
+Glucose solution
+Starch solution
+Sodium chloride
+Dilute hydrochloric acid
+Hydrogencarbonate indicator
+Sodium bicarbonate/sodium hydrogencarbonate
+Limewater
+Universal Indicator paper and chart
+Litmus paper
+Cobalt chloride paper
+Methylene blue
+Vaseline/petroleum jelly (or similar)
+
+GLOSSARY OF TERMS USED IN BIOLOGY PAPERS
+It is hoped that the glossary will prove helpful to candidates as a guide, i.e. it is neither exhaustive nor definitive.
+The glossary has been deliberately kept brief not only with respect to the number of terms included but also to
+the descriptions of their meanings. Candidates should appreciate that the meaning of a term must depend in
+part on its context.
+
+1.   Calculate is used when a numerical answer is required. In general, working should be shown, especially
+     where two or more steps are involved.
+
+2.   Comment is intended as an open-ended instruction, inviting candidates to recall or infer points of interest
+     relevant to the context of the question, taking account of the number of marks available.
+
+3.   Compare requires candidates to provide both similarities and differences between things or concepts.
+
+4.   Define (the term(s) …) is intended literally, only a formal statement or equivalent paraphrase being
+     required.
+
+5.   Describe requires candidates to state in words (using diagrams where appropriate) the main points of the
+     topic. It is often used with reference either to particular phenomena or to particular experiments. In the
+     former instance, the term usually implies that the answer should include reference to (visual) observations
+     associated with the phenomena.
+
+6.   Determine often implies that the quantity concerned cannot be measured directly but is obtained by
+     calculation, substituting measured or known values of other quantities into a standard formula.
+
+7.   Discuss requires candidates to give a critical account of the points involved in the topic.
+
+8.   Estimate implies a reasoned order of magnitude statement or calculation of the quantity concerned, making
+     such simplifying assumptions as may be necessary about the points of principle and about the values of
+     quantities not otherwise included in the question.
+
+9.   Explain may imply reasoning or some reference to theory, depending on the context.
+
+10. Find is a general term that may be variously interpreted as calculate, measure, determine, etc.
+
+                                                          28
+                  K325 G3 BIOLOGY SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+11. List requires a number of points, generally each of one word, with no elaboration. Where a given number of
+    points is specified, this should not be exceeded.
+
+12. Measure implies that the quantity concerned can be directly obtained from a suitable measuring instrument,
+    e.g. length, using a rule, or mass, using a balance.
+
+13. Outline implies brevity, i.e. restricting the answer to giving essentials.
+
+14. Predict or deduce implies that the candidate is not expected to produce the required answer by recall but
+    by making a logical connection between other pieces of information. Such information may be wholly given
+    in the question or may depend on answers extracted from an earlier part of the question.
+
+15. Sketch, when applied to graph work, implies that the shape and/or position of the curve need only be
+    qualitatively correct, but candidates should be aware that, depending on the context, some quantitative
+    aspects may be looked for, e.g. passing through the origin, having an intercept, asymptote or discontinuity
+    at a particular value.
+
+     Sketch, when applied to diagrams, implies that a simple, freehand drawing is acceptable; nevertheless,
+     care should be taken over proportions and the clear exposition of important details.
+
+16. State implies a concise answer with little or no supporting argument, e.g. a numerical answer that can be
+    obtained ‘by inspection’.
+
+17. Suggest is used in two main contexts, i.e. either to imply that there is no unique answer, or to imply that
+    candidates are expected to apply their general knowledge to a ‘novel’ situation, one that may be formally
+    ‘not in the syllabus’.
+
+18. What is meant by (the term(s) ...) normally implies that a definition should be given, together with some
+    relevant comment on the significance or context of the term(s) concerned, especially where two or more
+    terms are included in the question. The amount of supplementary comment intended should be interpreted
+    in light of the indicated mark value.
+
+SPECIAL NOTE
+Units, significant figures
+
+Candidates should be aware that misuse of units and/or significant figures, i.e. failure to quote units where
+necessary, the inclusion of units in quantities defined as ratios or quoting answers to an inappropriate number of
+significant figures, is liable to be penalised.
+
+Calculators
+
+An approved calculator may be used in all papers.
+
+                                                          29
+

@@ -1,0 +1,729 @@
+Singapore–Cambridge Secondary Education Certificate (2027)
+
+                G2 Mathematics
+                (Syllabus K210)
+
+           © MOE & Cambridge University Press & Assessment 2025
+        K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENTS
+                                                                       Page
+INTRODUCTION                                                              3
+AIMS                                                                      3
+ASSESSMENT OBJECTIVES                                                     4
+SCHEME OF ASSESSMENT                                                      5
+PROBLEMS IN REAL WORLD CONTEXTS                                           6
+USE OF CALCULATORS                                                        6
+SUBJECT CONTENT                                                           7
+MATHEMATICAL FORMULAE                                                    13
+MATHEMATICAL NOTATION                                                    14
+
+                                     2
+              K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+INTRODUCTION
+The syllabus is intended to provide students with fundamental mathematical knowledge and skills. The content
+is organised into three strands, namely, Number and Algebra, Geometry and Measurement, and Statistics and
+Probability. Besides conceptual understanding and skill proficiency explicated in the content strands, important
+mathematical processes such as reasoning, communication and application (including the use of models) are
+also emphasised and assessed.
+
+AIMS
+The G2 Mathematics syllabus aims to enable all students to:
+
+•   acquire mathematical concepts and skills for continuous learning in mathematics and to support learning in
+    other subjects
+
+•   develop thinking, reasoning, communication, application and metacognitive skills through a mathematical
+    approach to problem-solving
+
+•   connect ideas within mathematics, and between mathematics and other subjects, through applications of
+    mathematics
+
+•   build confidence and foster interest in mathematics.
+
+                                                        3
+               K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+ASSESSMENT OBJECTIVES
+The assessment will test candidates’ abilities to:
+
+AO1     Use and apply standard techniques
+        •   recall and use facts, terminology and notation
+        •   read and use information directly from tables, graphs, diagrams and texts
+        •   carry out routine mathematical procedures
+
+AO2     Solve problems in a variety of contexts
+        •   interpret information to identify the relevant mathematics concept, rule or formula to use
+        •   translate information from one form to another
+        •   make and use connections across topics/subtopics
+        •   formulate problems into mathematical terms
+        •   analyse and select relevant information and apply appropriate mathematical techniques to solve
+            problems
+        •   interpret results in the context of a given problem
+
+AO3     Reason and communicate mathematically
+        •  justify mathematical statements
+        •  provide explanation in the context of a given problem
+        •  write mathematical arguments
+
+Approximate weightings for the assessment objectives are as follows:
+
+ AO1                 60%
+
+ AO2                 30%
+
+ AO3                 10%
+
+                                                      4
+                K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SCHEME OF ASSESSMENT
+
+     Paper    Duration                             Description                              Marks     Weighting
+
+                          There will be about 23 short answer questions. Candidates
+ Paper 1       2 hours                                                                        70          50%
+                          are required to answer all questions.
+
+                          Section A:
+                          There will be 9 – 10 questions of varying marks and lengths.
+
+                          The last question in this section will focus specifically on
+                          applying mathematics to a real-world scenario. Candidates
+                          are required to answer all questions.
+
+                          Section B:
+ Paper 2       2 hours                                                                        70          50%
+                          There will be 2 questions of which candidates will be
+                          required to answer only one.
+                          •    The questions in this section will be based on the
+                               underlined content and there will be one question from
+                               the ‘Geometry and Measurement’ strand and one from
+                               the ‘Statistics and Probability’ strand.
+                          •    Each question carries the same number of marks, that
+                               is, either 7 or 8 marks.
+
+NOTES
+
+1.    Omission of essential working will result in loss of marks.
+
+2.    Relevant mathematical formulae will be provided for candidates.
+
+3.    Candidates should also have geometrical instruments with them for both papers.
+
+4.    Give non-exact numerical answers correct to 3 significant figures, or 1 decimal place in the case of angles
+      in degrees, unless a different level of accuracy is specified in the question. In questions which explicitly
+      require an answer to be shown to be correct to a specific accuracy, the answer must be first shown to a
+      higher degree of accuracy.
+
+5.    SI units will be used in questions involving mass and measures.
+
+      Both the 12-hour and 24-hour clock may be used for quoting times of the day. In the 24-hour clock, for
+      example, 3.15 a.m. will be denoted by 03 15; 3.15 p.m. by 15 15.
+
+6.    Candidates are expected to be familiar with the solidus notation for the expression of compound units, e.g.
+      5 cm/s for 5 centimetres per second, 13.6 g/cm3 for 13.6 grams per cubic centimetre.
+
+7.    Unless the question requires the answer in terms of π, the calculator value for π or π = 3.142 should be
+      used.
+
+8.     Spaces will be provided in each question paper for working and answers.
+
+                                                          5
+              K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PROBLEMS IN REAL WORLD CONTEXTS
+Notwithstanding the presentation of the topics in 3 separate strands in the syllabus document, it is envisaged
+that some examination questions (including the extended problem involving real-world contexts at the end of
+Section A of Paper 2) may integrate ideas from more than one topic.
+
+Problems in real-world contexts may be based on contexts:
+•   In everyday life (including travel/excursion plans, transport schedules, sports and games, recipes, floor
+    plans, navigation etc.)
+
+•   Involving personal and household finance (including simple and compound interest, taxation, instalments,
+    utilities bills, money exchange, etc.)
+
+These problems may also require:
+
+•   Interpreting and analysing data from tables and graphs, including distance-time and speed-time graphs
+
+•   Interpreting the solution in the context of the problem.
+
+USE OF CALCULATORS
+An approved calculator may be used in both Paper 1 and Paper 2.
+
+                                                         6
+              K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUBJECT CONTENT
+Certain parts of the syllabus have been underlined and will only be tested in Section B of Paper 2.
+
+ No.   Topic/Sub-topics      Content
+
+ NUMBER AND ALGEBRA
+
+ N1    Numbers and           •   primes and prime factorisation
+       their operations      •   finding highest common factor (HCF) and lowest common multiple (LCM),
+                                 squares, cubes, square roots and cube roots by prime factorisation
+                             •   negative numbers, integers, rational numbers, real numbers and their four
+                                 operations
+                             •   calculations with calculator
+                             •   representation and ordering of numbers on the number line
+                             •   use of <, >, ⩽, ⩾
+                             •   approximation and estimation (including rounding off numbers to a required
+                                 number of decimal places or significant figures and estimating the results of
+                                 computation)
+                             •   use of standard form A × 10n, where n is an integer, and 1 ⩽ A < 10
+                             •   positive, negative, zero and fractional indices
+                             •   laws of indices
+
+ N2    Ratio and             •   comparison between two or more quantities by ratio
+       proportion            •   relationship between ratio and fraction
+                             •   dividing a quantity in a given ratio
+                             •   ratios involving rational numbers
+                             •   equivalent ratios
+                             •   writing a ratio in its simplest form
+                             •   map scales (distance and area)
+                             •   direct and inverse proportion
+
+ N3    Percentage            •   expressing percentage as a fraction or decimal
+                             •   expressing one quantity as a percentage of another
+                             •   comparing two quantities by percentage
+                             •   percentages greater than 100%
+                             •   increasing/decreasing a quantity by a given percentage
+                             •   finding percentage increase/decrease
+                             •   reverse percentages
+
+ N4    Rate and speed        •   relationships between distance, time and speed
+                             •   writing speed in different units (e.g. km/h, m/min, m/s and cm/s)
+                             •   calculation of speed, distance or time given the other two quantities
+                             •   average rate and average speed
+                             •   conversion of units (e.g. km/h to m/s)
+
+                                                        7
+           K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+N5   Algebraic         •   using letters to represent numbers
+     expressions and
+                       •   interpreting notations:
+     formulae
+                           ∗       ab as a × b
+                                   a                 1
+                           ∗         as a ÷ b or a ×
+                                   b                 b
+                           ∗       a2 as a × a, a3 as a × a × a, a2b as a × a × b, …
+                           ∗       3y as y + y + y or 3 × y
+                           ∗       3(x + y) as 3 × (x + y)
+                                   3+y                   1
+                           ∗           as (3 + y) ÷ 5 or   × (3 + y)
+                                    5                    5
+                       •   evaluation of algebraic expressions and formulae
+                       •   translation of simple real-world situations into algebraic expressions
+                       •   recognising and representing patterns/relationships by finding an algebraic
+                           expression for the nth term
+                       •   addition and subtraction of linear expressions
+                       •   simplification of linear expressions such as:
+                           ∗       −2(3x − 5) + 4x
+
+                                   2x 3 ( x − 5 )
+                           ∗         −
+                                   3       2
+                       •   use brackets and extract common factors
+                       •   factorisation of linear expressions of the form ax + bx + kay + kby
+                       •   expansion of the product of algebraic expressions
+                       •   changing the subject of a formula
+                       •   finding the value of an unknown quantity in a given formula
+                       •   use of:
+                               ∗    (a + b)2 = a2 + 2ab + b2
+                               ∗    (a − b)2 = a2 − 2ab + b2
+                               ∗    a2 − b2 = (a + b)(a − b)
+                       •   factorisation of quadratic expressions ax2 + bx + c
+                       •   multiplication and division of simple algebraic fractions such as:
+                                    3a  5ab 
+                           ∗        2  3 
+                                    4b      
+
+                                   3a 9a 2
+                           ∗          ÷
+                                    4   10
+                       •   addition and subtraction of algebraic fractions with linear or quadratic
+                           denominator such as:
+                                     1    2
+                           ∗           +
+                                   x −2 x −3
+                                      1           2
+                           ∗                +
+                                   x2 − 9       x −3
+                                     1       2
+                           ∗            +
+                                   x − 3 ( x − 3 )2
+
+                                                       8
+            K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+No.   Topic/Sub-topics   Content
+
+N6    Functions and      •   Cartesian coordinates in two dimensions
+      graphs             •   graph of a set of ordered pairs as a representation of a relationship between
+                             two variables
+                         •   linear functions (y = ax + b) and quadratic functions (y = ax2 + bx + c)
+                         •   graphs of linear functions
+                         •   the gradient of a linear graph as the ratio of the vertical change to the
+                             horizontal change (positive and negative gradients)
+                         •   graphs of quadratic functions and their properties:
+                              ∗   positive or negative coefficient of x2
+                              ∗   maximum and minimum points
+                              ∗   symmetry
+                         •   graphs of power functions of the form y = axn, where n = −2, −1, 0, 1, 2, 3, and
+                             simple sums of not more than three of these
+                         •   graphs of exponential functions y = kax, where a is a positive integer
+                         •   estimation of the gradient of a curve by drawing a tangent
+
+N7    Equations and      •   solving linear equations in one variable
+      inequalities
+                         •   solving simple fractional equations that can be reduced to linear equations
+                             such as:
+                                   x x −2
+                             ∗       +    3
+                                          =
+                                   3   4
+                                     3
+                             ∗          =6
+                                   x −2
+                         •   solving simultaneous linear equations in two variables by
+                             ∗   substitution and elimination methods
+                             ∗   graphical method
+                         •   solving quadratic equations in one variable by
+                             ∗   factorisation
+                             ∗   use of formula
+                             ∗   completing the square for y = x2 + px + q
+                             ∗   graphical method
+                         •   solving fractional equations that can be reduced to quadratic equations such
+                             as:
+                                    6
+                             ∗         = x +3
+                                   x+4
+                                     1    2
+                             ∗         +     =5
+                                   x −2 x −3
+                         •   formulating equations to solve problems
+                         •   solving simple inequalities in the form ax ⩽ b, ax ⩾ b, ax < b and ax > b where
+                             a and b are integers
+
+                                                    9
+            K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+No.   Topic/Sub-topics    Content
+
+GEOMETRY AND MEASUREMENT
+
+G1    Angles, triangles   •   right, acute, obtuse and reflex angles
+      and polygons        •   vertically opposite angles, angles on a straight line and angles at a point
+                          •   angles formed by two parallel lines and a transversal: corresponding angles,
+                              alternate angles, interior angles
+                          •   properties of triangles, special quadrilaterals and regular polygons (pentagon,
+                              hexagon, octagon and decagon) including symmetry properties
+                          •   classifying special quadrilaterals on the basis of their properties
+                          •   angle sum of interior and exterior angles of any convex polygon
+                          •   construction of simple geometrical figures from given data using compasses,
+                              ruler, set squares and protractor, where appropriate
+
+G2    Congruence and      •   congruent and similar figures
+      similarity          •   properties of similar triangles and polygons:
+                              ∗    corresponding angles are equal
+                              ∗    corresponding sides are proportional
+                          •   enlargement and reduction of a plane figure
+                          •   scale drawings
+                          •   properties and construction of perpendicular bisectors of line segments and
+                              angle bisectors
+                          •   solving simple problems involving similarity and congruence
+
+G3    Properties of       •   symmetry properties of circles:
+      circles                 ∗   equal chords are equidistant from the centre
+                              ∗   the perpendicular bisector of a chord passes through the centre
+                              ∗   tangents from an external point are equal in length
+                              ∗   the line joining an external point to the centre of the circle bisects the
+                                  angle between the tangents
+                          •   angle properties of circles:
+                              ∗   angle in a semicircle is a right angle
+                              ∗   angle between tangent and radius of a circle is a right angle
+                              ∗   angle at the centre is twice the angle at the circumference
+                              ∗   angles in the same segment are equal
+                              ∗   angles in opposite segments are supplementary
+
+G4    Pythagoras’         •   use of Pythagoras’ theorem
+      theorem and         •   determining whether a triangle is right-angled given the lengths of three sides
+      trigonometry
+                          •   use of trigonometric ratios (sine, cosine and tangent) of acute angles to
+                              calculate unknown sides and angles in right-angled triangles
+                          •   extending sine and cosine to obtuse angles
+                                                  1
+                          •   use of the formula ab sinC for the area of a triangle
+                                                  2
+                          •   use of sine rule and cosine rule for any triangle
+                          •   problems in two and three dimensions including those involving angles of
+                              elevation and depression and bearings
+
+                                                     10
+            K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+No.   Topic/Sub-topics   Content
+
+G5    Mensuration        •   area of parallelogram and trapezium
+                         •   problems involving perimeter and area of composite plane figures
+                         •   volume and surface area of cube, cuboid, prism, cylinder, pyramid, cone and
+                             sphere
+                         •   conversion between cm2 and m2, and between cm3 and m3
+                         •   problems involving volume and surface area of composite solids
+                         •   arc length as fraction of the circumference and sector area as fraction of the
+                             area of a circle
+                         •   area of a segment
+                         •   use of radian measure of angle (including conversion between radians and
+                             degrees)
+                         •   problems involving the arc length, sector area of a circle and area of a
+                             segment
+
+G6    Coordinate         •   finding the gradient of a straight line given the coordinates of two points on it
+      geometry           •   finding the length of a line segment given the coordinates of its end points
+                         •   interpreting and finding the equation of a straight line graph in the form
+                             y = mx + c
+                         •   geometric problems involving the use of coordinates
+
+                                                   11
+            K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+No.   Topic/Sub-topics   Content
+
+STATISTICS AND PROBABILITY
+
+S1    Data handling      •   simple concepts in collecting, classifying and tabulating data
+      and analysis       •   analysis and interpretation of:
+                             ∗     tables
+                             ∗     bar graphs
+                             ∗     pictograms
+                             ∗     line graphs
+                             ∗     pie charts
+                             ∗     dot diagrams
+                             ∗     histograms with equal class intervals
+                             ∗     stem-and-leaf diagrams
+                             ∗     cumulative frequency diagrams
+                             ∗     box-and-whisker plots
+                         •   purposes and uses, advantages and disadvantages of the different forms of
+                             statistical representations
+                         •   drawing simple inference from statistical diagrams
+                         •   explaining why a given statistical diagram leads to misinterpretation of data
+                         •   mean, mode and median as measures of central tendency for a set of data
+                         •   purposes and use of mean, mode and median
+                         •   calculation of the mean for grouped data
+                         •   quartiles and percentiles
+                         •   range, interquartile range and standard deviation as measures of spread for
+                             a set of data
+                         •   calculation of the standard deviation for a set of data (grouped and
+                             ungrouped)
+                         •   using the mean and standard deviation to compare two sets of data
+
+S2    Probability        •   probability as a measure of chance
+                         •   probability of single events (including listing all the possible outcomes in a
+                             simple chance situation to calculate the probability)
+                         •   probability of simple combined events (including using possibility diagrams
+                             and tree diagrams, where appropriate)
+                         •   addition and multiplication of probabilities
+                             (mutually exclusive events and independent events)
+
+                                                   12
+               K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+MATHEMATICAL FORMULAE
+Compound interest
+                                                                      n
+                                                              r 
+                                    Total amount = P 1 +         
+                                                             100 
+
+Mensuration
+
+                                Curved surface area of a cone = πrl
+
+                                  Surface area of a sphere = 4πr 2
+
+                                                      1
+                                    Volume of a cone = πr 2 h
+                                                      3
+
+                                                               4 3
+                                    Volume of a sphere =         πr
+                                                               3
+
+                                                              1
+                                 Area of triangle ABC =         ab sin C
+                                                              2
+
+                               Arc length = rθ , where θ is in radians
+
+                                             1 2
+                             Sector area =     r θ , where θ is in radians
+                                             2
+
+Trigonometry
+
+                                          a = b = c
+                                        sin A sin B sin C
+
+                                      a 2 = b 2 + c 2 − 2bc cos A
+
+Statistics
+
+                                                       ∑ fx
+                                             Mean =
+                                                       ∑f
+
+                                                                           2
+                                                        ∑ fx 2  ∑ fx 
+                              Standard deviation =            −     
+                                                        ∑f       ∑f 
+
+                                                  13
+               K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+MATHEMATICAL NOTATION
+The list which follows summarises the notation used in Cambridge’s Mathematics examinations. Although
+primarily directed towards A-Level, the list also applies, where relevant, to examinations at all other levels.
+
+ 1. Set Notation
+ ∈                   is an element of
+ ∉                   is not an element of
+ {x1, x2, …}         the set with elements x1, x2, …
+ {x: …}              the set of all x such that
+ n(A)                the number of elements in set A
+ ∅                   the empty set
+                     universal set
+ A′                  the complement of the set A
+
+ ℤ                   the set of integers, {0, ±1, ±2, ±3, …}
+ ℤ+                  the set of positive integers, {1, 2, 3, …}
+ ℚ                   the set of rational numbers
+
+ ℚ+                  the set of positive rational numbers, {x ∈ ℚ: x > 0}
+      +
+ ℚ0                  the set of positive rational numbers and zero, {x ∈ ℚ: x ⩾ 0}
+
+ ℝ                   the set of real numbers
+
+ ℝ+                  the set of positive real numbers, {x ∈ ℝ: x > 0}
+      +
+ ℝ0                  the set of positive real numbers and zero, {x ∈ ℝ: x ⩾ 0}
+
+ ℝn                  the real n-tuples
+ ℂ                   the set of complex numbers
+ ⊆                   is a subset of
+ ⊂                   is a proper subset of
+ ⊈                   is not a subset of
+ ⊄                   is not a proper subset of
+ ∪                   union
+ ∩                   intersection
+
+ [a, b]              the closed interval {x ∈ℝ: a ⩽ x ⩽ b}
+
+ [a, b)              the interval {x ∈ℝ: a ⩽ x < b}
+
+ (a, b]              the interval {x ∈ℝ: a < x ⩽ b}
+
+ (a, b)              the open interval {x ∈ℝ: a < x < b}
+
+                                                           14
+                         K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+2. Miscellaneous Symbols
+=                           is equal to
+≠                           is not equal to
+≡                           is identical to or is congruent to
+≈                           is approximately equal to
+
+∝                           is proportional to
+<                           is less than
+⩽; ≯                        is less than or equal to; is not greater than
+>                           is greater than
+⩾; ≮                        is greater than or equal to; is not less than
+
+∞                           infinity
+
+3. Operations
+a+b                         a plus b
+a–b                         a minus b
+a × b, ab, a.b              a multiplied by b
+             a
+a ÷ b,           , a/b      a divided by b
+             b
+
+a:b                         the ratio of a to b
+    n
+
+∑a
+i =1
+         i                  a1 + a2 + ... + an
+
+     a                      the positive square root of the real number a
+a                           the modulus of the real number a
+
+n!                          n factorial for n ∈ ℤ+ ∪ {0}, (0! = 1)
+
+n                                                         n!
+                        the binomial coefficient                , for n, r ∈ ℤ+ ∪ {0}, 0 ⩽ r ⩽ n
+ r                                                   r! (n − r )!
+                                                  n(n − 1)...(n − r + 1)
+                                                                         , for n ∈ ℚ, r ∈ ℤ+∪ {0}
+                                                            r!
+
+                                                                     15
+                  K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+4. Functions
+f                                 the function f
+f(x)                              the value of the function f at x
+f: A →B                           f is a function under which each element of set A has an image in set B
+f: x ↦y                           the function f maps the element x to the element y
+
+f –1                              the inverse of the function f
+
+g o f, gf                         the composite function of f and g which is defined by
+                                  (g o f)(x) or gf(x) = g(f(x))
+
+lim f(x)                          the limit of f(x) as x tends to a
+x→ a
+
+Δx ; δx                           an increment of x
+
+dy
+                                  the derivative of y with respect to x
+dx
+
+dn y
+                                  the nth derivative of y with respect to x
+dx n
+f'(x), f''(x), …, f (n)(x)        the first, second, … nth derivatives of f(x) with respect to x
+
+∫ y dx                            indefinite integral of y with respect to x
+
+    b
+∫ y dx
+    a
+                                  the definite integral of y with respect to x for values of x between a and b
+
+x , x , …                      the first, second, …derivatives of x with respect to time
+
+5. Exponential and Logarithmic Functions
+e                            base of natural logarithms
+
+ex, exp x                    exponential function of x
+
+log a x                      logarithm to the base a of x
+
+ln x                         natural logarithm of x
+lg x                         logarithm of x to base 10
+
+6. Circular Functions and Relations
+sin, cos, tan,
+cosec, sec, cot
+                                     } the circular functions
+sin–1, cos–1, tan–1
+cosec–1, sec–1, cot–1
+                                     } the inverse circular functions
+
+                                                                  16
+              K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+7. Complex Numbers
+i                the square root of –1
+z                a complex number,         z = x + iy
+
+                                               = r(cos θ + i sin θ ), r ∈ℝ 0+
+
+                                               = reiθ, r ∈ℝ 0+
+
+Re z             the real part of z, Re (x + iy) = x
+Im z             the imaginary part of z, Im (x + iy) = y
+
+    z            the modulus of z, x + iy = x 2 + y 2 , r (cosθ + i sinθ ) = r
+
+arg z            the argument of z, arg(r(cos θ + i sin θ )) = θ , –π < θ ⩽ π
+
+z*               the complex conjugate of z, (x + iy)* = x – iy
+
+8. Matrices
+M                a matrix M
+M–1              the inverse of the square matrix M
+MT               the transpose of the matrix M
+
+det M            the determinant of the square matrix M
+
+9. Vectors
+a                the vector a
+
+AB               the vector represented in magnitude and direction by the directed line segment
+                 AB
+
+â                a unit vector in the direction of the vector a
+i, j, k          unit vectors in the directions of the Cartesian coordinate axes
+
+    a            the magnitude of a
+
+    AB           the magnitude of AB
+
+a·b              the scalar product of a and b
+a×b              the vector product of a and b
+
+                                                         17
+                K210 G2 MATHEMATICS SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+10. Probability and Statistics
+A, B, C, etc.      events
+A∪B                union of events A and B
+A∩B                intersection of the events A and B
+P(A)               probability of the event A
+
+A'                 complement of the event A, the event ‘not A’
+
+P(A | B)           probability of the event A given the event B
+X, Y, R, etc.      random variables
+x, y, r, etc.      value of the random variables X, Y, R, etc.
+
+x1, x2, …          observations
+
+f1, f2,…           frequencies with which the observations, x1, x2, …occur
+
+p(x)               the value of the probability function P(X = x) of the discrete random variable X
+
+p1, p2,…           probabilities of the values x1, x2, …of the discrete random variable X
+f(x), g(x)…        the value of the probability density function of the continuous random variable X
+F(x), G(x)…        the value of the (cumulative) distribution function P(X ⩽ x) of the random variable X
+
+E(X)               expectation of the random variable X
+E[g(X)]            expectation of g(X)
+
+Var(X)             variance of the random variable X
+
+B(n, p)            binomial distribution, parameters n and p
+Po(μ)              Poisson distribution, mean μ
+
+N(μ, σ2)           normal distribution, mean μ and variance σ2
+μ                  population mean
+
+σ2                 population variance
+σ                  population standard deviation
+x                  sample mean
+                   unbiased estimate of population variance from a sample,
+s2
+                             1
+                                ∑( x − x )
+                                          2
+                    s2 =
+                           n −1
+φ                  probability density function of the standardised normal variable with distribution N (0, 1)
+Φ                  corresponding cumulative distribution function
+ρ                  linear product-moment correlation coefficient for a population
+r                  linear product-moment correlation coefficient for a sample
+
+                                                        18
+

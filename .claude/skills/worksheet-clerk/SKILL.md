@@ -16,6 +16,10 @@ description: >
 
 # Worksheet Clerk
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 > **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
 
 Interactive clerk over the question bank. The flow is: **fetch → present numbered list → Adrian picks & assigns roles → build the printable worksheet**. The primary deliverable is a **physical document** (via the `anthropic-skills:create-worksheet` skill); publishing to the student portal is an optional extra, only when explicitly asked.

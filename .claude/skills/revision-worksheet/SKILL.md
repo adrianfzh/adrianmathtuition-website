@@ -19,6 +19,10 @@ description: >
   hand). NOT self-study-sheet (driven by one student's marked paper).
 ---
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 **One folder per level (26 Oct 2026, Adrian: "combine the worked examples and practice worksheets into one folder then name them appropriately")**: `Revision/<LEVEL>` was merged into `Practice/<LEVEL>`; worked-example sheets now live and are filed there too, and the name says the kind ("(With Worked Examples)"). Older text below that says `Revision/<…>` means `Practice/<…>`.
 
 # Revision worksheet — a worked-examples sheet from the bank

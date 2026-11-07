@@ -5,6 +5,10 @@ description: Write OUR OWN twin of one school question in the bank (same sub-ski
 
 # Twin a question
 
+## 📏 Syllabus check first (Adrian, 7 Nov 2026)
+
+Every topic and method you write, keep or recommend must be in the **official syllabus** for that subject and level: `docs/SYLLABUS.md` + `docs/syllabus/*.txt` in the website repo (Mac: `~/dev/adrianmathtuition-website/docs/`; GitHub `adrianfzh/adrianmathtuition-website`, branch `dev`). Read the topic's lines **including "Exclude"**. Out of syllabus → don't add it; already in Adrian's material → flag it, never silently delete. School prelims are not proof. Say which syllabus you checked.
+
 Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic half is
 `scripts/twins/twin.mjs`; the writing is agents you spawn. One run dir per source.
 

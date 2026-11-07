@@ -1,0 +1,2216 @@
+Singapore–Cambridge Secondary Education Certificate (2027)
+
+                      G2 Science
+ (Syllabus K223 Science: Physics, Chemistry)
+  (Syllabus K224 Science: Physics, Biology)
+ (Syllabus K225 Science: Chemistry, Biology)
+
+           © MOE & Cambridge University Press & Assessment 2025
+     K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENTS
+                                                                               Page
+AIMS                                                                              3
+PRACTICES OF SCIENCE                                                              4
+ASSESSMENT OBJECTIVES                                                             5
+SCHEME OF ASSESSMENT                                                              7
+PHYSICS SECTION                                                                   8
+   INTRODUCTION                                                                   8
+   DISCIPLINARY IDEAS OF PHYSICS                                                  8
+   CONTENT STRUCTURE                                                              9
+   SUBJECT CONTENT                                                               10
+   SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS                                  22
+   PRACTICAL GUIDELINES                                                          23
+CHEMISTRY SECTION                                                                24
+   INTRODUCTION                                                                  24
+   DISCIPLINARY IDEAS OF CHEMISTRY                                               24
+   CONTENT STRUCTURE                                                             25
+   SUBJECT CONTENT                                                               25
+   SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS                                  34
+   PRACTICAL GUIDELINES                                                          35
+   NOTES FOR QUALITATIVE ANALYSIS                                                35
+   THE PERIODIC TABLE OF ELEMENTS                                                36
+BIOLOGY SECTION                                                                  37
+   INTRODUCTION                                                                  37
+   DISCIPLINARY IDEAS OF BIOLOGY                                                 37
+   CONTENT STRUCTURE                                                             38
+   SUBJECT CONTENT                                                               38
+   SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS                                  46
+   PRACTICAL GUIDELINES                                                          47
+GLOSSARY OF TERMS USED IN SCIENCE PAPERS                                         47
+SPECIAL NOTE                                                                     49
+
+                                       2
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+AIMS
+The syllabus aims to:
+
+1.   provide a worthwhile educational experience for all students, whether or not they go on to study science
+     beyond this level.
+
+2.   develop in students the understanding, and skills relevant to the practices of science, and enable them to
+
+     2.1 appreciate practical applications of science in the real world
+
+     2.2 deepen their interest in science for future learning and work
+
+     2.3 become scientifically literate citizens who can innovate and seize opportunities in the 21st century
+
+     2.4 develop a way of thinking and use the disciplinary ideas to approach, analyse and solve problems in
+         biological, chemical and physical systems.
+
+3.   develop in students the values, ethics and attitudes relevant to science such as
+
+     3.1 curiosity – desiring to explore the environment and question what is found
+
+     3.2 creativity – seeking innovative and relevant ways to solve problems
+
+     3.3 integrity – handling and communicating data and information with complete honesty
+
+     3.4 objectivity – seeking data and information to validate observations and explanations without bias
+
+     3.5 open-mindedness – accepting all knowledge as tentative and suspending judgement, tolerance for
+         ambiguity, willingness to change views if the evidence is convincing
+
+     3.6 resilience – not giving up on the pursuit of answers/solutions, willingness to take risks and embrace
+         failure as part of the learning process
+
+     3.7 responsibility – showing care and concern for living things and awareness of our responsibility for the
+         quality of the environment
+
+     3.8 healthy scepticism – questioning the observations, methods, processes and data, as well as trying to
+         review one’s own ideas.
+
+                                                        3
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICES OF SCIENCE
+The Practices of Science represents the set of established procedures and practices associated with scientific
+inquiry, what scientific knowledge is and how it is generated and established, and how Science is applied in
+society respectively. It consists of three components:
+
+1.   Demonstrating Ways of Thinking and Doing in Science (WoTD)
+
+     1.1 Posing questions and defining problems
+
+     1.2 Designing investigations
+
+     1.3 Conducting experiments and testing solutions
+
+     1.4 Analysing and interpreting data
+
+     1.5 Communicating, evaluating and defending ideas with evidence
+
+     1.6 Making informed decisions and taking responsible actions
+
+     1.7 Using and developing models
+
+     1.8 Constructing explanations and designing solutions
+
+2.   Understanding the Nature of Scientific Knowledge (NOS)
+
+     2.1 Science is an evidence-based, model-building enterprise concerned with understanding the natural
+         world
+
+     2.2 Science assumes there are natural causes for physical phenomena and an order and consistency in
+         natural systems
+
+     2.3 Scientific knowledge is generated using a set of established procedures and practices, and through a
+         process of critical debate within the scientific community
+
+     2.4 Scientific knowledge is reliable and durable, yet open to change in the light of new evidence
+
+3.   Relating Science, Technology, Society and Environment (STSE)
+
+     3.1 There are risks and benefits associated with the applications of science in society. Science and its
+         applications have the potential to bring about both benefits and harm to society
+
+     3.2 Applications of science often have ethical, social, economic and environmental implications
+
+     3.3 Applications of new scientific discoveries often inspire technological advancements while advances
+         in technology motivate scientists to ask new questions and/or empower scientists in their inquiry
+         (e.g. collecting more precise data or carrying out more complex data analysis)
+
+The Practices of Science serve to highlight that the discipline of Science is more than the acquisition of a body
+of knowledge (e.g. scientific facts, concepts, laws, and theories); it is also a way of thinking and doing. In
+particular, it is important to appreciate that the cognitive, epistemic and social aspects of the Practices of
+Science are intricately related. For example, observation of events can lead to the generation of scientific
+knowledge which is, simultaneously, shaped by the beliefs of scientific knowledge. In addition, scientists
+develop models to construct theories, based on the assumption that there is order and consistency in natural
+systems. The practice of theory-making, in turn, reinforces the explanatory power of scientific knowledge. The
+scientific endeavour is embedded in the wider ethical, social, economic and environmental contexts.
+
+                                                        4
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+ASSESSMENT OBJECTIVES
+The Assessment Objectives listed below reflect those parts of the Aims and Practices of Science that will be
+assessed.
+
+A    Knowledge with Understanding
+
+Candidates should be able to demonstrate knowledge and understanding in relation to:
+
+1.   scientific phenomena, facts, laws, definitions, concepts and theories
+
+2.   scientific vocabulary, terminology and conventions (including symbols, quantities and units contained in
+     ‘Signs, Symbols and Systematics: The ASE Companion to 16–19 Science (2000)’ and the
+     recommendations on terms, units and symbols in ‘Biological Nomenclature 4th Edition (2009)’ published by
+     the Institute of Biology, in conjunction with the Association for Science Education)
+
+3.   scientific instruments and apparatus, including techniques of operation and aspects of safety
+
+4.   scientific quantities and their determination
+
+5.   scientific and technological applications with their social, economic and environmental implications.
+
+The subject content defines the factual knowledge that candidates may be required to recall and explain.
+Questions testing these objectives will often begin with one of the following words: define, state, name,
+describe, explain or outline. (See the Glossary of Terms)
+
+B    Handling Information and Solving Problems
+
+Candidates should be able (in words or by using symbolic, graphical and numerical forms of presentation) to:
+
+1. locate, select, organise and present information from a variety of sources
+
+2. translate information from one form to another
+
+3. manipulate numerical and other data
+
+4. use information to identify patterns, report trends and draw inferences
+
+5. present reasoned explanations for phenomena, patterns and relationships
+
+6. make predictions and propose hypotheses
+
+7. solve problems.
+
+These Assessment Objectives cannot be precisely specified in the syllabus content because questions testing
+such skills may be based on information which is unfamiliar to the candidate. In answering such questions,
+candidates are required to use principles and concepts that are within the syllabus and apply them in a logical,
+reasoned or deductive manner to a novel situation. Questions testing these objectives will often begin with one
+of the following words: predict, deduce, suggest, calculate or determine. (see the Glossary of Terms)
+
+                                                        5
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+C     Experimental Skills and Investigations
+
+Candidates should be able to:
+
+1.    select and use techniques, apparatus and materials
+
+2.    take readings and record observations
+
+3.    interpret and evaluate experimental data and observations
+
+4.    evaluate methods and suggest possible improvements.
+
+Scientific subjects are by their nature, experimental. It is therefore important that the candidates carry out
+appropriate practical work to facilitate the learning of this subject and to meet objectives C1–C4 above.
+
+Weighting of Assessment Objectives
+
+Theory Papers (Papers 1, 2, 3, 4, 5 and 6)
+
+A     Knowledge with Understanding, approximately 45% of the marks with approximately 20% allocated to
+      recall.
+
+B     Handling Information and Solving Problems, approximately 45% of the marks.
+
+C     Experimental Skills and Investigations, approximately 10% of the marks.
+
+Questions on experimental skills and investigations will normally be set within the bounds of the syllabus. If
+questions are based on apparatus or topics beyond the syllabus, candidates will not be assessed on knowledge
+of the apparatus or topics. They will be assessed on knowledge or general skills (e.g. reading of scales, data
+handling), which are required by the syllabus. Questions may be set requiring the candidates to:
+
+(a)   select appropriate experimental techniques
+(b)   select and use apparatus and materials
+(c)   draw, complete or label diagrams of apparatus
+(d)   record readings from diagrams of apparatus
+(e)   read, complete or draw tables of data
+(f)   take readings from or plot graphs
+(g)   determine a gradient, intercept or intersection on a graph
+(h)   interpret or draw conclusions from observations and experimental data
+(i)   suggest a needed modification to a step in an experiment
+(j)   recognise or comment on possible sources of error from experimental data
+(k)   comment on the safety or suggest safety procedures when using apparatus, materials and techniques.
+
+                                                          6
+            K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SCHEME OF ASSESSMENT
+There will be six papers of which candidates will take four as described below.
+
+K223       Science (Physics, Chemistry) Papers 1, 2, 3, 4
+K224       Science (Physics, Biology)   Papers 1, 2, 5, 6
+K225       Science (Chemistry, Biology) Papers 3, 4, 5, 6
+
+The pair of Papers 1 and 2, 3 and 4, 5 and 6 will be taken in one session of 1 hour 15 minutes. Candidates will
+be advised not to spend more than 30 minutes on each of Papers 1, 3 and 5.
+
+  Paper                       Type of Paper                         Duration         Marks         Weighting
+
+       1       Multiple Choice (Physics)                                               20             20%
+                                                                1 hour 15 minutes
+       2       Structured (Physics)                                                    30             30%
+
+       3       Multiple Choice (Chemistry)                                             20             20%
+                                                                1 hour 15 minutes
+       4       Structured (Chemistry)                                                  30             30%
+
+       5       Multiple Choice (Biology)                                               20             20%
+                                                                1 hour 15 minutes
+       6       Structured (Biology)                                                    30             30%
+
+Theory papers
+
+Paper 1, 3, 5 (20 marks)                      Each of these papers consists of 20 compulsory multiple choice
+                                              questions.
+                                              A copy of The Periodic Table of Elements will be printed as part
+                                              of Paper 3 for syllabuses K223 and K225.
+
+Paper 2, 4, 6 (30 marks)                      Each of these papers consists of two sections.
+                                              Section A will carry 22 marks and will contain a number of
+                                              compulsory structured questions. The last question will carry
+                                              8 marks.
+
+                                              Section B will carry 8 marks and will contain two structured
+                                              questions. Candidates must answer only one out of these two
+                                              questions.
+
+                                              A copy of The Periodic Table of Elements will be printed as part
+                                              of Paper 4 for syllabuses K223 and K225.
+
+                                                            7
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Physics section
+INTRODUCTION
+The Secondary Education Certificate G2 Science (Physics) Syllabus provides students with a coherent
+understanding of energy, matter, and their interrelationships. It focuses on investigating natural phenomena and
+then applying patterns, models (including mathematical ones), principles, theories and laws to explain the
+physical behaviour of the universe. The theories and concepts presented in this syllabus belong to a branch of
+physics commonly referred to as classical physics. Modern physics, developed to explain the quantum
+properties at the atomic and sub-atomic level, is built on knowledge of these classical theories and concepts.
+
+Students should think of physics in terms of scales. Whereas the classical theories such as Newton’s laws of
+motion apply to common physical systems that are larger than the size of atoms, a more comprehensive theory,
+quantum theory, is needed to describe systems that are very small, at the atomic and sub-atomic scales. It is at
+this atomic and sub-atomic scale that physicists are currently making new discoveries and inventing new
+applications.
+
+It is envisaged that teaching and learning programmes based on this syllabus would feature a wide variety of
+learning experiences designed to promote acquisition of scientific expertise and understanding, and to develop
+values and attitudes relevant to science. Teachers are encouraged to use a combination of appropriate
+strategies to effectively engage and challenge their students. It is expected that students will apply investigative
+and problem-solving skills, effectively communicate the theoretical concepts covered in this course and
+appreciate the contribution physics makes to our understanding of the physical world.
+
+DISCIPLINARY IDEAS OF PHYSICS
+The disciplinary ideas of Physics represent the overarching ideas essential for the understanding of Physics.
+An understanding of these ideas helps students see the interconnectedness of ideas within and across the
+sub-disciplines of Physics. Equipping students with a coherent view and conceptual framework facilitates the
+application and transfer of learning. These disciplinary ideas can be revisited and deepened at higher levels of
+learning and beyond the schooling years.
+
+Disciplinary ideas are introduced at the upper secondary levels when students begin to specialise in the
+sub-disciplines of science.
+
+1.   Matter and energy make up the Universe
+
+2.   Matter interacts through forces and fields
+
+3.   Forces help us understand motion
+
+4.   Waves can transfer energy without transferring matter
+
+5.   Conservation laws constrain the changes in systems
+
+6.   Microscopic models can explain macroscopic phenomena
+
+                                                         8
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENT STRUCTURE
+
+SECTION                              Topics
+
+I.     Measurement                   1.   Physical Quantities, Units and Measurement
+
+II.    Newtonian Mechanics           2.   Kinematics
+                                     3.   Force and Pressure
+                                     4.   Dynamics
+                                     5.   Energy
+
+III.   Thermal Physics               6.   Kinetic Particle Model of Matter
+                                     7.   Thermal Processes
+
+IV. Waves                            8.   General Wave Properties
+                                     9.   Electromagnetic Spectrum
+
+V.     Electricity and Magnetism     10. Electric Charge and Current of Electricity
+                                     11. D.C. Circuits
+                                     12. Practical Electricity
+
+VI. Radioactivity                    13. Radioactivity
+
+                                              9
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUBJECT CONTENT
+SECTION I:          MEASUREMENT
+
+Overview
+
+Physics is an experimental science and precise measurements enable the collection of useful experimental data
+which can be tested against hypothesis for the development of physical theories. With the development of better
+measurement tools and techniques, the data available is improved and scientific knowledge continue to evolve
+in light of new information.
+
+There is a variety of instruments available and our choice of instrument should take into consideration the
+precision, and feasibility of the choice of instrument when making measurements. We need to be cognisant of
+the limitations associated with the measurement process which can arise from the precision of the instrument
+chosen, the mechanics of the measuring instrument and the design of the experiment.
+
+Apart from the need of accurate measurements, interactions between objects in systems should also be
+described with precisely defined quantities and units and as these interactions could range from celestial
+objects to sub-atomic particles, prefixes in order-of-ten are necessary to depict such diversity in range of
+magnitude.
+
+1.    Physical Quantities, Units and Measurement
+
+Content
+
+•     Physical quantities and SI units
+
+•     Measurement
+
+•     Scalars and vectors
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) show an understanding that physical quantities typically consist of a numerical magnitude and a unit
+
+(b) recall the following base quantities and their units: mass (kg), length (m), time (s), current (A), temperature
+    (K), amount of substance (mol)
+
+(c) use the following prefixes and their symbols to indicate decimal sub-multiples and multiples of the SI units:
+    nano (n), micro (µ), milli (m), centi (c), deci (d), kilo (k), mega (M), giga (G), tera (T)
+
+(d) show an understanding of the orders of magnitude of the sizes of common objects ranging from a typical
+    atom to the Earth
+
+(e) select and explain the use of appropriate measuring instruments to measure or determine physical
+    quantities listed in ‘Summary of key quantities, symbols and units’ taking into consideration the range and
+    precision of the instrument
+
+(f)   state what is meant by scalar and vector quantities and give common examples of each
+
+                                                        10
+           K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION II:          NEWTONIAN MECHANICS
+
+Overview
+
+Mechanics is the branch of physics that deals with the study of motion and its causes. Through a careful
+process of observation and experimentation, Galileo Galilei used experiments to overturn Aristotle’s ideas of the
+motion of objects, for example the flawed idea that heavy objects fall faster than lighter ones, which dominated
+physics for about 2,000 years.
+
+The greatest contribution to the development of mechanics is by one of the greatest physicists of all time, Isaac
+Newton. By extending Galileo’s methods and understanding of motion and gravitation, Newton developed the
+three laws of motion and his law of universal gravitation, and successfully applied them to both terrestrial and
+celestial systems to predict and explain phenomena. He showed that nature is governed by a few special rules
+or laws that can be expressed in mathematical formulae. Newton’s combination of logical experimentation and
+mathematical analysis shaped the way science has been done ever since.
+
+2.    Kinematics
+
+Content
+
+•     Speed, velocity and acceleration
+
+•     Graphical analysis of motion
+
+•     Free-fall
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) state what is meant by speed and velocity
+
+(b) calculate average speed = distance travelled / time taken
+
+(c) state what is meant by uniform acceleration and calculate the value of acceleration using change in velocity
+    / time taken
+
+(d) interpret given examples of non-uniform acceleration
+
+(e) plot and interpret a distance-time graph and a speed-time graph for motion in one direction.
+
+(f)   deduce from the shape of a distance-time graph when a body travelling in one direction is:
+      (i) at rest
+      (ii) moving with uniform speed
+      (iii) moving with non-uniform speed
+
+(g) deduce from the shape of a speed-time graph when a body travelling in one direction is:
+    (i) at rest
+    (ii) moving with uniform speed
+    (iii) moving with uniform acceleration
+    (iv) moving with non-uniform acceleration
+
+(h) calculate the area under a speed-time graph to determine the distance travelled for motion in one direction
+    with uniform speed or uniform acceleration
+
+(i)   state that the acceleration of free fall for a body near to the Earth is constant and is approximately 10 m / s2
+
+                                                          11
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+3.    Force and Pressure
+
+Content
+
+•     Types of forces
+
+•     Mass, weight and gravitational field
+
+•     Density
+
+•     Pressure
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify and distinguish between contact forces (e.g. friction, air resistance, tension and normal force) and
+    non-contact forces (e.g. gravitational, electrostatic and magnetic forces)
+
+(b) state that mass is a measure of the amount of matter in a body
+
+(c) state that a gravitational field is a region in which a mass experiences a force due to gravitational attraction
+
+(d) define gravitational field strength, g, as gravitational force per unit mass placed at that point
+
+(e) recall and apply the relationship weight = mass × gravitational field strength to new situations or to solve
+    related problems
+
+(f)   distinguish between mass and weight
+
+(g) recall and apply the relationship density = mass / volume to new situations or to solve related problems
+
+(h) define pressure in terms of force and area
+
+(i)   recall and apply the relationship pressure = force / area to new situations or to solve related problems
+
+4.    Dynamics
+
+Content
+•   Newton’s laws of motion
+
+•     Effects of resistive forces on motion
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) apply Newton's Laws to:
+    (i) describe the effect of balanced and unbalanced forces on a body
+    (ii) describe the ways in which a force may change the motion of a body
+    (iii) identify action-reaction pairs acting on two interacting bodies
+    (stating of Newton's Laws is not required)
+
+                                                         12
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(b) identify forces acting on a body and draw free body diagram(s) representing the forces acting on the body
+    (for cases involving forces acting in one dimension)
+
+(c) recall and apply the relationship resultant force = mass × acceleration to new situations or to solve related
+    problems
+
+(d) explain the effects of friction on the motion of a body
+
+5.   Energy
+
+Content
+
+•    Energy stores and transfers
+
+•    Work
+
+•    Power
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) show an understanding that there are energy stores, e.g. kinetic, potential (gravitational, chemical, elastic),
+    nuclear and internal, and that energy that can be transferred from one store to another:
+    (i) Mechanically (by a force acting over a distance)
+    (ii) Electrically (by an electric current)
+    (iii) By heating (due to a temperature difference)
+    (iv) By propagation of waves (both electromagnetic and mechanical)
+
+(b) recall and apply the relationships for kinetic energy (Ek = ½ m v 2) and gravitational potential energy near
+    the Earth's surface (Ep = m g h) to new situations or to solve related problems
+
+(c) state the principle of the conservation of energy and apply the principle to new situations or to solve related
+    problems
+
+(d) recall and apply the relationship work done = force × distance moved in the direction of the force to new
+    situations or to solve related problems
+
+(e) recall and apply the relationship power = energy transfer / time taken to new situations or to solve related
+    problems
+
+                                                        13
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION III:        THERMAL PHYSICS
+
+Overview
+
+When asked what was the most valuable scientific information in a single sentence, Richard Feynman response
+was, ‘All things are made of atoms – little particles that move around in perpetual motion, attracting each other
+when they are a little distance apart, but repelling upon being squeezed into one another. In that one
+sentence ... there is an enormous amount of information about the world.’ (Six Easy Pieces, p.4)
+
+Understanding thermal physics requires us to approach the concepts from both the macroscopic and
+microscopic lenses. The Kinetic Model of Matter is a cornerstone theory that is used extensively to explain how
+different types of matter exhibit certain physical properties by relating them to behaviour of atoms and
+molecules.
+
+By nature, energy exchange takes place between bodies of different temperatures until thermal equilibrium is
+reached. Energy may be transferred between bodies by heating through processes like conduction, convection
+and radiation. These processes could cause changes in the molecular structure of matter and result in
+macroscopic observations, e.g. monsoon winds and ocean currents observed are convectional currents
+produced in the process of regulating differences in temperature.
+
+6.   Kinetic Particle Model of Matter
+
+Content
+
+•    States of matter
+
+•    Kinetic Particle Model
+
+•    Internal energy
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) compare the physical properties of solids, liquids and gases
+
+(b) use the kinetic particle model to describe the different states of matter (solids, liquids and gases), relating
+    their physical properties to the arrangement and motion of the particles (e.g. molecules, atoms) and the
+    forces and distances between particles
+
+(c) relate the rise in temperature of a body to the increase in average kinetic energy of all the particles in the
+    body
+
+(d) describe internal energy as an energy store that is made up of the total kinetic energy associated with the
+    random motion of the particles and the total potential energy between the particles in the system
+
+(e) describe melting/solidification and boiling/condensation as processes of energy transfer without a change
+    in temperature
+
+                                                         14
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+7.   Thermal Processes
+
+Content
+
+•    Thermal equilibrium
+
+•    Conduction
+
+•    Convection
+
+•    Radiation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) show an understanding that energy is transferred (by heating) from a region of higher temperature to a
+    region of lower temperature until thermal equilibrium is achieved between the two regions
+
+(b) describe, in microscopic terms, how conduction occurs in solids (via vibration of atoms/molecules and
+    movement of electrons)
+
+(c) describe, in terms of density changes, how convection occurs in fluids
+
+(d) explain that energy transfer by electromagnetic radiation does not require a material medium and that this
+    rate of energy transfer to/from a body is affected by its:
+    (i) surface colour and texture
+    (ii) surface temperature
+    (iii) surface area
+
+(e) apply the concepts of conduction, convection and radiation in everyday examples.
+
+                                                      15
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION IV:        WAVES
+
+Overview
+
+All waves have properties in common and a wave model can be used to explain many phenomena, both natural
+(like water waves and sound) and artificial (like many forms of electromagnetic waves). The ability of waves to
+transfer energy at great speed provides valuable propositions.
+
+Much of our current understanding of wave motion has come from the study of acoustics, which is the science
+of sound. Many of the ancient Greek philosophers were interested in music. They had hypothesized that there
+was a connection between waves and sound, and that vibrations must be responsible for sounds. Pythagoras
+observed in 550 BC that vibrating strings produced sound and worked to determine the mathematical
+relationships between the lengths of strings that made harmonious tones.
+
+Scientific theories of wave propagation became more prominent in the 17th Century, when Galileo Galilei
+published a clear statement that connected vibrating bodies to the sounds they produce. In 1640 Robert Boyle’s
+classic experiment on the sound produced by a ticking watch in a partially evacuated glass vessel provided
+evidence that air is necessary, either for the production or transmission of sound.
+
+The mathematical theory of sound propagation began with Isaac Newton, whose Principia (1686) included a
+mechanical interpretation of sound as being ‘pressure’ pulses transmitted through neighbouring fluid particles.
+In the 18th Century, French mathematician and scientist Jean Le Rond d'Alembert derived the wave equation, a
+thorough and general mathematical description of waves, which laid the foundation for generations of scientists
+to study and describe wave phenomena.
+
+8.   General Properties of Waves
+
+Content
+
+•    Describing wave motion
+
+•    Wave properties
+
+•    Longitudinal and transverse waves
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe what is meant by wave motion as illustrated by vibrations in ropes and springs and by waves in a
+    ripple tank (including use of the term wavefront)
+
+(b) show an understanding that waves transfer energy without transferring matter
+
+(c) define and use the terms speed, frequency, wavelength, period and amplitude including graphical
+    representation
+
+(d) recall and apply the relationship speed of wave = frequency × wavelength to new situations or to solve
+    related problems
+
+(e) compare transverse and longitudinal waves and give suitable examples of each
+
+                                                      16
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+9.   Electromagnetic Spectrum
+
+Content
+
+•    Properties of electromagnetic waves
+
+•    Applications of electromagnetic waves
+
+•    Effects of electromagnetic waves on cells and tissues
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) state that all electromagnetic waves are transverse waves that travel with the same speed in vacuum
+
+(b) describe the main regions of the electromagnetic spectrum in order of wavelength and frequency
+
+(c) state examples of typical uses of the following regions of the electromagnetic spectrum:
+    (i) radio waves (e.g. radio and television communication, astronomy and RFID tags)
+    (ii) microwaves (e.g. mobile (cell) phones, microwave oven and satellite television)
+    (iii) infrared (e.g. infrared remote controllers, intruder alarms and thermal imaging)
+    (iv) visible light (e.g. photography, optical fibres in medicine and telecommunications)
+    (v) ultraviolet (e.g. sunbeds, bank note authentication and disinfecting water)
+    (vi) X-rays (e.g. medical radiology, security screening and industrial defect detection)
+    (vii) gamma (γ) rays (e.g. sterilising food, detection of cancer and its treatment)
+
+(d) describe how over-exposure to electromagnetic waves can have hazardous effects (e.g. heating and
+    ionising effects of radiation) on living cells and tissue
+
+                                                      17
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION V:          ELECTRICITY AND MAGNETISM
+
+Overview
+
+Electricity and magnetism were seen as separate and independent phenomena in the past. It only was when
+Danish physicist Hans Christian Ørsted discovered, accidentally, in 1820 that a magnetic needle is deflected
+when the current in a nearby wire varies - a phenomenon establishing a relationship between electricity and
+magnetism.
+
+Inspired by Ørsted's discovery, André-Marie Ampère conducted a series of experiments in the same year
+designed to elucidate the exact nature of the relationship between electric current-flow and magnetism. Further
+works by Michael Faraday reinforced the magnetic effect of a current and introduced the idea of a ‘field’ of
+action to explain why electricity and magnetism had an ‘area of activity’.
+
+However, it was the work of James Clerk Maxwell, a mathematical physicist, who provided mathematical tools
+and equations to describe Faraday’s ideas of the field. His works went on to prove that electromagnetic fields
+have wave-like properties which was a very important discovery in physics.
+
+10. Electric Charge and Current of Electricity
+
+Content
+
+•     Electric charge
+
+•     Conventional current and electron flow
+
+•     Electromotive force and potential difference
+
+•     Resistance
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) state that there are positive and negative charges and that charge is measured in coulombs
+
+(b) state that unlike charges attract and like charges repel
+
+(c) state that current is the rate of flow of charge and that it is measured in amperes
+
+(d) distinguish between conventional current and electron flow
+
+(e) recall and apply the relationship charge = current × time to new situations or to solve related problems
+
+(f)   state that the electromotive force (e.m.f.) of an electrical source of energy is measured in volts
+
+(g) state that the potential difference (p.d.) across a component in a circuit is the work done per unit charge in
+    driving charges through the component and that it is measured in volts
+
+(h) state that resistance = p.d./ current
+
+(i)   apply the relationship R = V / I to new situations or to solve related problems
+
+(j)   recall and apply the relationship of the proportionality between resistance and the length and
+      cross-sectional area of a wire to new situations or to solve related problems
+
+                                                          18
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+11. D.C. Circuits
+
+Content
+
+•     Circuit diagrams
+
+•     Series and parallel circuits
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) draw circuit diagrams with power sources (cell or battery), switches, lamps, light-emitting diodes (LEDs),
+    resistors (fixed and variable), fuses, ammeters and voltmeters
+
+(b) state that the current at every point in a series circuit is the same and apply the principle to new situations
+    or to solve related problems
+
+(c) state that the sum of the potential differences in a series circuit is equal to the potential difference across
+    the whole circuit and apply the principle to new situations or to solve related problems
+
+(d) state that the sum of the currents in the separate branches of a parallel circuit is equal to the current from
+    the source and apply the principle to new situations or to solve related problems
+
+(e) state that the potential difference across the separate branches of a parallel circuit is the same and apply
+    the principle to new situations or to solve related problems
+
+(f)   recall and apply the formulae for the effective resistance of a number of resistors in series and in parallel to
+      new situations or to solve related problems
+
+(g) recall and apply the relevant relationships, including R = V / I and those for current, potential differences
+    and resistors in series and in parallel circuits, in calculations involving a whole circuit.
+
+12. Practical Electricity
+
+Content
+
+•     Electrical working, power and energy
+
+•     Dangers of electricity
+
+•     Safe use of electricity in the home
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the use of the heating effect of electricity in appliances such as electric kettles, ovens and heaters
+
+(b) recall and apply the relationships P = V I and E = V I t to new situations or to solve related problems
+
+(c) calculate the cost of using electrical appliances where the energy unit is the kW h
+
+(d) state the hazards of using electricity in the following situations:
+    (i) damaged insulation
+    (ii) overheating of cables
+    (iii) damp conditions
+
+                                                          19
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(e) explain the use of fuses and circuit breakers in electrical circuits and of fuse ratings
+
+(f)   explain the need for earthing metal casings and for double insulation
+
+(g) state the meaning of the terms live, neutral and earth
+
+(h) describe the wiring in a mains plug
+
+(i)   explain why switches, fuses, and circuit breakers are fitted to the live wire.
+
+                                                          20
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION VI:         RADIOACTIVITY
+
+Overview
+Radioactivity was first discovered through the handling of radioactive uranium by physicists Pierre and Marie
+Curie during which they suffered radioactive burns due to inadequate handling of the substance. Radioactivity is
+the study of the nature of the radiation emitted by radioactive materials. It was later understood that there are
+three types of emissions: the alpha particles (helium atoms with no electrons), beta particles (fast moving
+electrons) and the gamma rays (electromagnetic radiation similar to X-rays). These emissions are the result of
+the decay or disintegration of an unstable atomic nucleus.
+
+Radioactivity has important medical uses, which include the killing of cancer cells. However excessive exposure
+to radioactivity can cause cancer if the dose is too high. Many early scientists working with radioactive materials
+died early from the harmful effects of high radiation before proper safety guidelines were drawn. ‘Radiometric
+dating’ makes use of a radioactive element’s half-life to help determine the age of rocks or carbon.
+
+Large amounts of energy are also involved in radioactive emissions and physicists quickly recognised the power
+of this. Many scientists working on this from 1930 to 1940 in Europe were forced to leave their home countries,
+fleeing to the United States due to the development of the war. This led to a ‘brain drain’ which benefited the
+United States and allowed them to develop the two atomic bombs which ended the war. This highlights the
+impact of science on society and human interactions. Since the development of the atomic bomb, much has
+been learnt about how to control the release of energy and nuclear power can generate electricity with only a
+fraction of the greenhouse gases released by burning coal and other fossil fuels.
+
+Because radiation cannot be easily seen, it is commonly feared and shunned. Coupled with news about the
+dangers of nuclear radiation and the potential detriments to health, the general public is apprehensive about the
+use and application of any form of radiation. This topic aims to provide an objective evaluation of the risks and
+benefits of the use of radiation through the development of a good understanding of the many practical uses of
+radioactive materials.
+
+13. Radioactivity
+
+Content
+
+•     The composition of the atom
+
+•     Radioactive decay
+
+•     Dangers and uses of radioactivity
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the composition of an atom in terms of a positively charged nucleus (with protons and neutrons)
+    and negatively charged electrons
+
+(b) use the terms proton (atomic) number Z, nucleon (mass) number A and isotope
+                                                                      A
+(c) use and interpret the term nuclide and use the nuclide notation ZX
+
+(d) show an understanding that nuclear decay is a random and spontaneous process whereby an unstable
+    nucleus loses energy by emitting radiation
+
+(e) show an understanding of the nature of alpha (α), beta (β), and gamma (γ) radiation (including ionising
+    effect and penetrating power) [β-particles are assumed to be β– particles only]
+
+(f)   show an understanding of background radiation
+
+(g) use the term half-life in simple calculations, which might involve information in tables or decay curves
+
+(h) state the applications (e.g. medical and industrial uses) and hazards of radioactivity.
+
+                                                        21
+             K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS
+Candidates should be able to state the symbols for the following physical quantities and, where indicated,
+state the units in which they are measured. Candidates should be able to define those items indicated by an
+asterisk (*).
+
+ Quantity                                        Symbol                         Unit
+ length                                          l, h . . .                     km, m, cm, mm
+ area                                            A                              m2, cm2
+ volume                                          V                              m3, cm3
+ weight*                                         W                              N
+ mass                                            m, M                           kg, g, mg
+ time                                            t                              h, min, s, ms
+ period*                                         T                              s
+ density*                                        ρ                              g / cm3, kg / m3
+ speed*                                          u, v                           km / h, m / s, cm / s
+ acceleration*                                   a                              m / s2
+ acceleration of free fall                       g                              m / s2, N / kg
+ force*                                          F, f                           N
+ moment of force*                                                               Nm
+ work done*                                      W, E                           J
+ energy                                          E                              J, kW h
+ power*                                          P                              W
+ pressure*                                       p, P                           N / m2, Pa
+ temperature                                     θ, T                           °C, K
+ frequency*                                      f                              Hz
+ wavelength*                                     λ                              m, cm
+ potential difference*/voltage                   V                              V, mV
+ current*                                        I                              A, mA
+ charge                                          q, Q                           C, A s
+ e.m.f.*                                         E                              V
+ resistance                                      R                              Ω
+ proton number                                   Z
+ nucleon number                                  A
+ half-life                                       t1/2                           s
+ activity of a radioactive source                A                              Bq
+
+                                                        22
+             K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICAL GUIDELINES
+Scientific subjects are, by their nature, experimental. It is therefore important that the candidates carry out
+appropriate practical work to support and facilitate the learning of this subject. A list of practical work is provided
+below. Candidates are expected to show familiarity with laboratory practical procedures and to have carried out
+at least four practical tasks from this list.
+
+1.   Measurements of:
+
+     (i)     length by using tapes, rules, digital calipers and digital micrometers
+     (ii)    time interval (including period of a simple pendulum) by using digital stopwatches
+     (iii)   volume of solids/liquids by using measuring cylinders
+     (iv)    mass and weight by using electronic balances and spring balances
+     (v)     temperature by using laboratory thermometers
+     (vi)    current and voltage by using ammeters and voltmeters
+
+2.   Determination of the density of a liquid, or of a regularly or irregularly shaped solid that sinks in water
+
+3.   Determination of the value of the acceleration of free fall
+
+4.   Investigation of the effects of balanced and unbalanced forces
+
+5.   Investigation of the factors affecting transfer of energy by thermal processes
+
+6.   Determination of the resistance of a circuit component
+
+This is not intended to be an exhaustive list. Reference may be made to the techniques used in these
+experiments in the theory papers but no detailed description of the experimental procedures will be required.
+Candidates may be asked about other practical work and appropriate guidance will be provided where
+unfamiliar experiments are involved.
+
+                                                          23
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Chemistry section
+INTRODUCTION
+The Secondary Education Certificate G2 (Chemistry) Syllabus is designed to place less emphasis on factual
+materials while having a greater emphasis on the understanding and application of scientific concepts and
+principles. This approach has been adopted in recognition of the need for students to develop skills that will be
+of long-term value in an increasingly complex and globalised world, rather than focusing on large quantities of
+factual materials, which may have only short-term relevance.
+
+It is envisaged that teaching and learning programmes based on this syllabus will feature a wide variety of
+learning experiences designed to promote acquisition of scientific expertise and understanding, and to develop
+values and attitudes relevant to science. Teachers are encouraged to use a combination of appropriate
+strategies including developing practical works for their students to facilitate a greater understanding of the
+subject. It is expected that students will apply investigative and problem-solving skills and effectively
+communicate the theoretical concepts covered in this course.
+
+DISCIPLINARY IDEAS OF CHEMISTRY
+The disciplinary ideas of Chemistry described below represent the overarching ideas which can be applied to
+explain, analyse and solve a variety of problems that seek to address the broader questions of what matter is
+and how particles interact with one another. Equipping students with a coherent view and conceptual framework
+facilitates the application and transfer of learning. These disciplinary ideas can be revisited and deepened at
+higher levels of learning and beyond the schooling years.
+
+1.   Matter is made up of a variety of chemical elements, each with characteristic properties, and the smallest
+     particle that characterises a chemical element is an atom.
+
+2.   The structure of matter and its chemical and physical properties are determined by the arrangement of
+     particles and electrostatic interactions between them.
+
+3.   Energy changes across and within systems usually occur during physical and chemical changes, when
+     there is rearrangement of particles.
+
+4.   Energy plays a key role in influencing the rate and extent of physical and chemical changes.
+
+5.   Matter and energy are conserved in all physical and chemical changes.
+
+                                                        24
+            K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENT STRUCTURE
+
+ SECTION                                                         Topics
+
+ I.      Matter – Structures and Properties                      1.   Experimental Chemistry
+                                                                 2.   The Particulate Nature of Matter
+                                                                 3.   Chemical Bonding and Structure
+
+ II.     Chemical Reactions                                      4.   Chemical Calculations
+                                                                 5.   Acid-Base Chemistry
+                                                                 6.   Qualitative Analysis
+                                                                 7.   Patterns in the Periodic Table
+
+ III.    Chemistry in a Sustainable World                        8.   Organic Chemistry
+                                                                 9.   Maintaining Air Quality
+
+SUBJECT CONTENT
+SECTION I:            MATTER – STRUCTURES AND PROPERTIES
+
+Overview
+
+Matter is understood in terms of particles, the way particles are arranged and the forces that hold them together.
+Evidence of the particulate nature of matter come from daily observable phenomena such as diffusion and
+crystal growth. The simplest particle is known as an atom, which consists of sub-atomic particles like protons,
+neutrons and electrons. A myriad of molecules with different properties are formed from the atoms of hundreds
+of elements discovered to date. The physical properties of a substance are determined by how its particles are
+arranged (i.e. structure) and the strength of the electrostatic forces between them.
+
+Chemistry is typically an experimental science and relies primarily on practical work. This section also examines
+the appropriate use of simple apparatus and chemicals, and experimental techniques.
+
+1.      Experimental Chemistry
+
+Content
+
+1.1      Experimental Design
+
+1.2      Methods of Purification and Analysis
+
+Learning Outcomes
+
+Candidates should be able to:
+
+1.1 Experimental Design
+
+        (a) name appropriate apparatus for the measurement of time, temperature, mass and volume; including
+            burettes, pipettes, measuring cylinders and gas syringes
+
+        (b) suggest suitable apparatus, given relevant information, for a variety of simple experiments, including
+            collection of gases.
+
+                                                          25
+           K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+1.2 Methods of Purification and Analysis
+
+     (a) describe methods of separation and purification for the components of mixtures, to include:
+         (i) use of a suitable solvent, filtration and crystallisation or evaporation
+         (ii) distillation and fractional distillation (see also 8.1(b))
+         (iii) paper chromatography
+
+     (b) suggest suitable separation and purification methods, given information about the substances involved
+         in the following types of mixtures:
+         (i) solid-solid
+         (ii) solid-liquid
+         (iii) liquid-liquid (miscible)
+
+     (c) interpret paper chromatograms including comparison with ‘known’ samples
+         (the use of Rf values is not required)
+
+     (d) deduce from given melting point and boiling point data the identities of substances and their purity.
+
+2.   The Particulate Nature of Matter
+
+Content
+
+2.1 Kinetic Particle Theory
+
+2.2 Atomic Structure
+
+Learning Outcomes
+
+Candidates should be able to:
+
+2.1 Kinetic Particle Theory
+
+     (a) describe the solid, liquid and gaseous states of matter and explain their interconversion in terms of the
+         kinetic particle theory and of the energy changes involved.
+
+2.2 Atomic Structure
+
+     (a) state the relative charges and approximate relative masses of a proton, a neutron and an electron
+
+     (b) describe, with the aid of diagrams, the structure of an atom as consisting of protons and neutrons
+         (nucleons) in the nucleus and electrons arranged in shells (energy levels)
+
+           (knowledge of s, p, d and f classification is not required; a copy of the Periodic Table will be available
+           in the examination)
+
+     (c) define proton (atomic) number and nucleon (mass) number
+
+                                                         12
+     (d) interpret and use nuclide notations such as      6   C
+
+     (e) define the term isotopes
+
+     (f)   deduce the numbers of protons, neutrons and electrons in atoms and ions given proton and nucleon
+           numbers.
+
+                                                          26
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+3.   Chemical Bonding and Structure
+
+Content
+
+3.1 Ionic Bonding
+
+3.2 Covalent Bonding
+
+3.3 Structure and Properties of Materials
+
+Learning Outcomes
+
+Candidates should be able to:
+
+3.1 Ionic Bonding
+
+     (a) describe the formation of ions by electron loss/gain and that these ions usually have the electronic
+         configuration of a noble gas
+
+     (b) describe, including the use of ‘dot-and-cross’ diagrams, the formation of ionic bonds between
+         metals and non-metals, e.g. NaCl ; MgCl 2
+
+     (c) relate the physical properties (including electrical property) of ionic compounds to their lattice
+         structure.
+
+3.2 Covalent Bonding
+
+     (a) describe the formation of a covalent bond by the sharing of a pair of electrons and that the atoms in
+         the molecules usually have the electronic configuration of a noble gas
+
+     (b) describe, using ‘dot-and-cross’ diagrams, the formation of covalent bonds between non-metallic
+         elements, e.g. H2; O2; H2O; CH4; CO2
+
+     (c) deduce the arrangement of electrons in other covalent molecules
+
+     (d) relate the physical properties (including electrical property) of covalent substances to their structure
+         and bonding.
+
+3.3 Structure and Properties of Materials
+
+     (a) describe the differences between elements, compounds and mixtures
+
+     (b) describe the general physical properties of metals as solids having high melting and boiling points,
+         malleable and good conductors of heat and electricity
+
+     (c) describe an alloy as a mixture of a metal with another element, e.g. brass; stainless steel
+
+     (d) identify representations of metals and alloys from diagrams of structures.
+
+                                                         27
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION II:        CHEMICAL REACTIONS
+
+Overview
+
+This section provides an understanding of the changes at the sub-microscopic level during chemical reactions.
+Different types of chemical reactions are delved into and lay the foundation for understanding what happens
+during a chemical change. The study of reactions also reveals patterns in the chemical properties of
+substances, leading to the organisation of elements in the Periodic Table.
+
+In all chemical reactions, matter is conserved and this is illustrated by balanced chemical equations. Chemists
+use symbols and formulae to construct these chemical equations, from which the molar ratios are used to
+quantify the amount of reactants and products in a reaction.
+
+4.   Chemical Calculations
+
+Content
+
+4.1 Formulae and Equation Writing
+
+4.2 The Mole Concept
+
+Learning Outcomes
+
+Candidates should be able to:
+
+4.1 Formulae and Equation Writing
+
+     (a) state the symbols of the elements and formulae of the compounds mentioned in the syllabus
+
+     (b) deduce the formulae of simple compounds from the relative numbers of atoms present and vice versa
+
+     (c) deduce the formulae of ionic compounds from the charges on the ions present and vice versa
+
+     (d) interpret chemical equations with state symbols
+
+     (e) construct chemical equations, with state symbols, including ionic equations.
+
+4.2 The Mole Concept
+
+     (a) define relative atomic mass, Ar
+
+     (b) define relative molecular mass, Mr, and calculate relative molecular mass (and relative formula mass)
+         as the sum of relative atomic masses
+
+     (c) perform calculations involving the relationship between the amount of substances in moles, mass and
+         molar mass
+
+          (calculations of stoichiometric reacting masses and volumes of gases are not required).
+
+                                                       28
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+5.    Acid-Base Chemistry
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the meanings of the terms acid and alkali in terms of the ions they produce in aqueous solution
+    and their effects on Universal Indicator
+
+(b) describe neutrality and relative acidity and alkalinity, in terms of
+    (i) relative H+ and OH– ion concentrations,
+    (ii) colour in Universal Indicator, and
+    (iii) the pH scale
+          (calculation of pH from hydrogen ion concentration is not required)
+
+(c) describe the characteristic properties of acids as in reactions with metals, bases and carbonates to form
+    salts
+    (description of the preparation of pure salts is not required)
+
+(d) describe the reaction between hydrogen ions and hydroxide ions to produce water,
+    H+ + OH– → H2O, as neutralisation
+
+(e) describe the importance of controlling the pH in soils and how excess acidity can be treated using calcium
+    hydroxide
+
+(f)   describe the characteristic properties of bases in reactions with acids and with ammonium salts
+
+(g) classify oxides as acidic, basic, amphoteric or neutral based on metallic/non-metallic character.
+
+6.    Qualitative Analysis
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe tests to identify the following gases: carbon dioxide (using limewater); hydrogen (using a burning
+    splint); oxygen (using a glowing splint).
+
+7.    Patterns in the Periodic Table
+
+Content
+
+7.1    Periodic Trends
+
+7.2    Group Properties
+
+7.3    Reactivity Series
+
+Learning Outcomes
+
+Candidates should be able to:
+
+7.1 Periodic Trends
+
+      (a) describe the Periodic Table as an arrangement of the elements in the order of increasing proton
+          (atomic) number
+
+      (b) describe how the position of an element in the Periodic Table is related to proton number and
+          electronic configuration
+
+                                                       29
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+    (c) explain the similarities between the elements in the same group of the Periodic Table in terms of their
+        electronic configuration
+
+    (d) describe the change from metallic to non-metallic character from left to right across a period of the
+        Periodic Table
+
+    (e) describe the relationship between number of outer (valence) electrons and metallic/non-metallic
+        character
+
+    (f)   predict the properties of elements in Group 1 and Group 17 using the Periodic Table.
+
+7.2 Group Properties
+
+    (a) describe lithium, sodium and potassium in Group 1 (the alkali metals) as a collection of relatively soft,
+        low density metals showing a trend in melting point and in their reaction with water
+
+    (b) describe chlorine, bromine and iodine in Group 17 (the halogens) as a collection of diatomic non-
+        metals showing a trend in colour, state and their displacement reactions with solutions of other halide
+        ions
+
+    (c) describe the lack of reactivity of the elements in Group 18 (the noble gases) in terms of their electronic
+        configurations.
+
+7.3 Reactivity Series
+
+    (a) place in order of reactivity calcium, copper, (hydrogen), iron, lead, magnesium, potassium, silver,
+        sodium and zinc by reference to the reactions, if any, of the metals with water, steam and dilute
+        hydrochloric acid
+
+    (b) deduce the order of reactivity from a given set of experimental results
+
+    (c) describe the ease of obtaining metals from their ores by relating the elements to their positions in the
+        reactivity series
+
+    (d) describe the essential conditions for the corrosion (rusting) of iron as the presence of oxygen and
+        water; prevention of rusting can be achieved by placing a barrier around the metal, e.g. painting;
+        greasing; plastic coating.
+
+                                                       30
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION III:       CHEMISTRY IN A SUSTAINABLE WORLD
+
+Overview
+
+Ubiquitous in modern life, organic compounds range from the fuels we burn, the materials we use such as
+plastics to the food we eat. Urbanisation, industrialisation, increasing population and economic development
+especially in developing countries also create a huge demand for consumption of material goods and energy,
+accelerating the rate of waste output and emissions of pollutants. The excessive use of crude oil and its
+products results in detrimental effects on the environment and sustainability. Chemists have made significant
+contributions towards reducing these effects and improving sustainability through innovative use of chemical
+knowledge.
+
+In this section, knowledge and concepts from other topics within the syllabus are applied to assess the impacts
+of the consumption of organic compounds like fuels and plastics, the environmental issues related to their use
+and the solutions afforded by chemistry.
+
+8.   Organic Chemistry
+
+Content
+
+8.1 Fuels and Crude Oil
+
+8.2 Hydrocarbons
+
+8.3 Polymers
+
+In describing reactions, candidates will be expected to quote the reagents, e.g. aqueous bromine, and
+the essential conditions, e.g. high temperature and pressure. Detailed conditions involving specific
+temperature and pressure values are not required.
+
+Learning Outcomes
+
+Candidates should be able to:
+
+8.1 Fuels and Crude Oil
+
+     (a) name natural gas, mainly methane, and crude oil as non-renewable sources of energy
+
+     (b) describe crude oil as a mixture of hydrocarbons and its separation by fractional distillation to yield
+         fractions which have competing uses as fuels and as a source of chemicals (see also 1.2(a))
+
+     (c) describe biofuel (exemplified by bioethanol from sugarcane) as a renewable alternative to natural gas
+         and crude oil
+
+     (d) describe how biofuel, when compared to fossil fuels, is more environmentally sustainable in terms of
+         the offset in carbon dioxide emission during burning by that taken in during plant growth (see also
+         9(e)).
+
+                                                        31
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+8.2 Hydrocarbons
+
+   (a) describe a homologous series as a group of compounds with a general formula, similar chemical
+       properties and showing a gradation in physical properties as a result of increase in the size and mass
+       of the molecules, e.g. melting and boiling points; viscosity
+
+   (b) describe the alkanes as a homologous series of saturated hydrocarbons with the general formula
+       CnH2n+2
+
+   (c) draw the structures of unbranched alkanes, C1 to C3, and name the unbranched alkanes methane to
+       propane
+
+   (d) describe alkanes (exemplified by methane) as being generally unreactive except in terms of
+       combustion and substitution by chlorine
+
+   (e) describe the alkenes as a homologous series of unsaturated hydrocarbons with the general formula
+       CnH2n
+
+   (f)   draw the structures of unbranched alkenes, C2 and C3, and name the unbranched alkenes ethene and
+         propene
+
+   (g) describe the manufacture of alkenes and hydrogen by cracking hydrocarbons and recognise that
+       cracking is essential to match the demand for fractions containing smaller molecules from the refinery
+       process
+
+   (h) describe the difference between saturated and unsaturated hydrocarbons from their molecular
+       structures and by using aqueous bromine
+
+   (i)   describe the reactions of alkenes (exemplified by ethene) in terms of combustion, polymerisation (see
+         also 8.3(b)) and the addition with bromine and hydrogen
+
+   (j)   state the meaning of polyunsaturated when applied to food products
+
+   (k) describe the manufacture of margarine by the addition of hydrogen to unsaturated vegetable oils to
+       form a solid product.
+
+8.3 Polymers
+
+   (a) describe polymers as large molecules built up from small units (monomers), different polymers having
+       different units
+
+   (b) describe the formation of poly(ethene) as an example of addition polymerisation of ethene as the
+       monomer (see also 8.2(i))
+
+   (c) state some uses of poly(ethene) as a typical plastic, e.g. plastic bags; clingfilm
+
+   (d) deduce the structure of the addition polymer product from a given monomer and vice versa
+
+   (e) describe the pollution problems caused by the disposal of non-biodegradable plastics
+
+   (f)   describe two methods of recycling plastics as
+         (i) physical method (exemplified by melting small pieces of poly(ethene) waste into pellets)
+         (ii) chemical method (exemplified by cracking of plastic waste into fuel)
+
+   (g) discuss the social, economic and environmental issues of recycling plastics.
+
+                                                      32
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+9.    Maintaining Air Quality
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the volume composition of gases present in dry air as being approximately 78% nitrogen,
+    21% oxygen and the remainder being noble gases (with argon as the main constituent) and carbon dioxide
+
+(b) name some common atmospheric pollutants, e.g. carbon monoxide; methane; nitrogen oxides
+    (NO and NO2); ozone; sulfur dioxide; unburned hydrocarbons
+
+(c) state the sources of these pollutants as
+    (i) carbon monoxide from incomplete combustion of carbon-containing substances
+    (ii) nitrogen oxides from lightning activity and internal combustion engines
+    (iii) sulfur dioxide from volcanoes and combustion of fossil fuels
+
+(d) discuss some of the effects of these pollutants on health and on the environment
+    (i) the toxic nature of carbon monoxide
+    (ii) the role of nitrogen dioxide and sulfur dioxide in the formation of ‘acid rain’ and its effects on
+         respiration and buildings
+
+(e) describe the carbon cycle in simple terms, to include
+    (i) the processes of combustion, respiration and photosynthesis
+    (ii) how the carbon cycle regulates the amount of carbon dioxide in the atmosphere
+    (see also 8.1(d))
+
+(f)   state that carbon dioxide and methane are greenhouse gases and may contribute to global warming; give
+      the sources of these gases and describe the potential effects of increased levels of these greenhouse
+      gases, including more extreme weather events and melting of polar ice.
+
+                                                         33
+           K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS
+The list below is intended as a guide to the more important quantities which might be encountered in teaching
+and used in question papers. The list is not exhaustive.
+
+Quantity                                        Symbol                         Unit
+
+Base quantities
+mass                                            m                              g, kg, tonne
+length                                          l                              cm, m
+time                                            t                              s, min
+amount of substance                             n                              mol
+
+Other quantities
+temperature                                     θ, t                           °C
+volume                                          V                              cm3, m3, dm3
+density                                         ρ                              g / cm3, kg / m3
+atomic mass                                     ma                             g
+ relative   {    atomic
+                 isotopic     } mass            Ar                             –
+molecular mass                                  m                              g
+relative molecular mass                         Mr                             –
+molar mass                                      M                              g / mol
+nucleon number                                  A                              –
+proton number                                   Z                              –
+neutron number                                  N                              –
+enthalpy change of reaction                     ∆H                             J, kJ, J / mol, kJ / mol
+bond energy                                     -                              kJ / mol
+concentration                                   c                              mol / dm3, g / dm3
+pH                                              pH                             –
+
+                                                       34
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICAL GUIDELINES
+Scientific subjects are, by their nature, experimental. It is therefore important that the candidates carry out
+appropriate practical work to facilitate the learning of this subject. A list of practicals is provided. Candidates are
+expected to show familiarity with laboratory practical procedures and to have carried out at least four practical
+tasks from this list.
+
+1.   Separation techniques including crystallisation (of salts), filtration, paper chromatography and distillation
+
+2.   Measurements of temperature based on thermometers with 1° C graduation
+
+3.   Determination of melting point and boiling point
+
+4.   Acid/alkali titration involving the use of a pipette, burette and a suitable given indicator
+
+5.   Identification of gases as specified in the syllabus
+
+6.   Experiments involving displacement reactions
+
+7.   Experiments involving reactivity of metals
+
+This is not intended to be an exhaustive list. Reference may be made to the techniques used in these
+experiments in the theory papers but no detailed description of the experimental procedures will be required.
+Candidates may be asked about other practical work and appropriate guidance will be provided where
+unfamiliar experiments are involved.
+
+Responsibility for safety matters rests with Centres.
+
+NOTES FOR QUALITATIVE ANALYSIS
+Test for gases
+
+ gas                                test and test result
+
+ carbon dioxide (CO2)               gives white ppt. with limewater
+                                    (ppt. dissolves with excess CO2)
+
+ hydrogen (H2)                      ‘pops’ with a lighted splint
+
+ oxygen (O2)                        relights a glowing splint
+
+                                                            35
+K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+                                  36
+         K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+Biology section
+INTRODUCTION
+The Secondary Education Certificate G2 Science (Biology) syllabus is designed to have less emphasis on
+factual materials, but a much greater emphasis on the understanding and application of scientific concepts and
+principles. This approach has been adopted in recognition of the need for students to develop skills that will be
+of long-term value in an increasingly complex and globalised world, rather than focusing on large quantities of
+factual material, which may have only short-term relevance.
+
+It is envisaged that teaching and learning programmes based on this syllabus will feature a wide variety of
+learning experiences designed to promote acquisition of scientific expertise and understanding, and to develop
+values and attitudes relevant to science. Teachers are encouraged to use a combination of appropriate
+strategies in teaching topics in this syllabus. The assessment will be specifically intended to test skills,
+comprehension and insight in familiar and unfamiliar contexts.
+
+DISCIPLINARY IDEAS OF BIOLOGY
+The disciplinary ideas of Biology described below represent the overarching ideas which can be applied to
+explain, analyse and solve a variety of problems that seek to address the broader question of how living
+organisms work to sustain life. The purpose of equipping students with an understanding of these ideas is to
+develop in them a coherent view and conceptual framework of scientific knowledge to facilitate the application
+and transfer of learning. These ideas can be revisited throughout the syllabus, deepened at higher levels of
+learning and beyond the schooling years.
+
+1.   The Cell – Diverse life forms are similar in that their basic unit are cells.
+
+2.   Structure and Function – Structure and function of organisms from the molecular to the organ system
+     levels are related to each other.
+
+3.   Systems – Biological systems interact among themselves and with the environment resulting in the flow of
+     energy and nutrients.
+
+4.   Energy – To ensure survival, living organisms obtain, transform and utilise energy from the external world.
+
+5.   Homeostasis, Co-ordination and Response – Living organisms detect changes both from the
+     surrounding environment and within themselves so that they are able to respond to these changes to
+     maintain a constant internal environment needed for sustaining life.
+
+6.   Evolution – The diversity of living organisms is achieved through a process of evolution, driven by
+     mechanisms such as natural selection.
+
+                                                          37
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+CONTENT STRUCTURE
+
+ SECTION                                          Topics
+
+ I.    Cells and the Chemistry of Life            1.   Cell Structure and Organisation
+                                                  2.   Movement of Substances
+                                                  3.   Biological Molecules
+
+ II.   The Human Body – Maintaining Life          4.   Nutrition in Humans
+                                                  5.   Transport in Humans
+                                                  6.   Respiration in Humans
+                                                  7.   Infectious Diseases in Humans
+
+ III. Living Together – Plants and                8.   Nutrition and Transport in Flowering Plants
+      Animals
+
+SUBJECT CONTENT
+SECTION I:         CELLS AND THE CHEMISTRY OF LIFE
+
+Overview
+
+Living things are different from non-living things in their ability to grow, reproduce, move, and respond to
+change. Understanding what makes these characteristics of life possible requires an appreciation of the
+hierarchical organisation of life (from cells → tissues → organs → systems → organism) and the processes
+needed to sustain life at each level.
+
+In this section, we begin by exploring life at the smallest level. Amidst the great diversity of living organisms on
+earth, all living organisms are fundamentally similar at the smallest level; they are all made of cells and a
+common set of carbon-based molecules. Physiological processes in living organisms can be explained through
+activities happening at the cellular level. For instance, the transport of oxygen around the body is made possible
+by red blood cells that bind oxygen to haemoglobin.
+
+In order to sustain life, all living things require three macromolecules – carbohydrates, proteins and fats. They
+make life possible by providing energy, building cellular structures, and for growth and repair.
+
+The overarching ideas of this section are cells as the basic unit of life, correlation between structure and
+function and how living organisms obtain, transform and utilise energy from the external world at the cellular
+level to sustain life. Knowing how life works at the cellular and molecular level will provide students with a
+foundation to understand processes needed to sustain life at the tissue, organ and system levels, which are
+covered in subsequent sections of this syllabus.
+
+                                                        38
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+1.   Cell Structure and Organisation
+
+Content
+
+•    Plant and Animal Cells
+
+•    Cell Specialisation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify and state the functions of the following cell structures (including organelles) of typical plant and
+    animal cells from diagrams, light micrographs and as seen under the light microscope using prepared
+    slides and fresh material treated with an appropriate temporary staining technique:
+
+     •    cell wall
+
+     •    cell membrane
+
+     •    cytoplasm
+
+     •    nucleus
+
+     •    cell vacuoles (large, sap-filled in plant cells, small, temporary in animal cells)
+
+     •    chloroplasts
+
+(b) identify and state the functions of the following organelles from diagrams and electron micrographs:
+
+     •    mitochondria
+
+     •    ribosomes
+
+(c) compare the structure of typical animal and plant cells
+
+(d) explain how the structures of specialised cells are adapted to their functions (e.g. muscle cell – many
+    mitochondria to supply more energy, root hair cell – large surface area of cell membrane for greater
+    absorption, red blood cell – lack of nucleus allowing it to transport more oxygen)
+
+2.   Movement of Substances
+
+Content
+
+•    Diffusion
+
+•    Osmosis
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) define diffusion and describe its role in nutrient uptake and gaseous exchange in plants and humans
+
+(b) define osmosis, investigate and describe the effects of osmosis on plant and animal tissues
+
+                                                          39
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+3.   Biological Molecules
+
+Content
+
+•    Carbohydrates, Fats and Proteins
+
+•    Enzymes
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) state the main roles of carbohydrates, fats and proteins in living organisms:
+
+     •    carbohydrates as an immediate source of energy
+
+     •    fats for insulation and long-term storage of energy
+
+     •    proteins for growth and repair of cells
+
+(b) describe and carry out tests for:
+
+     •    starch (using iodine in potassium iodide solution)
+
+     •    reducing sugars (using Benedict’s solution)
+
+     •    protein (using biuret solution)
+
+     •    fats (using ethanol)
+
+(c) state that large molecules are synthesised from smaller basic units:
+
+     •    cellulose, glycogen and starch from glucose
+
+     •    polypeptides and proteins from amino acids
+
+     •    lipids such as fats from glycerol and fatty acids
+
+(d) explain the mode of action of enzymes in terms of an active site, enzyme-substrate complex and enzyme
+    specificity using the ‘lock and key’ hypothesis
+
+(e) investigate and explain the effects of temperature and pH on the rate of enzyme catalysed reactions
+
+                                                         40
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION II:         THE HUMAN BODY – MAINTAINING LIFE
+
+Overview
+
+Life is sustained through the integrated organisation of the whole organism. In humans, the maintenance and
+regulation of life processes include nutrition, transport and respiration.
+
+Living systems utilise energy and macromolecules to maintain life processes such as growth, reproduction and
+homeostasis. Interactions also exist between living systems within organisms, which are often accompanied by
+the transfer of energy between matter and transfer or exchange of matter. Each system has their component
+parts, characterised by the division of labour. This division of labour enables an organism to function efficiently
+and allows for the various systems to work together as a co-ordinated whole.
+
+The threat of diseases disrupts the maintenance of important life processes and the functioning of human body
+systems. In ancient times, the concept of ‘catching’ a disease was unheard of, and diseases were even thought
+to be caused by the imbalance of ‘humours’ (internal fluids) within the body. However, with the invention of the
+microscope, we have found out that infectious diseases are often caused by pathogens, e.g. viruses and
+bacteria.
+
+The overarching ideas in the study of this section are the co-ordination of the human body system as a whole
+and the correlation between structure and function.
+
+4.   Nutrition in Humans
+
+Content
+
+•    Human Digestive System
+
+•    Physical and Chemical Digestion
+
+•    Absorption and Assimilation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) describe the functions of the various parts of the digestive system: mouth, salivary glands, oesophagus,
+    stomach, duodenum, pancreas, gall bladder, liver, ileum, colon, rectum, anus, in relation to ingestion,
+    digestion, absorption, assimilation and egestion of food, as appropriate
+
+(b) describe the functions of enzymes (e.g. amylase, maltase, protease, lipase) in digestion, listing the
+    substrates and end-products
+
+(c) state the function of the hepatic portal vein as the transport of blood rich in absorbed nutrients from the
+    small intestine to the liver
+
+(d) state the role of the liver in:
+
+     •     conversion of glucose to glycogen and vice versa
+
+     •     fat digestion
+
+     •     metabolism of amino acids and formation of urea
+
+     •     breakdown of alcohol
+
+     •     breakdown of hormones
+
+                                                        41
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(e) define a hormone as a chemical substance, produced by a gland, carried by the blood, which alters the
+    activity of one or more specific target organs
+
+(f)   outline how blood glucose concentration is regulated by insulin and glucagon
+
+(g) describe type 2 diabetes mellitus in terms of a persistently higher than normal blood glucose concentration
+    due to the body's resistance to insulin or insufficient production of insulin
+
+(h) identify the risk factors of (e.g. unhealthy diet and sedentary lifestyle) and ways to manage type 2 diabetes
+    mellitus
+
+5.    Transport in Humans
+
+Content
+
+•     Parts and Functions of the Circulatory System
+
+•     Blood
+
+•     Coronary Heart Disease
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify the main blood vessels to and from the heart, lungs, liver and kidney
+
+(b) relate the structures of arteries, veins and capillaries to their functions (specific names of muscle layers in
+    arteries and veins are not required)
+
+(c) state the components of blood and their roles in transport and defence:
+
+      •   red blood cells – haemoglobin for oxygen transport
+
+      •   plasma – transport of blood cells, ions, soluble food substances, hormones, carbon dioxide, urea,
+          vitamins, plasma proteins
+
+      •   white blood cells – phagocytosis, antibody formation and tissue rejection
+
+      •    platelets – fibrinogen to fibrin, causing clotting
+
+(d) describe the structure and function of the heart in terms of muscular contraction and the working of valves
+    (histology of the heart muscle, names of nerves and transmitter substances are not required)
+
+(e) describe coronary heart disease in terms of the occlusion of coronary arteries and list the possible causes,
+    such as unhealthy diet, sedentary lifestyle, and smoking, stating the possible preventative measures
+
+                                                           42
+           K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+6.    Respiration in Humans
+
+Content
+
+•     Human Gas Exchange
+
+•     Cellular Respiration
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify the larynx, trachea, bronchi, bronchioles, alveoli and associated capillaries and state their functions
+    in human gaseous exchange
+
+(b) explain how the structure of an alveolus is suited for its function of gaseous exchange
+
+(c) state the major toxic components of tobacco smoke – nicotine, tar and carbon monoxide, and describe
+    their effects on health
+
+(d) define aerobic respiration in human cells as the release of energy by the breakdown of glucose in the
+    presence of oxygen and state the word equation
+
+(e) define anaerobic respiration in human cells as the release of energy by the breakdown of glucose in the
+    absence of oxygen and state the word equation
+
+(f)   explain why cells respire anaerobically during vigorous exercise resulting in an oxygen debt that is
+      removed by rapid, deep breathing after exercise
+
+7.    Infectious Diseases in Humans
+
+Content
+
+•     Organisms affecting Human Health
+
+•     Influenza and Pneumococcal Disease
+
+•     Prevention and Treatment of Infectious Diseases
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) state that infectious diseases can be spread from person to person whereas non-infectious diseases
+    cannot and identify examples of each
+
+(b) explain that infectious diseases are caused by pathogens such as bacteria and viruses and can be spread
+    from person to person through body fluids, food and water (knowledge of the structure of bacteria and
+    viruses is not required)
+
+(c) state the signs and symptoms of:
+
+      •    influenza – caused by the influenza virus
+
+      •    pneumococcal disease – caused by the bacteria, pneumococcus
+
+                                                        43
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(d) describe the transmission and methods to reduce the transmission of:
+
+      •    influenza virus
+
+      •    pneumococcus
+
+(e) state that vaccines contain an agent that resembles a pathogen and prevent infectious diseases by
+    stimulating white blood cells to quickly produce antibodies when the pathogen invades
+
+(f)   state that antibiotics kill bacteria and are ineffective against viruses
+
+(g) explain that the misuse and overuse of antibiotics may accelerate the emergence of antibiotic-resistant
+    bacteria
+
+                                                           44
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SECTION III:          LIVING TOGETHER – PLANTS AND ANIMALS
+
+Overview
+
+The sun is the principal source of energy for almost all living organisms on earth, without which, life will not exist
+as it is today. Green plants are able to capture and convert light energy to useful chemical forms in the unique
+process of photosynthesis.
+
+Plants are important to most living organisms that depend on the energy captured by plants through direct or
+indirect feeding relationships to sustain life. The process of photosynthesis helps to capture the carbon dioxide
+released through respiration and other human activities such as combustion. This ensures that the
+concentration of carbon dioxide in the atmosphere is maintained within healthy limits, beyond which will result in
+global warming.
+
+The overarching idea of this section is the adaptation of plant structures that allow them to transform light
+energy into chemical energy efficiently to sustain life on earth.
+
+8.    Nutrition and Transport in Flowering Plants
+
+Content
+
+•     Plant Structure
+
+•     Photosynthesis
+
+•     Transpiration
+
+•     Translocation
+
+Learning Outcomes
+
+Candidates should be able to:
+
+(a) identify the cellular and tissue structure of a dicotyledonous leaf, as seen in transverse section using the
+    light microscope and describe the significance of these features in terms of their functions, such as the:
+
+      •   distribution of chloroplasts for photosynthesis
+
+      •   stomata and mesophyll cells for gaseous exchange
+
+      •   vascular bundles for transport
+
+(b) identify the positions of and state the functions of xylem vessels and phloem in sections of a herbaceous
+    dicotyledonous leaf and stem, under the light microscope
+
+(c) explain how the structure of a root hair cell is suited for its function of water and ion uptake
+
+(d) state that chlorophyll absorbs light energy and converts it into chemical energy for the formation of
+    carbohydrates and their subsequent uses
+
+(e) briefly explain why most forms of life are completely dependent on photosynthesis
+
+(f)   state the word equation for photosynthesis (details of light-dependent and light-independent stages are not
+      required)
+
+(g) describe how carbon dioxide reaches mesophyll cells in a leaf
+
+(h) investigate and describe the effects of varying light intensity, carbon dioxide concentration and temperature
+    on the rate of photosynthesis (e.g. in submerged aquatic plant)
+
+                                                            45
+           K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+(i)   state that transpiration is the loss of water vapour from the stomata
+
+(j)   briefly explain the movement of water through the stem in terms of transpiration pull
+
+(k) investigate and explain:
+
+      •    the effects of variation of air movement, temperature, humidity and light intensity on transpiration rate
+
+      •    how wilting occurs
+
+(l)   define the term translocation as the transport of food (mainly sucrose) in the phloem tissue
+
+SUMMARY OF KEY QUANTITIES, SYMBOLS AND UNITS
+The list below is intended as a guide to the more important quantities which might be encountered in teaching
+and learning. This list is not exhaustive.
+
+Quantity                                           Symbol                           Unit
+
+length                                             l                                mm, cm, m
+area                                               A                                cm2, m2
+volume                                             V                                cm3, dm3, m3
+mass                                               m                                mg, g, kg
+concentration                                      c                                g / dm3
+time                                               t                                ms, s, min
+pH                                                 pH                               –
+temperature                                        T                                °C
+energy                                             E                                J
+
+                                                         46
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+PRACTICAL GUIDELINES
+Scientific subjects are, by their nature, experimental. It is therefore important that the candidates carry out
+appropriate practical work to support and facilitate the learning of this subject. A list of practical work is provided
+below. Candidates are expected to show familiarity with laboratory practical procedures and to have carried out
+at least four practical tasks from this list.
+
+1.   Preparation and observation of specimens under a light microscope
+
+2.   Investigation of the effects of osmosis on plant cells
+
+3.   Identification of nutrients (carbohydrates, proteins and fats) in given samples
+
+4.   Investigation of the effects of temperature and pH on enzyme action
+
+5.   Test for the presence of carbon dioxide released during respiration
+
+6.   Investigation of the factors affecting photosynthesis
+
+7.   Investigation on the process of transpiration
+
+This is not intended to be an exhaustive list. Reference may be made to the techniques used in these
+experiments in the theory papers but no detailed description of the experimental procedures will be required.
+Candidates may be asked about other practical work and appropriate guidance will be provided where
+unfamiliar experiments are involved.
+
+GLOSSARY OF TERMS USED IN SCIENCE PAPERS
+It is hoped that the glossary (which is relevant only to science papers) will prove helpful to candidates as a
+guide, i.e. it is neither exhaustive nor definitive. The glossary has been deliberately kept brief not only with
+respect to the number of terms included but also to the descriptions of their meanings. Candidates should
+appreciate that the meaning of a term must depend in part on its context.
+
+1.   Calculate is used when a numerical answer is required. In general, working should be shown, especially
+     where two or more steps are involved.
+
+2.   Classify requires candidates to group things based on common characteristics.
+
+3.   Comment is intended as an open-ended instruction, inviting candidates to recall or infer points of interest
+     relevant to the context of the question, taking account of the number of marks available.
+
+4.   Compare requires candidates to provide both similarities and differences between things or concepts.
+
+5.   Construct is often used in relation to chemical equations where a candidate is expected to write a balanced
+     equation, not by factual recall but by analogy or by using information in the question.
+
+6.   Define (the term(s)…) is intended literally, only a formal statement or equivalent paraphrase being required.
+
+7. Describe requires candidates to state in words (using diagrams where appropriate) the main points of the
+   topic. It is often used with reference either to particular phenomena or to particular experiments. In the
+   former instance, the term usually implies that the answer should include reference to (visual) observations
+   associated with the phenomena. In the latter instance the answer may often follow a standard pattern,
+   e.g. Apparatus, Method, Measurement, Results and Precautions.
+
+     In other contexts, describe and give an account of should be interpreted more generally, i.e. the candidate
+     has greater discretion about the nature and the organisation of the material to be included in the answer.
+     Describe and explain may be coupled in a similar way to state and explain.
+
+                                                          47
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+8.   Determine often implies that the quantity concerned cannot be measured directly but is obtained by
+     calculation, substituting measured or known values of other quantities into a standard formula.
+
+9.   Discuss requires candidates to give a critical account of the points involved in the topic.
+
+10. Estimate implies a reasoned order of magnitude statement or calculation of the quantity concerned, making
+    such simplifying assumptions as may be necessary about the points of principle and about values of
+    quantities not otherwise included in the question.
+
+11. Explain may imply reasoning or some reference to theory, depending on the context.
+
+12. Find is a general term that may be variously interpreted as calculate, measure, determine, etc.
+
+13. List requires a number of points, generally each of one word, with no elaboration. Where a given number of
+    points is specified, this should not be exceeded.
+
+14. Measure implies that the quantity concerned can be directly obtained from a suitable measuring
+    instrument, e.g. length, using a rule, or angle, using a protractor.
+
+15. Outline implies brevity, i.e. restricting the answer to giving essentials.
+
+16. Predict or deduce implies that the candidate is not expected to produce the required answer by recall but
+    by making a logical connection between other pieces of information. Such information may be wholly given
+    in the question or may depend on answers extracted from an earlier part of the question.
+    Predict also implies a concise answer with no supporting statement required.
+
+17. Sketch, when applied to graph work, implies that the shape and / or position of the curve need only be
+    qualitatively correct, but candidates should be aware that, depending on the context, some quantitative
+    aspects may be looked for, e.g. passing through the origin, having the intercept, asymptote or discontinuity
+    at a particular value.
+
+     In diagrams, sketch implies that a simple, freehand drawing is acceptable; nevertheless, care should be
+     taken over proportions and the clear exposition of important details.
+
+18. State implies a concise answer with little or no supporting argument, e.g. a numerical answer that can be
+    obtained ‘by inspection’.
+
+19. Suggest is used in two main contexts, i.e. either to imply that there is no unique answer, or to imply that
+    candidates are expected to apply their general knowledge to a ‘novel’ situation, one that may be formally
+    ‘not in the syllabus’.
+
+20. What do you understand by/What is meant by (the term(s)...) normally implies that a definition should be
+    given, together with some relevant comment on the significance or context of the term(s) concerned,
+    especially where two or more terms are included in the question. The amount of supplementary comment
+    intended should be interpreted in light of the indicated mark value.
+
+                                                          48
+          K223, K224 and K225 G2 SCIENCE SECONDARY EDUCATION CERTIFICATE SYLLABUS
+
+SPECIAL NOTE
+Nomenclature
+
+Students will be expected to be familiar with the nomenclature used in the syllabus. The proposals in ‘Signs,
+Symbols and Systematics: The ASE Companion to 16–19 Science (2000)’ and the recommendations on terms,
+units and symbols in ‘Biological Nomenclature 4th Edition (2009)’ published by the Institute of Biology, in
+conjunction with the ASE, will generally be adopted although the traditional names sulfate, sulfite, nitrate, nitrite,
+sulfurous and nitrous acids will be used in question papers. Sulfur (and all compounds of sulfur) will be spelt
+with f (not with ph) in question papers, however students can use either spelling in their answers.
+
+It is intended that, in order to avoid difficulties arising out of the use of l as the symbol for litre, use of dm3 in
+place of l or litre will be made.
+
+In chemistry, full structural formulae (displayed formulae) in answers should show in detail both the relative
+placing of atoms and the number of bonds between atoms. Hence, –CONH2 and –CO2H are not satisfactory as
+full structural formulae, although either of the usual symbols for the benzene ring is acceptable.
+
+Units and significant figures
+
+Candidates should be aware that misuse of units and / or significant figures, i.e. failure to quote units where
+necessary, the inclusion of units in quantities defined as ratios or quoting answers to an inappropriate number of
+significant figures, is liable to be penalised.
+
+Calculators
+
+An approved calculator may be used in all papers.
+
+Geometrical Instruments
+
+Candidates should have geometrical instruments with them for Paper 1 and Paper 2 for syllabus K223 and
+K224.
+
+                                                            49
+
