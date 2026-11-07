@@ -643,3 +643,21 @@ curl -s https://api.resend.com/webhooks -H "Authorization: Bearer $RESEND_API_KE
 same lesson as the mangled WhatsApp number above: **an integration that
 type-checks, deploys, and throws nothing is not an integration that works. Only
 an assertion on real output proves it.**
+
+## A weekly slot started after its month was billed — on the next 15th bill (7 Nov 2026)
+
+Adrian, 7 Nov 2026, on Lucas Ngo's second weekly lesson (Sun 1–3pm from 8 Nov; November was
+already billed and paid): *"should not be adhoc lessons … he is really having 2 lessons per week
+-> regular lessons"*. The lessons stay **Regular**; the bill catches them up.
+- On the advance run (14th), every slot whose enrollment **Start Date is in the run month or the
+  month before** adds its lessons from the start date to the end of the run month as Regular
+  lines labelled with their own month ("Sec 3 E Math & A Math — November 2026"), beside next
+  month's lines. `lib/billing-math.ts newSlotCatchUpDates` (tested).
+- **Never twice:** a date already on any of the student's bills since ~6 weeks before last
+  month (a sign-up's first bill, a bill made by hand — Draft or Sent, not Voided) is left out.
+- **A class switch is skipped** (an enrollment Ended since the 1st of last month): the switch
+  makes its own adjustment.
+- The Telegram summary lists them: "➕ New weekly lessons since the last bill — added to this bill".
+- So: to add a second weekly lesson mid-month, use ＋ Add weekly slot with the real start date —
+  nothing else. 15 Nov 2026 check: only Lucas is touched (4 Sundays, $280; bill $910).
+

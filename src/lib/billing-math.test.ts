@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { signupBillsNow, weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO, monthWindowClause } from './billing-math';
+import { signupBillsNow, weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO, monthWindowClause, newSlotCatchUpDates, firstOfPrevMonthISO } from './billing-math';
 import { NO_LESSON_DATES } from './holidays';
 
 const FRI = 5, SUN = 0, TUE = 2;
@@ -440,5 +440,26 @@ describe('signupBillsNow (3 Nov 2026: a far start waits for the 15th)', () => {
   });
   it('a start next month, before its run, waits', () => {
     expect(signupBillsNow('2026-12-06', '2026-11-03')).toBe(false);
+  });
+});
+
+describe('newSlotCatchUpDates — a second weekly slot started after its month was billed (7 Nov 2026)', () => {
+  const base = { runMonthFirstISO: '2026-11-01', weekday: 0, endISO: null, excluded: [] as string[], alreadyBilled: new Set<string>() };
+  it('Lucas Ngo: Sundays from 8 Nov ride the 15 Nov bill', () => {
+    expect(newSlotCatchUpDates({ ...base, startISO: '2026-11-08' })).toEqual(['2026-11-08', '2026-11-15', '2026-11-22', '2026-11-29']);
+  });
+  it('a slot started last month catches up both months', () => {
+    expect(newSlotCatchUpDates({ ...base, startISO: '2026-10-25' })).toEqual(['2026-10-25', '2026-11-01', '2026-11-08', '2026-11-15', '2026-11-22', '2026-11-29']);
+  });
+  it('dates already on a bill (a sign-up bill) are left out', () => {
+    expect(newSlotCatchUpDates({ ...base, startISO: '2026-11-08', alreadyBilled: new Set(['2026-11-08', '2026-11-15']) })).toEqual(['2026-11-22', '2026-11-29']);
+  });
+  it('an older slot, a slot starting next month, or no start date: nothing', () => {
+    expect(newSlotCatchUpDates({ ...base, startISO: '2026-09-06' })).toEqual([]);
+    expect(newSlotCatchUpDates({ ...base, startISO: '2026-12-06' })).toEqual([]);
+    expect(newSlotCatchUpDates({ ...base, startISO: null })).toEqual([]);
+  });
+  it('January looks back to December', () => {
+    expect(firstOfPrevMonthISO('2027-01-01')).toBe('2026-12-01');
   });
 });

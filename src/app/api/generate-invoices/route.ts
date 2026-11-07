@@ -15,13 +15,13 @@ import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchAdhocRows, draftAdhocInvoice } from '@/lib/adhoc-store';
 import { FINAL_EXTRAS_FORMULA } from '@/lib/graduation';
 import { advanceExtrasWindowStartISO, billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
-import { addDaysISO, firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
+import { addDaysISO, firstOfNextMonthISO, firstOfPrevMonthISO, invoiceMonthLessonDates, newSlotCatchUpDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
 import { optoutDatesByStudent, OPTOUT_MARKER } from '@/lib/holiday-optout';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import {
   HOLIDAY_BILLING_NOTE, ARREARS_MONTHS, EXAM_PREP_NOTE, arrearsBillMonthEnded, arrearsCoverageNote, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
   examCutoffFor, examCutoffNote, humanDate, invoiceDueDateISO, isCombinedJanuary, isExamYearStudent, parseMonthLabel,
-  sweepAdditionalFor, unmarkedByStudent,
+  labelOfDate, sweepAdditionalFor, unmarkedByStudent,
   type ArrearsLessonRecord, type ArrearsTarget, type BillingMode, type StudentBillingProfile,
 } from '@/lib/year-end-billing';
 import { additionalLessonLines, attendedLessonLines, descriptionBase, projectedLessonLines, sumLineRates, type SlotLine } from '@/lib/arrears-lines';
@@ -266,6 +266,39 @@ export async function POST(req: NextRequest) {
     const adhocToISO = lastDayOfMonthISO(adhocFromISO);
     const adhocRowsAll = mode === 'advance' ? await fetchAdhocRows().catch(() => null) : null;
     const adhocOnRegular = new Set<string>();
+    // A weekly slot started after its month was billed (7 Nov 2026, Lucas Ngo's second weekly
+    // lesson): its lessons this month and last ride this bill as Regular lines
+    // (lib/billing-math newSlotCatchUpDates). Dates already on any of the student's bills are left
+    // out; a student who switched class (an enrollment Ended since last month) is skipped — the
+    // switch makes its own adjustment.
+    const catchUpFromISO = firstOfPrevMonthISO(adhocFromISO);
+    const billedDatesByStudent = new Map<string, Set<string>>();
+    const switchedStudents = new Set<string>();
+    let catchUpReady = false;
+    if (mode === 'advance') {
+      try {
+        const [recentBills, endedEnr] = await Promise.all([
+          airtableRequestAll('Invoices',
+            `?filterByFormula=${encodeURIComponent(`AND({Status}!='Voided',IS_AFTER({Issue Date},'${addDaysISO(catchUpFromISO, -45)}'))`)}&fields[]=Student&fields[]=Line Items`),
+          airtableRequestAll('Enrollments',
+            `?filterByFormula=${encodeURIComponent(`AND({Status}='Ended',{End Date}>='${catchUpFromISO}')`)}&fields[]=Student`),
+        ]);
+        for (const r of recentBills.records || []) {
+          const sid = r.fields['Student']?.[0];
+          if (!sid) continue;
+          let lines: any[] = [];
+          try { lines = JSON.parse(r.fields['Line Items'] || '[]'); } catch { /* unreadable → no dates */ }
+          const set = billedDatesByStudent.get(sid) ?? new Set<string>();
+          for (const l of lines) if (l?.date) set.add(String(l.date));
+          billedDatesByStudent.set(sid, set);
+        }
+        for (const r of endedEnr.records || []) { const sid = r.fields['Student']?.[0]; if (sid) switchedStudents.add(sid); }
+        catchUpReady = true;
+      } catch (e) {
+        console.error('[generate-invoices] new-slot catch-up read failed — skipped this run', e);
+      }
+    }
+    const caughtUp: string[] = [];
     // Year-end bookkeeping for the Telegram summary (names, grouped — one line
     // each instead of a per-student skip flag).
     const arrearsDeferred: string[] = [];     // advance run: month is arrears-billed for them
@@ -494,6 +527,17 @@ export async function POST(req: NextRequest) {
             if (dates.length > 0) hasLessons = true;
             for (const date of dates) {
               lineItemsForInvoice.push({ date, day: s.dayLabel, type: 'Regular', description, rate: s.rate || ratePerLesson });
+            }
+            if (catchUpReady && !switchedStudents.has(studentId)) {
+              const back = newSlotCatchUpDates({
+                runMonthFirstISO: adhocFromISO, weekday: s.weekday, startISO: s.startISO, endISO: s.endISO,
+                excluded: [...NO_LESSON_DATES, ...(optoutDates.get(studentId) ?? [])],
+                alreadyBilled: billedDatesByStudent.get(studentId) ?? new Set<string>(),
+              });
+              for (const date of back) {
+                lineItemsForInvoice.push({ date, day: s.dayLabel, type: 'Regular', description: `${descBase} — ${labelOfDate(date)}`, rate: s.rate || ratePerLesson });
+              }
+              if (back.length) caughtUp.push(`${studentName} (${s.dayLabel}: ${back.length})`);
             }
           }
 
@@ -1113,6 +1157,9 @@ export async function POST(req: NextRequest) {
     }
     if (combinedDeferred.length) {
       yearEndSection += `\n\n\u23f3 <b>December + January combined on 1 Jan (${combinedDeferred.length})</b> \u2014 nothing drafted now:\n${listNames(combinedDeferred)}`;
+    }
+    if (caughtUp.length) {
+      yearEndSection += `\n\n\u{2795} <b>New weekly lessons since the last bill — added to this bill (${caughtUp.length})</b>:\n${listNames(caughtUp)}`;
     }
     if (examEnded.length) {
       yearEndSection += `\n\n\u{1F393} <b>Exams over \u2014 no ${invoiceMonth.label} invoice (${examEnded.length})</b>:\n${listNames(examEnded)}`;

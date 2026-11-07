@@ -158,3 +158,37 @@ export function signupBillsNow(startISO: string, todayISO: string): boolean {
   const runDay = `${y}-${String(mo).padStart(2, '0')}-14`;
   return todayISO >= runDay;
 }
+
+/** The 1st of the month before `monthFirstISO`'s month. */
+export function firstOfPrevMonthISO(isoStr: string): string {
+  const [y, m] = isoStr.split('-').map(Number);
+  return m === 1 ? `${y - 1}-12-01` : `${y}-${String(m - 1).padStart(2, '0')}-01`;
+}
+
+/**
+ * A weekly slot that started after its month was billed (Adrian, 7 Nov 2026, on Lucas Ngo's
+ * second weekly lesson: "he is really having 2 lessons per week -> regular lessons"). The bill
+ * on the 15th covers NEXT month, so this month's (and last month's) lessons of a slot that
+ * began since would never be billed. They ride the next bill as Regular lines.
+ *
+ * Only a slot whose Start Date falls in the run month or the month before; dates already on
+ * any of the student's bills are left out (a sign-up's first bill, a bill made by hand), so a
+ * lesson is never billed twice. The caller skips a student who switched class (the switch
+ * makes its own adjustment).
+ */
+export function newSlotCatchUpDates(opts: {
+  runMonthFirstISO: string;
+  weekday: number;
+  startISO: string | null | undefined;
+  endISO: string | null;
+  excluded: readonly string[];
+  alreadyBilled: ReadonlySet<string>;
+}): string[] {
+  const { runMonthFirstISO, weekday, startISO, endISO, excluded, alreadyBilled } = opts;
+  if (!startISO || !/^\d{4}-\d{2}-\d{2}$/.test(startISO)) return [];
+  const prevFirst = firstOfPrevMonthISO(runMonthFirstISO);
+  if (startISO < prevFirst || startISO > lastDayOfMonthISO(runMonthFirstISO)) return [];
+  return [prevFirst, runMonthFirstISO]
+    .flatMap((m) => invoiceMonthLessonDates(m, weekday, endISO, excluded, startISO))
+    .filter((d) => !alreadyBilled.has(d));
+}

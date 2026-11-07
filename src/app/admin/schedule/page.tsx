@@ -946,7 +946,6 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
       ? (lesson.examEntries || []).every(e => !!e.date && e.date < chipToday)
       : lesson.examDate! < chipToday
   );
-  const chipExamType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
   // Exam-season summary lines (subject · date — topics). When present, they
   // carry the dates, so the 📅 pill shows the exam type instead of repeating
   // the date.
@@ -1166,12 +1165,8 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
             ))}
           </span>
         ))}
-        {/* Exams all past → compact green done line (dates decluttered). */}
-        {showExamInfo && examsOver && !lesson.examAssessment && (
-          <span style={{ display: 'block', fontSize: 10, marginTop: 6, fontWeight: 700, color: '#15803d' }}>
-            ✅ {chipExamType || 'Exams'} done
-          </span>
-        )}
+        {/* Exams all past → no line at all (Adrian, 7 Nov 2026: "why are there still EOY done?").
+            Was a green "✅ EOY done" pill until the season's window closed. */}
         {showExamInfo && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>no upcoming exam</span>
         )}
