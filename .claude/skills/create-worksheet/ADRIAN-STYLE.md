@@ -445,6 +445,24 @@ even when it's 2d?"*
   `AdrianMathNotes/Notes/JC/09 Integration 2 Area and Volume (corrected).docx`.
 - Check every figure by converting it to greyscale before it goes into a document.
 
+### A diagram added beside a question copies THAT question's diagram (7 Nov 2026)
+
+Adrian, 7 Nov 2026, on the split-the-region diagrams: *"possible to draw it according to the
+original diagram? like having the same shape and size of the original diagram"*.
+- Before drawing, pull the question's own picture out of the document (`word/media/…` via the
+  `r:embed` in the paragraphs between the Example heading and its "Solution:") and its printed
+  size (`<wp:extent cx cy>`, EMU ÷ 360000 = cm).
+- The region panel uses the **same window** (the same part of each curve, axes crossing at the
+  same place), the **same proportions**, the **labels in the same places** (`O`, `y = 2`, the
+  curve's name, tick values such as π/6, √3/4), and is **printed at the original's size**: lay
+  the panels out in centimetres and insert the PNG at its own width (dpi ÷ px), not stretched.
+- The split pieces and the 2D solid sit beside it; only those may be shrunk to fit the 16 cm
+  line. The original's black or grey fill becomes light grey (whole region) and hatches (pieces).
+- Read the original before writing any "check" note: the JC Integration 2 Example 1a note
+  ("the curves do not meet at π/6") was wrong — the question's own diagram bounds R with x = π/6.
+- Worked example of the whole pipeline: `examples/area_volume_split_diagrams.py` (its
+  `compose()` keeps the first panel at the original's size and returns the printed width).
+
 ### A curve never touches its asymptote; graphs label a, b and c (26 Oct 2026)
 
 Adrian, 26 Oct 2026, on the A Math recap sheet: *"graphs should not be touching the
