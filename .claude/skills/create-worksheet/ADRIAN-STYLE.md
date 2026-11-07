@@ -426,6 +426,25 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   spinner that was perfectly fine. Grep the dumped stem for the words the page prints
   before touching a figure.
 
+### Diagrams print in black and white; volumes are drawn as 2D solids (7 Nov 2026)
+
+Adrian, 7 Nov 2026, on the split-the-region diagrams for JC Area and Volume: *"able to generate
+the diagrams such that it can be seen when printed black and white? and volume clearly visible
+even when it's 2d?"*
+- **Colour is never the only difference.** Notes and worksheets are photocopied in grey. Pieces
+  of a region are told apart by **hatch** (`////`, `\\\\`, `xxx`, `...`) on white; the whole region
+  before it is split is plain light grey. A colour may be added on top, never instead.
+  (The trig-graph colour coding above still needs a second cue — line style or a label.)
+- **A solid of revolution is drawn in 2D the textbook way**, not as a 3D render: the curve and
+  its mirror image, an oval at each end (far half dashed), the solid hatched, a hole left white
+  with dashed edges, the axis of rotation dash-dot. Minus volumes show three solids:
+  (solid from the outer curve) − (solid from the inner curve) = (the solid asked for).
+  Add volumes show the pieces with different hatches and an oval where they meet.
+- Helper: `solids2d.py` in this folder — `piece(k)` / `target()` for fills, `solid_x`, `solid_y`,
+  `axis_line`, `bare`. Reference figures: the 13 + 4 diagrams in
+  `AdrianMathNotes/Notes/JC/09 Integration 2 Area and Volume (corrected).docx`.
+- Check every figure by converting it to greyscale before it goes into a document.
+
 ### A curve never touches its asymptote; graphs label a, b and c (26 Oct 2026)
 
 Adrian, 26 Oct 2026, on the A Math recap sheet: *"graphs should not be touching the
