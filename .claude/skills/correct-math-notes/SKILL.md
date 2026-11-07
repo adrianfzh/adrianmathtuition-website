@@ -26,6 +26,15 @@ document's answer colour, marks at the right tab), no school names on questions.
 an existing page and compare. Rule: `docs/teaching-style/STYLE.md` § "Adding to one of Adrian's
 existing documents".
 
+## Once Adrian edits the corrected copy, it is his (7 Nov 2026)
+
+Adrian: *"work on my saved copy of the corrected"*. After he has opened and changed a
+`(corrected).docx`, make every further change as targeted edits to HIS saved file (find the
+paragraph or picture by its text, change only that) — never rebuild it from the original, or his
+edits vanish. Before saving: a `~$<name>` lock file beside it means it is open in Word — do not
+save (Dropbox then makes a "<name> 2.docx" conflict copy); ask him to close it. Copy his file just
+before editing, and check it is unchanged before writing back.
+
 ## Non-negotiable: verify every answer computationally
 
 Do not eyeball the maths. For every worked example, Practice item and Assignment item:
