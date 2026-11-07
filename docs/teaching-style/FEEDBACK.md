@@ -670,3 +670,13 @@ practice for that). practice again sheet focuses on wrong approach/method/concep
 - **A heading, its key-move line and the first line of its Example stay on one page**
   (keep-with-next glue in `workspace()`, "do what you see fit according to space
   management") — a section title alone at the foot of a page is a page turn wasted.
+
+## 7 Nov 2026 — new content in his notes: his format, his colours, no red
+
+Adrian, on Section 6 added to "09 Integration 1 Integration Techniques": *"don't put in red, just normal notes format, and do it according to my format … can we ensure that future sessions do that too instead of me reminding again?"*
+
+**The rules:** new sections go in the document's own format and normal colours; red only
+flags corrections; no source citations; compare against an existing page of the same
+document before reporting. Full rule: STYLE.md § "Adding to one of Adrian's existing
+documents".
+

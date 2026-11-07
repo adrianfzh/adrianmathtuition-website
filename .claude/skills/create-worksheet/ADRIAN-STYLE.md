@@ -986,6 +986,15 @@ Use it for the shape only. Never copy its examples or wording.
 - Keep it short: one example per point, never the full notes. Fewer points with real
   examples beat many points in words.
 
+## 12 · Adding to an existing document — its format, normal colours (7 Nov 2026)
+
+Adrian: *"don't put in red, just normal notes format, and do it according to my format … can we ensure that future sessions do that too instead of me reminding again?"*
+A new section, example or practice set added to one of his existing notes or worksheets copies
+THAT document's paragraph and run properties (headings, `Example Na : Title`, `Solution:` box,
+numbered practice, `[Ans: …]` colour, marks tab) and is NOT red. Red only flags corrections.
+No school names on student-facing questions. Full rule: `docs/teaching-style/STYLE.md`
+§ "Adding to one of Adrian's existing documents".
+
 ## Adding a rule (how this list grows)
 
 1. Quote what Adrian said, with the date, in the section it belongs to (new section if

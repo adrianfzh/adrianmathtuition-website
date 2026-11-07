@@ -138,3 +138,23 @@ full diff is in `teaching_style/FEEDBACK.md` § "How Adrian explains". The rules
 - **"never" is not used** — "not", "does not", "is not".
 - **No source citations on anything a student reads**; 1.5 line spacing inside
   boxes too; practice items auto-numbered.
+
+## Adding to one of Adrian's existing documents — copy THAT document (BINDING, Adrian 7 Nov 2026)
+
+Adrian, 7 Nov 2026, after a new section was added to his JC Integration notes in red, with
+pandoc headings and school names on the questions: *"don't put in red, just normal notes format, and do it according to my format … can we ensure that future sessions do that too instead of me reminding again?"*
+
+- **New material is NOT red.** A new section, example, practice set or answer key goes in
+  his normal colours (black text, answers in the document's own answer colour). Red is only
+  for flagging: a correction to one of HIS lines, or a note such as "out of syllabus".
+- **Copy the document's own format, not a generic one.** Before writing, open the file
+  (`unzip`, read `word/document.xml`) and an existing section of the same kind, and reuse its
+  paragraph and run properties exactly: heading size and weight, `Example Na : Title In Caps`
+  lines, the bold `Solution:` label, the bordered single-cell solution box with "=" lines and
+  `← note` annotations, Word auto-numbered practice items, `[Ans: …]` right-aligned in the
+  answer colour, marks `[n]` at the right tab, centred titles for a "Miscellaneous Practice"
+  page. Restart numbering with a new `w:num` on the same `abstractNum` his lists use.
+- **No school names, years or "[Prelim 2023]" tags** on anything a student reads.
+- **Check it the way he sees it:** render the new pages beside an existing page of the same
+  document and compare before reporting.
+

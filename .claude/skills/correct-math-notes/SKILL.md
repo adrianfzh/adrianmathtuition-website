@@ -17,7 +17,14 @@ not a finished product.
 ## Output convention
 
 Deliver `<original name> (corrected).docx` in the SAME folder as the original. Never overwrite his file.
-**Every change must be red** so he can see the diff at a glance.
+**Every correction to his existing text must be red** so he can see the diff at a glance.
+**New material is NOT red** (Adrian, 7 Nov 2026: *"don't put in red, just normal notes format, and do it according to my format … can we ensure that future sessions do that too instead of me reminding again?"*): a new section,
+example, practice set or answer key copies the document's own format and colours — reuse the
+paragraph/run properties of an existing section of the same kind (heading, `Example Na : Title`,
+`Solution:` + bordered box with `← note` lines, auto-numbered practice, `[Ans: …]` in the
+document's answer colour, marks at the right tab), no school names on questions. Render it beside
+an existing page and compare. Rule: `docs/teaching-style/STYLE.md` § "Adding to one of Adrian's
+existing documents".
 
 ## Non-negotiable: verify every answer computationally
 
@@ -131,6 +138,10 @@ garbage glyphs. The validator passes it happily. If `<w:sym>` is present, skip m
 those paragraphs afterwards and verify by rendering.
 
 ## Rendering caveats
+
+- **Exporting with Microsoft Word via AppleScript: name the document** (`document "x.docx"`),
+  never `active document` — Adrian often has other notes open, and the export then silently
+  prints HIS file. Close only your copy by name.
 
 - Some of his files fail LibreOffice PDF conversion. Check whether the **original** also fails before
   treating it as your fault — usually pre-existing. Pandoc text extraction is sufficient proof.
